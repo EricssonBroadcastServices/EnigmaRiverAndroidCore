@@ -2,7 +2,7 @@ package com.redbeemedia.enigma.core;
 
 import java.net.URL;
 
-public class EnigmaPlayer implements IEnigmaPlayer {
+/*package-protected*/ class EnigmaPlayer implements IEnigmaPlayer {
     private IPlayerImplementation playerImplementation;
 
     public EnigmaPlayer(IPlayerImplementation playerImplementation) {
@@ -34,7 +34,8 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
         @Override
         public void startUsingUrl(URL url) {
-            playRequest.onError("Not yet implemented");
+            playerImplementation.startPlayback(url.toString());
+//            playRequest.onError("Not yet implemented");
             //TODO or should we throw an exception here?
         }
     }
