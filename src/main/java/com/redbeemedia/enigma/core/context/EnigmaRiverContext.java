@@ -1,11 +1,15 @@
 package com.redbeemedia.enigma.core.context;
 
+import com.redbeemedia.enigma.core.http.DefaultHttpHandler;
 import com.redbeemedia.enigma.core.http.IHttpHandler;
-import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.util.UrlPath;
 
 public final class EnigmaRiverContext {
     private static volatile EnigmaRiverInitializedContext initializedContext = null;
+
+    public static synchronized void initialize() {
+        EnigmaRiverContext.initialize(new EnigmaRiverContextInitialization());
+    }
 
     public static synchronized void initialize(EnigmaRiverContextInitialization initialization) {
         if(initializedContext == null) {
@@ -38,8 +42,7 @@ public final class EnigmaRiverContext {
 
 
     public static class EnigmaRiverContextInitialization {
-//        private IHttpHandler httpHandler = new DefaultHttpHandler();
-        private IHttpHandler httpHandler = null;
+        private IHttpHandler httpHandler = new DefaultHttpHandler();
 
         public String getExposureBaseUrl() {
             return "https://psempexposureapi.ebsd.ericsson.net";

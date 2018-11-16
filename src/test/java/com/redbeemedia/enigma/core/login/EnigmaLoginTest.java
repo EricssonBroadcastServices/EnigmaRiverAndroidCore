@@ -37,7 +37,7 @@ public class EnigmaLoginTest {
         MockHttpHandler mockHandler = new MockHttpHandler();
         MockEnigmaRiverContext.resetInitialize(new EnigmaRiverContext.EnigmaRiverContextInitialization().setHttpHandler(mockHandler));
         EnigmaLogin enigmaLogin = new EnigmaLogin("dev", "enigma");
-        enigmaLogin.login(new UserLoginRequest("user", "password"));
+        enigmaLogin.login(new UserLoginRequest("user", "password", new MockLoginResultHandler()));
 
         List<String> mockHandlerLog = mockHandler.getLog();
         Assert.assertEquals(1,mockHandlerLog.size());

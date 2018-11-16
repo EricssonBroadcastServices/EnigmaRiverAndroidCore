@@ -13,12 +13,12 @@ import java.net.MalformedURLException;
     }
 
     @Override
-    public void onSuccess(ISession session) {
-        //TODO don't have here!
+    public UrlPath getTargetUrl(UrlPath authenticationBaseUrl) throws MalformedURLException {
+        return authenticationBaseUrl.append(path);
     }
 
     @Override
-    public UrlPath getTargetUrl(UrlPath authenticationBaseUrl) throws MalformedURLException {
-        return authenticationBaseUrl.append(path);
+    public ILoginResultHandler getResultHandler() {
+        return null; //TODO
     }
 }

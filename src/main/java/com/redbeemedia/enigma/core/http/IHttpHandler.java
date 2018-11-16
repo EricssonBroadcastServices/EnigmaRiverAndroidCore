@@ -4,9 +4,9 @@ import java.io.InputStream;
 import java.net.URL;
 
 public interface IHttpHandler {
-    void post(URL url, IHttpPreparator preparator, IHttpHandlerResponse responseHandler);
+    void doHttp(URL url, IHttpPreparator preparator, IHttpResponseHandler responseHandler);
 
-    interface IHttpHandlerResponse {
+    interface IHttpResponseHandler {
         void onResponse(int code, InputStream inputStream);
         void onResponse(int code);
     }

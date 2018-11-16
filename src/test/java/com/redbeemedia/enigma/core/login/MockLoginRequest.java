@@ -12,7 +12,7 @@ public class MockLoginRequest implements ILoginRequest {
     }
 
     @Override
-    public void onSuccess(ISession session) {
-
+    public ILoginResultHandler getResultHandler() {
+        return new MockLoginResultHandler();
     }
 }

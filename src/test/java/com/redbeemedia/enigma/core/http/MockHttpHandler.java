@@ -9,7 +9,7 @@ public class MockHttpHandler implements IHttpHandler {
     private List<String> log = new ArrayList<>();
 
     @Override
-    public void post(URL url, IHttpPreparator preparator, IHttpHandlerResponse response) {
+    public void doHttp(URL url, IHttpPreparator preparator, IHttpResponseHandler response) {
         MockHttpConnection mockHttpConnection = new MockHttpConnection();
         preparator.prepare(mockHttpConnection);
         StringBuilder logBuilder = new StringBuilder();
