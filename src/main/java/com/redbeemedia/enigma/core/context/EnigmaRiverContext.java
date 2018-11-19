@@ -7,6 +7,8 @@ import android.os.Bundle;
 import com.redbeemedia.enigma.core.http.DefaultHttpHandler;
 import com.redbeemedia.enigma.core.http.IHttpHandler;
 import com.redbeemedia.enigma.core.util.UrlPath;
+import com.redbeemedia.enigma.core.util.device.DeviceInfo;
+import com.redbeemedia.enigma.core.util.device.IDeviceInfo;
 
 public final class EnigmaRiverContext {
     private static volatile EnigmaRiverInitializedContext initializedContext = null;
@@ -37,18 +39,21 @@ public final class EnigmaRiverContext {
     }
 
     public static IHttpHandler getHttpHandler() {
+        //TODO assert initialized
         return initializedContext.httpHandler;
     }
 
-    //    public static IEnigmaPlayer createPlayer(IPlayerImplementation playerImplementation) {
-//        return new EnigmaPlayer(playerImplementation);
-//    }
+    public static IDeviceInfo getDeviceInfo() {
+        //TODO assert initialized
+        return initializedContext.deviceInfo;
+    }
 
 
     public static class EnigmaRiverContextInitialization {
         private IHttpHandler httpHandler = new DefaultHttpHandler();
         //TODO remove this default path to prestage exposure.
         private String exposureBaseUrl = "https://psempexposureapi.ebsd.ericsson.net:443";
+        private IDeviceInfo deviceInfo = null;
 
         public String getExposureBaseUrl() {
             return exposureBaseUrl;
@@ -70,11 +75,25 @@ public final class EnigmaRiverContext {
             this.httpHandler = httpHandler;
             return this;
         }
+
+        public IDeviceInfo getDeviceInfo(Application application) {
+            if(deviceInfo != null) {
+                return deviceInfo;
+            } else {
+                return new DeviceInfo(application);
+            }
+        }
+        
+        public EnigmaRiverContextInitialization setDeviceInfo(IDeviceInfo deviceInfo) {
+            this.deviceInfo = deviceInfo;
+            return this;
+        }
     }
 
     private static class EnigmaRiverInitializedContext {
         private final UrlPath exposureBaseUrl;
         private final IHttpHandler httpHandler;
+        private final IDeviceInfo deviceInfo;
 
         public EnigmaRiverInitializedContext(Application application, EnigmaRiverContextInitialization initialization) {
             try {
@@ -118,6 +137,7 @@ public final class EnigmaRiverContext {
                 }
                 this.exposureBaseUrl = new UrlPath(initialization.getExposureBaseUrl());
                 this.httpHandler = initialization.getHttpHandler();
+                this.deviceInfo = initialization.getDeviceInfo(application);
             } catch (Exception e) {
                 //TODO throw ContextInitializationException
                 throw new RuntimeException(e);

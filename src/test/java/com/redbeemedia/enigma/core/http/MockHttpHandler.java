@@ -1,5 +1,7 @@
 package com.redbeemedia.enigma.core.http;
 
+import org.json.JSONObject;
+
 import java.io.ByteArrayOutputStream;
 import java.net.URL;
 import java.util.ArrayList;
@@ -14,26 +16,21 @@ public class MockHttpHandler implements IHttpHandler {
         try {
             MockHttpConnection mockHttpConnection = new MockHttpConnection();
             preparator.prepare(mockHttpConnection);
-            StringBuilder logBuilder = new StringBuilder();
-            logBuilder.append(preparator.getRequestMethod()+" to ");
-            logBuilder.append(url.toString());
-            logBuilder.append(" {");
-            logBuilder.append("headers { ");
+            JSONObject logEntry = new JSONObject();
+            logEntry.put("method", preparator.getRequestMethod());
+            logEntry.put("url", url.toString());
+            JSONObject headerMap = new JSONObject();
             for (Map.Entry<String, String> header : mockHttpConnection.getHeaders().entrySet()) {
-                logBuilder.append(header.getKey()).append(" : ").append(header.getValue()).append(",");
+                headerMap.put(header.getKey(), header.getValue());
             }
-            logBuilder.append("}");
-            logBuilder.append("body { ");
+            logEntry.put("headers", headerMap);
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             preparator.writeBodyTo(byteArrayOutputStream);
-            logBuilder.append(new String(byteArrayOutputStream.toByteArray(), "utf-8"));
-            logBuilder.append("}");
-            logBuilder.append("}");
-            log.add(logBuilder.toString());
+            logEntry.put("body", new String(byteArrayOutputStream.toByteArray(), "utf-8"));
+            log.add(logEntry.toString());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
     }
 
     public List<String> getLog() {

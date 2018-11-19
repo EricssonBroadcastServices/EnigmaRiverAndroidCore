@@ -1,5 +1,12 @@
 package com.redbeemedia.enigma.core.login;
 
+import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
+import com.redbeemedia.enigma.core.util.device.DeviceInfo;
+import com.redbeemedia.enigma.core.util.device.IDeviceInfo;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -16,8 +23,18 @@ public class UserLoginRequest extends AbstractLoginRequest implements ILoginRequ
 
     @Override
     public void writeBodyTo(OutputStream outputStream) throws IOException {
-        //TODO refactor:
-        String body = "{\"deviceId\":\"9159b635e19ff412\",\"device\":{\"height\":1794,\"width\":1080,\"model\":\"Android SDK built for x86\",\"name\":\"\",\"os\":\"Android\",\"osVersion\":\"9\",\"manufacturer\":\"Google\",\"deviceId\":\"9159b635e19ff412\",\"type\":\"MOBILE\"},\"rememberMe\":true,\"username\":\""+username+"\",\"password\":\""+password+"\"}";
-        outputStream.write(body.getBytes("utf-8"));
+        IDeviceInfo deviceInfo = EnigmaRiverContext.getDeviceInfo();
+
+        try {
+            JSONObject body = new JSONObject();
+            body.put("deviceId", deviceInfo.getDeviceId());
+            body.put("device", DeviceInfo.getDeviceInfoJson(deviceInfo));
+            body.put("username", username);
+            body.put("password", password);
+
+            outputStream.write(body.toString().getBytes("utf-8"));
+        } catch (JSONException e){
+            throw new IOException(e);
+        }
     }
 }

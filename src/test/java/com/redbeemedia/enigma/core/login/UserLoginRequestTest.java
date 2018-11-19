@@ -1,6 +1,9 @@
 package com.redbeemedia.enigma.core.login;
 
+import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
+import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
 import com.redbeemedia.enigma.core.util.UrlPath;
+import com.redbeemedia.enigma.core.util.device.MockDeviceInfo;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -9,13 +12,13 @@ import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 public class UserLoginRequestTest {
     @Test
     public void testUserLoginRequestBody() throws IOException, JSONException {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setDeviceInfo(new MockDeviceInfo()));
         UserLoginRequest userLoginRequest = new UserLoginRequest("matte", "secret_pass", new MockLoginResultHandler());
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
