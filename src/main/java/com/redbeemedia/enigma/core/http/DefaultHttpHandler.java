@@ -49,7 +49,6 @@ public class DefaultHttpHandler implements IHttpHandler {
 
                 //Do the call
                 connection.connect();
-                int responseCode = connection.getResponseCode();
                 //Send data
                 if (connection.getDoOutput()) {
                     OutputStream outputStream = connection.getOutputStream();
@@ -62,8 +61,9 @@ public class DefaultHttpHandler implements IHttpHandler {
                 }
 
                 //Recieve data
+                int responseCode = connection.getResponseCode();
                 if(connection.getDoInput()) {
-                    InputStream inputStream = connection.getInputStream();
+                    InputStream inputStream = responseCode == 200 ? connection.getInputStream() : connection.getErrorStream();
                     try {
                         //TODO do in other thread?
                         responseHandler.onResponse(responseCode, inputStream);
