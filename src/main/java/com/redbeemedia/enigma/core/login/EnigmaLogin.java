@@ -2,9 +2,7 @@ package com.redbeemedia.enigma.core.login;
 
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.error.Error;
-import com.redbeemedia.enigma.core.http.IHttpConnection;
 import com.redbeemedia.enigma.core.http.IHttpHandler;
-import com.redbeemedia.enigma.core.http.IHttpPreparator;
 import com.redbeemedia.enigma.core.json.JsonInputStreamParser;
 import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.util.UrlPath;
@@ -13,9 +11,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class EnigmaLogin {
     private String customerUnit;
@@ -33,38 +32,15 @@ public class EnigmaLogin {
         URL loginUrl = loginRequest.getTargetUrl(url).toURL();
 
         IHttpHandler httpHandler = EnigmaRiverContext.getHttpHandler();
-        httpHandler.doHttp(loginUrl, new IHttpPreparator() {
-            @Override
-            public void prepare(IHttpConnection connection) {
-                //loginRequest.prepare(connection);
-                //TODO add common stuff
-                //TODO set timeout params etc
-                connection.setHeader("Content-Type", "application/json");
-                connection.setHeader("Accept", "application/json");
-            }
-
-            @Override
-            public String getRequestMethod() {
-                return "POST";
-            }
-
-            @Override
-            public void writeBodyTo(OutputStream outputStream) {
-
-            }
-        }, new ApiLoginResponseHandler(loginRequest));
+        httpHandler.doHttp(loginUrl, loginRequest, new ApiLoginResponseHandler(loginRequest));
     }
 
     /*package-protected*/ UrlPath getBusinessUnitBaseUrl(UrlPath baseUrl) throws MalformedURLException {
         return baseUrl.append("v1/customer").append(customerUnit).append("businessunit").append(businessUnit);
     }
 
-    /*package-protected*/ ISession buildSession(JSONObject jsonObject) {
-        //TODO maybe have this method.
-        return null;
-    }
-
-    private static class ApiLoginResponseHandler implements IHttpHandler.IHttpResponseHandler {
+    //TODO Try to break out this and add unit tests. (If we don't do any logic (like parsing) here then don't refactor out)
+    private class ApiLoginResponseHandler implements IHttpHandler.IHttpResponseHandler {
         private ILoginRequest loginRequest;
 
         public ApiLoginResponseHandler(ILoginRequest loginRequest) {
@@ -77,19 +53,57 @@ public class EnigmaLogin {
 
             ILoginResultHandler resultHandler = loginRequest.getResultHandler();
 
+            if(code != HttpsURLConnection.HTTP_OK) {
+                throw new RuntimeException("httpcode: "+code);
+//                resultHandler.onError(Error.TODO);
+//                return;
+            }
+
             try {
-                JSONObject response = new JsonInputStreamParser().parse(inputStream); //TODO reuse parser instance
+                //TODO reuse parser instance
+                JSONObject response = new JsonInputStreamParser().parse(inputStream);
                 //TODO parse data for creating a session
+                String sessionToken = response.getString("sessionToken");
+
                 //TODO then create a session object and feed it to resultHandler
+                ISession session = new TempSessionImpl(sessionToken);
+                resultHandler.onSuccess(session);
             } catch (JSONException e) {
-                //TODO log error?
-                resultHandler.onError(Error.FAILED_TO_PARSE_RESPONSE_JSON);
+                throw new RuntimeException(e);
+//                //TODO log error?
+//                //TODO provide way to actually get the exception that caused this in the result handler?
+//                resultHandler.onError(Error.FAILED_TO_PARSE_RESPONSE_JSON);
             }
         }
 
         @Override
         public void onResponse(int code) {
-            //TODO error
+            ILoginResultHandler resultHandler = loginRequest.getResultHandler();
+            resultHandler.onError(Error.EMPTY_RESPONSE);
+        }
+    }
+
+    //TODO refactor out this class
+    private class TempSessionImpl implements ISession {
+        private String sessionToken;
+
+        public TempSessionImpl(String sessionToken) {
+            this.sessionToken = sessionToken;
+        }
+
+        @Override
+        public String getSessionToken() {
+            return sessionToken;
+        }
+
+        @Override
+        public String getCustomerUnitName() {
+            return customerUnit;
+        }
+
+        @Override
+        public String getBusinessUnitName() {
+            return businessUnit;
         }
     }
 }

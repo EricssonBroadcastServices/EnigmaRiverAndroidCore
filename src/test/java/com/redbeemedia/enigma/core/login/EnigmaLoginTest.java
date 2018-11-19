@@ -25,11 +25,11 @@ public class EnigmaLoginTest {
         MockHttpHandler mockHandler = new MockHttpHandler();
         MockEnigmaRiverContext.resetInitialize(new EnigmaRiverContext.EnigmaRiverContextInitialization().setExposureBaseUrl("https://example.com:8081").setHttpHandler(mockHandler));
         EnigmaLogin enigmaLogin = new EnigmaLogin("cU", "bU");
-        enigmaLogin.login(new MockLoginRequest());
+        enigmaLogin.login(new MockLoginRequest().addHeader("MockHeader","mocked"));
 
         List<String> mockHandlerLog = mockHandler.getLog();
         Assert.assertEquals(1,mockHandlerLog.size());
-        Assert.assertEquals("POST to https://psempexposureapi.ebsd.ericsson.net/v1/customer/cU/businessunit/bU/auth/mock {headers { Content-Type : application/json,Accept : application/json,}body { }}", mockHandlerLog.get(0));
+        Assert.assertEquals("POST to https://example.com:8081/v1/customer/cU/businessunit/bU/auth/mock {headers { MockHeader : mocked,}body { }}", mockHandlerLog.get(0));
     }
 
     @Test
@@ -41,7 +41,7 @@ public class EnigmaLoginTest {
 
         List<String> mockHandlerLog = mockHandler.getLog();
         Assert.assertEquals(1,mockHandlerLog.size());
-        Assert.assertEquals("POST to https://psempexposureapi.ebsd.ericsson.net/v1/customer/dev/businessunit/enigma/auth/login {headers { Content-Type : application/json,Accept : application/json,}body { }}", mockHandlerLog.get(0));
+        Assert.assertEquals("POST to https://example.com:8081/v1/customer/dev/businessunit/enigma/auth/login {headers { Content-Type : application/json,Accept : application/json,}body { {\"deviceId\":\"9159b635e19ff412\",\"device\":{\"height\":1794,\"width\":1080,\"model\":\"Android SDK built for x86\",\"name\":\"\",\"os\":\"Android\",\"osVersion\":\"9\",\"manufacturer\":\"Google\",\"deviceId\":\"9159b635e19ff412\",\"type\":\"MOBILE\"},\"rememberMe\":true,\"username\":\"user\",\"password\":\"password\"}}}", mockHandlerLog.get(0));
     }
 
 }

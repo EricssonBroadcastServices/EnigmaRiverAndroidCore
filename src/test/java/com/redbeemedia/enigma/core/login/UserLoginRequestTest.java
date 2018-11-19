@@ -2,17 +2,29 @@ package com.redbeemedia.enigma.core.login;
 
 import com.redbeemedia.enigma.core.util.UrlPath;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 public class UserLoginRequestTest {
     @Test
-    public void testUserLoginRequest() {
+    public void testUserLoginRequestBody() throws IOException, JSONException {
         UserLoginRequest userLoginRequest = new UserLoginRequest("matte", "secret_pass", new MockLoginResultHandler());
-        //TODO
+
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        userLoginRequest.writeBodyTo(byteArrayOutputStream);
+        JSONObject bodyJson = new JSONObject(new String(byteArrayOutputStream.toByteArray(), "utf-8"));
+
+        Assert.assertEquals("matte", bodyJson.getString("username"));
+        Assert.assertEquals("secret_pass", bodyJson.getString("password"));
+        Assert.assertTrue(bodyJson.has("deviceId"));
     }
 
 

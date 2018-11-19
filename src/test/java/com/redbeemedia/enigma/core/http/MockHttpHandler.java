@@ -1,5 +1,6 @@
 package com.redbeemedia.enigma.core.http;
 
+import java.io.ByteArrayOutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,21 +11,29 @@ public class MockHttpHandler implements IHttpHandler {
 
     @Override
     public void doHttp(URL url, IHttpPreparator preparator, IHttpResponseHandler response) {
-        MockHttpConnection mockHttpConnection = new MockHttpConnection();
-        preparator.prepare(mockHttpConnection);
-        StringBuilder logBuilder = new StringBuilder();
-        logBuilder.append("POST to ");
-        logBuilder.append(url.toString());
-        logBuilder.append(" {");
-        logBuilder.append("headers { ");
-        for(Map.Entry<String, String> header : mockHttpConnection.getHeaders().entrySet()) {
-            logBuilder.append(header.getKey()).append(" : ").append(header.getValue()).append(",");
+        try {
+            MockHttpConnection mockHttpConnection = new MockHttpConnection();
+            preparator.prepare(mockHttpConnection);
+            StringBuilder logBuilder = new StringBuilder();
+            logBuilder.append(preparator.getRequestMethod()+" to ");
+            logBuilder.append(url.toString());
+            logBuilder.append(" {");
+            logBuilder.append("headers { ");
+            for (Map.Entry<String, String> header : mockHttpConnection.getHeaders().entrySet()) {
+                logBuilder.append(header.getKey()).append(" : ").append(header.getValue()).append(",");
+            }
+            logBuilder.append("}");
+            logBuilder.append("body { ");
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            preparator.writeBodyTo(byteArrayOutputStream);
+            logBuilder.append(new String(byteArrayOutputStream.toByteArray(), "utf-8"));
+            logBuilder.append("}");
+            logBuilder.append("}");
+            log.add(logBuilder.toString());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        logBuilder.append("}");
-        logBuilder.append("body { ");
-        logBuilder.append("}");
-        logBuilder.append("}");
-        log.add(logBuilder.toString());
+
     }
 
     public List<String> getLog() {
