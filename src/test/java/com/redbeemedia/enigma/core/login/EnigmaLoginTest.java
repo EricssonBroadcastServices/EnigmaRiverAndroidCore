@@ -23,7 +23,7 @@ public class EnigmaLoginTest {
     @Test
     public void testLogin() throws MalformedURLException {
         MockHttpHandler mockHandler = new MockHttpHandler();
-        MockEnigmaRiverContext.resetInitialize(new EnigmaRiverContext.EnigmaRiverContextInitialization().setHttpHandler(mockHandler));
+        MockEnigmaRiverContext.resetInitialize(new EnigmaRiverContext.EnigmaRiverContextInitialization().setExposureBaseUrl("https://example.com:8081").setHttpHandler(mockHandler));
         EnigmaLogin enigmaLogin = new EnigmaLogin("cU", "bU");
         enigmaLogin.login(new MockLoginRequest());
 
@@ -35,7 +35,7 @@ public class EnigmaLoginTest {
     @Test
     public void testLoginWithUserLogin() throws MalformedURLException {
         MockHttpHandler mockHandler = new MockHttpHandler();
-        MockEnigmaRiverContext.resetInitialize(new EnigmaRiverContext.EnigmaRiverContextInitialization().setHttpHandler(mockHandler));
+        MockEnigmaRiverContext.resetInitialize(new EnigmaRiverContext.EnigmaRiverContextInitialization().setExposureBaseUrl("https://example.com:8081").setHttpHandler(mockHandler));
         EnigmaLogin enigmaLogin = new EnigmaLogin("dev", "enigma");
         enigmaLogin.login(new UserLoginRequest("user", "password", new MockLoginResultHandler()));
 
