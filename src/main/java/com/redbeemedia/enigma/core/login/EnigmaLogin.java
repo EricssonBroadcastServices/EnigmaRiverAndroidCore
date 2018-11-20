@@ -5,6 +5,7 @@ import com.redbeemedia.enigma.core.error.Error;
 import com.redbeemedia.enigma.core.http.IHttpHandler;
 import com.redbeemedia.enigma.core.json.JsonInputStreamParser;
 import com.redbeemedia.enigma.core.session.ISession;
+import com.redbeemedia.enigma.core.session.Session;
 import com.redbeemedia.enigma.core.util.UrlPath;
 
 import org.json.JSONException;
@@ -65,8 +66,7 @@ public class EnigmaLogin {
                 //TODO parse data for creating a session
                 String sessionToken = response.getString("sessionToken");
 
-                //TODO then create a session object and feed it to resultHandler
-                ISession session = new TempSessionImpl(sessionToken);
+                ISession session = new Session(sessionToken, customerUnit, businessUnit);
                 resultHandler.onSuccess(session);
             } catch (JSONException e) {
                 throw new RuntimeException(e);
@@ -80,30 +80,6 @@ public class EnigmaLogin {
         public void onResponse(int code) {
             ILoginResultHandler resultHandler = loginRequest.getResultHandler();
             resultHandler.onError(Error.EMPTY_RESPONSE);
-        }
-    }
-
-    //TODO refactor out this class
-    private class TempSessionImpl implements ISession {
-        private String sessionToken;
-
-        public TempSessionImpl(String sessionToken) {
-            this.sessionToken = sessionToken;
-        }
-
-        @Override
-        public String getSessionToken() {
-            return sessionToken;
-        }
-
-        @Override
-        public String getCustomerUnitName() {
-            return customerUnit;
-        }
-
-        @Override
-        public String getBusinessUnitName() {
-            return businessUnit;
         }
     }
 }

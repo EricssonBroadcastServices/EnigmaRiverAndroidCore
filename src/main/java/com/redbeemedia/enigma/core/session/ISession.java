@@ -1,6 +1,8 @@
 package com.redbeemedia.enigma.core.session;
 
-public interface ISession {
+import android.os.Parcelable;
+
+public interface ISession extends Parcelable {
     String getSessionToken();
     String getCustomerUnitName();
     String getBusinessUnitName();
