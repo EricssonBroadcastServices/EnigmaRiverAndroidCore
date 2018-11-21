@@ -3,6 +3,9 @@ package com.redbeemedia.enigma.core.session;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
+import com.redbeemedia.enigma.core.util.UrlPath;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -36,6 +39,11 @@ public class Session implements ISession {
     @Override
     public String getBusinessUnitName() {
         return businessUnit;
+    }
+
+    @Override
+    public UrlPath getApiBaseUrl() {
+        return EnigmaRiverContext.getExposureBaseUrl().append("v1/customer").append(custumerUnit).append("businessunit").append(businessUnit);
     }
 
     @Override

@@ -3,8 +3,14 @@ package com.redbeemedia.enigma.core.session;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
+import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
+
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class SessionTest {
     @Test
@@ -13,6 +19,13 @@ public class SessionTest {
         byte[] data = serializeParcelable(session);
         Session retrievedSession = deserializeParcelable(data, Session.CREATOR);
         Assert.assertSame(session, retrievedSession);
+    }
+
+    @Test
+    public void testBaseUrl() throws MalformedURLException {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setExposureBaseUrl("http://www.fakeurl.fake"));
+        Session session = new Session("sessionToken", "sfhsjrt", "x357srhsh");
+        Assert.assertEquals(new URL("http://www.fakeurl.fake/v1/customer/sfhsjrt/businessunit/x357srhsh"), session.getApiBaseUrl().toURL());
     }
 
     private static byte[] serializeParcelable(Parcelable parcelable) {
