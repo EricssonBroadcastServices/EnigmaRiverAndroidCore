@@ -2,6 +2,7 @@ package com.redbeemedia.enigma.core.login;
 
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.http.IHttpHandler;
 import com.redbeemedia.enigma.core.json.JsonInputStreamParser;
 import com.redbeemedia.enigma.core.session.ISession;
@@ -49,13 +50,13 @@ public class EnigmaLogin {
         }
 
         @Override
-        public void onResponse(int code, InputStream inputStream) {
+        public void onResponse(HttpStatus httpStatus, InputStream inputStream) {
             //TODO check if we can construct a session and if that is the case, call loginRequest.onSuccess
 
             ILoginResultHandler resultHandler = loginRequest.getResultHandler();
 
-            if(code != HttpsURLConnection.HTTP_OK) {
-                throw new RuntimeException("httpcode: "+code);
+            if(httpStatus.code != HttpsURLConnection.HTTP_OK) {
+                throw new RuntimeException("httpcode: "+httpStatus.code);
 //                resultHandler.onError(Error.TODO);
 //                return;
             }
@@ -77,7 +78,7 @@ public class EnigmaLogin {
         }
 
         @Override
-        public void onResponse(int code) {
+        public void onResponse(HttpStatus status) {
             ILoginResultHandler resultHandler = loginRequest.getResultHandler();
             resultHandler.onError(Error.EMPTY_RESPONSE);
         }

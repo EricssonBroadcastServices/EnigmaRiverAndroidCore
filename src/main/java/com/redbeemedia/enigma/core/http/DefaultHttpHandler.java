@@ -61,17 +61,17 @@ public class DefaultHttpHandler implements IHttpHandler {
                 }
 
                 //Recieve data
-                int responseCode = connection.getResponseCode();
+                HttpStatus responseHttpStatus = new HttpStatus(connection.getResponseCode(), connection.getResponseMessage());
                 if(connection.getDoInput()) {
-                    InputStream inputStream = responseCode == 200 ? connection.getInputStream() : connection.getErrorStream();
+                    InputStream inputStream = responseHttpStatus.code == 200 ? connection.getInputStream() : connection.getErrorStream();
                     try {
                         //TODO do in other thread?
-                        responseHandler.onResponse(responseCode, inputStream);
+                        responseHandler.onResponse(responseHttpStatus, inputStream);
                     } finally {
                         inputStream.close();
                     }
                 } else {
-                    responseHandler.onResponse(responseCode);
+                    responseHandler.onResponse(responseHttpStatus);
                 }
             } catch (IOException e) {
                 //TODO callback to something instead? With error?

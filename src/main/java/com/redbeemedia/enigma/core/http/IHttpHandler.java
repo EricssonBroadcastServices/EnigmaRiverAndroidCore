@@ -7,7 +7,7 @@ public interface IHttpHandler {
     void doHttp(URL url, IHttpPreparator preparator, IHttpResponseHandler responseHandler);
 
     interface IHttpResponseHandler {
-        void onResponse(int code, InputStream inputStream);
-        void onResponse(int code);
+        void onResponse(HttpStatus httpStatus, InputStream inputStream);
+        void onResponse(HttpStatus httpStatus);
     }
 }
