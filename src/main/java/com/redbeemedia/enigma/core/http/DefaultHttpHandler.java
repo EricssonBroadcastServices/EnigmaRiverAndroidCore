@@ -45,7 +45,9 @@ public class DefaultHttpHandler implements IHttpHandler {
                     }
                 });
                 connection.setRequestMethod(preparator.getRequestMethod());
-                connection.setDoOutput(true); //Maybe the request-method should do this? TODO add Tests for these
+                if("POST".equalsIgnoreCase(connection.getRequestMethod())) {
+                    connection.setDoOutput(true); //Maybe the request-method should do this? TODO add Tests for these
+                }
 
                 //Do the call
                 connection.connect();
