@@ -3,6 +3,7 @@ package com.redbeemedia.enigma.core.login;
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.error.Error;
 import com.redbeemedia.enigma.core.http.HttpStatus;
+import com.redbeemedia.enigma.core.error.ExposureHttpError;
 import com.redbeemedia.enigma.core.http.IHttpHandler;
 import com.redbeemedia.enigma.core.json.JsonInputStreamParser;
 import com.redbeemedia.enigma.core.session.ISession;
@@ -55,24 +56,26 @@ public class EnigmaLogin {
 
             ILoginResultHandler resultHandler = loginRequest.getResultHandler();
 
-            if(httpStatus.code != HttpsURLConnection.HTTP_OK) {
-                throw new RuntimeException("httpcode: "+httpStatus.code);
-//                resultHandler.onError(Error.TODO);
-//                return;
-            }
-
             try {
                 JSONObject response = JsonInputStreamParser.obtain().parse(inputStream);
-                //TODO parse data for creating a session
-                String sessionToken = response.getString("sessionToken");
+                if (ExposureHttpError.isError(httpStatus.code)) {
+                    ExposureHttpError httpError = ExposureHttpError.getHttpError(response);
+                    if (httpError.getHttpCode() == HttpsURLConnection.HTTP_BAD_REQUEST) {
 
-                ISession session = new Session(sessionToken, customerUnit, businessUnit);
-                resultHandler.onSuccess(session);
+                    } else if (httpError.getHttpCode() == HttpsURLConnection.HTTP_UNAUTHORIZED) {
+                        resultHandler.onError(Error.INCORRECT_CREDENTIALS);
+                    } else if (httpError.getHttpCode() == HttpsURLConnection.HTTP_NOT_FOUND) {
+                        resultHandler.onError(Error.UNKNOWN_ASSET);
+                    }
+                } else if (httpStatus.code == HttpsURLConnection.HTTP_OK) {
+                    String sessionToken = response.getString("sessionToken");
+                    ISession session = new Session(sessionToken, customerUnit, businessUnit);
+                    resultHandler.onSuccess(session);
+                } else {
+                    resultHandler.onError(Error.NETWORK_ERROR);
+                }
             } catch (JSONException e) {
-                throw new RuntimeException(e);
-//                //TODO log error?
-//                //TODO provide way to actually get the exception that caused this in the result handler?
-//                resultHandler.onError(Error.FAILED_TO_PARSE_RESPONSE_JSON);
+                resultHandler.onError(Error.FAILED_TO_PARSE_RESPONSE_JSON);
             }
         }
 
@@ -80,6 +83,11 @@ public class EnigmaLogin {
         public void onResponse(HttpStatus status) {
             ILoginResultHandler resultHandler = loginRequest.getResultHandler();
             resultHandler.onError(Error.EMPTY_RESPONSE);
+        }
+
+        @Override
+        public void onException(Exception e) {
+            //TODO: handle exception
         }
     }
 }
