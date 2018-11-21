@@ -11,7 +11,7 @@ import java.nio.charset.Charset;
 public class JsonInputStreamParserTest {
     @Test
     public void testJsonParsing() throws JSONException {
-        JsonInputStreamParser jsonInputStreamParser = new JsonInputStreamParser();
+        JsonInputStreamParser jsonInputStreamParser = JsonInputStreamParser.obtain();
 
         ByteArrayInputStream bais = new ByteArrayInputStream("{\"test\": \"value\", \"other\": 123}".getBytes(Charset.forName("utf-8")));
         JSONObject jsonObject = jsonInputStreamParser.parse(bais);

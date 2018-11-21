@@ -8,6 +8,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 public class JsonInputStreamParser {
+    private static JsonInputStreamParser instance = new JsonInputStreamParser();
+
+    private JsonInputStreamParser() {
+    }
+
     public JSONObject parse(InputStream inputStream) throws JSONException {
         StringBuilder strResponse = new StringBuilder();
         try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"))) {
@@ -19,5 +24,9 @@ public class JsonInputStreamParser {
             throw new RuntimeException(ex);
         }
         return new JSONObject(strResponse.toString());
+    }
+
+    public static JsonInputStreamParser obtain() {
+        return instance;
     }
 }

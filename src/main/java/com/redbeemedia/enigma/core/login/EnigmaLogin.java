@@ -62,8 +62,7 @@ public class EnigmaLogin {
             }
 
             try {
-                //TODO reuse parser instance
-                JSONObject response = new JsonInputStreamParser().parse(inputStream);
+                JSONObject response = JsonInputStreamParser.obtain().parse(inputStream);
                 //TODO parse data for creating a session
                 String sessionToken = response.getString("sessionToken");
 
