@@ -36,6 +36,5 @@ public class UserLoginRequestTest {
         UserLoginRequest userLoginRequest = new UserLoginRequest("matte", "secret_pass", new MockLoginResultHandler());
         UrlPath simpleBase = new UrlPath("https://myfakeurl.ericsson.com/api/v5/");
         Assert.assertEquals(new URL("https://myfakeurl.ericsson.com/api/v5/auth/login"), userLoginRequest.getTargetUrl(simpleBase).toURL());
-
     }
 }

@@ -8,6 +8,8 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import javax.net.ssl.HttpsURLConnection;
+
 public class DefaultHttpHandler implements IHttpHandler {
     @Override
     public void doHttp(URL url, IHttpPreparator preparator, IHttpResponseHandler responseHandler) {
@@ -76,9 +78,7 @@ public class DefaultHttpHandler implements IHttpHandler {
                     responseHandler.onResponse(responseHttpStatus);
                 }
             } catch (IOException e) {
-                //TODO callback to something instead? With error?
-
-                throw new RuntimeException(e);
+                responseHandler.onException(e);
             }
         }
     }
