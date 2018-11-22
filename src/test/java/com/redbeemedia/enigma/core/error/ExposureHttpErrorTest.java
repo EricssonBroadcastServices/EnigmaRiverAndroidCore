@@ -1,30 +1,25 @@
 package com.redbeemedia.enigma.core.error;
 
-import com.redbeemedia.enigma.core.json.JsonInputStreamParser;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.Charset;
-
 public class ExposureHttpErrorTest {
 
     @Test
     public void testGetHttpError() throws JSONException {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("message", "UNKNOWN_BUSINESS_UNIT. If the business unit cannot be found.");
+        jsonObject.put("httpCode", 404);
+        ExposureHttpError exposureHttpError = ExposureHttpError.getHttpError(jsonObject);
+        Assert.assertEquals(404, exposureHttpError.getHttpCode());
+        Assert.assertEquals("UNKNOWN_BUSINESS_UNIT. If the business unit cannot be found.", exposureHttpError.getMessage());
+    }
 
-        JsonInputStreamParser jsonInputStreamParser = JsonInputStreamParser.obtain();
-
-        ByteArrayInputStream bais = new ByteArrayInputStream("{\"message\": \"UNKNOWN_BUSINESS_UNIT. If the business unit cannot be found.\", \"httpCode\": 404}".getBytes(Charset.forName("utf-8")));
-        JSONObject jsonObject = jsonInputStreamParser.parse(bais);
-
-        JSONObject expectedJsonObject = new JSONObject();
-        expectedJsonObject.put("message", "UNKNOWN_BUSINESS_UNIT. If the business unit cannot be found.");
-        expectedJsonObject.put("httpCode", 404);
-
-        Assert.assertEquals(expectedJsonObject.toString(),jsonObject.toString());
-
+    @Test
+    public void testIsError() {
+        Assert.assertTrue(ExposureHttpError.isError(408));
+        Assert.assertFalse(ExposureHttpError.isError(300));
     }
 }
