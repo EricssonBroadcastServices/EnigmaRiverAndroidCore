@@ -12,7 +12,7 @@ public class ExposureHttpErrorTest {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("message", "UNKNOWN_BUSINESS_UNIT. If the business unit cannot be found.");
         jsonObject.put("httpCode", 404);
-        ExposureHttpError exposureHttpError = ExposureHttpError.getHttpError(jsonObject);
+        ExposureHttpError exposureHttpError = new ExposureHttpError(jsonObject);
         Assert.assertEquals(404, exposureHttpError.getHttpCode());
         Assert.assertEquals("UNKNOWN_BUSINESS_UNIT. If the business unit cannot be found.", exposureHttpError.getMessage());
     }

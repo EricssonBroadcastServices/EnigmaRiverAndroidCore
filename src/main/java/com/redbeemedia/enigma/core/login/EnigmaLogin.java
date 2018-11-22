@@ -2,8 +2,8 @@ package com.redbeemedia.enigma.core.login;
 
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.error.Error;
-import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.error.ExposureHttpError;
+import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.http.IHttpHandler;
 import com.redbeemedia.enigma.core.json.JsonInputStreamParser;
 import com.redbeemedia.enigma.core.session.ISession;
@@ -59,13 +59,15 @@ public class EnigmaLogin {
             try {
                 JSONObject response = JsonInputStreamParser.obtain().parse(inputStream);
                 if (ExposureHttpError.isError(httpStatus.code)) {
-                    ExposureHttpError httpError = ExposureHttpError.getHttpError(response);
+                    ExposureHttpError httpError = new ExposureHttpError(response);
                     if (httpError.getHttpCode() == HttpsURLConnection.HTTP_BAD_REQUEST) {
-
+                        throw new RuntimeException("TODO"); //TODO
                     } else if (httpError.getHttpCode() == HttpsURLConnection.HTTP_UNAUTHORIZED) {
                         resultHandler.onError(Error.INCORRECT_CREDENTIALS);
                     } else if (httpError.getHttpCode() == HttpsURLConnection.HTTP_NOT_FOUND) {
                         resultHandler.onError(Error.UNKNOWN_ASSET);
+                    } else {
+                        resultHandler.onError(Error.UNEXPECTED_ERROR);
                     }
                 } else if (httpStatus.code == HttpsURLConnection.HTTP_OK) {
                     String sessionToken = response.getString("sessionToken");

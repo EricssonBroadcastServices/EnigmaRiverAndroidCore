@@ -1,5 +1,6 @@
 package com.redbeemedia.enigma.core.error;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -8,9 +9,9 @@ public class ExposureHttpError {
     private int httpCode;
     private String message;
 
-    ExposureHttpError(int httpCode, String message) {
-        this.httpCode = httpCode;
-        this.message = message;
+    public ExposureHttpError(JSONObject errorJSONObject) throws JSONException {
+        this.httpCode = errorJSONObject.getInt("httpCode");
+        this.message = errorJSONObject.optString("message");
     }
 
     public int getHttpCode() {
@@ -19,10 +20,6 @@ public class ExposureHttpError {
 
     public String getMessage() {
         return message;
-    }
-
-    public static ExposureHttpError getHttpError(JSONObject errorJSONObject) {
-        return new ExposureHttpError(errorJSONObject.optInt("httpCode"), errorJSONObject.optString("message"));
     }
 
     //TODO: change name
