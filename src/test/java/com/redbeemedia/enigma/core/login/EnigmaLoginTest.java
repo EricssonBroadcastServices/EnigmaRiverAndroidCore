@@ -2,7 +2,11 @@ package com.redbeemedia.enigma.core.login;
 
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
+import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.http.MockHttpHandler;
+import com.redbeemedia.enigma.core.testutil.Flag;
+import com.redbeemedia.enigma.core.util.IHandler;
 import com.redbeemedia.enigma.core.util.UrlPath;
 
 import org.json.JSONException;
@@ -12,6 +16,7 @@ import org.junit.Test;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 public class EnigmaLoginTest {
@@ -65,4 +70,41 @@ public class EnigmaLoginTest {
         Assert.assertTrue(body.has("deviceId"));
     }
 
+
+    @Test
+    public void testCallbackHandler() throws MalformedURLException {
+        MockHttpHandler mockHttpHandler = new MockHttpHandler();
+        mockHttpHandler.queueResponse(new HttpStatus(200, "OK"));
+        mockHttpHandler.queueResponse(new IllegalStateException());
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setExposureBaseUrl("https://example.com:8081").setHttpHandler(mockHttpHandler));
+
+        MockHandler handler = new MockHandler();
+        EnigmaLogin enigmaLogin = new EnigmaLogin("test", "test").setCallbackHandler(handler);
+
+        final Flag onErrorCalled = new Flag();
+        enigmaLogin.login(new UserLoginRequest("tester", "test", new MockLoginResultHandler() {
+            @Override
+            public void onError(Error error) {
+                onErrorCalled.setFlag();
+            }
+        }));
+
+        Assert.assertEquals(1, handler.runnables.size());
+        Assert.assertFalse(onErrorCalled.isTrue());
+        handler.runnables.get(0).run();
+        Assert.assertTrue(onErrorCalled.isTrue());
+
+        enigmaLogin.login(new MockLoginRequest());
+        Assert.assertEquals(2, handler.runnables.size());
+        handler.runnables.get(1).run();
+    }
+
+    private static class MockHandler implements IHandler {
+        private List<Runnable> runnables = new ArrayList<>();
+        @Override
+        public boolean post(Runnable runnable) {
+            runnables.add(runnable);
+            return true;
+        }
+    }
 }
