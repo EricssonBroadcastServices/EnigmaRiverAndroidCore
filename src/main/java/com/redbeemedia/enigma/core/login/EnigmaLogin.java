@@ -20,6 +20,7 @@ import java.net.URL;
 import javax.net.ssl.HttpsURLConnection;
 
 public class EnigmaLogin {
+
     private String customerUnit;
     private String businessUnit;
 
@@ -27,7 +28,6 @@ public class EnigmaLogin {
         this.customerUnit = customerUnit;
         this.businessUnit = businessUnit;
     }
-
 
     public void login(final ILoginRequest loginRequest) throws MalformedURLException {
         UrlPath url = getBusinessUnitBaseUrl(EnigmaRiverContext.getExposureBaseUrl());
@@ -61,7 +61,17 @@ public class EnigmaLogin {
                 if (ExposureHttpError.isError(httpStatus.code)) {
                     ExposureHttpError httpError = new ExposureHttpError(response);
                     if (httpError.getHttpCode() == HttpsURLConnection.HTTP_BAD_REQUEST) {
-                        throw new RuntimeException("TODO"); //TODO
+                        if (httpError.getMessage().equals("DEVICE_LIMIT_EXCEEDED")) {
+                            resultHandler.onError(Error.DEVICE_LIMIT_EXCEEDED);
+                        } else if (httpError.getMessage().equals("SESSION_LIMIT_EXCEEDED")) {
+                            resultHandler.onError(Error.SESSION_LIMIT_EXCEEDED);
+                        } else if (httpError.getMessage().equals("UNKNOWN_DEVICE_ID")) {
+                            resultHandler.onError(Error.UNKNOWN_DEVICE_ID);
+                        } else if (httpError.getMessage().equals("INVALID_JSON")) {
+                            resultHandler.onError(Error.INVALID_JSON);
+                        } else {
+                            resultHandler.onError(Error.NETWORK_ERROR);
+                        }
                     } else if (httpError.getHttpCode() == HttpsURLConnection.HTTP_UNAUTHORIZED) {
                         resultHandler.onError(Error.INCORRECT_CREDENTIALS);
                     } else if (httpError.getHttpCode() == HttpsURLConnection.HTTP_NOT_FOUND) {

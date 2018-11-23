@@ -19,7 +19,7 @@ public class ExposureHttpErrorTest {
 
     @Test
     public void testIsError() {
-        Assert.assertTrue(ExposureHttpError.isError(408));
+        Assert.assertTrue(ExposureHttpError.isError(404));
         Assert.assertFalse(ExposureHttpError.isError(300));
     }
 }
