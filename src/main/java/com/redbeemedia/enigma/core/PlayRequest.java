@@ -1,5 +1,7 @@
 package com.redbeemedia.enigma.core;
 
+import com.redbeemedia.enigma.core.error.Error;
+
 public class PlayRequest implements IPlayRequest {
     private IPlayable playable;
 
@@ -12,8 +14,8 @@ public class PlayRequest implements IPlayRequest {
     }
 
     @Override
-    public void onError(String errorMessage) {
-        throw new RuntimeException(errorMessage);
+    public void onError(Error error) {
+        throw new RuntimeException(error.toString()); //TODO
     }
 
     @Override

@@ -8,6 +8,7 @@ public class Error {
     public static final Error INCORRECT_CREDENTIALS = new Error(ErrorType.NetworkError,"Underlying CRM does not accept the given credentials");
     public static final Error UNKNOWN_ASSET = new Error(ErrorType.NetworkError,"The asset was not found");
     public static final Error UNEXPECTED_ERROR = new Error(ErrorType.UnknownError,"Something went wrong");
+    public static final Error TODO = new Error(ErrorType.UnknownError, "PLACEHOLDER ERROR"); //TODO remove
 
     private String message;
     private ErrorType errorType;
@@ -23,7 +24,7 @@ public class Error {
 
     public ErrorType getErrorType() { return errorType; }
 
-   public enum ErrorType {
+   public enum ErrorType { //TODO have better types
         NetworkError,
         JsonError,
        UnknownError,
