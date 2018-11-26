@@ -20,12 +20,12 @@ public class MockHttpHandler implements IHttpHandler {
     private List<String> log = new ArrayList<>();
 
     @Override
-    public void doHttp(URL url, IHttpPreparator preparator, IHttpResponseHandler response) {
+    public void doHttp(URL url, IHttpCall httpCall, IHttpResponseHandler response) {
         try {
             MockHttpConnection mockHttpConnection = new MockHttpConnection();
-            preparator.prepare(mockHttpConnection);
+            httpCall.prepare(mockHttpConnection);
             JSONObject logEntry = new JSONObject();
-            logEntry.put("method", preparator.getRequestMethod());
+            logEntry.put("method", httpCall.getRequestMethod());
             logEntry.put("url", url.toString());
             JSONObject headerMap = new JSONObject();
             for (Map.Entry<String, String> header : mockHttpConnection.getHeaders().entrySet()) {
@@ -33,11 +33,11 @@ public class MockHttpHandler implements IHttpHandler {
             }
             logEntry.put("headers", headerMap);
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            preparator.writeBodyTo(byteArrayOutputStream);
+            httpCall.writeBodyTo(byteArrayOutputStream);
             logEntry.put("body", new String(byteArrayOutputStream.toByteArray(), "utf-8"));
             log.add(logEntry.toString());
             if(!responses.isEmpty()) {
-                responses.poll().doHttp(url, preparator, response);
+                responses.poll().doHttp(url, httpCall, response);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
