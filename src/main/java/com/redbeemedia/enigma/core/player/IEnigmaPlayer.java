@@ -1,4 +1,4 @@
-package com.redbeemedia.enigma.core;
+package com.redbeemedia.enigma.core.player;
 
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
 
