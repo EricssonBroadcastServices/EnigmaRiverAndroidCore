@@ -1,9 +1,5 @@
 package com.redbeemedia.enigma.core.login;
 
-import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
-import com.redbeemedia.enigma.core.util.device.DeviceInfo;
-import com.redbeemedia.enigma.core.util.device.IDeviceInfo;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -23,12 +19,9 @@ public class UserLoginRequest extends AbstractLoginRequest implements ILoginRequ
 
     @Override
     public void writeBodyTo(OutputStream outputStream) throws IOException {
-        IDeviceInfo deviceInfo = EnigmaRiverContext.getDeviceInfo();
-
         try {
             JSONObject body = new JSONObject();
-            body.put("deviceId", deviceInfo.getDeviceId());
-            body.put("device", DeviceInfo.getDeviceInfoJson(deviceInfo));
+            addDeviceAndDeviceId(body);
             body.put("username", username);
             body.put("password", password);
 

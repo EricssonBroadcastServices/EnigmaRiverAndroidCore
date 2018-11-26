@@ -1,7 +1,13 @@
 package com.redbeemedia.enigma.core.login;
 
+import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.http.IHttpConnection;
 import com.redbeemedia.enigma.core.util.UrlPath;
+import com.redbeemedia.enigma.core.util.device.DeviceInfo;
+import com.redbeemedia.enigma.core.util.device.IDeviceInfo;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.net.MalformedURLException;
 
@@ -35,5 +41,11 @@ import java.net.MalformedURLException;
     public void prepare(IHttpConnection connection) {
         connection.setHeader("Content-Type", "application/json");
         connection.setHeader("Accept", "application/json");
+    }
+
+    protected void addDeviceAndDeviceId(JSONObject jsonObject) throws JSONException {
+        IDeviceInfo deviceInfo = EnigmaRiverContext.getDeviceInfo();
+        jsonObject.put("deviceId", deviceInfo.getDeviceId());
+        jsonObject.put("device", DeviceInfo.getDeviceInfoJson(deviceInfo));
     }
 }
