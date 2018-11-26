@@ -1,6 +1,7 @@
-package com.redbeemedia.enigma.core;
+package com.redbeemedia.enigma.core.playrequest;
 
 import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.playable.IPlayable;
 
 public class PlayRequest implements IPlayRequest {
     private IPlayable playable;

@@ -1,5 +1,8 @@
-package com.redbeemedia.enigma.core;
+package com.redbeemedia.enigma.core.player;
 
+import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
+import com.redbeemedia.enigma.core.playable.IPlayable;
+import com.redbeemedia.enigma.core.playable.IPlayableHandler;
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.error.Error;
 import com.redbeemedia.enigma.core.http.AuthenticatedExposureApiCall;
@@ -16,7 +19,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 
-//TODO finish the work in this class
 public class EnigmaPlayer implements IEnigmaPlayer {
     private ISession session;
     private IPlayerImplementation playerImplementation;
@@ -29,12 +31,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     @Override
     public void play(IPlayRequest playRequest) {
         IPlayable playable = playRequest.getPlayable();
-        if(playable == null) {
-            playRequest.onError(Error.TODO); //TODO (throw exception? This error/excep stems from the fact that a playerRequest was implemented incorrectly)
-                                             //      Actually, it might make sense to just call playable.useWith and let it throw the appropriate NullPointerEx.
-        } else {
-            playable.useWith(new PlayableHandler(playRequest));
-        }
+        playable.useWith(new PlayableHandler(playRequest));
     }
 
     private class PlayableHandler implements IPlayableHandler {
@@ -50,6 +47,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             try {
                 url = session.getApiBaseUrl().append("entitlement").append(assetId).append("play").toURL();
             } catch (MalformedURLException e) {
+                //TODO invalid assetID
                 throw new RuntimeException(e);
             }
             JSONObject apiRequestBody = new JSONObject(); //TODO get capabilities from playerImplementation
@@ -94,8 +92,6 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         public void startUsingUrl(URL url) {
             //TODO handle callbacks to IPlayRequest
             playerImplementation.startPlayback(url.toString());
-//            playRequest.onError("Not yet implemented");
-            //TODO or should we throw an exception here?
         }
     }
 }

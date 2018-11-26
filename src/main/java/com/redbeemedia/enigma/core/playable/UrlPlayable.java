@@ -1,4 +1,4 @@
-package com.redbeemedia.enigma.core;
+package com.redbeemedia.enigma.core.playable;
 
 import java.net.MalformedURLException;
 import java.net.URL;
