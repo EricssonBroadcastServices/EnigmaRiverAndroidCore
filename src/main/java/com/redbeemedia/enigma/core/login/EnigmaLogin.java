@@ -78,7 +78,7 @@ public class EnigmaLogin {
                     } else if (httpError.getHttpCode() == HttpsURLConnection.HTTP_UNAUTHORIZED) {
                         resultHandler.onError(Error.INCORRECT_CREDENTIALS);
                     } else if (httpError.getHttpCode() == HttpsURLConnection.HTTP_NOT_FOUND) {
-                        resultHandler.onError(Error.UNKNOWN_ASSET);
+                        resultHandler.onError(Error.UNKNOWN_BUSINESS_UNIT);
                     } else {
                         resultHandler.onError(Error.UNEXPECTED_ERROR);
                     }
