@@ -1,5 +1,7 @@
 package com.redbeemedia.enigma.core.login;
 
+import android.os.Handler;
+
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.error.Error;
 import com.redbeemedia.enigma.core.error.ExposureHttpError;
@@ -8,6 +10,9 @@ import com.redbeemedia.enigma.core.http.IHttpHandler;
 import com.redbeemedia.enigma.core.json.JsonInputStreamParser;
 import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.session.Session;
+import com.redbeemedia.enigma.core.util.HandlerWrapper;
+import com.redbeemedia.enigma.core.util.IHandler;
+import com.redbeemedia.enigma.core.util.ProxyCallback;
 import com.redbeemedia.enigma.core.util.UrlPath;
 
 import org.json.JSONException;
@@ -22,10 +27,20 @@ import javax.net.ssl.HttpsURLConnection;
 public class EnigmaLogin {
     private String customerUnit;
     private String businessUnit;
+    private IHandler callbackHandler = null;
 
     public EnigmaLogin(String customerUnit, String businessUnit) {
         this.customerUnit = customerUnit;
         this.businessUnit = businessUnit;
+    }
+
+    public EnigmaLogin setCallbackHandler(IHandler handler) {
+        this.callbackHandler = handler;
+        return this;
+    }
+
+    public EnigmaLogin setCallbackHandler(Handler handler) {
+        return this.setCallbackHandler(new HandlerWrapper(handler));
     }
 
 
@@ -52,9 +67,7 @@ public class EnigmaLogin {
 
         @Override
         public void onResponse(HttpStatus httpStatus, InputStream inputStream) {
-            //TODO check if we can construct a session and if that is the case, call loginRequest.onSuccess
-
-            ILoginResultHandler resultHandler = loginRequest.getResultHandler();
+            ILoginResultHandler resultHandler = getResultHandler();
 
             try {
                 JSONObject response = JsonInputStreamParser.obtain().parse(inputStream);
@@ -83,13 +96,22 @@ public class EnigmaLogin {
 
         @Override
         public void onResponse(HttpStatus status) {
-            ILoginResultHandler resultHandler = loginRequest.getResultHandler();
+            ILoginResultHandler resultHandler = getResultHandler();
             resultHandler.onError(Error.EMPTY_RESPONSE);
         }
 
         @Override
         public void onException(Exception e) {
-            //TODO: handle exception
+            ILoginResultHandler resultHandler = getResultHandler();
+            resultHandler.onError(Error.NETWORK_ERROR);
+        }
+
+        private ILoginResultHandler getResultHandler() {
+            if(callbackHandler != null) {
+                return ProxyCallback.createCallbackOnThread(callbackHandler, ILoginResultHandler.class, loginRequest.getResultHandler());
+            } else {
+                return loginRequest.getResultHandler();
+            }
         }
     }
 }

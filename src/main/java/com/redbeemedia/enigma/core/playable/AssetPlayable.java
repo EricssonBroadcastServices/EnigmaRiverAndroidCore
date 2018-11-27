@@ -1,4 +1,4 @@
-package com.redbeemedia.enigma.core;
+package com.redbeemedia.enigma.core.playable;
 
 public class AssetPlayable implements IPlayable {
     private String assetId;
