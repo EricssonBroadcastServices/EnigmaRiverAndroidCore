@@ -1,14 +1,17 @@
 package com.redbeemedia.enigma.core.player;
 
-import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
-import com.redbeemedia.enigma.core.playable.IPlayable;
-import com.redbeemedia.enigma.core.playable.IPlayableHandler;
+import android.util.Pair;
+
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.ExposureHttpError;
 import com.redbeemedia.enigma.core.http.AuthenticatedExposureApiCall;
 import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.json.JsonInputStreamParser;
 import com.redbeemedia.enigma.core.json.JsonResponseHandler;
+import com.redbeemedia.enigma.core.playable.IPlayable;
+import com.redbeemedia.enigma.core.playable.IPlayableHandler;
+import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
 import com.redbeemedia.enigma.core.session.ISession;
 
 import org.json.JSONException;
@@ -17,6 +20,8 @@ import org.json.JSONObject;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class EnigmaPlayer implements IEnigmaPlayer {
@@ -47,7 +52,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             try {
                 url = session.getApiBaseUrl().append("entitlement").append(assetId).append("play").toURL();
             } catch (MalformedURLException e) {
-                //TODO invalid assetID
+                //TODO invalid assetID error
                 throw new RuntimeException(e);
             }
             JSONObject apiRequestBody = new JSONObject(); //TODO get capabilities from playerImplementation
@@ -55,34 +60,21 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                 apiRequestBody.put("drm", "UNENCRYPTED");
                 apiRequestBody.put("format", "DASH");
             } catch (JSONException e) {
-                playRequest.onError(Error.TODO); //TODO Internal error?
+                playRequest.onError(Error.UNEXPECTED_ERROR);
                 return;
             }
             AuthenticatedExposureApiCall apiCall = new AuthenticatedExposureApiCall("POST", session, apiRequestBody);
-            EnigmaRiverContext.getHttpHandler().doHttp(url, apiCall, new JsonResponseHandler() {
-                {
-                    IHttpCodeHandler errorHandler = new IHttpCodeHandler() {
-                        @Override
-                        public void onResponse(HttpStatus httpStatus, InputStream inputStream) {
-                            try {
-                                JSONObject jsonObject = JsonInputStreamParser.obtain().parse(inputStream);
-                                //TODO
-                            } catch (JSONException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-                    };
-                    handleErrorCode(403, errorHandler);
-                    handleErrorCode(400, errorHandler);
-                }
+            EnigmaRiverContext.getHttpHandler().doHttp(url, apiCall, new PlayResponseHandler() {
                 @Override
                 protected void onError(Error error) {
-                    throw new RuntimeException(error.getMessage()); //TODO
+                    playRequest.onError(error);
                 }
 
                 @Override
                 protected void onSuccess(JSONObject jsonObject) throws JSONException {
                     String manifestUrl = jsonObject.getString("mediaLocator");
+                    //TODO need to call onStarted on the playRequest at some point.
+                    //TODO here we also need to create a playback-session
                     playerImplementation.startPlayback(manifestUrl);
                 }
             });
@@ -93,5 +85,65 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             //TODO handle callbacks to IPlayRequest
             playerImplementation.startPlayback(url.toString());
         }
+    }
+
+    private abstract static class PlayResponseHandler extends JsonResponseHandler {
+        private JsonErrorMessageHandler jsonErrorMessageHandler = new JsonErrorMessageHandler();
+
+        public PlayResponseHandler() {
+            handleErrorCode(400, Error.UNEXPECTED_ERROR);
+            handleErrorCodeAndErrorMessage(401, "NO_SESSION_TOKEN", Error.UNEXPECTED_ERROR);
+            handleErrorCodeAndErrorMessage(401, "INVALID_SESSION_TOKEN", Error.INVALID_SESSION);
+
+            handleErrorCodeAndErrorMessage(403, "FORBIDDEN", Error.TODO); //TODO use 'incorrect bU' error
+            handleErrorCodeAndErrorMessage(403, "NOT_ENTITLED", Error.NOT_ENTITLED);
+            handleErrorCodeAndErrorMessage(403, "DEVICE_BLOCKED", Error.DEVICE_BLOCKED);
+            handleErrorCodeAndErrorMessage(403, "GEO_BLOCKED", Error.GEO_BLOCKED);
+            handleErrorCodeAndErrorMessage(403, "ANONYMOUS_IP_BLOCKED", Error.ANONYMOUS_IP_BLOCKED);
+            handleErrorCodeAndErrorMessage(403, "LICENSE_EXPIRED", Error.EXPIRED_ASSET);
+            handleErrorCodeAndErrorMessage(403, "NOT_AVAILABLE_IN_FORMAT", Error.UNEXPECTED_ERROR); //TODO When the playerImplementation provides capabilities, we can request those. If there are none available that we can play, we should send some kind of "supported formats for playerimplementation"
+            handleErrorCodeAndErrorMessage(403, "NOT_ENABLED", Error.NOT_ENABLED);
+            //TODO maybe a lot of these errors should be more generic, and then it's up to the
+            //app developer to check if the asset CAN be played before a play-call.
+            handleErrorCodeAndErrorMessage(403, "CONCURRENT_STREAMS_LIMIT_REACHED", Error.TOO_MANY_CONCURRENT_STREAMS);
+            handleErrorCodeAndErrorMessage(403, "CONCURRENT_STREAMS_TVOD_LIMIT_REACHED", Error.TOO_MANY_CONCURRENT_TVODS);
+            handleErrorCodeAndErrorMessage(403, "CONCURRENT_STREAMS_SVOD_LIMIT_REACHED", Error.TOO_MANY_CONCURRENT_SVODS);
+
+            //TODO change error for UNKNOWN_BUSINESS_UNIT to "invalid businessUnit" or something
+            handleErrorCodeAndErrorMessage(404, "UNKNOWN_BUSINESS_UNIT",Error.TODO);
+            //TODO change error for UNKNOWN_ASSET to "unknown asset" or something
+            handleErrorCodeAndErrorMessage(404, "UNKNOWN_ASSET",Error.TODO);
+
+            handleErrorCode(422, Error.UNEXPECTED_ERROR);
+        }
+
+        private void handleErrorCodeAndErrorMessage(int httpCode, String errorMessage, Error errorToUse) {
+            jsonErrorMessageHandler.handleErrorCodeAndErrorMessage(httpCode, errorMessage, errorToUse);
+            handleErrorCode(httpCode, jsonErrorMessageHandler);
+        }
+
+        private class JsonErrorMessageHandler implements IHttpCodeHandler {
+            private Map<Pair<Integer,String>, Error> errorMap = new HashMap<>();
+            @Override
+            public void onResponse(HttpStatus httpStatus, InputStream inputStream) {
+                try {
+                    JSONObject errorJson = JsonInputStreamParser.obtain().parse(inputStream);
+                    ExposureHttpError exposureHttpError = new ExposureHttpError(errorJson);
+                    Error errorToUse = errorMap.get(Pair.create(exposureHttpError.getHttpCode(), exposureHttpError.getMessage()));
+                    if(errorToUse != null) {
+                        onError(errorToUse);
+                    } else {
+                        onError(Error.UNEXPECTED_ERROR);
+                    }
+                } catch (JSONException e) {
+                    onError(Error.UNEXPECTED_ERROR);
+                }
+            }
+
+            private void handleErrorCodeAndErrorMessage(int httpCode, String errorMessage, Error errorToUse) {
+                errorMap.put(Pair.create(httpCode, errorMessage), errorToUse);
+            }
+        }
+
     }
 }

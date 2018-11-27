@@ -32,7 +32,7 @@ public abstract class JsonResponseHandler implements IHttpHandler.IHttpResponseH
     }
 
     @Override
-    public void onResponse(final HttpStatus status, InputStream inputStream) {
+    public void onResponse(HttpStatus status, InputStream inputStream) {
         IHttpCodeHandler httpCodeHandler = codeActions.get(status.code);
         if(httpCodeHandler != null) {
             httpCodeHandler.onResponse(status, inputStream);
@@ -77,7 +77,7 @@ public abstract class JsonResponseHandler implements IHttpHandler.IHttpResponseH
 
     @Override
     public void onException(Exception e) {
-        throw new RuntimeException(e); //TODO
+        onError(Error.UNEXPECTED_ERROR);
     }
 
     protected interface IHttpCodeHandler {
