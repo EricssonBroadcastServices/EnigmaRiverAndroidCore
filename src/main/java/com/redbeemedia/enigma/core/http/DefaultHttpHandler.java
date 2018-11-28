@@ -8,12 +8,11 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-
 public class DefaultHttpHandler implements IHttpHandler {
     @Override
-    public void doHttp(URL url, IHttpPreparator preparator, IHttpResponseHandler responseHandler) {
+    public void doHttp(URL url, IHttpCall httpCall, IHttpResponseHandler responseHandler) {
 
-        Runnable job = new HttpJob(url, preparator, responseHandler);
+        Runnable job = new HttpJob(url, httpCall, responseHandler);
         new AsyncTask<Runnable, Void, Void>() {
             @Override
             protected Void doInBackground(Runnable... runnables) {
@@ -25,12 +24,12 @@ public class DefaultHttpHandler implements IHttpHandler {
 
     private static class HttpJob implements Runnable {
         private URL url;
-        private IHttpPreparator preparator;
+        private IHttpCall httpCall;
         private IHttpResponseHandler responseHandler;
 
-        public HttpJob(URL url, IHttpPreparator preparator, IHttpResponseHandler responseHandler) {
+        public HttpJob(URL url, IHttpCall httpCall, IHttpResponseHandler responseHandler) {
             this.url = url;
-            this.preparator = preparator;
+            this.httpCall = httpCall;
             this.responseHandler = responseHandler;
         }
 
@@ -39,13 +38,13 @@ public class DefaultHttpHandler implements IHttpHandler {
             try {
                 final HttpURLConnection connection = ((HttpURLConnection) url.openConnection());
                 connection.setDoInput(true);
-                preparator.prepare(new IHttpConnection() {
+                httpCall.prepare(new IHttpConnection() {
                     @Override
                     public void setHeader(String name, String value) {
                         connection.setRequestProperty(name, value);
                     }
                 });
-                connection.setRequestMethod(preparator.getRequestMethod());
+                connection.setRequestMethod(httpCall.getRequestMethod());
                 if("POST".equalsIgnoreCase(connection.getRequestMethod())) {
                     connection.setDoOutput(true); //Maybe the request-method should do this? TODO add Tests for these
                 }
@@ -56,7 +55,7 @@ public class DefaultHttpHandler implements IHttpHandler {
                 if (connection.getDoOutput()) {
                     OutputStream outputStream = connection.getOutputStream();
                     try {
-                        preparator.writeBodyTo(outputStream);
+                        httpCall.writeBodyTo(outputStream);
                     } finally {
                         outputStream.flush();
                         outputStream.close();
@@ -68,7 +67,7 @@ public class DefaultHttpHandler implements IHttpHandler {
                 if(connection.getDoInput()) {
                     InputStream inputStream = responseHttpStatus.code == 200 ? connection.getInputStream() : connection.getErrorStream();
                     try {
-                        //TODO do in other thread?
+                        //This needs to be done synchronously since we are closing the inputStream after.
                         responseHandler.onResponse(responseHttpStatus, inputStream);
                     } finally {
                         inputStream.close();

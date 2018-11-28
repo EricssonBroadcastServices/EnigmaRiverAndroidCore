@@ -1,12 +1,14 @@
 package com.redbeemedia.enigma.core.context;
 
 import com.redbeemedia.enigma.core.http.IHttpHandler;
+import com.redbeemedia.enigma.core.http.MockHttpHandler;
 import com.redbeemedia.enigma.core.util.device.IDeviceInfo;
 import com.redbeemedia.enigma.core.util.device.MockDeviceInfo;
 
 public class MockEnigmaRiverContextInitialization extends EnigmaRiverContext.EnigmaRiverContextInitialization {
     public MockEnigmaRiverContextInitialization() {
         setDeviceInfo(new MockDeviceInfo());
+        setHttpHandler(new MockHttpHandler());
     }
 
     @Override
