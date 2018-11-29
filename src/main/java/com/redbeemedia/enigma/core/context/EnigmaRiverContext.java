@@ -50,7 +50,7 @@ public final class EnigmaRiverContext {
 
 
     public static class EnigmaRiverContextInitialization {
-        private IHttpHandler httpHandler = new DefaultHttpHandler();
+        private IHttpHandler httpHandler = null;
         //TODO remove this default path to prestage exposure.
         private String exposureBaseUrl = "https://psempexposureapi.ebsd.ericsson.net:443";
         private IDeviceInfo deviceInfo = null;
@@ -64,19 +64,24 @@ public final class EnigmaRiverContext {
             return this;
         }
 
-        public IHttpHandler getHttpHandler() {
+        public IHttpHandler getHttpHandler()
+        {
+            final IHttpHandler handler;
             if(httpHandler == null) {
-                throw new NullPointerException();
+                handler = new DefaultHttpHandler();
+            } else {
+                handler = httpHandler;
             }
-            return httpHandler;
+
+            return handler;
         }
 
-        public EnigmaRiverContextInitialization setHttpHandler(IHttpHandler httpHandler) {
+        public EnigmaRiverContextInitialization setHttpHandler(final IHttpHandler httpHandler) {
             this.httpHandler = httpHandler;
             return this;
         }
 
-        public IDeviceInfo getDeviceInfo(Application application) {
+        public IDeviceInfo getDeviceInfo(final Application application) {
             if(deviceInfo != null) {
                 return deviceInfo;
             } else {
@@ -84,7 +89,7 @@ public final class EnigmaRiverContext {
             }
         }
         
-        public EnigmaRiverContextInitialization setDeviceInfo(IDeviceInfo deviceInfo) {
+        public EnigmaRiverContextInitialization setDeviceInfo(final IDeviceInfo deviceInfo) {
             this.deviceInfo = deviceInfo;
             return this;
         }

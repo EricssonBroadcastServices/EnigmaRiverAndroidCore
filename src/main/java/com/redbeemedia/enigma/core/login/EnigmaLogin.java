@@ -71,7 +71,7 @@ public class EnigmaLogin {
 
             try {
                 JSONObject response = JsonInputStreamParser.obtain().parse(inputStream);
-                if (ExposureHttpError.isError(httpStatus.code)) {
+                if (ExposureHttpError.isError(httpStatus.getResponseCode())) {
                     ExposureHttpError httpError = new ExposureHttpError(response);
                     if (httpError.getHttpCode() == HttpsURLConnection.HTTP_BAD_REQUEST) {
                         throw new RuntimeException("TODO"); //TODO
@@ -82,7 +82,7 @@ public class EnigmaLogin {
                     } else {
                         resultHandler.onError(Error.UNEXPECTED_ERROR);
                     }
-                } else if (httpStatus.code == HttpsURLConnection.HTTP_OK) {
+                } else if (httpStatus.getResponseCode() == HttpsURLConnection.HTTP_OK) {
                     String sessionToken = response.getString("sessionToken");
                     ISession session = new Session(sessionToken, customerUnit, businessUnit);
                     resultHandler.onSuccess(session);
