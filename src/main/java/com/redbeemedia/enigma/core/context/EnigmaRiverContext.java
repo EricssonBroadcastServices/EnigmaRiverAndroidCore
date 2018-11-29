@@ -69,6 +69,7 @@ public final class EnigmaRiverContext {
             final IHttpHandler handler;
             if(httpHandler == null) {
                 handler = new DefaultHttpHandler();
+                httpHandler = handler;
             } else {
                 handler = httpHandler;
             }
