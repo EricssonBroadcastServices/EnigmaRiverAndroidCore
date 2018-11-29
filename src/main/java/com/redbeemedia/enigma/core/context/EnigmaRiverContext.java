@@ -66,15 +66,11 @@ public final class EnigmaRiverContext {
 
         public IHttpHandler getHttpHandler()
         {
-            final IHttpHandler handler;
             if(httpHandler == null) {
-                handler = new DefaultHttpHandler();
-                httpHandler = handler;
-            } else {
-                handler = httpHandler;
+                httpHandler = new DefaultHttpHandler();
             }
 
-            return handler;
+            return httpHandler;
         }
 
         public EnigmaRiverContextInitialization setHttpHandler(final IHttpHandler httpHandler) {
