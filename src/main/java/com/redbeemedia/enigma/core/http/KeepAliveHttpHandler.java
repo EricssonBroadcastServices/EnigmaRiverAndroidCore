@@ -60,9 +60,6 @@ public class KeepAliveHttpHandler implements IHttpHandler {
                        final IHttpCall httpCall,
                        final IHttpResponseHandler responseHandler)
     {
-        if (url == null || "http".startsWith(url.getProtocol())) {
-
-        }
         final URLConnectionRunnable runnable = new URLConnectionRunnable(url, httpCall, responseHandler);
         mService.execute(runnable);
     }
