@@ -71,6 +71,7 @@ public class EnigmaLogin {
             ILoginResultHandler resultHandler = getResultHandler();
 
             try {
+                //TODO: error text make it const
                 JSONObject response = JsonInputStreamParser.obtain().parse(inputStream);
                 if (ExposureHttpError.isError(httpStatus.getResponseCode())) {
                     ExposureHttpError httpError = new ExposureHttpError(response);
@@ -87,16 +88,28 @@ public class EnigmaLogin {
                             resultHandler.onError(Error.NETWORK_ERROR);
                         }
                     } else if (httpError.getHttpCode() == HttpsURLConnection.HTTP_UNAUTHORIZED) {
-                        resultHandler.onError(Error.INCORRECT_CREDENTIALS);
+                        if (httpError.getMessage().equals("INVALID_SESSION_TOKEN") || httpError.getMessage().equals("NO_SESSION_TOKEN")) {
+                            resultHandler.onError(Error.INVALID_SESSION_TOKEN);
+                        } else if (httpError.getMessage().equals("INCORRECT_CREDENTIALS")) {
+                            resultHandler.onError(Error.INCORRECT_CREDENTIALS);
+                        } else {
+                            resultHandler.onError(Error.NETWORK_ERROR);
+                        }
                     } else if (httpError.getHttpCode() == HttpsURLConnection.HTTP_NOT_FOUND) {
                         resultHandler.onError(Error.UNKNOWN_BUSINESS_UNIT);
                     } else {
                         resultHandler.onError(Error.UNEXPECTED_ERROR);
                     }
-                } else if (httpStatus.getResponseCode() == HttpsURLConnection.HTTP_OK) {
-                    String sessionToken = response.getString("sessionToken");
-                    ISession session = new Session(sessionToken, customerUnit, businessUnit);
-                    resultHandler.onSuccess(session);
+                } else if (httpStatus.code == HttpsURLConnection.HTTP_OK) {
+                    if (loginRequest instanceof ReLoginRequest) {
+                        ISession session = new Session(((ReLoginRequest) loginRequest).getSessionToken(), customerUnit, businessUnit);
+                        resultHandler.onSuccess(session);
+                    } else {
+                        String sessionToken = response.getString("sessionToken");
+                        ISession session = new Session(sessionToken, customerUnit, businessUnit);
+                        resultHandler.onSuccess(session);
+                    }
+
                 } else {
                     resultHandler.onError(Error.NETWORK_ERROR);
                 }
