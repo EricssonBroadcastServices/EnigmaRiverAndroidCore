@@ -9,12 +9,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 //TODO: change the name
-public class ReLoginRequestTest {
+public class ResumeLoginRequestTest {
 
     @Test
     public void testGetTargetUrl() throws MalformedURLException {
-        ReLoginRequest reLoginRequest = new ReLoginRequest("Bearer " + "sessionToken", new MockLoginResultHandler());
+        ResumeLoginRequest resumeLoginRequest = new ResumeLoginRequest("Bearer " + "sessionToken", new MockLoginResultHandler());
         UrlPath simpleBase = new UrlPath("https://myfakeurl.ericsson.com/api/v5/");
-        Assert.assertEquals(new URL("https://myfakeurl.ericsson.com/api/v5/auth/session"), reLoginRequest.getTargetUrl(simpleBase).toURL());
+        Assert.assertEquals(new URL("https://myfakeurl.ericsson.com/api/v5/auth/session"), resumeLoginRequest.getTargetUrl(simpleBase).toURL());
     }
 }
