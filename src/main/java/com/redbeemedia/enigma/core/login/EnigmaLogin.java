@@ -101,8 +101,8 @@ public class EnigmaLogin {
                         resultHandler.onError(Error.UNEXPECTED_ERROR);
                     }
                 } else if (httpStatus.code == HttpsURLConnection.HTTP_OK) {
-                    if (loginRequest instanceof ReLoginRequest) {
-                        ISession session = new Session(((ReLoginRequest) loginRequest).getSessionToken(), customerUnit, businessUnit);
+                    if (loginRequest instanceof ResumeLoginRequest) {
+                        ISession session = new Session(((ResumeLoginRequest) loginRequest).getSessionToken(), customerUnit, businessUnit);
                         resultHandler.onSuccess(session);
                     } else {
                         String sessionToken = response.getString("sessionToken");

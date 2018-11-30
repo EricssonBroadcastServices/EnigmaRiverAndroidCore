@@ -4,11 +4,10 @@ import com.redbeemedia.enigma.core.http.IHttpConnection;
 
 import java.io.OutputStream;
 
-//TODO: change the name
-public class ReLoginRequest extends AbstractLoginRequest implements ILoginRequest {
+public class ResumeLoginRequest extends AbstractLoginRequest implements ILoginRequest {
     private String sessionToken;
 
-    public ReLoginRequest(String sessionToken, ILoginResultHandler resultHandler) {
+    public ResumeLoginRequest(String sessionToken, ILoginResultHandler resultHandler) {
         super("auth/session", "GET", resultHandler);
         this.sessionToken = sessionToken;
     }
