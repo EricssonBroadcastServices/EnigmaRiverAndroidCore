@@ -137,15 +137,13 @@ public class KeepAliveHttpHandler implements IHttpHandler {
 
                     final InputStream bufferedStream = new BufferedInputStream(inputStream);
 
-                    try {
-                        mHandler.onResponse(status, bufferedStream);
-                    } finally {
-                        // Empty InputStream to be able to reuse it.
-                        // If the IHttpResponseHandler has not read the whole thing.
-                        if (inputStream.available() > 0) {
-                            final byte[] buffer = new byte[8 * 1024];
-                            while (inputStream.read(buffer) > -1) {}
-                        }
+                    mHandler.onResponse(status, bufferedStream);
+
+                    // Empty InputStream to be able to reuse it.
+                    // If the IHttpResponseHandler has not read the whole thing.
+                    if (inputStream.available() > 0) {
+                        final byte[] buffer = new byte[8 * 1024];
+                        while (inputStream.read(buffer) > -1) {}
                     }
 
                 } finally {
