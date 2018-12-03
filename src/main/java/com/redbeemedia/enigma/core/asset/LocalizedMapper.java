@@ -24,7 +24,11 @@ public class LocalizedMapper implements JsonMapper<Localized> {
     }
 
     @Override
-    public void map(final JsonReader jsonReader, final Localized localized, final int position) throws IOException {
+    public void map(final JsonReader jsonReader,
+                    final Localized localized,
+                    final int position)
+            throws IOException
+    {
         switch (jsonReader.nextName()) {
 
             case "locale":

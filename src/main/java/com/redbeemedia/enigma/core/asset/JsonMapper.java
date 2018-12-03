@@ -5,8 +5,11 @@ import android.util.JsonReader;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 public interface JsonMapper<Type> {
     public Type create();
@@ -84,6 +87,24 @@ public interface JsonMapper<Type> {
             jsonReader.endArray();
 
             return list;
+        }
+
+        public <Type> TreeSet<Type> mapTree(final TreeSet<Type> tree,
+                                            final JsonMapper<Type> mapper,
+                                            final JsonReader jsonReader)
+                throws IOException
+        {
+            jsonReader.beginArray();
+            for (int i = 0; jsonReader.hasNext(); i++) {
+                final Type object = mapObject(jsonReader, mapper, i);
+
+                if (object != null) {
+                    tree.add(object);
+                }
+            }
+            jsonReader.endArray();
+
+            return tree;
         }
 
         public <Type> ArrayList<Type> mapList(final JsonReader jsonReader, final JsonMapper<Type> mapper) throws IOException {
