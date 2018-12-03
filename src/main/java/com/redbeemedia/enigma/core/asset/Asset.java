@@ -9,7 +9,7 @@ import com.redbeemedia.enigma.core.playable.IPlayableHandler;
 
 import java.util.List;
 
-public class Asset implements Parcelable, IPlayable {
+public class Asset implements Parcelable {
 
     public enum Type {
         MOVIE,
@@ -48,13 +48,6 @@ public class Asset implements Parcelable, IPlayable {
     private String seasonId;
 
     public Asset() {
-    }
-
-    @Override
-    public void useWith(final IPlayableHandler playableHandler) {
-        if (!TextUtils.isEmpty(assetId)) {
-            playableHandler.startUsingAssetId(assetId);
-        }
     }
 
     public String getTvShowId() {

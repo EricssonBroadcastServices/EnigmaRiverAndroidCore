@@ -1,14 +1,19 @@
 package com.redbeemedia.enigma.core.playable;
 
-public class AssetPlayable implements IPlayable {
-    private String assetId;
+import android.text.TextUtils;
 
-    public AssetPlayable(String assetId) {
+public class AssetPlayable implements IPlayable {
+
+    private final String assetId;
+
+    public AssetPlayable(final String assetId) {
         this.assetId = assetId;
     }
 
     @Override
-    public void useWith(IPlayableHandler playableHandler) {
-        playableHandler.startUsingAssetId(assetId);
+    public void useWith(final IPlayableHandler playableHandler) {
+        if (!TextUtils.isEmpty(assetId)) {
+            playableHandler.startUsingAssetId(assetId);
+        }
     }
 }
