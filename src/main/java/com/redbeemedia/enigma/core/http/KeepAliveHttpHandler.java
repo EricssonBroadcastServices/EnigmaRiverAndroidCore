@@ -139,12 +139,19 @@ public class KeepAliveHttpHandler implements IHttpHandler {
 
                     mHandler.onResponse(status, bufferedStream);
 
+                    /// Robin Galmin - 2018.11.30
                     // Empty InputStream to be able to reuse it.
                     // If the IHttpResponseHandler has not read the whole thing.
-                    if (inputStream.available() > 0) {
-                        final byte[] buffer = new byte[8 * 1024];
-                        while (inputStream.read(buffer) > -1) {}
-                    }
+                    // if (inputStream.available() > 0) {
+                    //    final byte[] buffer = new byte[8 * 1024];
+                    //    while (inputStream.read(buffer) > -1) {}
+                    // }
+                    /// Robin Galmin - 2018.12.03
+                    // Because we don't know what is done to the InputStream in the
+                    // onResponse method I think it is to unstable to have this
+                    // I think it is better to let the application developer empty
+                    // the InputStream and the times they don't the socket will not
+                    // be able to be reused.
 
                 } finally {
                     // Disconnect instead of close on InputStream so that HttpURLConnection
