@@ -181,29 +181,4 @@ public class Localized implements Parcelable {
         }
     };
     // </editor-fold>
-
-    public interface LocalizedValue<Type> {
-        public Type get(final Localized localized);
-    }
-
-    public static final class Locate implements LocalizedValue<Localized> {
-        @Override
-        public Localized get(final Localized localized) {
-            return localized;
-        }
-    }
-
-    public static final class Title implements LocalizedValue<String> {
-        @Override
-        public String get(final Localized localized) {
-            return localized.title;
-        }
-    }
-
-    private static final class Description implements LocalizedValue<String> {
-        @Override
-        public String get(final Localized localized) {
-            return localized.description;
-        }
-    }
 }
