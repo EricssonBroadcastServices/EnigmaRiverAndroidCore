@@ -5,16 +5,14 @@ import android.util.JsonReader;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 public interface JsonMapper<Type> {
-    public Type create();
-    public void map(final JsonReader jsonReader, final Type type, final int position) throws IOException;
-    public Type onMapComplete(final Type type, final int position);
+    Type create();
+    void map(final JsonReader jsonReader, final Type type, final int position) throws IOException;
+    Type onMapComplete(final Type type, final int position);
 
     class Util {
 
