@@ -16,7 +16,7 @@ public interface JsonMapper<Type> {
     public void map(final JsonReader jsonReader, final Type type, final int position) throws IOException;
     public Type onMapComplete(final Type type, final int position);
 
-    public static class Util {
+    class Util {
 
         public List<String> mapStrings(final JsonReader jsonReader) throws IOException {
             final ArrayList<String> strings = new ArrayList<>();

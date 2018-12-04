@@ -1,6 +1,5 @@
 package com.redbeemedia.enigma.core.asset;
 
-import android.content.Context;
 import android.util.JsonReader;
 
 import java.io.IOException;
