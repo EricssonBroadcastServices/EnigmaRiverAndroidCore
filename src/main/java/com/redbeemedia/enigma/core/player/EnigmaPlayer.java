@@ -1,5 +1,6 @@
 package com.redbeemedia.enigma.core.player;
 
+import android.net.Uri;
 import android.util.Pair;
 
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
@@ -27,10 +28,16 @@ import java.util.Map;
 public class EnigmaPlayer implements IEnigmaPlayer {
     private ISession session;
     private IPlayerImplementation playerImplementation;
+    private IDrmPlayerImplementation drmImplementation;
 
-    public EnigmaPlayer(ISession session, IPlayerImplementation playerImplementation) {
+    public <T extends IPlayerImplementation & IDrmPlayerImplementation> EnigmaPlayer(final ISession session, final T player) {
+        this(session, player, player);
+    }
+
+    public EnigmaPlayer(ISession session, IPlayerImplementation playerImplementation,IDrmPlayerImplementation drmImplementation) {
         this.session = session;
         this.playerImplementation = playerImplementation;
+        this.drmImplementation = drmImplementation;
     }
 
     @Override
@@ -57,7 +64,8 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             }
             JSONObject apiRequestBody = new JSONObject(); //TODO get capabilities from playerImplementation
             try {
-                apiRequestBody.put("drm", "UNENCRYPTED");
+//                apiRequestBody.put("drm", "UNENCRYPTED");
+                apiRequestBody.put("drm", "CENC");
                 apiRequestBody.put("format", "DASH");
             } catch (JSONException e) {
                 playRequest.onError(Error.UNEXPECTED_ERROR);
@@ -72,10 +80,26 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
                 @Override
                 protected void onSuccess(JSONObject jsonObject) throws JSONException {
+                    ///TODO: getString optString
                     String manifestUrl = jsonObject.getString("mediaLocator");
-                    //TODO need to call onStarted on the playRequest at some point.
-                    //TODO here we also need to create a playback-session
-                    playerImplementation.startPlayback(manifestUrl);
+//                    playerImplementation.startPlayback(manifestUrl);
+
+                    //TODO; check format
+                    JSONObject configObject = jsonObject.getJSONObject("cencConfig");
+//
+//                    //TODO anuny poxel licenseUrl
+                    String certificateUrl = configObject.optString("com.widevine.alpha");
+                    String playToken = jsonObject.getString("playToken");
+//
+                    String licenseWithToken = Uri.parse(certificateUrl)
+                        .buildUpon()
+                        .appendQueryParameter("token", "Bearer " + playToken)
+                        .build().toString();
+
+//                    //TODO need to call onStarted on the playRequest at some point.
+//                    //TODO here we also need to create a playback-session
+                    String[] keyRequestPropertiesArray = createDrmKeyRequestPropertiesArray(playToken);
+                    drmImplementation.startPlaybackWithDrm(manifestUrl, licenseWithToken, keyRequestPropertiesArray);
                 }
             });
         }
@@ -84,6 +108,21 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         public void startUsingUrl(URL url) {
             //TODO handle callbacks to IPlayRequest
             playerImplementation.startPlayback(url.toString());
+        }
+
+        /*
+        TODO: do we need
+         */
+
+        private String[] createDrmKeyRequestPropertiesArray(String playToken) {
+            //TODO:do we need to check getSessionToken
+            if (playToken!= null) {
+                if (!playToken.isEmpty()) {
+                    return new String[]{"Authorization", "Bearer " + playToken};
+                }
+            }
+
+            return new String[]{};
         }
     }
 
