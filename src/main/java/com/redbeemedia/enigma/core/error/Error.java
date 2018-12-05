@@ -12,6 +12,7 @@ public class Error {
     public static final Error EMPTY_RESPONSE = new Error(ErrorType.UnknownError,"Empty response");
     public static final Error NETWORK_ERROR = new Error(ErrorType.NetworkError,"Network error");
     public static final Error INCORRECT_CREDENTIALS = new Error(ErrorType.NetworkError,"Underlying CRM does not accept the given credentials");
+    public static final Error INVALID_SESSION_TOKEN = new Error(ErrorType.NetworkError,"Session token is invalid");
     public static final Error UNKNOWN_BUSINESS_UNIT = new Error(ErrorType.NetworkError,null);
     public static final Error UNEXPECTED_ERROR = new Error(ErrorType.UnknownError,"Something went wrong");
     public static final Error TODO = new Error(ErrorType.UnknownError, "PLACEHOLDER ERROR"); //TODO remove
