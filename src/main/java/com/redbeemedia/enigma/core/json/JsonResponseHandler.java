@@ -33,7 +33,7 @@ public abstract class JsonResponseHandler implements IHttpHandler.IHttpResponseH
 
     @Override
     public void onResponse(HttpStatus status, InputStream inputStream) {
-        IHttpCodeHandler httpCodeHandler = codeActions.get(status.code);
+        IHttpCodeHandler httpCodeHandler = codeActions.get(status.getResponseCode());
         if(httpCodeHandler != null) {
             httpCodeHandler.onResponse(status, inputStream);
         } else {

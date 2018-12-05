@@ -65,7 +65,7 @@ public class DefaultHttpHandler implements IHttpHandler {
                 //Recieve data
                 HttpStatus responseHttpStatus = new HttpStatus(connection.getResponseCode(), connection.getResponseMessage());
                 if(connection.getDoInput()) {
-                    InputStream inputStream = responseHttpStatus.code == 200 ? connection.getInputStream() : connection.getErrorStream();
+                    InputStream inputStream = responseHttpStatus.getResponseCode() == 200 ? connection.getInputStream() : connection.getErrorStream();
                     try {
                         //This needs to be done synchronously since we are closing the inputStream after.
                         responseHandler.onResponse(responseHttpStatus, inputStream);

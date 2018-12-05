@@ -73,7 +73,7 @@ public class EnigmaLogin {
             try {
                 //TODO: error text make it const
                 JSONObject response = JsonInputStreamParser.obtain().parse(inputStream);
-                if (ExposureHttpError.isError(httpStatus.code)) {
+                if (ExposureHttpError.isError(httpStatus.getResponseCode())) {
                     ExposureHttpError httpError = new ExposureHttpError(response);
                     if (httpError.getHttpCode() == HttpsURLConnection.HTTP_BAD_REQUEST) {
                         if (httpError.getMessage().equals("DEVICE_LIMIT_EXCEEDED")) {
@@ -109,7 +109,6 @@ public class EnigmaLogin {
                         ISession session = new Session(sessionToken, customerUnit, businessUnit);
                         resultHandler.onSuccess(session);
                     }
-
                 } else {
                     resultHandler.onError(Error.NETWORK_ERROR);
                 }
