@@ -27,10 +27,12 @@ import java.util.Map;
 public class EnigmaPlayer implements IEnigmaPlayer {
     private ISession session;
     private IPlayerImplementation playerImplementation;
+    private EnigmaPlayerEnvironment environment = new EnigmaPlayerEnvironment();
 
     public EnigmaPlayer(ISession session, IPlayerImplementation playerImplementation) {
         this.session = session;
         this.playerImplementation = playerImplementation;
+        this.playerImplementation.install(environment);
     }
 
     @Override
@@ -144,6 +146,9 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                 errorMap.put(Pair.create(httpCode, errorMessage), errorToUse);
             }
         }
+    }
+
+    private class EnigmaPlayerEnvironment implements IEnigmaPlayerEnvironment {
 
     }
 }
