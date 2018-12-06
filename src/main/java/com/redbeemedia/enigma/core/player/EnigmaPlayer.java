@@ -29,6 +29,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     private ISession session;
     private IPlayerImplementation playerImplementation;
     private IDrmPlayerImplementation drmImplementation;
+    private EnigmaPlayerEnvironment environment = new EnigmaPlayerEnvironment();
 
     public <T extends IPlayerImplementation & IDrmPlayerImplementation> EnigmaPlayer(final ISession session, final T player) {
         this(session, player, player);
@@ -38,6 +39,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         this.session = session;
         this.playerImplementation = playerImplementation;
         this.drmImplementation = drmImplementation;
+        this.playerImplementation.install(environment);
     }
 
     @Override
@@ -183,6 +185,9 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                 errorMap.put(Pair.create(httpCode, errorMessage), errorToUse);
             }
         }
+    }
+
+    private class EnigmaPlayerEnvironment implements IEnigmaPlayerEnvironment {
 
     }
 }

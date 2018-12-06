@@ -28,13 +28,20 @@ public class EnigmaPlayerTest {
         final Flag startPlaybackCalled = new Flag();
         final Flag onErrorCalled = new Flag();
         final Flag useWithCalled = new Flag();
+        final Flag installCalled = new Flag();
         EnigmaPlayer enigmaPlayer = new EnigmaPlayer(new MockSession(), new IPlayerImplementation() {
+            @Override
+            public void install(IEnigmaPlayerEnvironment environment) {
+                installCalled.setFlag();
+            }
+
             @Override
             public void startPlayback(String url) {
                 startPlaybackCalled.setFlag();
             }
         });
         Assert.assertFalse(startPlaybackCalled.isTrue());
+        Assert.assertTrue(installCalled.isTrue());
         enigmaPlayer.play(new IPlayRequest() {
             @Override
             public void onStarted() {
