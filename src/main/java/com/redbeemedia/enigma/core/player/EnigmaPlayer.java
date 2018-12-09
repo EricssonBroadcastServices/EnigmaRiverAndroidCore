@@ -28,17 +28,11 @@ import java.util.Map;
 public class EnigmaPlayer implements IEnigmaPlayer {
     private ISession session;
     private IPlayerImplementation playerImplementation;
-    private IDrmPlayerImplementation drmImplementation;
     private EnigmaPlayerEnvironment environment = new EnigmaPlayerEnvironment();
 
-    public <T extends IPlayerImplementation & IDrmPlayerImplementation> EnigmaPlayer(final ISession session, final T player) {
-        this(session, player, player);
-    }
-
-    public EnigmaPlayer(ISession session, IPlayerImplementation playerImplementation,IDrmPlayerImplementation drmImplementation) {
+    public EnigmaPlayer(ISession session, IPlayerImplementation playerImplementation) {
         this.session = session;
         this.playerImplementation = playerImplementation;
-        this.drmImplementation = drmImplementation;
         this.playerImplementation.install(environment);
     }
 
@@ -84,24 +78,23 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                 protected void onSuccess(JSONObject jsonObject) throws JSONException {
                     ///TODO: getString optString
                     String manifestUrl = jsonObject.getString("mediaLocator");
-//                    playerImplementation.startPlayback(manifestUrl);
 
                     //TODO; check format
-                    JSONObject configObject = jsonObject.getJSONObject("cencConfig");
-//
-//                    //TODO anuny poxel licenseUrl
-                    String certificateUrl = configObject.optString("com.widevine.alpha");
-                    String playToken = jsonObject.getString("playToken");
-//
-                    String licenseWithToken = Uri.parse(certificateUrl)
-                        .buildUpon()
-                        .appendQueryParameter("token", "Bearer " + playToken)
-                        .build().toString();
+                    JSONObject configObject = jsonObject.optJSONObject("cencConfig");
+                    if (configObject != null) {
+                        String licenseUrl = configObject.optString("com.widevine.alpha");
+                        String playToken = jsonObject.optString("playToken");
+                        String licenseWithToken = Uri.parse(licenseUrl)
+                            .buildUpon()
+                            .appendQueryParameter("token", "Bearer " + playToken)
+                            .build().toString();
+                        DrmInfo drmInfo = new DrmInfo(licenseWithToken, playToken);
+                        environment.setDrmInfo(drmInfo);
+                    }
 
-//                    //TODO need to call onStarted on the playRequest at some point.
-//                    //TODO here we also need to create a playback-session
-                    String[] keyRequestPropertiesArray = createDrmKeyRequestPropertiesArray(playToken);
-                    drmImplementation.startPlaybackWithDrm(manifestUrl, licenseWithToken, keyRequestPropertiesArray);
+                    playerImplementation.startPlayback(manifestUrl);
+                    //TODO need to call onStarted on the playRequest at some point.
+                    //TODO here we also need to create a playback-session
                 }
             });
         }
@@ -110,21 +103,6 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         public void startUsingUrl(URL url) {
             //TODO handle callbacks to IPlayRequest
             playerImplementation.startPlayback(url.toString());
-        }
-
-        /*
-        TODO: do we need
-         */
-
-        private String[] createDrmKeyRequestPropertiesArray(String playToken) {
-            //TODO:do we need to check getSessionToken
-            if (playToken!= null) {
-                if (!playToken.isEmpty()) {
-                    return new String[]{"Authorization", "Bearer " + playToken};
-                }
-            }
-
-            return new String[]{};
         }
     }
 
@@ -187,7 +165,21 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         }
     }
 
-    private class EnigmaPlayerEnvironment implements IEnigmaPlayerEnvironment {
+    private class EnigmaPlayerEnvironment implements IEnigmaPlayerEnvironment, IDrmProvider {
+        private DrmInfo drmInfo;
 
+        @Override
+        public IDrmProvider getDrmProvider() {
+            return this;
+        }
+
+        public void setDrmInfo(DrmInfo drmInfo) {
+            this.drmInfo = drmInfo;
+        }
+
+        @Override
+        public DrmInfo getDrmInfo() {
+            return drmInfo;
+        }
     }
 }

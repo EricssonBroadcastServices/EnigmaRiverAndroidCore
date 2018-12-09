@@ -100,7 +100,7 @@ public class EnigmaLogin {
                     } else {
                         resultHandler.onError(Error.UNEXPECTED_ERROR);
                     }
-                } else if (httpStatus.code == HttpsURLConnection.HTTP_OK) {
+                } else if (httpStatus.getResponseCode() == HttpsURLConnection.HTTP_OK) {
                     if (loginRequest instanceof ResumeLoginRequest) {
                         ISession session = new Session(((ResumeLoginRequest) loginRequest).getSessionToken(), customerUnit, businessUnit);
                         resultHandler.onSuccess(session);
