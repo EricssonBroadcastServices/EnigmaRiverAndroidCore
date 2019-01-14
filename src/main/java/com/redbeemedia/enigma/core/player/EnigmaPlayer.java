@@ -1,7 +1,11 @@
 package com.redbeemedia.enigma.core.player;
 
+import android.app.Activity;
 import android.util.Pair;
 
+import com.redbeemedia.enigma.core.activity.AbstractActivityLifecycleListener;
+import com.redbeemedia.enigma.core.activity.IActivityLifecycleListener;
+import com.redbeemedia.enigma.core.activity.IActivityLifecycleManager;
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.error.Error;
 import com.redbeemedia.enigma.core.error.ExposureHttpError;
@@ -18,6 +22,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -28,11 +33,30 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     private ISession session;
     private IPlayerImplementation playerImplementation;
     private EnigmaPlayerEnvironment environment = new EnigmaPlayerEnvironment();
+    private WeakReference<Activity> weakActivity = new WeakReference<>(null);
+    private IActivityLifecycleListener activityLifecycleListener;
 
     public EnigmaPlayer(ISession session, IPlayerImplementation playerImplementation) {
         this.session = session;
         this.playerImplementation = playerImplementation;
         this.playerImplementation.install(environment);
+        this.activityLifecycleListener = new AbstractActivityLifecycleListener() {
+            @Override
+            public void onPause() {
+                playerImplementation.release();
+            }
+        };
+    }
+
+    public EnigmaPlayer setActivity(Activity activity) {
+        IActivityLifecycleManager lifecycleManager = EnigmaRiverContext.getActivityLifecycleManager();
+        Activity oldActivity = weakActivity.get();
+        if(oldActivity != null) {
+            lifecycleManager.remove(oldActivity, activityLifecycleListener);
+        }
+        lifecycleManager.add(activity, activityLifecycleListener);
+        //TODO should we allow switching activities?
+        return this;
     }
 
     @Override
@@ -149,6 +173,5 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     }
 
     private class EnigmaPlayerEnvironment implements IEnigmaPlayerEnvironment {
-
     }
 }
