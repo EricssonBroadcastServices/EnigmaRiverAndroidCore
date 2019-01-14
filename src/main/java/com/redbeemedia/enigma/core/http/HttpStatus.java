@@ -25,4 +25,9 @@ public class HttpStatus {
     public boolean isError() {
         return code != HttpURLConnection.HTTP_OK;
     }
+
+    @Override
+    public String toString() {
+        return new StringBuilder(String.valueOf(code)).append(" ").append(message).toString();
+    }
 }
