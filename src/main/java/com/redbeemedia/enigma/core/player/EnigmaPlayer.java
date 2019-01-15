@@ -55,6 +55,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             lifecycleManager.remove(oldActivity, activityLifecycleListener);
         }
         lifecycleManager.add(activity, activityLifecycleListener);
+        weakActivity = new WeakReference<>(activity);
         //TODO should we allow switching activities?
         return this;
     }
