@@ -1,5 +1,7 @@
 package com.redbeemedia.enigma.core.context;
 
+import com.redbeemedia.enigma.core.activity.IActivityLifecycleManagerFactory;
+import com.redbeemedia.enigma.core.activity.MockActivityLifecycleManagerFactory;
 import com.redbeemedia.enigma.core.http.IHttpHandler;
 import com.redbeemedia.enigma.core.http.MockHttpHandler;
 import com.redbeemedia.enigma.core.util.device.IDeviceInfo;
@@ -9,6 +11,7 @@ public class MockEnigmaRiverContextInitialization extends EnigmaRiverContext.Eni
     public MockEnigmaRiverContextInitialization() {
         setDeviceInfo(new MockDeviceInfo());
         setHttpHandler(new MockHttpHandler());
+        setActivityLifecycleManagerFactory(new MockActivityLifecycleManagerFactory());
     }
 
     @Override
@@ -24,5 +27,10 @@ public class MockEnigmaRiverContextInitialization extends EnigmaRiverContext.Eni
     @Override
     public MockEnigmaRiverContextInitialization setExposureBaseUrl(String exposureBaseUrl) {
         return (MockEnigmaRiverContextInitialization) super.setExposureBaseUrl(exposureBaseUrl);
+    }
+
+    @Override
+    public MockEnigmaRiverContextInitialization setActivityLifecycleManagerFactory(IActivityLifecycleManagerFactory activityLifecycleManagerFactory) {
+        return (MockEnigmaRiverContextInitialization) super.setActivityLifecycleManagerFactory(activityLifecycleManagerFactory);
     }
 }
