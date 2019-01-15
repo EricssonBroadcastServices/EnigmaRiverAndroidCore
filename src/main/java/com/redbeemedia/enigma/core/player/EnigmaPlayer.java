@@ -42,7 +42,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         this.playerImplementation.install(environment);
         this.activityLifecycleListener = new AbstractActivityLifecycleListener() {
             @Override
-            public void onPause() {
+            public void onDestroy() {
                 playerImplementation.release();
             }
         };

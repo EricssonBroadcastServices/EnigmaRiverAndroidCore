@@ -39,6 +39,10 @@ public class EnigmaPlayerTest {
             public void startPlayback(String url) {
                 startPlaybackCalled.setFlag();
             }
+
+            @Override
+            public void release() {
+            }
         });
         Assert.assertFalse(startPlaybackCalled.isTrue());
         Assert.assertTrue(installCalled.isTrue());
