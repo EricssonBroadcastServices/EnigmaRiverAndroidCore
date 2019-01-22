@@ -43,7 +43,12 @@ public class Session implements ISession {
 
     @Override
     public UrlPath getApiBaseUrl() {
-        return EnigmaRiverContext.getExposureBaseUrl().append("v1/customer").append(custumerUnit).append("businessunit").append(businessUnit);
+        return getApiBaseUrl("v1");
+    }
+
+    @Override
+    public UrlPath getApiBaseUrl(String apiVersion) {
+        return EnigmaRiverContext.getExposureBaseUrl().append(apiVersion).append("customer").append(custumerUnit).append("businessunit").append(businessUnit);
     }
 
     @Override

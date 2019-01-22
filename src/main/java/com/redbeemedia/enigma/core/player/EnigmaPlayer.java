@@ -18,6 +18,7 @@ import com.redbeemedia.enigma.core.playable.IPlayableHandler;
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
 import com.redbeemedia.enigma.core.session.ISession;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -77,20 +78,12 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         public void startUsingAssetId(String assetId) {
             URL url = null;
             try {
-                url = session.getApiBaseUrl().append("entitlement").append(assetId).append("play").toURL();
+                url = session.getApiBaseUrl("v2").append("entitlement").append(assetId).append("play").toURL();
             } catch (MalformedURLException e) {
                 //TODO invalid assetID error
                 throw new RuntimeException(e);
             }
-            JSONObject apiRequestBody = new JSONObject(); //TODO get capabilities from playerImplementation
-            try {
-                apiRequestBody.put("drm", "UNENCRYPTED");
-                apiRequestBody.put("format", "DASH");
-            } catch (JSONException e) {
-                playRequest.onError(Error.UNEXPECTED_ERROR);
-                return;
-            }
-            AuthenticatedExposureApiCall apiCall = new AuthenticatedExposureApiCall("POST", session, apiRequestBody);
+            AuthenticatedExposureApiCall apiCall = new AuthenticatedExposureApiCall("GET", session);
             EnigmaRiverContext.getHttpHandler().doHttp(url, apiCall, new PlayResponseHandler() {
                 @Override
                 protected void onError(Error error) {
@@ -99,10 +92,28 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
                 @Override
                 protected void onSuccess(JSONObject jsonObject) throws JSONException {
-                    String manifestUrl = jsonObject.getString("mediaLocator");
-                    //TODO need to call onStarted on the playRequest at some point.
-                    //TODO here we also need to create a playback-session
-                    playerImplementation.startPlayback(manifestUrl);
+                    JSONArray formats = jsonObject.getJSONArray("formats");
+                    boolean foundUsable = false;
+                    JSONObject usableMediaFormat = null;
+                    for(int i = 0; i < formats.length(); ++i) {
+                        JSONObject mediaFormat = formats.getJSONObject(i);
+                        String streamFormat = mediaFormat.getString("format");
+                        //TODO get capabilities from playerImplementation
+                        if("DASH".equals(streamFormat) && !mediaFormat.has("drm")) {
+                            foundUsable = true;
+                            usableMediaFormat = mediaFormat;
+                            break;
+                        }
+                    }
+                    if(foundUsable) {
+                        String manifestUrl = usableMediaFormat.getString("mediaLocator");
+                        //TODO need to call onStarted on the playRequest at some point.
+                        //TODO here we also need to create a playback-session
+                        playerImplementation.startPlayback(manifestUrl);
+                    } else {
+                        //TODO handle better?
+                        onError(Error.NO_SUPPORTED_MEDIAFORMAT_FOUND);
+                    }
                 }
             });
         }
