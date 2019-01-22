@@ -46,6 +46,11 @@ public class Session implements ISession {
         return EnigmaRiverContext.getExposureBaseUrl().append("v1/customer").append(custumerUnit).append("businessunit").append(businessUnit);
     }
 
+    //TODO refactor. Not part of public API
+    public UrlPath getApiBaseUrl(String apiVersion) {
+        return EnigmaRiverContext.getExposureBaseUrl().append(apiVersion).append("customer").append(custumerUnit).append("businessunit").append(businessUnit);
+    }
+
     @Override
     public int describeContents() {
         return 0;
