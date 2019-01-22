@@ -17,7 +17,6 @@ import com.redbeemedia.enigma.core.playable.IPlayable;
 import com.redbeemedia.enigma.core.playable.IPlayableHandler;
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
 import com.redbeemedia.enigma.core.session.ISession;
-import com.redbeemedia.enigma.core.session.Session;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -79,7 +78,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         public void startUsingAssetId(String assetId) {
             URL url = null;
             try {
-                url = ((Session) session).getApiBaseUrl("v2").append("entitlement").append(assetId).append("play").toURL();
+                url = session.getApiBaseUrl("v2").append("entitlement").append(assetId).append("play").toURL();
             } catch (MalformedURLException e) {
                 //TODO invalid assetID error
                 throw new RuntimeException(e);
