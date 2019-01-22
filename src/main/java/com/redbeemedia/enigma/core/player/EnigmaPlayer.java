@@ -91,7 +91,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                 playRequest.onError(Error.UNEXPECTED_ERROR);
                 return;
             }
-            AuthenticatedExposureApiCall apiCall = new AuthenticatedExposureApiCall("POST", session, apiRequestBody);
+            AuthenticatedExposureApiCall apiCall = new AuthenticatedExposureApiCall("GET", session, apiRequestBody);
             EnigmaRiverContext.getHttpHandler().doHttp(url, apiCall, new PlayResponseHandler() {
                 @Override
                 protected void onError(Error error) {
