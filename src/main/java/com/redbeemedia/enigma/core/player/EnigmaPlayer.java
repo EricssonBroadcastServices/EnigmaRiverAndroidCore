@@ -1,8 +1,12 @@
 package com.redbeemedia.enigma.core.player;
 
 import android.net.Uri;
+import android.app.Activity;
 import android.util.Pair;
 
+import com.redbeemedia.enigma.core.activity.AbstractActivityLifecycleListener;
+import com.redbeemedia.enigma.core.activity.IActivityLifecycleListener;
+import com.redbeemedia.enigma.core.activity.IActivityLifecycleManager;
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.error.Error;
 import com.redbeemedia.enigma.core.error.ExposureHttpError;
@@ -15,10 +19,12 @@ import com.redbeemedia.enigma.core.playable.IPlayableHandler;
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
 import com.redbeemedia.enigma.core.session.ISession;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -29,11 +35,31 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     private ISession session;
     private IPlayerImplementation playerImplementation;
     private EnigmaPlayerEnvironment environment = new EnigmaPlayerEnvironment();
+    private WeakReference<Activity> weakActivity = new WeakReference<>(null);
+    private IActivityLifecycleListener activityLifecycleListener;
 
     public EnigmaPlayer(ISession session, IPlayerImplementation playerImplementation) {
         this.session = session;
         this.playerImplementation = playerImplementation;
         this.playerImplementation.install(environment);
+        this.activityLifecycleListener = new AbstractActivityLifecycleListener() {
+            @Override
+            public void onDestroy() {
+                playerImplementation.release();
+            }
+        };
+    }
+
+    public EnigmaPlayer setActivity(Activity activity) {
+        IActivityLifecycleManager lifecycleManager = EnigmaRiverContext.getActivityLifecycleManager();
+        Activity oldActivity = weakActivity.get();
+        if(oldActivity != null) {
+            lifecycleManager.remove(oldActivity, activityLifecycleListener);
+        }
+        lifecycleManager.add(activity, activityLifecycleListener);
+        weakActivity = new WeakReference<>(activity);
+        //TODO should we allow switching activities?
+        return this;
     }
 
     @Override
@@ -53,21 +79,12 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         public void startUsingAssetId(String assetId) {
             URL url = null;
             try {
-                url = session.getApiBaseUrl().append("entitlement").append(assetId).append("play").toURL();
+                url = session.getApiBaseUrl("v2").append("entitlement").append(assetId).append("play").toURL();
             } catch (MalformedURLException e) {
                 //TODO invalid assetID error
                 throw new RuntimeException(e);
             }
-            JSONObject apiRequestBody = new JSONObject(); //TODO get capabilities from playerImplementation
-            try {
-//                apiRequestBody.put("drm", "UNENCRYPTED");
-                apiRequestBody.put("drm", "CENC");
-                apiRequestBody.put("format", "DASH");
-            } catch (JSONException e) {
-                playRequest.onError(Error.UNEXPECTED_ERROR);
-                return;
-            }
-            AuthenticatedExposureApiCall apiCall = new AuthenticatedExposureApiCall("POST", session, apiRequestBody);
+            AuthenticatedExposureApiCall apiCall = new AuthenticatedExposureApiCall("GET", session);
             EnigmaRiverContext.getHttpHandler().doHttp(url, apiCall, new PlayResponseHandler() {
                 @Override
                 protected void onError(Error error) {
@@ -76,10 +93,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
                 @Override
                 protected void onSuccess(JSONObject jsonObject) throws JSONException {
-                    ///TODO: getString optString
-                    String manifestUrl = jsonObject.getString("mediaLocator");
-
-                    //TODO; check format
+                    //TODO; use player impl capabilities
                     JSONObject configObject = jsonObject.optJSONObject("cencConfig");
                     if (configObject != null) {
                         String licenseUrl = configObject.optString("com.widevine.alpha");
@@ -92,9 +106,28 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                         environment.setDrmInfo(drmInfo);
                     }
 
-                    playerImplementation.startPlayback(manifestUrl);
-                    //TODO need to call onStarted on the playRequest at some point.
-                    //TODO here we also need to create a playback-session
+                    JSONArray formats = jsonObject.getJSONArray("formats");
+                    boolean foundUsable = false;
+                    JSONObject usableMediaFormat = null;
+                    for(int i = 0; i < formats.length(); ++i) {
+                        JSONObject mediaFormat = formats.getJSONObject(i);
+                        String streamFormat = mediaFormat.getString("format");
+                        //TODO get capabilities from playerImplementation
+                        if("DASH".equals(streamFormat) && !mediaFormat.has("drm")) {
+                            foundUsable = true;
+                            usableMediaFormat = mediaFormat;
+                            break;
+                        }
+                    }
+                    if(foundUsable) {
+                        String manifestUrl = usableMediaFormat.getString("mediaLocator");
+                        //TODO need to call onStarted on the playRequest at some point.
+                        //TODO here we also need to create a playback-session
+                        playerImplementation.startPlayback(manifestUrl);
+                    } else {
+                        //TODO handle better?
+                        onError(Error.NO_SUPPORTED_MEDIAFORMAT_FOUND);
+                    }
                 }
             });
         }

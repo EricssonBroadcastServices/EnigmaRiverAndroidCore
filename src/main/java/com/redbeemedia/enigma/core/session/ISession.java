@@ -9,4 +9,5 @@ public interface ISession extends Parcelable {
     String getCustomerUnitName();
     String getBusinessUnitName();
     UrlPath getApiBaseUrl();
+    UrlPath getApiBaseUrl(String apiVersion);
 }

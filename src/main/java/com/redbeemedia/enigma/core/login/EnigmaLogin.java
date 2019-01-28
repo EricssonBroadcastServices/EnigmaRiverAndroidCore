@@ -109,7 +109,6 @@ public class EnigmaLogin {
                         ISession session = new Session(sessionToken, customerUnit, businessUnit);
                         resultHandler.onSuccess(session);
                     }
-
                 } else {
                     resultHandler.onError(Error.NETWORK_ERROR);
                 }

@@ -11,6 +11,7 @@ import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
 import com.redbeemedia.enigma.core.session.MockSession;
 import com.redbeemedia.enigma.core.testutil.Flag;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -21,7 +22,12 @@ public class EnigmaPlayerTest {
     public void testPlayer() throws JSONException {
         MockHttpHandler mockHttpHandler = new MockHttpHandler();
         JSONObject response = new JSONObject();
-        response.put("mediaLocator", "https://media.example.com");
+        JSONArray formatArray = new JSONArray();
+        JSONObject mediaFormat = new JSONObject();
+        mediaFormat.put("mediaLocator", "https://media.example.com");
+        mediaFormat.put("format", "DASH");
+        formatArray.put(mediaFormat);
+        response.put("formats", formatArray);
         mockHttpHandler.queueResponse(new HttpStatus(200, "OK"), response.toString());
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(mockHttpHandler));
 
@@ -38,6 +44,10 @@ public class EnigmaPlayerTest {
             @Override
             public void startPlayback(String url) {
                 startPlaybackCalled.setFlag();
+            }
+
+            @Override
+            public void release() {
             }
         });
         Assert.assertFalse(startPlaybackCalled.isTrue());

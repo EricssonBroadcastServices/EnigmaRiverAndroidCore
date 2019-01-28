@@ -1,9 +1,9 @@
 package com.redbeemedia.enigma.core.context;
 
-import android.app.Activity;
 import android.app.Application;
-import android.os.Bundle;
 
+import com.redbeemedia.enigma.core.activity.IActivityLifecycleManager;
+import com.redbeemedia.enigma.core.activity.IActivityLifecycleManagerFactory;
 import com.redbeemedia.enigma.core.http.DefaultHttpHandler;
 import com.redbeemedia.enigma.core.http.IHttpHandler;
 import com.redbeemedia.enigma.core.util.UrlPath;
@@ -48,12 +48,18 @@ public final class EnigmaRiverContext {
         return initializedContext.deviceInfo;
     }
 
+    public static IActivityLifecycleManager getActivityLifecycleManager() {
+        //TODO assert initialized
+        return initializedContext.activityLifecycleManager;
+    }
+
 
     public static class EnigmaRiverContextInitialization {
         private IHttpHandler httpHandler = null;
         //TODO remove this default path to prestage exposure.
         private String exposureBaseUrl = "https://psempexposureapi.ebsd.ericsson.net:443";
         private IDeviceInfo deviceInfo = null;
+        private IActivityLifecycleManagerFactory activityLifecycleManagerFactory = new DefaultActivityLifecycleManagerFactory();
 
         public String getExposureBaseUrl() {
             return exposureBaseUrl;
@@ -90,56 +96,29 @@ public final class EnigmaRiverContext {
             this.deviceInfo = deviceInfo;
             return this;
         }
+
+        public EnigmaRiverContextInitialization setActivityLifecycleManagerFactory(IActivityLifecycleManagerFactory activityLifecycleManagerFactory) {
+            this.activityLifecycleManagerFactory = activityLifecycleManagerFactory;
+            return this;
+        }
+
+        public IActivityLifecycleManager getActivityLifecycleManager(Application application) {
+            return activityLifecycleManagerFactory.createActivityLifecycleManager(application);
+        }
     }
 
     private static class EnigmaRiverInitializedContext {
         private final UrlPath exposureBaseUrl;
         private final IHttpHandler httpHandler;
         private final IDeviceInfo deviceInfo;
+        private final IActivityLifecycleManager activityLifecycleManager;
 
         public EnigmaRiverInitializedContext(Application application, EnigmaRiverContextInitialization initialization) {
             try {
-                if(application != null) { //Note: Application is only allowed to be null when running unit tests.
-                    application.registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
-                        @Override
-                        public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
-
-                        }
-
-                        @Override
-                        public void onActivityStarted(Activity activity) {
-
-                        }
-
-                        @Override
-                        public void onActivityResumed(Activity activity) {
-
-                        }
-
-                        @Override
-                        public void onActivityPaused(Activity activity) {
-
-                        }
-
-                        @Override
-                        public void onActivityStopped(Activity activity) {
-
-                        }
-
-                        @Override
-                        public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
-
-                        }
-
-                        @Override
-                        public void onActivityDestroyed(Activity activity) {
-                            //TODO release proxies
-                        }
-                    });
-                }
                 this.exposureBaseUrl = new UrlPath(initialization.getExposureBaseUrl());
                 this.httpHandler = initialization.getHttpHandler();
                 this.deviceInfo = initialization.getDeviceInfo(application);
+                this.activityLifecycleManager = initialization.getActivityLifecycleManager(application);
             } catch (Exception e) {
                 //TODO throw ContextInitializationException
                 throw new RuntimeException(e);

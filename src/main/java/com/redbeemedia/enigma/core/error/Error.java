@@ -26,6 +26,7 @@ public class Error {
     public static final Error TOO_MANY_CONCURRENT_STREAMS = new Error(ErrorType.ConcurrentPlaysError, null);
     public static final Error TOO_MANY_CONCURRENT_TVODS = new Error(ErrorType.ConcurrentPlaysError, null);
     public static final Error TOO_MANY_CONCURRENT_SVODS = new Error(ErrorType.ConcurrentPlaysError, null);
+    public static final Error NO_SUPPORTED_MEDIAFORMAT_FOUND = new Error(ErrorType.AssetError, "No supported combinations of streaming format and encryption found for asset");
 
     private String message;
     private ErrorType errorType;
