@@ -4,6 +4,7 @@ import android.util.JsonReader;
 
 import java.io.IOException;
 
+@Deprecated
 public class AssetMapper implements JsonMapper<Asset> {
 
     private final JsonMapper.Util util = new Util();

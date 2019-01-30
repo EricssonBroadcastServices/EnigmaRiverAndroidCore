@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+@Deprecated
 public class Tag implements Parcelable {
 
     private static final int NULL_TREE_VALUE = -1;

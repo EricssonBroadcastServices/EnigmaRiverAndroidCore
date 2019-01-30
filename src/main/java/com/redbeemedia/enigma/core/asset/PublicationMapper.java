@@ -4,6 +4,7 @@ import android.util.JsonReader;
 
 import java.io.IOException;
 
+@Deprecated
 public class PublicationMapper implements JsonMapper<Publication> {
 
     private final Util mUtil;

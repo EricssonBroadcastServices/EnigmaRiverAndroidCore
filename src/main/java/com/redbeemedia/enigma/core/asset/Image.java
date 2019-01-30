@@ -5,6 +5,7 @@ import android.os.Parcelable;
 
 import java.util.List;
 
+@Deprecated
 public class Image implements Parcelable {
 
     public static final String PORTRAIT_ORIENTATION = "PORTRAIT";

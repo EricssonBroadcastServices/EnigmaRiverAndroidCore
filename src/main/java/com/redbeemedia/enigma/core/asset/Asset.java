@@ -9,6 +9,7 @@ import com.redbeemedia.enigma.core.playable.IPlayableHandler;
 
 import java.util.List;
 
+@Deprecated
 public class Asset implements Parcelable {
 
     public enum Type {
