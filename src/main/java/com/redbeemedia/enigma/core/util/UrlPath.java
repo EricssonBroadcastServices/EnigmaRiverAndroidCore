@@ -3,7 +3,7 @@ package com.redbeemedia.enigma.core.util;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class UrlPath {
+public class UrlPath implements IStringAppendable {
     private String url;
 
     public UrlPath(String url) {
@@ -30,6 +30,7 @@ public class UrlPath {
         this.url = stringBuilder.append(subPart.substring(leadingSlashes)).toString();
     }
 
+    @Override
     public UrlPath append(String path) {
         return new UrlPath(this, path);
     }
@@ -51,5 +52,9 @@ public class UrlPath {
 
     private boolean equalsOwn(UrlPath obj) {
         return this.url.equals(obj.url);
+    }
+
+    public boolean contains(String str) {
+        return url.contains(str);
     }
 }
