@@ -36,7 +36,7 @@ public class ApiAssetRights implements Parcelable {
     private int maxResWidth;
 
 
-    private ApiAssetRights() {}//Private constructor for Parcelable.Creator
+    protected ApiAssetRights() {}//Protected constructor for Parcelable.Creator and Mocks
 
     public ApiAssetRights(JsonReader jsonReader) throws IOException {
         jsonReader.beginObject();

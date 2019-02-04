@@ -22,7 +22,7 @@ public class ApiPublication implements Parcelable {
     private List<String> products;
 
 
-    private ApiPublication() {}//Private constructor for Parcelable.Creator
+    protected ApiPublication() {}//Protected constructor for Parcelable.Creator and Mocks
 
     public ApiPublication(JsonReader jsonReader) throws IOException {
         jsonReader.beginObject();

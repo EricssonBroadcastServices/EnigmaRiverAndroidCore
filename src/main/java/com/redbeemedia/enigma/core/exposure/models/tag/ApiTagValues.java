@@ -10,7 +10,7 @@ public class ApiTagValues implements Parcelable {
     private String tagId;
 
 
-    private ApiTagValues() {}//Private constructor for Parcelable.Creator
+    protected ApiTagValues() {}//Protected constructor for Parcelable.Creator and Mocks
 
     public ApiTagValues(JsonReader jsonReader) throws IOException {
         jsonReader.beginObject();

@@ -55,7 +55,7 @@ public class ApiAsset implements Parcelable {
     private List<ApiPublication> publications;
 
 
-    private ApiAsset() {}//Private constructor for Parcelable.Creator
+    protected ApiAsset() {}//Protected constructor for Parcelable.Creator and Mocks
 
     public ApiAsset(JsonReader jsonReader) throws IOException {
         jsonReader.beginObject();

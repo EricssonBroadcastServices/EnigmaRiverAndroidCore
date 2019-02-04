@@ -12,7 +12,7 @@ public class ApiLinkedEntity implements Parcelable {
     private String linkType;
 
 
-    private ApiLinkedEntity() {}//Private constructor for Parcelable.Creator
+    protected ApiLinkedEntity() {}//Protected constructor for Parcelable.Creator and Mocks
 
     public ApiLinkedEntity(JsonReader jsonReader) throws IOException {
         jsonReader.beginObject();

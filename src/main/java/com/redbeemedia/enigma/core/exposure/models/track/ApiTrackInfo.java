@@ -11,7 +11,7 @@ public class ApiTrackInfo implements Parcelable {
     private String targetBitrate;
 
 
-    private ApiTrackInfo() {}//Private constructor for Parcelable.Creator
+    protected ApiTrackInfo() {}//Protected constructor for Parcelable.Creator and Mocks
 
     public ApiTrackInfo(JsonReader jsonReader) throws IOException {
         jsonReader.beginObject();

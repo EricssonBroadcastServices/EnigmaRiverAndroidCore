@@ -12,7 +12,7 @@ public class ApiPerson implements Parcelable {
     private String personId;
 
 
-    private ApiPerson() {}//Private constructor for Parcelable.Creator
+    protected ApiPerson() {}//Protected constructor for Parcelable.Creator and Mocks
 
     public ApiPerson(JsonReader jsonReader) throws IOException {
         jsonReader.beginObject();

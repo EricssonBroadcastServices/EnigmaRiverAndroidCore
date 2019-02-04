@@ -12,7 +12,7 @@ public class ApiExternalReference implements Parcelable {
     private String value;
 
 
-    private ApiExternalReference() {}//Private constructor for Parcelable.Creator
+    protected ApiExternalReference() {}//Protected constructor for Parcelable.Creator and Mocks
 
     public ApiExternalReference(JsonReader jsonReader) throws IOException {
         jsonReader.beginObject();

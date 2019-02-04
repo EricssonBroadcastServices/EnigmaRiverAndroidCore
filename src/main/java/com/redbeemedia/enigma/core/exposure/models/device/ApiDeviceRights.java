@@ -16,7 +16,7 @@ public class ApiDeviceRights implements Parcelable {
     private String manufacturer;
 
 
-    private ApiDeviceRights() {}//Private constructor for Parcelable.Creator
+    protected ApiDeviceRights() {}//Protected constructor for Parcelable.Creator and Mocks
 
     public ApiDeviceRights(JsonReader jsonReader) throws IOException {
         jsonReader.beginObject();

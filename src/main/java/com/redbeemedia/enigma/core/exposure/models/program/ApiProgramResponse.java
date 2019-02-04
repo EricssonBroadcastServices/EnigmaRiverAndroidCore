@@ -22,7 +22,7 @@ public class ApiProgramResponse implements Parcelable {
     private String changed;
 
 
-    private ApiProgramResponse() {}//Private constructor for Parcelable.Creator
+    protected ApiProgramResponse() {}//Protected constructor for Parcelable.Creator and Mocks
 
     public ApiProgramResponse(JsonReader jsonReader) throws IOException {
         jsonReader.beginObject();

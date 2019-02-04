@@ -18,7 +18,7 @@ public class ApiMedia implements Parcelable {
     private String status;
 
 
-    private ApiMedia() {}//Private constructor for Parcelable.Creator
+    protected ApiMedia() {}//Protected constructor for Parcelable.Creator and Mocks
 
     public ApiMedia(JsonReader jsonReader) throws IOException {
         jsonReader.beginObject();

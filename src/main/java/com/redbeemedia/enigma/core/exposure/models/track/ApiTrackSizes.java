@@ -17,7 +17,7 @@ public class ApiTrackSizes implements Parcelable {
     private List<ApiVideoTrackInfo> videoTracks;
 
 
-    private ApiTrackSizes() {}//Private constructor for Parcelable.Creator
+    protected ApiTrackSizes() {}//Protected constructor for Parcelable.Creator and Mocks
 
     public ApiTrackSizes(JsonReader jsonReader) throws IOException {
         jsonReader.beginObject();

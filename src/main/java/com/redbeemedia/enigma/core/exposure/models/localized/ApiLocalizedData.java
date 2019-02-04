@@ -20,7 +20,7 @@ public class ApiLocalizedData implements Parcelable {
     private String sortingTitle;
 
 
-    private ApiLocalizedData() {}//Private constructor for Parcelable.Creator
+    protected ApiLocalizedData() {}//Protected constructor for Parcelable.Creator and Mocks
 
     public ApiLocalizedData(JsonReader jsonReader) throws IOException {
         jsonReader.beginObject();

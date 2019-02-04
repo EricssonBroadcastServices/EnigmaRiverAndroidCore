@@ -14,7 +14,7 @@ public class ApiImage implements Parcelable {
     private int height;
 
 
-    private ApiImage() {}//Private constructor for Parcelable.Creator
+    protected ApiImage() {}//Protected constructor for Parcelable.Creator and Mocks
 
     public ApiImage(JsonReader jsonReader) throws IOException {
         jsonReader.beginObject();

@@ -31,7 +31,7 @@ public class ApiSeason implements Parcelable {
     private String changed;
 
 
-    private ApiSeason() {}//Private constructor for Parcelable.Creator
+    protected ApiSeason() {}//Protected constructor for Parcelable.Creator and Mocks
 
     public ApiSeason(JsonReader jsonReader) throws IOException {
         jsonReader.beginObject();

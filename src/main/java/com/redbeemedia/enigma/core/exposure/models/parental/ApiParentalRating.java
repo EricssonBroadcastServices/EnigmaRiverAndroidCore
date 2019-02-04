@@ -12,7 +12,7 @@ public class ApiParentalRating implements Parcelable {
     private String rating;
 
 
-    private ApiParentalRating() {}//Private constructor for Parcelable.Creator
+    protected ApiParentalRating() {}//Protected constructor for Parcelable.Creator and Mocks
 
     public ApiParentalRating(JsonReader jsonReader) throws IOException {
         jsonReader.beginObject();

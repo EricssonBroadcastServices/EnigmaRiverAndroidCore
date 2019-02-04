@@ -15,7 +15,7 @@ public class ApiChannelEPGResponse implements Parcelable {
     private String channelId;
 
 
-    private ApiChannelEPGResponse() {}//Private constructor for Parcelable.Creator
+    protected ApiChannelEPGResponse() {}//Protected constructor for Parcelable.Creator and Mocks
 
     public ApiChannelEPGResponse(JsonReader jsonReader) throws IOException {
         jsonReader.beginObject();

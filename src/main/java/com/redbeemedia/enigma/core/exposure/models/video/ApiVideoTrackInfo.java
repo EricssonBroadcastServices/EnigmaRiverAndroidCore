@@ -12,7 +12,7 @@ public class ApiVideoTrackInfo implements Parcelable {
     private int height;
 
 
-    private ApiVideoTrackInfo() {}//Private constructor for Parcelable.Creator
+    protected ApiVideoTrackInfo() {}//Protected constructor for Parcelable.Creator and Mocks
 
     public ApiVideoTrackInfo(JsonReader jsonReader) throws IOException {
         jsonReader.beginObject();

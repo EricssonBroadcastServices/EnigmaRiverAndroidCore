@@ -14,7 +14,7 @@ public class ApiAudioTrackInfo implements Parcelable {
     private String language;
 
 
-    private ApiAudioTrackInfo() {}//Private constructor for Parcelable.Creator
+    protected ApiAudioTrackInfo() {}//Protected constructor for Parcelable.Creator and Mocks
 
     public ApiAudioTrackInfo(JsonReader jsonReader) throws IOException {
         jsonReader.beginObject();

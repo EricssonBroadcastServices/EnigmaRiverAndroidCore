@@ -12,7 +12,7 @@ public class Marker implements Parcelable {
     private String url;
 
 
-    private Marker() {}//Private constructor for Parcelable.Creator
+    protected Marker() {}//Protected constructor for Parcelable.Creator and Mocks
 
     public Marker(JsonReader jsonReader) throws IOException {
         jsonReader.beginObject();

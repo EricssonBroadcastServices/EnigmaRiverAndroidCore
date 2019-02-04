@@ -11,7 +11,7 @@ public class ApiSubtitleTrackInfo implements Parcelable {
     private String language;
 
 
-    private ApiSubtitleTrackInfo() {}//Private constructor for Parcelable.Creator
+    protected ApiSubtitleTrackInfo() {}//Protected constructor for Parcelable.Creator and Mocks
 
     public ApiSubtitleTrackInfo(JsonReader jsonReader) throws IOException {
         jsonReader.beginObject();

@@ -15,7 +15,7 @@ public class ApiTag implements Parcelable {
     private String changed;
 
 
-    private ApiTag() {}//Private constructor for Parcelable.Creator
+    protected ApiTag() {}//Protected constructor for Parcelable.Creator and Mocks
 
     public ApiTag(JsonReader jsonReader) throws IOException {
         jsonReader.beginObject();

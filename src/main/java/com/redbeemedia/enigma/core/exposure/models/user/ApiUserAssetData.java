@@ -10,7 +10,7 @@ public class ApiUserAssetData implements Parcelable {
     private ApiUserAssetPlayHistory playHistory;
 
 
-    private ApiUserAssetData() {}//Private constructor for Parcelable.Creator
+    protected ApiUserAssetData() {}//Protected constructor for Parcelable.Creator and Mocks
 
     public ApiUserAssetData(JsonReader jsonReader) throws IOException {
         jsonReader.beginObject();

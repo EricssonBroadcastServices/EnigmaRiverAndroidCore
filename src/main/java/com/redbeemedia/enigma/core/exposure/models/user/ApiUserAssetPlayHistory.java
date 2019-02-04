@@ -14,7 +14,7 @@ public class ApiUserAssetPlayHistory implements Parcelable {
     private String programId;
 
 
-    private ApiUserAssetPlayHistory() {}//Private constructor for Parcelable.Creator
+    protected ApiUserAssetPlayHistory() {}//Protected constructor for Parcelable.Creator and Mocks
 
     public ApiUserAssetPlayHistory(JsonReader jsonReader) throws IOException {
         jsonReader.beginObject();
