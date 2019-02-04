@@ -12,7 +12,7 @@ import com.redbeemedia.enigma.core.error.ExposureHttpError;
 import com.redbeemedia.enigma.core.http.AuthenticatedExposureApiCall;
 import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.json.JsonInputStreamParser;
-import com.redbeemedia.enigma.core.json.JsonResponseHandler;
+import com.redbeemedia.enigma.core.json.JsonObjectResponseHandler;
 import com.redbeemedia.enigma.core.playable.IPlayable;
 import com.redbeemedia.enigma.core.playable.IPlayableHandler;
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
@@ -125,7 +125,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         }
     }
 
-    private abstract static class PlayResponseHandler extends JsonResponseHandler {
+    private abstract static class PlayResponseHandler extends JsonObjectResponseHandler {
         private JsonErrorMessageHandler jsonErrorMessageHandler = new JsonErrorMessageHandler();
 
         public PlayResponseHandler() {
