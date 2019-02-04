@@ -28,7 +28,7 @@ public class JsonReaderUtil {
                     try {
                         obj = typeConstructor.newInstance(jsonReader);
                     } catch (Exception e) {
-                        throw new RuntimeException("Could not instantiate object using "+typeConstructor.getName()+".", e);
+                        throw new IOException("Could not instantiate object using "+typeConstructor.getName()+".", e);
                     }
                 }
                 list.add(obj);
