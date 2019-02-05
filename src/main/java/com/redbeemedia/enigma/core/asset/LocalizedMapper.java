@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class LocalizedMapper implements JsonMapper<Localized> {
 
     private ImageMapper mImageMapper;

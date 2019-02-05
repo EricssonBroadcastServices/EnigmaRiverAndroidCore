@@ -6,7 +6,7 @@ import android.os.Parcelable;
 import java.io.Serializable;
 import java.util.List;
 
-
+@Deprecated
 public class Participant implements Parcelable {
 
     public static final int INDEX_ACTOR = 0;

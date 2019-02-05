@@ -6,7 +6,7 @@ import com.redbeemedia.enigma.core.error.Error;
 import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.http.MockHttpHandler;
 import com.redbeemedia.enigma.core.testutil.Flag;
-import com.redbeemedia.enigma.core.util.IHandler;
+import com.redbeemedia.enigma.core.util.MockHandler;
 import com.redbeemedia.enigma.core.util.UrlPath;
 
 import org.json.JSONException;
@@ -16,7 +16,6 @@ import org.junit.Test;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 
 public class EnigmaLoginTest {
@@ -90,21 +89,12 @@ public class EnigmaLoginTest {
         }));
 
         Assert.assertEquals(1, handler.runnables.size());
-        Assert.assertFalse(onErrorCalled.isTrue());
+        onErrorCalled.assertNotSet();
         handler.runnables.get(0).run();
-        Assert.assertTrue(onErrorCalled.isTrue());
+        onErrorCalled.assertSet();
 
         enigmaLogin.login(new MockLoginRequest());
         Assert.assertEquals(2, handler.runnables.size());
         handler.runnables.get(1).run();
-    }
-
-    private static class MockHandler implements IHandler {
-        private List<Runnable> runnables = new ArrayList<>();
-        @Override
-        public boolean post(Runnable runnable) {
-            runnables.add(runnable);
-            return true;
-        }
     }
 }

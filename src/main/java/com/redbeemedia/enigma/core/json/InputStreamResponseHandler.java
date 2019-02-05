@@ -4,28 +4,25 @@ import com.redbeemedia.enigma.core.error.Error;
 import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.http.IHttpHandler;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class JsonResponseHandler implements IHttpHandler.IHttpResponseHandler {
+//Note this class has nothing to do with json anymore! We should make it nicer and put it in an other package. When we need it elsewhere.
+/*package-protected*/ abstract class InputStreamResponseHandler implements IHttpHandler.IHttpResponseHandler {
     private boolean allowEmptyResponse = false;
     private Map<Integer, IHttpCodeHandler> codeActions = new HashMap<>();
 
-    public JsonResponseHandler() {
+    public InputStreamResponseHandler() {
         codeActions.put(HttpURLConnection.HTTP_OK, new IHttpCodeHandler() {
-            private JsonInputStreamParser inputStreamParser = JsonInputStreamParser.obtain();
             @Override
             public void onResponse(HttpStatus httpStatus, InputStream inputStream) {
                 try {
-                    onSuccess(inputStreamParser.parse(inputStream));
-                } catch (JSONException e) {
-                    onError(Error.FAILED_TO_PARSE_RESPONSE_JSON);
+                    onInputStream(inputStream);
+                } catch (Exception e) {
+                    onException(e);
                 }
             }
         });
@@ -37,7 +34,7 @@ public abstract class JsonResponseHandler implements IHttpHandler.IHttpResponseH
         if(httpCodeHandler != null) {
             httpCodeHandler.onResponse(status, inputStream);
         } else {
-            onError(Error.TODO);
+            onError(Error.UNEXPECTED_ERROR);
         }
     }
 
@@ -50,7 +47,7 @@ public abstract class JsonResponseHandler implements IHttpHandler.IHttpResponseH
         }
     }
 
-    protected JsonResponseHandler handleErrorCode(int httpCode, final Error error) {
+    protected InputStreamResponseHandler handleErrorCode(int httpCode, final Error error) {
         return handleErrorCode(httpCode, new IHttpCodeHandler() {
             @Override
             public void onResponse(HttpStatus httpStatus, InputStream inputStream) {
@@ -59,21 +56,19 @@ public abstract class JsonResponseHandler implements IHttpHandler.IHttpResponseH
         });
     }
 
-    protected JsonResponseHandler handleErrorCode(int httpCode, IHttpCodeHandler httpCodeHandler) {
+    protected InputStreamResponseHandler handleErrorCode(int httpCode, IHttpCodeHandler httpCodeHandler) {
         codeActions.put(httpCode, httpCodeHandler);
         return this;
     }
 
-    protected JsonResponseHandler allowEmptyResponse() {
+    protected InputStreamResponseHandler allowEmptyResponse() {
         this.allowEmptyResponse = true;
         return this;
     }
 
-
+    protected abstract void onInputStream(InputStream inputStream) throws Exception;
 
     protected abstract void onError(Error error);
-
-    protected abstract void onSuccess(JSONObject jsonObject) throws JSONException;
 
     @Override
     public void onException(Exception e) {

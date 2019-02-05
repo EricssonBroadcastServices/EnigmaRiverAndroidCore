@@ -5,6 +5,7 @@ import android.os.Parcelable;
 
 import java.util.List;
 
+@Deprecated
 public class Media implements Parcelable {
 
     private String mediaId;
