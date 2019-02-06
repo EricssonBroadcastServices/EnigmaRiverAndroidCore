@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
+@Deprecated
 public interface JsonMapper<Type> {
     Type create();
     void map(final JsonReader jsonReader, final Type type, final int position) throws IOException;

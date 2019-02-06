@@ -13,7 +13,7 @@ import com.redbeemedia.enigma.core.error.ExposureHttpError;
 import com.redbeemedia.enigma.core.http.AuthenticatedExposureApiCall;
 import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.json.JsonInputStreamParser;
-import com.redbeemedia.enigma.core.json.JsonResponseHandler;
+import com.redbeemedia.enigma.core.json.JsonObjectResponseHandler;
 import com.redbeemedia.enigma.core.playable.IPlayable;
 import com.redbeemedia.enigma.core.playable.IPlayableHandler;
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
@@ -139,7 +139,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         }
     }
 
-    private abstract static class PlayResponseHandler extends JsonResponseHandler {
+    private abstract static class PlayResponseHandler extends JsonObjectResponseHandler {
         private JsonErrorMessageHandler jsonErrorMessageHandler = new JsonErrorMessageHandler();
 
         public PlayResponseHandler() {
@@ -147,7 +147,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             handleErrorCodeAndErrorMessage(401, "NO_SESSION_TOKEN", Error.UNEXPECTED_ERROR);
             handleErrorCodeAndErrorMessage(401, "INVALID_SESSION_TOKEN", Error.INVALID_SESSION);
 
-            handleErrorCodeAndErrorMessage(403, "FORBIDDEN", Error.TODO); //TODO use 'incorrect bU' error
+            handleErrorCodeAndErrorMessage(403, "FORBIDDEN", Error.UNKNOWN_BUSINESS_UNIT);
             handleErrorCodeAndErrorMessage(403, "NOT_ENTITLED", Error.NOT_ENTITLED);
             handleErrorCodeAndErrorMessage(403, "DEVICE_BLOCKED", Error.DEVICE_BLOCKED);
             handleErrorCodeAndErrorMessage(403, "GEO_BLOCKED", Error.GEO_BLOCKED);
@@ -161,8 +161,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             handleErrorCodeAndErrorMessage(403, "CONCURRENT_STREAMS_TVOD_LIMIT_REACHED", Error.TOO_MANY_CONCURRENT_TVODS);
             handleErrorCodeAndErrorMessage(403, "CONCURRENT_STREAMS_SVOD_LIMIT_REACHED", Error.TOO_MANY_CONCURRENT_SVODS);
 
-            //TODO change error for UNKNOWN_BUSINESS_UNIT to "invalid businessUnit" or something
-            handleErrorCodeAndErrorMessage(404, "UNKNOWN_BUSINESS_UNIT",Error.TODO);
+            handleErrorCodeAndErrorMessage(404, "UNKNOWN_BUSINESS_UNIT",Error.UNKNOWN_BUSINESS_UNIT);
             //TODO change error for UNKNOWN_ASSET to "unknown asset" or something
             handleErrorCodeAndErrorMessage(404, "UNKNOWN_ASSET",Error.TODO);
 

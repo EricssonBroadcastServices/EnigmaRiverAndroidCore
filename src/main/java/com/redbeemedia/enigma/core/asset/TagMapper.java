@@ -5,6 +5,7 @@ import android.util.JsonReader;
 import java.io.IOException;
 import java.util.TreeSet;
 
+@Deprecated
 public class TagMapper implements JsonMapper<Tag> {
 
     @Override
