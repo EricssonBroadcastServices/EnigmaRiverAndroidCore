@@ -94,18 +94,6 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                 @Override
                 protected void onSuccess(JSONObject jsonObject) throws JSONException {
                     //TODO; use player impl capabilities
-                    JSONObject configObject = jsonObject.optJSONObject("cencConfig");
-                    if (configObject != null) {
-                        String licenseUrl = configObject.optString("com.widevine.alpha");
-                        String playToken = jsonObject.optString("playToken");
-                        String licenseWithToken = Uri.parse(licenseUrl)
-                            .buildUpon()
-                            .appendQueryParameter("token", "Bearer " + playToken)
-                            .build().toString();
-                        DrmInfo drmInfo = new DrmInfo(licenseWithToken, playToken);
-                        environment.setDrmInfo(drmInfo);
-                    }
-
                     JSONArray formats = jsonObject.getJSONArray("formats");
                     boolean foundUsable = false;
                     JSONObject usableMediaFormat = null;
@@ -113,8 +101,25 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                         JSONObject mediaFormat = formats.getJSONObject(i);
                         String streamFormat = mediaFormat.getString("format");
                         //TODO get capabilities from playerImplementation
-                        if("DASH".equals(streamFormat) && !mediaFormat.has("drm")) {
-                            foundUsable = true;
+                        if("DASH".equals(streamFormat) && mediaFormat.has("drm")) {
+
+                            JSONObject drm = mediaFormat.optJSONObject("drm");
+                            if (drm != null) {
+                                JSONObject drmConfig = drm.optJSONObject("com.widevine.alpha");
+                                if(drmConfig != null) {
+                                    String licenseUrl = drmConfig.getString("licenseServerUrl");
+                                    String playToken = jsonObject.optString("playToken");
+                                    String licenseWithToken = Uri.parse(licenseUrl)
+                                            .buildUpon()
+                                            .appendQueryParameter("token", "Bearer " + playToken)
+                                            .build().toString();
+                                    DrmInfo drmInfo = new DrmInfo(licenseWithToken, playToken);
+                                    environment.setDrmInfo(drmInfo);
+                                    foundUsable = true;
+                                }
+                            }
+
+
                             usableMediaFormat = mediaFormat;
                             break;
                         }
