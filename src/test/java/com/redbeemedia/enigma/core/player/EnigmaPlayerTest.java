@@ -23,10 +23,8 @@ public class EnigmaPlayerTest {
         MockHttpHandler mockHttpHandler = new MockHttpHandler();
         JSONObject response = new JSONObject();
         JSONArray formatArray = new JSONArray();
-        JSONObject mediaFormat = new JSONObject();
-        mediaFormat.put("mediaLocator", "https://media.example.com");
-        mediaFormat.put("format", "DASH");
-        formatArray.put(mediaFormat);
+        formatArray.put(createFormatJson("https://media.example.com?format=HLS","HLS"));
+        formatArray.put(createFormatJson("https://media.example.com","DASH"));
         response.put("formats", formatArray);
         mockHttpHandler.queueResponse(new HttpStatus(200, "OK"), response.toString());
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(mockHttpHandler));
@@ -78,5 +76,12 @@ public class EnigmaPlayerTest {
         Assert.assertTrue(useWithCalled.isTrue());
         Assert.assertFalse(onErrorCalled.isTrue());
         Assert.assertTrue(startPlaybackCalled.isTrue());
+    }
+
+    private JSONObject createFormatJson(String mediaLocator, String format) throws JSONException {
+        JSONObject mediaFormat = new JSONObject();
+        mediaFormat.put("mediaLocator", mediaLocator);
+        mediaFormat.put("format", format);
+        return mediaFormat;
     }
 }
