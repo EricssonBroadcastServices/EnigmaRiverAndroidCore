@@ -29,7 +29,11 @@ import java.util.List;
 
     @Override
     public final void onSuccess(SuccessT obj) {
-        resultHandler.onSuccess(obj);
+//        try {
+            resultHandler.onSuccess(obj);
+//        } catch (Exception e) {
+//            onError(Error.UNEXPECTED_ERROR);
+//        }
     }
 
     @Override

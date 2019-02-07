@@ -1,14 +1,20 @@
 package com.redbeemedia.enigma.core.player;
 
 import android.app.Activity;
+import android.net.Uri;
 import android.util.Pair;
 
 import com.redbeemedia.enigma.core.activity.AbstractActivityLifecycleListener;
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleListener;
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleManager;
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
+import com.redbeemedia.enigma.core.drm.DrmInfoFactory;
+import com.redbeemedia.enigma.core.drm.IDrmInfo;
+import com.redbeemedia.enigma.core.drm.IDrmProvider;
 import com.redbeemedia.enigma.core.error.Error;
 import com.redbeemedia.enigma.core.error.ExposureHttpError;
+import com.redbeemedia.enigma.core.format.EnigmaMediaFormat;
+import com.redbeemedia.enigma.core.format.IMediaFormatSupportSpec;
 import com.redbeemedia.enigma.core.http.AuthenticatedExposureApiCall;
 import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.json.JsonInputStreamParser;
@@ -31,6 +37,8 @@ import java.util.Map;
 
 
 public class EnigmaPlayer implements IEnigmaPlayer {
+    private static final EnigmaMediaFormat[] FORMAT_PREFERENCE_ORDER = new EnigmaMediaFormat[]{EnigmaMediaFormat.DASH_CENC, EnigmaMediaFormat.DASH_UNENCRYPTED};
+
     private ISession session;
     private IPlayerImplementation playerImplementation;
     private EnigmaPlayerEnvironment environment = new EnigmaPlayerEnvironment();
@@ -92,20 +100,21 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
                 @Override
                 protected void onSuccess(JSONObject jsonObject) throws JSONException {
+                    String playToken = jsonObject.optString("playToken");
                     JSONArray formats = jsonObject.getJSONArray("formats");
-                    boolean foundUsable = false;
-                    JSONObject usableMediaFormat = null;
-                    for(int i = 0; i < formats.length(); ++i) {
-                        JSONObject mediaFormat = formats.getJSONObject(i);
-                        String streamFormat = mediaFormat.getString("format");
-                        //TODO get capabilities from playerImplementation
-                        if("DASH".equals(streamFormat) && !mediaFormat.has("drm")) {
-                            foundUsable = true;
-                            usableMediaFormat = mediaFormat;
-                            break;
+                    JSONObject usableMediaFormat = getUsableMediaFormat(formats, environment.formatSupportSpec);
+                    if (usableMediaFormat != null) {
+                        JSONObject drms = usableMediaFormat.optJSONObject("drm");
+                        if (drms != null) {
+                            JSONObject drmTypeInfo = drms.optJSONObject(EnigmaMediaFormat.DrmTechnology.WIDEVINE.getKey());
+                            String licenseUrl = drmTypeInfo.getString("licenseServerUrl");
+                            String licenseWithToken = Uri.parse(licenseUrl)
+                                    .buildUpon()
+                                    .appendQueryParameter("token", "Bearer " + playToken)
+                                    .build().toString();
+                            IDrmInfo drmInfo = DrmInfoFactory.createWidevineDrmInfo(licenseWithToken, playToken);
+                            environment.setDrmInfo(drmInfo);
                         }
-                    }
-                    if(foundUsable) {
                         String manifestUrl = usableMediaFormat.getString("mediaLocator");
                         //TODO need to call onStarted on the playRequest at some point.
                         //TODO here we also need to create a playback-session
@@ -183,6 +192,95 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         }
     }
 
-    private class EnigmaPlayerEnvironment implements IEnigmaPlayerEnvironment {
+    private static JSONObject getUsableMediaFormat(JSONArray formats, IMediaFormatSupportSpec formatSupportSpec) throws JSONException {
+        Map<EnigmaMediaFormat, JSONObject> foundFormats = new HashMap<>();
+        for(int i = 0; i < formats.length(); ++i) {
+            JSONObject mediaFormat = formats.getJSONObject(i);
+            EnigmaMediaFormat enigmaMediaFormat = parseMediaFormat(mediaFormat);
+            if(enigmaMediaFormat != null) {
+                if(formatSupportSpec.supports(enigmaMediaFormat)) {
+                    foundFormats.put(enigmaMediaFormat, mediaFormat);
+                }
+            }
+        }
+        for(EnigmaMediaFormat format : FORMAT_PREFERENCE_ORDER) {
+            JSONObject object = foundFormats.get(format);
+            if(object != null) {
+                return object;
+            }
+        }
+        return null;//If the format is not in FORMAT_PREFERENCE_ORDER we don't support it.
+    }
+
+    private static EnigmaMediaFormat parseMediaFormat(JSONObject mediaFormat) throws JSONException {
+            String streamFormatName = mediaFormat.getString("format");
+            if("DASH".equals(streamFormatName) && mediaFormat.has("drm") && mediaFormat.getJSONObject("drm").has(EnigmaMediaFormat.DrmTechnology.WIDEVINE.getKey())) {
+                return EnigmaMediaFormat.DASH_CENC;
+            } else if("DASH".equals(streamFormatName) && !mediaFormat.has("drm")) {
+                return EnigmaMediaFormat.DASH_UNENCRYPTED;
+            } else {
+                EnigmaMediaFormat.StreamFormat streamFormat = null;
+                EnigmaMediaFormat.DrmTechnology drmTechnology = null;
+
+                if("DASH".equals(streamFormatName)) {
+                    streamFormat = EnigmaMediaFormat.StreamFormat.DASH;
+                } else if("HLS".equals(streamFormatName)) {
+                    streamFormat = EnigmaMediaFormat.StreamFormat.HLS;
+                } else if("SMOOTHSTREAMING".equals(streamFormatName)) {
+                    streamFormat = EnigmaMediaFormat.StreamFormat.SMOOTHSTREAMING;
+                }
+
+                JSONObject drm = mediaFormat.optJSONObject("drm");
+                if(drm != null) {
+                    for(EnigmaMediaFormat.DrmTechnology drmTech : EnigmaMediaFormat.DrmTechnology.values()) {
+                        if(drmTech == EnigmaMediaFormat.DrmTechnology.NONE) {
+                            continue;
+                        }
+                        if(drm.has(drmTech.getKey())) {
+                            drmTechnology = drmTech;
+                            break;
+                        }
+                    }
+                } else {
+                    drmTechnology = EnigmaMediaFormat.DrmTechnology.NONE;
+                }
+
+                if(streamFormat != null && drmTechnology != null) {
+                    return new EnigmaMediaFormat(streamFormat, drmTechnology);
+                } else {
+                    return null;
+                }
+            }
+    }
+
+    private class EnigmaPlayerEnvironment implements IEnigmaPlayerEnvironment, IDrmProvider {
+        private IMediaFormatSupportSpec formatSupportSpec = new DefaultFormatSupportSpec();
+        private IDrmInfo drmInfo;
+
+        @Override
+        public IDrmProvider getDrmProvider() {
+            return this;
+        }
+
+        @Override
+        public void setMediaFormatSupportSpec(IMediaFormatSupportSpec formatSupportSpec) {
+            this.formatSupportSpec = formatSupportSpec;
+        }
+
+        public void setDrmInfo(IDrmInfo drmInfo) {
+            this.drmInfo = drmInfo;
+        }
+
+        @Override
+        public IDrmInfo getDrmInfo() {
+            return drmInfo;
+        }
+    }
+
+    private static class DefaultFormatSupportSpec implements IMediaFormatSupportSpec {
+        @Override
+        public boolean supports(EnigmaMediaFormat enigmaMediaFormat) {
+            return enigmaMediaFormat == EnigmaMediaFormat.DASH_UNENCRYPTED;
+        }
     }
 }
