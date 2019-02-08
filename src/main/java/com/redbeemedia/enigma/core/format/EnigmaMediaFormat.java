@@ -1,12 +1,11 @@
 package com.redbeemedia.enigma.core.format;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
 public final class EnigmaMediaFormat {
-    public static final EnigmaMediaFormat DASH_UNENCRYPTED = new EnigmaMediaFormat(StreamFormat.DASH, DrmTechnology.NONE);
-    public static final EnigmaMediaFormat DASH_CENC = new EnigmaMediaFormat(StreamFormat.DASH, DrmTechnology.WIDEVINE);
-
     private final StreamFormat streamFormat;
     private final DrmTechnology drmTechnology;
 
@@ -28,7 +27,7 @@ public final class EnigmaMediaFormat {
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof EnigmaMediaFormat && ((EnigmaMediaFormat) obj).streamFormat == this.streamFormat && ((EnigmaMediaFormat) obj).drmTechnology == this.drmTechnology;
+        return obj instanceof EnigmaMediaFormat && equals(((EnigmaMediaFormat) obj).streamFormat, ((EnigmaMediaFormat) obj).drmTechnology);
     }
 
     @Override
@@ -36,11 +35,29 @@ public final class EnigmaMediaFormat {
         return streamFormat.hashCode()*37 + drmTechnology.hashCode();
     }
 
+    public boolean equals(StreamFormat streamFormat, DrmTechnology drmTechnology) {
+        return this.streamFormat == streamFormat && this.drmTechnology == drmTechnology;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(streamFormat);
+        stringBuilder.append(" ");
+        stringBuilder.append(drmTechnology);
+        return stringBuilder.toString();
+    }
+
     public static class StreamFormat {
         private StreamFormat() {}
         public static final StreamFormat DASH = new StreamFormat();
         public static final StreamFormat HLS = new StreamFormat();
         public static final StreamFormat SMOOTHSTREAMING = new StreamFormat();
+
+        @Override
+        public String toString() {
+            return getName(StreamFormat.class, this);
+        }
     }
 
     public static class DrmTechnology {
@@ -68,5 +85,31 @@ public final class EnigmaMediaFormat {
         public String getKey() {
             return key;
         }
+
+        @Override
+        public String toString() {
+            return getName(DrmTechnology.class, this);
+        }
+    }
+
+    private static String getName(Class<?> containerClass, Object value) {
+        for(Field field : containerClass.getDeclaredFields()) {
+            boolean accessible = field.isAccessible();
+            try {
+                field.setAccessible(true);
+                if(Modifier.isStatic(field.getModifiers())) {
+                    try {
+                        if(field.get(null) == value) {
+                            return field.getName();
+                        }
+                    } catch (IllegalAccessException e) {
+                        //Ignore and continue
+                    }
+                }
+            } finally {
+                field.setAccessible(accessible);
+            }
+        }
+        return value.getClass().getName() + "@" + Integer.toHexString(value.hashCode());
     }
 }

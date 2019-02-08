@@ -14,6 +14,8 @@ import com.redbeemedia.enigma.core.drm.IDrmProvider;
 import com.redbeemedia.enigma.core.error.Error;
 import com.redbeemedia.enigma.core.error.ExposureHttpError;
 import com.redbeemedia.enigma.core.format.EnigmaMediaFormat;
+import com.redbeemedia.enigma.core.format.EnigmaMediaFormat.StreamFormat;
+import com.redbeemedia.enigma.core.format.EnigmaMediaFormat.DrmTechnology;
 import com.redbeemedia.enigma.core.format.IMediaFormatSupportSpec;
 import com.redbeemedia.enigma.core.http.AuthenticatedExposureApiCall;
 import com.redbeemedia.enigma.core.http.HttpStatus;
@@ -37,7 +39,8 @@ import java.util.Map;
 
 
 public class EnigmaPlayer implements IEnigmaPlayer {
-    private static final EnigmaMediaFormat[] FORMAT_PREFERENCE_ORDER = new EnigmaMediaFormat[]{EnigmaMediaFormat.DASH_CENC, EnigmaMediaFormat.DASH_UNENCRYPTED};
+    private static final EnigmaMediaFormat[] FORMAT_PREFERENCE_ORDER = new EnigmaMediaFormat[]{new EnigmaMediaFormat(StreamFormat.DASH, DrmTechnology.WIDEVINE),
+                                                                                               new EnigmaMediaFormat(StreamFormat.DASH, DrmTechnology.NONE)};
 
     private ISession session;
     private IPlayerImplementation playerImplementation;
@@ -106,7 +109,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                     if (usableMediaFormat != null) {
                         JSONObject drms = usableMediaFormat.optJSONObject("drm");
                         if (drms != null) {
-                            JSONObject drmTypeInfo = drms.optJSONObject(EnigmaMediaFormat.DrmTechnology.WIDEVINE.getKey());
+                            JSONObject drmTypeInfo = drms.optJSONObject(DrmTechnology.WIDEVINE.getKey());
                             String licenseUrl = drmTypeInfo.getString("licenseServerUrl");
                             String licenseWithToken = Uri.parse(licenseUrl)
                                     .buildUpon()
@@ -212,45 +215,39 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         return null;//If the format is not in FORMAT_PREFERENCE_ORDER we don't support it.
     }
 
-    private static EnigmaMediaFormat parseMediaFormat(JSONObject mediaFormat) throws JSONException {
-            String streamFormatName = mediaFormat.getString("format");
-            if("DASH".equals(streamFormatName) && mediaFormat.has("drm") && mediaFormat.getJSONObject("drm").has(EnigmaMediaFormat.DrmTechnology.WIDEVINE.getKey())) {
-                return EnigmaMediaFormat.DASH_CENC;
-            } else if("DASH".equals(streamFormatName) && !mediaFormat.has("drm")) {
-                return EnigmaMediaFormat.DASH_UNENCRYPTED;
-            } else {
-                EnigmaMediaFormat.StreamFormat streamFormat = null;
-                EnigmaMediaFormat.DrmTechnology drmTechnology = null;
+    /*package-protected*/ static EnigmaMediaFormat parseMediaFormat(JSONObject mediaFormat) throws JSONException {
+        String streamFormatName = mediaFormat.getString("format");
+        StreamFormat streamFormat = null;
+        DrmTechnology drmTechnology = null;
 
-                if("DASH".equals(streamFormatName)) {
-                    streamFormat = EnigmaMediaFormat.StreamFormat.DASH;
-                } else if("HLS".equals(streamFormatName)) {
-                    streamFormat = EnigmaMediaFormat.StreamFormat.HLS;
-                } else if("SMOOTHSTREAMING".equals(streamFormatName)) {
-                    streamFormat = EnigmaMediaFormat.StreamFormat.SMOOTHSTREAMING;
+        if("DASH".equals(streamFormatName)) {
+            streamFormat = StreamFormat.DASH;
+        } else if("HLS".equals(streamFormatName)) {
+            streamFormat = StreamFormat.HLS;
+        } else if("SMOOTHSTREAMING".equals(streamFormatName)) {
+            streamFormat = StreamFormat.SMOOTHSTREAMING;
+        }
+
+        JSONObject drm = mediaFormat.optJSONObject("drm");
+        if(drm != null) {
+            for(DrmTechnology drmTech : DrmTechnology.values()) {
+                if(drmTech == DrmTechnology.NONE) {
+                    continue;
                 }
-
-                JSONObject drm = mediaFormat.optJSONObject("drm");
-                if(drm != null) {
-                    for(EnigmaMediaFormat.DrmTechnology drmTech : EnigmaMediaFormat.DrmTechnology.values()) {
-                        if(drmTech == EnigmaMediaFormat.DrmTechnology.NONE) {
-                            continue;
-                        }
-                        if(drm.has(drmTech.getKey())) {
-                            drmTechnology = drmTech;
-                            break;
-                        }
-                    }
-                } else {
-                    drmTechnology = EnigmaMediaFormat.DrmTechnology.NONE;
-                }
-
-                if(streamFormat != null && drmTechnology != null) {
-                    return new EnigmaMediaFormat(streamFormat, drmTechnology);
-                } else {
-                    return null;
+                if(drm.has(drmTech.getKey())) {
+                    drmTechnology = drmTech;
+                    break;
                 }
             }
+        } else {
+            drmTechnology = DrmTechnology.NONE;
+        }
+
+        if(streamFormat != null && drmTechnology != null) {
+            return new EnigmaMediaFormat(streamFormat, drmTechnology);
+        } else {
+            return null;
+        }
     }
 
     private class EnigmaPlayerEnvironment implements IEnigmaPlayerEnvironment, IDrmProvider {
@@ -280,7 +277,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     private static class DefaultFormatSupportSpec implements IMediaFormatSupportSpec {
         @Override
         public boolean supports(EnigmaMediaFormat enigmaMediaFormat) {
-            return enigmaMediaFormat == EnigmaMediaFormat.DASH_UNENCRYPTED;
+            return enigmaMediaFormat != null && enigmaMediaFormat.equals(StreamFormat.DASH, DrmTechnology.NONE);
         }
     }
 }
