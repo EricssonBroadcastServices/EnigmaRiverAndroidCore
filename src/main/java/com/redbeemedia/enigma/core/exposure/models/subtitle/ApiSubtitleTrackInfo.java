@@ -7,7 +7,7 @@ import java.io.IOException;
 
 
 public class ApiSubtitleTrackInfo implements Parcelable {
-    private int fileSize;
+    private long fileSize;
     private String language;
 
 
@@ -18,7 +18,7 @@ public class ApiSubtitleTrackInfo implements Parcelable {
         while (jsonReader.hasNext()) {
             switch (jsonReader.nextName()) {
                 case "fileSize":
-                    this.fileSize = jsonReader.nextInt();
+                    this.fileSize = jsonReader.nextLong();
                     break;
                 case "language":
                     this.language = jsonReader.nextString();
@@ -31,7 +31,7 @@ public class ApiSubtitleTrackInfo implements Parcelable {
     }
 
 
-    public int getFileSize() {
+    public long getFileSize() {
         return this.fileSize;
     }
 
@@ -47,7 +47,7 @@ public class ApiSubtitleTrackInfo implements Parcelable {
     public static final Parcelable.Creator<ApiSubtitleTrackInfo> CREATOR = new Parcelable.Creator<ApiSubtitleTrackInfo>() {
         public ApiSubtitleTrackInfo createFromParcel(Parcel in) {
             ApiSubtitleTrackInfo object = new ApiSubtitleTrackInfo();
-            object.fileSize = in.readInt();
+            object.fileSize = in.readLong();
             object.language = in.readString();
             return object;
         }
@@ -59,7 +59,7 @@ public class ApiSubtitleTrackInfo implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(fileSize);
+        dest.writeLong(fileSize);
         dest.writeString(language);
     }
 }

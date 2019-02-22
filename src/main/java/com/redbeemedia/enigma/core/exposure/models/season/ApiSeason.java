@@ -16,12 +16,12 @@ import com.redbeemedia.enigma.core.util.JsonReaderUtil;
 public class ApiSeason implements Parcelable {
     private List<ApiExternalReference> externalReferences;
     private List<ApiLinkedEntity> linkedEntities;
-    private int episodeCount;
+    private long episodeCount;
     private String created;
     private List<ApiLocalizedData> localized;
-    private int startYear;
+    private long startYear;
     private String availableDate;
-    private int endYear;
+    private long endYear;
     private String tvShowId;
     private List<ApiTag> tags;
     private String seasonId;
@@ -44,7 +44,7 @@ public class ApiSeason implements Parcelable {
                     this.linkedEntities = JsonReaderUtil.readArray(jsonReader, ApiLinkedEntity.class);
                     break;
                 case "episodeCount":
-                    this.episodeCount = jsonReader.nextInt();
+                    this.episodeCount = jsonReader.nextLong();
                     break;
                 case "created":
                     this.created = jsonReader.nextString();
@@ -53,13 +53,13 @@ public class ApiSeason implements Parcelable {
                     this.localized = JsonReaderUtil.readArray(jsonReader, ApiLocalizedData.class);
                     break;
                 case "startYear":
-                    this.startYear = jsonReader.nextInt();
+                    this.startYear = jsonReader.nextLong();
                     break;
                 case "availableDate":
                     this.availableDate = jsonReader.nextString();
                     break;
                 case "endYear":
-                    this.endYear = jsonReader.nextInt();
+                    this.endYear = jsonReader.nextLong();
                     break;
                 case "tvShowId":
                     this.tvShowId = jsonReader.nextString();
@@ -98,7 +98,7 @@ public class ApiSeason implements Parcelable {
         return this.linkedEntities;
     }
 
-    public int getEpisodeCount() {
+    public long getEpisodeCount() {
         return this.episodeCount;
     }
 
@@ -110,7 +110,7 @@ public class ApiSeason implements Parcelable {
         return this.localized;
     }
 
-    public int getStartYear() {
+    public long getStartYear() {
         return this.startYear;
     }
 
@@ -118,7 +118,7 @@ public class ApiSeason implements Parcelable {
         return this.availableDate;
     }
 
-    public int getEndYear() {
+    public long getEndYear() {
         return this.endYear;
     }
 
@@ -160,12 +160,12 @@ public class ApiSeason implements Parcelable {
             ApiSeason object = new ApiSeason();
             object.externalReferences = in.createTypedArrayList(ApiExternalReference.CREATOR);
             object.linkedEntities = in.createTypedArrayList(ApiLinkedEntity.CREATOR);
-            object.episodeCount = in.readInt();
+            object.episodeCount = in.readLong();
             object.created = in.readString();
             object.localized = in.createTypedArrayList(ApiLocalizedData.CREATOR);
-            object.startYear = in.readInt();
+            object.startYear = in.readLong();
             object.availableDate = in.readString();
-            object.endYear = in.readInt();
+            object.endYear = in.readLong();
             object.tvShowId = in.readString();
             object.tags = in.createTypedArrayList(ApiTag.CREATOR);
             object.seasonId = in.readString();
@@ -185,12 +185,12 @@ public class ApiSeason implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeTypedList(externalReferences);
         dest.writeTypedList(linkedEntities);
-        dest.writeInt(episodeCount);
+        dest.writeLong(episodeCount);
         dest.writeString(created);
         dest.writeTypedList(localized);
-        dest.writeInt(startYear);
+        dest.writeLong(startYear);
         dest.writeString(availableDate);
-        dest.writeInt(endYear);
+        dest.writeLong(endYear);
         dest.writeString(tvShowId);
         dest.writeTypedList(tags);
         dest.writeString(seasonId);

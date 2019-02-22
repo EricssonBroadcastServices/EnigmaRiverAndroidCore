@@ -1,6 +1,9 @@
 package com.redbeemedia.enigma.core.json;
 
+import com.redbeemedia.enigma.core.error.EmptyResponseError;
 import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.UnexpectedError;
+import com.redbeemedia.enigma.core.error.UnexpectedHttpStatusError;
 import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.http.IHttpHandler;
 
@@ -34,7 +37,7 @@ import java.util.Map;
         if(httpCodeHandler != null) {
             httpCodeHandler.onResponse(status, inputStream);
         } else {
-            onError(Error.UNEXPECTED_ERROR);
+            onError(new UnexpectedHttpStatusError(status));
         }
     }
 
@@ -43,7 +46,7 @@ import java.util.Map;
         if(allowEmptyResponse) {
             onResponse(httpStatus, new ByteArrayInputStream(new byte[0]));
         } else {
-            onError(Error.EMPTY_RESPONSE);
+            onError(new EmptyResponseError("Expected a response."));
         }
     }
 
@@ -72,7 +75,7 @@ import java.util.Map;
 
     @Override
     public void onException(Exception e) {
-        onError(Error.UNEXPECTED_ERROR);
+        onError(new UnexpectedError(e));
     }
 
     protected interface IHttpCodeHandler {

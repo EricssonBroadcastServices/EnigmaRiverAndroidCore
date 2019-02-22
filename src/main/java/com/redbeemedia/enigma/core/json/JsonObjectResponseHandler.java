@@ -1,6 +1,7 @@
 package com.redbeemedia.enigma.core.json;
 
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.JsonResponseError;
+import com.redbeemedia.enigma.core.error.UnexpectedError;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,7 +21,7 @@ public abstract class JsonObjectResponseHandler extends InputStreamResponseHandl
     @Override
     public void onException(Exception e) {
         if(e instanceof JSONException) {
-            onError(Error.FAILED_TO_PARSE_RESPONSE_JSON);
+            onError(new JsonResponseError(new UnexpectedError(e)));
         } else {
             super.onException(e);
         }

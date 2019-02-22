@@ -9,31 +9,31 @@ import java.io.IOException;
 public class ApiAssetRights implements Parcelable {
     private boolean jailbrokenBlocked;
     private boolean downloadBlocked;
-    private int minBitrate;
+    private long minBitrate;
     private boolean streamingBlocked;
     private boolean threeGBlocked;
-    private int downloadMaxSecondsAfterPlay;
-    private int maxBitrate;
+    private long downloadMaxSecondsAfterPlay;
+    private long maxBitrate;
     private boolean sessionShiftEnabled;
     private boolean rwEnabled;
     private boolean amcDebugLogEnabled;
-    private int downloadMaxSecondsAfterDownload;
+    private long downloadMaxSecondsAfterDownload;
     private boolean locationEnabled;
     private boolean analyticsEnabled;
-    private int maxAds;
+    private long maxAds;
     private boolean HDMIBlocked;
     private boolean ffEnabled;
-    private int minPlayPosition;
-    private int maxResHeight;
+    private long minPlayPosition;
+    private long maxResHeight;
     private boolean wifiBlocked;
     private boolean fourGBlocked;
-    private int maxFileSize;
-    private int playCount;
+    private long maxFileSize;
+    private long playCount;
     private boolean airplayBlocked;
-    private int maxPlayPosition;
+    private long maxPlayPosition;
     private String expiration;
     private String activation;
-    private int maxResWidth;
+    private long maxResWidth;
 
 
     protected ApiAssetRights() {}//Protected constructor for Parcelable.Creator and Mocks
@@ -49,7 +49,7 @@ public class ApiAssetRights implements Parcelable {
                     this.downloadBlocked = jsonReader.nextBoolean();
                     break;
                 case "minBitrate":
-                    this.minBitrate = jsonReader.nextInt();
+                    this.minBitrate = jsonReader.nextLong();
                     break;
                 case "streamingBlocked":
                     this.streamingBlocked = jsonReader.nextBoolean();
@@ -58,10 +58,10 @@ public class ApiAssetRights implements Parcelable {
                     this.threeGBlocked = jsonReader.nextBoolean();
                     break;
                 case "downloadMaxSecondsAfterPlay":
-                    this.downloadMaxSecondsAfterPlay = jsonReader.nextInt();
+                    this.downloadMaxSecondsAfterPlay = jsonReader.nextLong();
                     break;
                 case "maxBitrate":
-                    this.maxBitrate = jsonReader.nextInt();
+                    this.maxBitrate = jsonReader.nextLong();
                     break;
                 case "sessionShiftEnabled":
                     this.sessionShiftEnabled = jsonReader.nextBoolean();
@@ -73,7 +73,7 @@ public class ApiAssetRights implements Parcelable {
                     this.amcDebugLogEnabled = jsonReader.nextBoolean();
                     break;
                 case "downloadMaxSecondsAfterDownload":
-                    this.downloadMaxSecondsAfterDownload = jsonReader.nextInt();
+                    this.downloadMaxSecondsAfterDownload = jsonReader.nextLong();
                     break;
                 case "locationEnabled":
                     this.locationEnabled = jsonReader.nextBoolean();
@@ -82,7 +82,7 @@ public class ApiAssetRights implements Parcelable {
                     this.analyticsEnabled = jsonReader.nextBoolean();
                     break;
                 case "maxAds":
-                    this.maxAds = jsonReader.nextInt();
+                    this.maxAds = jsonReader.nextLong();
                     break;
                 case "HDMIBlocked":
                     this.HDMIBlocked = jsonReader.nextBoolean();
@@ -91,10 +91,10 @@ public class ApiAssetRights implements Parcelable {
                     this.ffEnabled = jsonReader.nextBoolean();
                     break;
                 case "minPlayPosition":
-                    this.minPlayPosition = jsonReader.nextInt();
+                    this.minPlayPosition = jsonReader.nextLong();
                     break;
                 case "maxResHeight":
-                    this.maxResHeight = jsonReader.nextInt();
+                    this.maxResHeight = jsonReader.nextLong();
                     break;
                 case "wifiBlocked":
                     this.wifiBlocked = jsonReader.nextBoolean();
@@ -103,16 +103,16 @@ public class ApiAssetRights implements Parcelable {
                     this.fourGBlocked = jsonReader.nextBoolean();
                     break;
                 case "maxFileSize":
-                    this.maxFileSize = jsonReader.nextInt();
+                    this.maxFileSize = jsonReader.nextLong();
                     break;
                 case "playCount":
-                    this.playCount = jsonReader.nextInt();
+                    this.playCount = jsonReader.nextLong();
                     break;
                 case "airplayBlocked":
                     this.airplayBlocked = jsonReader.nextBoolean();
                     break;
                 case "maxPlayPosition":
-                    this.maxPlayPosition = jsonReader.nextInt();
+                    this.maxPlayPosition = jsonReader.nextLong();
                     break;
                 case "expiration":
                     this.expiration = jsonReader.nextString();
@@ -121,7 +121,7 @@ public class ApiAssetRights implements Parcelable {
                     this.activation = jsonReader.nextString();
                     break;
                 case "maxResWidth":
-                    this.maxResWidth = jsonReader.nextInt();
+                    this.maxResWidth = jsonReader.nextLong();
                     break;
                 default:
                     jsonReader.skipValue();
@@ -139,7 +139,7 @@ public class ApiAssetRights implements Parcelable {
         return this.downloadBlocked;
     }
 
-    public int getMinBitrate() {
+    public long getMinBitrate() {
         return this.minBitrate;
     }
 
@@ -151,11 +151,11 @@ public class ApiAssetRights implements Parcelable {
         return this.threeGBlocked;
     }
 
-    public int getDownloadMaxSecondsAfterPlay() {
+    public long getDownloadMaxSecondsAfterPlay() {
         return this.downloadMaxSecondsAfterPlay;
     }
 
-    public int getMaxBitrate() {
+    public long getMaxBitrate() {
         return this.maxBitrate;
     }
 
@@ -171,7 +171,7 @@ public class ApiAssetRights implements Parcelable {
         return this.amcDebugLogEnabled;
     }
 
-    public int getDownloadMaxSecondsAfterDownload() {
+    public long getDownloadMaxSecondsAfterDownload() {
         return this.downloadMaxSecondsAfterDownload;
     }
 
@@ -183,7 +183,7 @@ public class ApiAssetRights implements Parcelable {
         return this.analyticsEnabled;
     }
 
-    public int getMaxAds() {
+    public long getMaxAds() {
         return this.maxAds;
     }
 
@@ -195,11 +195,11 @@ public class ApiAssetRights implements Parcelable {
         return this.ffEnabled;
     }
 
-    public int getMinPlayPosition() {
+    public long getMinPlayPosition() {
         return this.minPlayPosition;
     }
 
-    public int getMaxResHeight() {
+    public long getMaxResHeight() {
         return this.maxResHeight;
     }
 
@@ -211,11 +211,11 @@ public class ApiAssetRights implements Parcelable {
         return this.fourGBlocked;
     }
 
-    public int getMaxFileSize() {
+    public long getMaxFileSize() {
         return this.maxFileSize;
     }
 
-    public int getPlayCount() {
+    public long getPlayCount() {
         return this.playCount;
     }
 
@@ -223,7 +223,7 @@ public class ApiAssetRights implements Parcelable {
         return this.airplayBlocked;
     }
 
-    public int getMaxPlayPosition() {
+    public long getMaxPlayPosition() {
         return this.maxPlayPosition;
     }
 
@@ -235,7 +235,7 @@ public class ApiAssetRights implements Parcelable {
         return this.activation;
     }
 
-    public int getMaxResWidth() {
+    public long getMaxResWidth() {
         return this.maxResWidth;
     }
 
@@ -249,31 +249,31 @@ public class ApiAssetRights implements Parcelable {
             ApiAssetRights object = new ApiAssetRights();
             object.jailbrokenBlocked = (in.readInt() != 0);
             object.downloadBlocked = (in.readInt() != 0);
-            object.minBitrate = in.readInt();
+            object.minBitrate = in.readLong();
             object.streamingBlocked = (in.readInt() != 0);
             object.threeGBlocked = (in.readInt() != 0);
-            object.downloadMaxSecondsAfterPlay = in.readInt();
-            object.maxBitrate = in.readInt();
+            object.downloadMaxSecondsAfterPlay = in.readLong();
+            object.maxBitrate = in.readLong();
             object.sessionShiftEnabled = (in.readInt() != 0);
             object.rwEnabled = (in.readInt() != 0);
             object.amcDebugLogEnabled = (in.readInt() != 0);
-            object.downloadMaxSecondsAfterDownload = in.readInt();
+            object.downloadMaxSecondsAfterDownload = in.readLong();
             object.locationEnabled = (in.readInt() != 0);
             object.analyticsEnabled = (in.readInt() != 0);
-            object.maxAds = in.readInt();
+            object.maxAds = in.readLong();
             object.HDMIBlocked = (in.readInt() != 0);
             object.ffEnabled = (in.readInt() != 0);
-            object.minPlayPosition = in.readInt();
-            object.maxResHeight = in.readInt();
+            object.minPlayPosition = in.readLong();
+            object.maxResHeight = in.readLong();
             object.wifiBlocked = (in.readInt() != 0);
             object.fourGBlocked = (in.readInt() != 0);
-            object.maxFileSize = in.readInt();
-            object.playCount = in.readInt();
+            object.maxFileSize = in.readLong();
+            object.playCount = in.readLong();
             object.airplayBlocked = (in.readInt() != 0);
-            object.maxPlayPosition = in.readInt();
+            object.maxPlayPosition = in.readLong();
             object.expiration = in.readString();
             object.activation = in.readString();
-            object.maxResWidth = in.readInt();
+            object.maxResWidth = in.readLong();
             return object;
         }
 
@@ -286,30 +286,30 @@ public class ApiAssetRights implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(jailbrokenBlocked ? 1 : 0);
         dest.writeInt(downloadBlocked ? 1 : 0);
-        dest.writeInt(minBitrate);
+        dest.writeLong(minBitrate);
         dest.writeInt(streamingBlocked ? 1 : 0);
         dest.writeInt(threeGBlocked ? 1 : 0);
-        dest.writeInt(downloadMaxSecondsAfterPlay);
-        dest.writeInt(maxBitrate);
+        dest.writeLong(downloadMaxSecondsAfterPlay);
+        dest.writeLong(maxBitrate);
         dest.writeInt(sessionShiftEnabled ? 1 : 0);
         dest.writeInt(rwEnabled ? 1 : 0);
         dest.writeInt(amcDebugLogEnabled ? 1 : 0);
-        dest.writeInt(downloadMaxSecondsAfterDownload);
+        dest.writeLong(downloadMaxSecondsAfterDownload);
         dest.writeInt(locationEnabled ? 1 : 0);
         dest.writeInt(analyticsEnabled ? 1 : 0);
-        dest.writeInt(maxAds);
+        dest.writeLong(maxAds);
         dest.writeInt(HDMIBlocked ? 1 : 0);
         dest.writeInt(ffEnabled ? 1 : 0);
-        dest.writeInt(minPlayPosition);
-        dest.writeInt(maxResHeight);
+        dest.writeLong(minPlayPosition);
+        dest.writeLong(maxResHeight);
         dest.writeInt(wifiBlocked ? 1 : 0);
         dest.writeInt(fourGBlocked ? 1 : 0);
-        dest.writeInt(maxFileSize);
-        dest.writeInt(playCount);
+        dest.writeLong(maxFileSize);
+        dest.writeLong(playCount);
         dest.writeInt(airplayBlocked ? 1 : 0);
-        dest.writeInt(maxPlayPosition);
+        dest.writeLong(maxPlayPosition);
         dest.writeString(expiration);
         dest.writeString(activation);
-        dest.writeInt(maxResWidth);
+        dest.writeLong(maxResWidth);
     }
 }

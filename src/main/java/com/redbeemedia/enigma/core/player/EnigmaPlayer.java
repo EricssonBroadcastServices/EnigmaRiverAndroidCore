@@ -2,7 +2,7 @@ package com.redbeemedia.enigma.core.player;
 
 import android.app.Activity;
 import android.net.Uri;
-import android.util.Pair;
+import android.os.Handler;
 
 import com.redbeemedia.enigma.core.activity.AbstractActivityLifecycleListener;
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleListener;
@@ -12,25 +12,26 @@ import com.redbeemedia.enigma.core.drm.DrmInfoFactory;
 import com.redbeemedia.enigma.core.drm.IDrmInfo;
 import com.redbeemedia.enigma.core.drm.IDrmProvider;
 import com.redbeemedia.enigma.core.error.Error;
-import com.redbeemedia.enigma.core.error.ExposureHttpError;
+import com.redbeemedia.enigma.core.error.NoSupportedMediaFormatsError;
 import com.redbeemedia.enigma.core.format.EnigmaMediaFormat;
-import com.redbeemedia.enigma.core.format.EnigmaMediaFormat.StreamFormat;
 import com.redbeemedia.enigma.core.format.EnigmaMediaFormat.DrmTechnology;
+import com.redbeemedia.enigma.core.format.EnigmaMediaFormat.StreamFormat;
 import com.redbeemedia.enigma.core.format.IMediaFormatSupportSpec;
 import com.redbeemedia.enigma.core.http.AuthenticatedExposureApiCall;
-import com.redbeemedia.enigma.core.http.HttpStatus;
-import com.redbeemedia.enigma.core.json.JsonInputStreamParser;
-import com.redbeemedia.enigma.core.json.JsonObjectResponseHandler;
 import com.redbeemedia.enigma.core.playable.IPlayable;
 import com.redbeemedia.enigma.core.playable.IPlayableHandler;
+import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
 import com.redbeemedia.enigma.core.session.ISession;
+import com.redbeemedia.enigma.core.util.Collector;
+import com.redbeemedia.enigma.core.util.HandlerWrapper;
+import com.redbeemedia.enigma.core.util.IHandler;
+import com.redbeemedia.enigma.core.util.ProxyCallback;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -47,10 +48,15 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     private EnigmaPlayerEnvironment environment = new EnigmaPlayerEnvironment();
     private WeakReference<Activity> weakActivity = new WeakReference<>(null);
     private IActivityLifecycleListener activityLifecycleListener;
+    private Collector<IEnigmaPlayerListener> enigmaPlayerCollector;
+    private IEnigmaPlayerListener enigmaPlayerListeners;
 
     public EnigmaPlayer(ISession session, IPlayerImplementation playerImplementation) {
         this.session = session;
         this.playerImplementation = playerImplementation;
+        EnigmaPlayerCollector playerCollector = new EnigmaPlayerCollector();
+        this.enigmaPlayerCollector = playerCollector;
+        this.enigmaPlayerListeners = playerCollector;
         this.playerImplementation.install(environment);
         this.activityLifecycleListener = new AbstractActivityLifecycleListener() {
             @Override
@@ -78,6 +84,27 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         playable.useWith(new PlayableHandler(playRequest));
     }
 
+    @Override
+    public boolean addListener(IEnigmaPlayerListener playerListener) {
+        return enigmaPlayerCollector.addListener(playerListener);
+    }
+
+    @Override
+    public boolean removeListener(IEnigmaPlayerListener playerListener) {
+        return enigmaPlayerCollector.removeListener(playerListener);
+    }
+
+    @Override
+    public EnigmaPlayer setCallbackHandler(Handler handler) {
+        return (EnigmaPlayer) setCallbackHandler(new HandlerWrapper(handler));
+    }
+
+    @Override
+    public EnigmaPlayer setCallbackHandler(IHandler handler) {
+        this.enigmaPlayerListeners = ProxyCallback.createCallbackOnThread(handler, IEnigmaPlayerListener.class, (IEnigmaPlayerListener) enigmaPlayerCollector);
+        return this;
+    }
+
     private class PlayableHandler implements IPlayableHandler {
         private IPlayRequest playRequest;
 
@@ -95,7 +122,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                 throw new RuntimeException(e);
             }
             AuthenticatedExposureApiCall apiCall = new AuthenticatedExposureApiCall("GET", session);
-            EnigmaRiverContext.getHttpHandler().doHttp(url, apiCall, new PlayResponseHandler() {
+            EnigmaRiverContext.getHttpHandler().doHttp(url, apiCall, new PlayResponseHandler(assetId) {
                 @Override
                 protected void onError(Error error) {
                     playRequest.onError(error);
@@ -123,8 +150,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                         //TODO here we also need to create a playback-session
                         playerImplementation.startPlayback(manifestUrl);
                     } else {
-                        //TODO handle better?
-                        onError(Error.NO_SUPPORTED_MEDIAFORMAT_FOUND);
+                        onError(new NoSupportedMediaFormatsError("Could not find a media format supported by the current player implementation."));
                     }
                 }
             });
@@ -137,63 +163,6 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         }
     }
 
-    private abstract static class PlayResponseHandler extends JsonObjectResponseHandler {
-        private JsonErrorMessageHandler jsonErrorMessageHandler = new JsonErrorMessageHandler();
-
-        public PlayResponseHandler() {
-            handleErrorCode(400, Error.UNEXPECTED_ERROR);
-            handleErrorCodeAndErrorMessage(401, "NO_SESSION_TOKEN", Error.UNEXPECTED_ERROR);
-            handleErrorCodeAndErrorMessage(401, "INVALID_SESSION_TOKEN", Error.INVALID_SESSION);
-
-            handleErrorCodeAndErrorMessage(403, "FORBIDDEN", Error.UNKNOWN_BUSINESS_UNIT);
-            handleErrorCodeAndErrorMessage(403, "NOT_ENTITLED", Error.NOT_ENTITLED);
-            handleErrorCodeAndErrorMessage(403, "DEVICE_BLOCKED", Error.DEVICE_BLOCKED);
-            handleErrorCodeAndErrorMessage(403, "GEO_BLOCKED", Error.GEO_BLOCKED);
-            handleErrorCodeAndErrorMessage(403, "ANONYMOUS_IP_BLOCKED", Error.ANONYMOUS_IP_BLOCKED);
-            handleErrorCodeAndErrorMessage(403, "LICENSE_EXPIRED", Error.EXPIRED_ASSET);
-            handleErrorCodeAndErrorMessage(403, "NOT_AVAILABLE_IN_FORMAT", Error.UNEXPECTED_ERROR); //TODO When the playerImplementation provides capabilities, we can request those. If there are none available that we can play, we should send some kind of "supported formats for playerimplementation"
-            handleErrorCodeAndErrorMessage(403, "NOT_ENABLED", Error.NOT_ENABLED);
-            //TODO maybe a lot of these errors should be more generic, and then it's up to the
-            //app developer to check if the asset CAN be played before a play-call.
-            handleErrorCodeAndErrorMessage(403, "CONCURRENT_STREAMS_LIMIT_REACHED", Error.TOO_MANY_CONCURRENT_STREAMS);
-            handleErrorCodeAndErrorMessage(403, "CONCURRENT_STREAMS_TVOD_LIMIT_REACHED", Error.TOO_MANY_CONCURRENT_TVODS);
-            handleErrorCodeAndErrorMessage(403, "CONCURRENT_STREAMS_SVOD_LIMIT_REACHED", Error.TOO_MANY_CONCURRENT_SVODS);
-
-            handleErrorCodeAndErrorMessage(404, "UNKNOWN_BUSINESS_UNIT",Error.UNKNOWN_BUSINESS_UNIT);
-            //TODO change error for UNKNOWN_ASSET to "unknown asset" or something
-            handleErrorCodeAndErrorMessage(404, "UNKNOWN_ASSET",Error.TODO);
-
-            handleErrorCode(422, Error.UNEXPECTED_ERROR);
-        }
-
-        private void handleErrorCodeAndErrorMessage(int httpCode, String errorMessage, Error errorToUse) {
-            jsonErrorMessageHandler.handleErrorCodeAndErrorMessage(httpCode, errorMessage, errorToUse);
-            handleErrorCode(httpCode, jsonErrorMessageHandler);
-        }
-
-        private class JsonErrorMessageHandler implements IHttpCodeHandler {
-            private Map<Pair<Integer,String>, Error> errorMap = new HashMap<>();
-            @Override
-            public void onResponse(HttpStatus httpStatus, InputStream inputStream) {
-                try {
-                    JSONObject errorJson = JsonInputStreamParser.obtain().parse(inputStream);
-                    ExposureHttpError exposureHttpError = new ExposureHttpError(errorJson);
-                    Error errorToUse = errorMap.get(Pair.create(exposureHttpError.getHttpCode(), exposureHttpError.getMessage()));
-                    if(errorToUse != null) {
-                        onError(errorToUse);
-                    } else {
-                        onError(Error.UNEXPECTED_ERROR);
-                    }
-                } catch (JSONException e) {
-                    onError(Error.UNEXPECTED_ERROR);
-                }
-            }
-
-            private void handleErrorCodeAndErrorMessage(int httpCode, String errorMessage, Error errorToUse) {
-                errorMap.put(Pair.create(httpCode, errorMessage), errorToUse);
-            }
-        }
-    }
 
     private static JSONObject getUsableMediaFormat(JSONArray formats, IMediaFormatSupportSpec formatSupportSpec) throws JSONException {
         Map<EnigmaMediaFormat, JSONObject> foundFormats = new HashMap<>();
@@ -262,6 +231,16 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         @Override
         public void setMediaFormatSupportSpec(IMediaFormatSupportSpec formatSupportSpec) {
             this.formatSupportSpec = formatSupportSpec;
+        }
+
+        @Override
+        public IPlayerImplementationListener getPlayerImplementationListener() {
+            return new IPlayerImplementationListener() {
+                @Override
+                public void onError(Error error) {
+                    enigmaPlayerListeners.onPlaybackError(error);
+                }
+            };
         }
 
         public void setDrmInfo(IDrmInfo drmInfo) {

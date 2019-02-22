@@ -7,9 +7,9 @@ import java.io.IOException;
 
 
 public class ApiVideoTrackInfo implements Parcelable {
-    private int fileSize;
+    private long fileSize;
     private String targetBitrate;
-    private int height;
+    private long height;
 
 
     protected ApiVideoTrackInfo() {}//Protected constructor for Parcelable.Creator and Mocks
@@ -19,13 +19,13 @@ public class ApiVideoTrackInfo implements Parcelable {
         while (jsonReader.hasNext()) {
             switch (jsonReader.nextName()) {
                 case "fileSize":
-                    this.fileSize = jsonReader.nextInt();
+                    this.fileSize = jsonReader.nextLong();
                     break;
                 case "targetBitrate":
                     this.targetBitrate = jsonReader.nextString();
                     break;
                 case "height":
-                    this.height = jsonReader.nextInt();
+                    this.height = jsonReader.nextLong();
                     break;
                 default:
                     jsonReader.skipValue();
@@ -35,7 +35,7 @@ public class ApiVideoTrackInfo implements Parcelable {
     }
 
 
-    public int getFileSize() {
+    public long getFileSize() {
         return this.fileSize;
     }
 
@@ -43,7 +43,7 @@ public class ApiVideoTrackInfo implements Parcelable {
         return this.targetBitrate;
     }
 
-    public int getHeight() {
+    public long getHeight() {
         return this.height;
     }
 
@@ -55,9 +55,9 @@ public class ApiVideoTrackInfo implements Parcelable {
     public static final Parcelable.Creator<ApiVideoTrackInfo> CREATOR = new Parcelable.Creator<ApiVideoTrackInfo>() {
         public ApiVideoTrackInfo createFromParcel(Parcel in) {
             ApiVideoTrackInfo object = new ApiVideoTrackInfo();
-            object.fileSize = in.readInt();
+            object.fileSize = in.readLong();
             object.targetBitrate = in.readString();
-            object.height = in.readInt();
+            object.height = in.readLong();
             return object;
         }
 
@@ -68,8 +68,8 @@ public class ApiVideoTrackInfo implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(fileSize);
+        dest.writeLong(fileSize);
         dest.writeString(targetBitrate);
-        dest.writeInt(height);
+        dest.writeLong(height);
     }
 }

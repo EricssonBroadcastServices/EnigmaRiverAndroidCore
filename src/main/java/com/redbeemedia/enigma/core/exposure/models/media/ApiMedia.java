@@ -9,12 +9,12 @@ import java.io.IOException;
 public class ApiMedia implements Parcelable {
     private String format;
     private String name;
-    private int width;
-    private int durationMillis;
+    private long width;
+    private long durationMillis;
     private String mediaId;
     private String drm;
     private String programId;
-    private int height;
+    private long height;
     private String status;
 
 
@@ -31,10 +31,10 @@ public class ApiMedia implements Parcelable {
                     this.name = jsonReader.nextString();
                     break;
                 case "width":
-                    this.width = jsonReader.nextInt();
+                    this.width = jsonReader.nextLong();
                     break;
                 case "durationMillis":
-                    this.durationMillis = jsonReader.nextInt();
+                    this.durationMillis = jsonReader.nextLong();
                     break;
                 case "mediaId":
                     this.mediaId = jsonReader.nextString();
@@ -46,7 +46,7 @@ public class ApiMedia implements Parcelable {
                     this.programId = jsonReader.nextString();
                     break;
                 case "height":
-                    this.height = jsonReader.nextInt();
+                    this.height = jsonReader.nextLong();
                     break;
                 case "status":
                     this.status = jsonReader.nextString();
@@ -67,11 +67,11 @@ public class ApiMedia implements Parcelable {
         return this.name;
     }
 
-    public int getWidth() {
+    public long getWidth() {
         return this.width;
     }
 
-    public int getDurationMillis() {
+    public long getDurationMillis() {
         return this.durationMillis;
     }
 
@@ -87,7 +87,7 @@ public class ApiMedia implements Parcelable {
         return this.programId;
     }
 
-    public int getHeight() {
+    public long getHeight() {
         return this.height;
     }
 
@@ -105,12 +105,12 @@ public class ApiMedia implements Parcelable {
             ApiMedia object = new ApiMedia();
             object.format = in.readString();
             object.name = in.readString();
-            object.width = in.readInt();
-            object.durationMillis = in.readInt();
+            object.width = in.readLong();
+            object.durationMillis = in.readLong();
             object.mediaId = in.readString();
             object.drm = in.readString();
             object.programId = in.readString();
-            object.height = in.readInt();
+            object.height = in.readLong();
             object.status = in.readString();
             return object;
         }
@@ -124,12 +124,12 @@ public class ApiMedia implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(format);
         dest.writeString(name);
-        dest.writeInt(width);
-        dest.writeInt(durationMillis);
+        dest.writeLong(width);
+        dest.writeLong(durationMillis);
         dest.writeString(mediaId);
         dest.writeString(drm);
         dest.writeString(programId);
-        dest.writeInt(height);
+        dest.writeLong(height);
         dest.writeString(status);
     }
 }

@@ -10,10 +10,10 @@ import com.redbeemedia.enigma.core.util.JsonReaderUtil;
 
 
 public class ApiEpgSearchHits implements Parcelable {
-    private int pageNumber;
+    private long pageNumber;
     private String suggestion;
-    private int pageSize;
-    private int totalCount;
+    private long pageSize;
+    private long totalCount;
     private List<ApiChannelEPGResponse> items;
 
 
@@ -24,16 +24,16 @@ public class ApiEpgSearchHits implements Parcelable {
         while (jsonReader.hasNext()) {
             switch (jsonReader.nextName()) {
                 case "pageNumber":
-                    this.pageNumber = jsonReader.nextInt();
+                    this.pageNumber = jsonReader.nextLong();
                     break;
                 case "suggestion":
                     this.suggestion = jsonReader.nextString();
                     break;
                 case "pageSize":
-                    this.pageSize = jsonReader.nextInt();
+                    this.pageSize = jsonReader.nextLong();
                     break;
                 case "totalCount":
-                    this.totalCount = jsonReader.nextInt();
+                    this.totalCount = jsonReader.nextLong();
                     break;
                 case "items":
                     this.items = JsonReaderUtil.readArray(jsonReader, ApiChannelEPGResponse.class);
@@ -46,7 +46,7 @@ public class ApiEpgSearchHits implements Parcelable {
     }
 
 
-    public int getPageNumber() {
+    public long getPageNumber() {
         return this.pageNumber;
     }
 
@@ -54,11 +54,11 @@ public class ApiEpgSearchHits implements Parcelable {
         return this.suggestion;
     }
 
-    public int getPageSize() {
+    public long getPageSize() {
         return this.pageSize;
     }
 
-    public int getTotalCount() {
+    public long getTotalCount() {
         return this.totalCount;
     }
 
@@ -74,10 +74,10 @@ public class ApiEpgSearchHits implements Parcelable {
     public static final Parcelable.Creator<ApiEpgSearchHits> CREATOR = new Parcelable.Creator<ApiEpgSearchHits>() {
         public ApiEpgSearchHits createFromParcel(Parcel in) {
             ApiEpgSearchHits object = new ApiEpgSearchHits();
-            object.pageNumber = in.readInt();
+            object.pageNumber = in.readLong();
             object.suggestion = in.readString();
-            object.pageSize = in.readInt();
-            object.totalCount = in.readInt();
+            object.pageSize = in.readLong();
+            object.totalCount = in.readLong();
             object.items = in.createTypedArrayList(ApiChannelEPGResponse.CREATOR);
             return object;
         }
@@ -89,10 +89,10 @@ public class ApiEpgSearchHits implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(pageNumber);
+        dest.writeLong(pageNumber);
         dest.writeString(suggestion);
-        dest.writeInt(pageSize);
-        dest.writeInt(totalCount);
+        dest.writeLong(pageSize);
+        dest.writeLong(totalCount);
         dest.writeTypedList(items);
     }
 }

@@ -7,10 +7,10 @@ import java.io.IOException;
 
 
 public class ApiUserAssetPlayHistory implements Parcelable {
-    private int lastViewedTime;
+    private long lastViewedTime;
     private String errorMessage;
     private String channelId;
-    private int lastViewedOffset;
+    private long lastViewedOffset;
     private String programId;
 
 
@@ -21,7 +21,7 @@ public class ApiUserAssetPlayHistory implements Parcelable {
         while (jsonReader.hasNext()) {
             switch (jsonReader.nextName()) {
                 case "lastViewedTime":
-                    this.lastViewedTime = jsonReader.nextInt();
+                    this.lastViewedTime = jsonReader.nextLong();
                     break;
                 case "errorMessage":
                     this.errorMessage = jsonReader.nextString();
@@ -30,7 +30,7 @@ public class ApiUserAssetPlayHistory implements Parcelable {
                     this.channelId = jsonReader.nextString();
                     break;
                 case "lastViewedOffset":
-                    this.lastViewedOffset = jsonReader.nextInt();
+                    this.lastViewedOffset = jsonReader.nextLong();
                     break;
                 case "programId":
                     this.programId = jsonReader.nextString();
@@ -43,7 +43,7 @@ public class ApiUserAssetPlayHistory implements Parcelable {
     }
 
 
-    public int getLastViewedTime() {
+    public long getLastViewedTime() {
         return this.lastViewedTime;
     }
 
@@ -55,7 +55,7 @@ public class ApiUserAssetPlayHistory implements Parcelable {
         return this.channelId;
     }
 
-    public int getLastViewedOffset() {
+    public long getLastViewedOffset() {
         return this.lastViewedOffset;
     }
 
@@ -71,10 +71,10 @@ public class ApiUserAssetPlayHistory implements Parcelable {
     public static final Parcelable.Creator<ApiUserAssetPlayHistory> CREATOR = new Parcelable.Creator<ApiUserAssetPlayHistory>() {
         public ApiUserAssetPlayHistory createFromParcel(Parcel in) {
             ApiUserAssetPlayHistory object = new ApiUserAssetPlayHistory();
-            object.lastViewedTime = in.readInt();
+            object.lastViewedTime = in.readLong();
             object.errorMessage = in.readString();
             object.channelId = in.readString();
-            object.lastViewedOffset = in.readInt();
+            object.lastViewedOffset = in.readLong();
             object.programId = in.readString();
             return object;
         }
@@ -86,10 +86,10 @@ public class ApiUserAssetPlayHistory implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(lastViewedTime);
+        dest.writeLong(lastViewedTime);
         dest.writeString(errorMessage);
         dest.writeString(channelId);
-        dest.writeInt(lastViewedOffset);
+        dest.writeLong(lastViewedOffset);
         dest.writeString(programId);
     }
 }

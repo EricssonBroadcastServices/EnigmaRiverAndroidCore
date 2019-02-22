@@ -7,7 +7,7 @@ import java.io.IOException;
 
 
 public class ApiTrackInfo implements Parcelable {
-    private int fileSize;
+    private long fileSize;
     private String targetBitrate;
 
 
@@ -18,7 +18,7 @@ public class ApiTrackInfo implements Parcelable {
         while (jsonReader.hasNext()) {
             switch (jsonReader.nextName()) {
                 case "fileSize":
-                    this.fileSize = jsonReader.nextInt();
+                    this.fileSize = jsonReader.nextLong();
                     break;
                 case "targetBitrate":
                     this.targetBitrate = jsonReader.nextString();
@@ -31,7 +31,7 @@ public class ApiTrackInfo implements Parcelable {
     }
 
 
-    public int getFileSize() {
+    public long getFileSize() {
         return this.fileSize;
     }
 
@@ -47,7 +47,7 @@ public class ApiTrackInfo implements Parcelable {
     public static final Parcelable.Creator<ApiTrackInfo> CREATOR = new Parcelable.Creator<ApiTrackInfo>() {
         public ApiTrackInfo createFromParcel(Parcel in) {
             ApiTrackInfo object = new ApiTrackInfo();
-            object.fileSize = in.readInt();
+            object.fileSize = in.readLong();
             object.targetBitrate = in.readString();
             return object;
         }
@@ -59,7 +59,7 @@ public class ApiTrackInfo implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(fileSize);
+        dest.writeLong(fileSize);
         dest.writeString(targetBitrate);
     }
 }

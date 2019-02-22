@@ -8,10 +8,10 @@ import java.io.IOException;
 
 public class ApiImage implements Parcelable {
     private String orientation;
-    private int width;
+    private long width;
     private String type;
     private String url;
-    private int height;
+    private long height;
 
 
     protected ApiImage() {}//Protected constructor for Parcelable.Creator and Mocks
@@ -24,7 +24,7 @@ public class ApiImage implements Parcelable {
                     this.orientation = jsonReader.nextString();
                     break;
                 case "width":
-                    this.width = jsonReader.nextInt();
+                    this.width = jsonReader.nextLong();
                     break;
                 case "type":
                     this.type = jsonReader.nextString();
@@ -33,7 +33,7 @@ public class ApiImage implements Parcelable {
                     this.url = jsonReader.nextString();
                     break;
                 case "height":
-                    this.height = jsonReader.nextInt();
+                    this.height = jsonReader.nextLong();
                     break;
                 default:
                     jsonReader.skipValue();
@@ -47,7 +47,7 @@ public class ApiImage implements Parcelable {
         return this.orientation;
     }
 
-    public int getWidth() {
+    public long getWidth() {
         return this.width;
     }
 
@@ -59,7 +59,7 @@ public class ApiImage implements Parcelable {
         return this.url;
     }
 
-    public int getHeight() {
+    public long getHeight() {
         return this.height;
     }
 
@@ -72,10 +72,10 @@ public class ApiImage implements Parcelable {
         public ApiImage createFromParcel(Parcel in) {
             ApiImage object = new ApiImage();
             object.orientation = in.readString();
-            object.width = in.readInt();
+            object.width = in.readLong();
             object.type = in.readString();
             object.url = in.readString();
-            object.height = in.readInt();
+            object.height = in.readLong();
             return object;
         }
 
@@ -87,9 +87,9 @@ public class ApiImage implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(orientation);
-        dest.writeInt(width);
+        dest.writeLong(width);
         dest.writeString(type);
         dest.writeString(url);
-        dest.writeInt(height);
+        dest.writeLong(height);
     }
 }

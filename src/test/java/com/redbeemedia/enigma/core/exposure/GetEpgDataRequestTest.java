@@ -3,6 +3,7 @@ package com.redbeemedia.enigma.core.exposure;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
 import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.UnexpectedError;
 import com.redbeemedia.enigma.core.exposure.models.channel.ApiChannelEPGResponse;
 import com.redbeemedia.enigma.core.http.IHttpCall;
 import com.redbeemedia.enigma.core.session.MockSession;
@@ -66,7 +67,7 @@ public class GetEpgDataRequestTest {
         GetEpgDataRequest getEpgDataRequest = new GetEpgDataRequest(0, 1, responseHandler);
         onSuccessCalled.assertNotSet();
         onErrorCalled.assertNotSet();
-        getEpgDataRequest.onError(Error.UNEXPECTED_ERROR);
+        getEpgDataRequest.onError(new UnexpectedError("Fail!"));
         onSuccessCalled.assertNotSet();
         onErrorCalled.assertSet();
     }

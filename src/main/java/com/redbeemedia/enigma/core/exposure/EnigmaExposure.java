@@ -5,6 +5,8 @@ import android.util.JsonReader;
 
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.JsonResponseError;
+import com.redbeemedia.enigma.core.error.UnexpectedError;
 import com.redbeemedia.enigma.core.http.IHttpCall;
 import com.redbeemedia.enigma.core.json.JsonReaderResponseHandler;
 import com.redbeemedia.enigma.core.session.ISession;
@@ -39,7 +41,7 @@ public class EnigmaExposure {
             IHttpCall httpCall = request.getHttpCall(session);
             EnigmaRiverContext.getHttpHandler().doHttp(url, httpCall, new ExposureResponseHandler<>(request));
         } catch (MalformedURLException e) {
-            request.onError(Error.UNEXPECTED_ERROR);
+            request.onError(new UnexpectedError(e, "Constructed URL for http call malformed."));
         }
     }
 
@@ -57,10 +59,10 @@ public class EnigmaExposure {
             try {
                 successObject = parsingMethod.parse(jsonReader);
             } catch (IOException e) {
-                onError(Error.FAILED_TO_PARSE_RESPONSE_JSON);
+                onError(new JsonResponseError("Failed to parse response json from Exposure.",new UnexpectedError(e)));
                 return;
             } catch (Exception e) {
-                onError(Error.UNEXPECTED_ERROR);
+                onError(new UnexpectedError(e));
                 return;
             }
             getExposureRequestCallback().onSuccess(successObject);

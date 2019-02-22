@@ -10,7 +10,7 @@ import com.redbeemedia.enigma.core.util.JsonReaderUtil;
 
 
 public class ApiChannelEPGResponse implements Parcelable {
-    private int totalHitsAllChannels;
+    private long totalHitsAllChannels;
     private List<ApiProgramResponse> programs;
     private String channelId;
 
@@ -22,7 +22,7 @@ public class ApiChannelEPGResponse implements Parcelable {
         while (jsonReader.hasNext()) {
             switch (jsonReader.nextName()) {
                 case "totalHitsAllChannels":
-                    this.totalHitsAllChannels = jsonReader.nextInt();
+                    this.totalHitsAllChannels = jsonReader.nextLong();
                     break;
                 case "programs":
                     this.programs = JsonReaderUtil.readArray(jsonReader, ApiProgramResponse.class);
@@ -38,7 +38,7 @@ public class ApiChannelEPGResponse implements Parcelable {
     }
 
 
-    public int getTotalHitsAllChannels() {
+    public long getTotalHitsAllChannels() {
         return this.totalHitsAllChannels;
     }
 
@@ -58,7 +58,7 @@ public class ApiChannelEPGResponse implements Parcelable {
     public static final Parcelable.Creator<ApiChannelEPGResponse> CREATOR = new Parcelable.Creator<ApiChannelEPGResponse>() {
         public ApiChannelEPGResponse createFromParcel(Parcel in) {
             ApiChannelEPGResponse object = new ApiChannelEPGResponse();
-            object.totalHitsAllChannels = in.readInt();
+            object.totalHitsAllChannels = in.readLong();
             object.programs = in.createTypedArrayList(ApiProgramResponse.CREATOR);
             object.channelId = in.readString();
             return object;
@@ -71,7 +71,7 @@ public class ApiChannelEPGResponse implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(totalHitsAllChannels);
+        dest.writeLong(totalHitsAllChannels);
         dest.writeTypedList(programs);
         dest.writeString(channelId);
     }

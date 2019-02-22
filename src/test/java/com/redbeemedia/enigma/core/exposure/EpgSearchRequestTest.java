@@ -3,6 +3,7 @@ package com.redbeemedia.enigma.core.exposure;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
 import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.UnexpectedError;
 import com.redbeemedia.enigma.core.exposure.models.epg.ApiEpgSearchHits;
 import com.redbeemedia.enigma.core.exposure.models.epg.MockApiEpgSearchHits;
 import com.redbeemedia.enigma.core.http.IHttpCall;
@@ -69,7 +70,7 @@ public class EpgSearchRequestTest {
         EpgSearchRequest request = new EpgSearchRequest(0, 1, "queryString:yes",responseHandler);
         onSuccessCalled.assertNotSet();
         onErrorCalled.assertNotSet();
-        request.onError(Error.UNEXPECTED_ERROR);
+        request.onError(new UnexpectedError("Fail!"));
         onSuccessCalled.assertNotSet();
         onErrorCalled.assertSet();
     }

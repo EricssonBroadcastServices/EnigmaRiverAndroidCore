@@ -27,7 +27,7 @@ public class ApiAsset implements Parcelable {
     private List<ApiLocalizedData> localized;
     private double rating;
     private String episode;
-    private int productionYear;
+    private long productionYear;
     private String type;
     private List<String> productionCountries;
     private List<String> audioTracks;
@@ -43,7 +43,7 @@ public class ApiAsset implements Parcelable {
     private String releaseDate;
     private String created;
     private List<ApiParentalRating> parentalRatings;
-    private int runtime;
+    private long runtime;
     private String tvShowId;
     private List<ApiTag> tags;
     private List<ApiMedia> medias;
@@ -80,7 +80,7 @@ public class ApiAsset implements Parcelable {
                     this.episode = jsonReader.nextString();
                     break;
                 case "productionYear":
-                    this.productionYear = jsonReader.nextInt();
+                    this.productionYear = jsonReader.nextLong();
                     break;
                 case "type":
                     this.type = jsonReader.nextString();
@@ -128,7 +128,7 @@ public class ApiAsset implements Parcelable {
                     this.parentalRatings = JsonReaderUtil.readArray(jsonReader, ApiParentalRating.class);
                     break;
                 case "runtime":
-                    this.runtime = jsonReader.nextInt();
+                    this.runtime = jsonReader.nextLong();
                     break;
                 case "tvShowId":
                     this.tvShowId = jsonReader.nextString();
@@ -189,7 +189,7 @@ public class ApiAsset implements Parcelable {
         return this.episode;
     }
 
-    public int getProductionYear() {
+    public long getProductionYear() {
         return this.productionYear;
     }
 
@@ -253,7 +253,7 @@ public class ApiAsset implements Parcelable {
         return this.parentalRatings;
     }
 
-    public int getRuntime() {
+    public long getRuntime() {
         return this.runtime;
     }
 
@@ -307,7 +307,7 @@ public class ApiAsset implements Parcelable {
             object.localized = in.createTypedArrayList(ApiLocalizedData.CREATOR);
             object.rating = in.readDouble();
             object.episode = in.readString();
-            object.productionYear = in.readInt();
+            object.productionYear = in.readLong();
             object.type = in.readString();
             object.productionCountries = in.createStringArrayList();
             object.audioTracks = in.createStringArrayList();
@@ -323,7 +323,7 @@ public class ApiAsset implements Parcelable {
             object.releaseDate = in.readString();
             object.created = in.readString();
             object.parentalRatings = in.createTypedArrayList(ApiParentalRating.CREATOR);
-            object.runtime = in.readInt();
+            object.runtime = in.readLong();
             object.tvShowId = in.readString();
             object.tags = in.createTypedArrayList(ApiTag.CREATOR);
             object.medias = in.createTypedArrayList(ApiMedia.CREATOR);
@@ -349,7 +349,7 @@ public class ApiAsset implements Parcelable {
         dest.writeTypedList(localized);
         dest.writeDouble(rating);
         dest.writeString(episode);
-        dest.writeInt(productionYear);
+        dest.writeLong(productionYear);
         dest.writeString(type);
         dest.writeStringList(productionCountries);
         dest.writeStringList(audioTracks);
@@ -365,7 +365,7 @@ public class ApiAsset implements Parcelable {
         dest.writeString(releaseDate);
         dest.writeString(created);
         dest.writeTypedList(parentalRatings);
-        dest.writeInt(runtime);
+        dest.writeLong(runtime);
         dest.writeString(tvShowId);
         dest.writeTypedList(tags);
         dest.writeTypedList(medias);

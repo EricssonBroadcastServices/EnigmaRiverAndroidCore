@@ -6,4 +6,5 @@ import com.redbeemedia.enigma.core.format.IMediaFormatSupportSpec;
 public interface IEnigmaPlayerEnvironment {
     IDrmProvider getDrmProvider();
     void setMediaFormatSupportSpec(IMediaFormatSupportSpec formatSupportSpec);
+    IPlayerImplementationListener getPlayerImplementationListener();
 }

@@ -7,7 +7,7 @@ import java.io.IOException;
 
 
 public class Marker implements Parcelable {
-    private int offset;
+    private long offset;
     private String adMarkerType;
     private String url;
 
@@ -19,7 +19,7 @@ public class Marker implements Parcelable {
         while (jsonReader.hasNext()) {
             switch (jsonReader.nextName()) {
                 case "offset":
-                    this.offset = jsonReader.nextInt();
+                    this.offset = jsonReader.nextLong();
                     break;
                 case "adMarkerType":
                     this.adMarkerType = jsonReader.nextString();
@@ -35,7 +35,7 @@ public class Marker implements Parcelable {
     }
 
 
-    public int getOffset() {
+    public long getOffset() {
         return this.offset;
     }
 
@@ -55,7 +55,7 @@ public class Marker implements Parcelable {
     public static final Parcelable.Creator<Marker> CREATOR = new Parcelable.Creator<Marker>() {
         public Marker createFromParcel(Parcel in) {
             Marker object = new Marker();
-            object.offset = in.readInt();
+            object.offset = in.readLong();
             object.adMarkerType = in.readString();
             object.url = in.readString();
             return object;
@@ -68,7 +68,7 @@ public class Marker implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(offset);
+        dest.writeLong(offset);
         dest.writeString(adMarkerType);
         dest.writeString(url);
     }

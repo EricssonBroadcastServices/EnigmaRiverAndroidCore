@@ -1,56 +1,77 @@
 package com.redbeemedia.enigma.core.error;
 
-public class Error {
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
 
-    public static final Error DEVICE_LIMIT_EXCEEDED = new Error(ErrorType.NetworkError,"The account is not allowed to register more devices");
-    public static final Error SESSION_LIMIT_EXCEEDED = new Error(ErrorType.NetworkError,"The account has maximum allowed sessions");
-    public static final Error UNKNOWN_DEVICE_ID = new Error(ErrorType.NetworkError,"Device body is missing or the device ID is not found");
-    public static final Error INVALID_JSON = new Error(ErrorType.NetworkError,"Received JSON is not valid");
-    public static final Error THIRD_PARTY_ERROR = new Error(ErrorType.NetworkError,"Third party login generate error message, for detail error code see field extendedMessage");
-
-    public static final Error FAILED_TO_PARSE_RESPONSE_JSON = new Error(ErrorType.NetworkError,"Failed to parse json");
-    public static final Error EMPTY_RESPONSE = new Error(ErrorType.UnknownError,"Empty response");
-    public static final Error NETWORK_ERROR = new Error(ErrorType.NetworkError,"Network error");
-    public static final Error INCORRECT_CREDENTIALS = new Error(ErrorType.NetworkError,"Underlying CRM does not accept the given credentials");
-    public static final Error INVALID_SESSION_TOKEN = new Error(ErrorType.NetworkError,"Session token is invalid");
-    public static final Error UNKNOWN_BUSINESS_UNIT = new Error(ErrorType.NetworkError,null);
-    public static final Error UNEXPECTED_ERROR = new Error(ErrorType.UnknownError,"Something went wrong");
-    public static final Error TODO = new Error(ErrorType.UnknownError, "PLACEHOLDER ERROR"); //TODO remove
-    public static final Error INVALID_SESSION = new Error(ErrorType.EnigmaError, null); //TODO remove messages
-    public static final Error NOT_ENTITLED = new Error(ErrorType.EntitlementError, null) ;
-    public static final Error DEVICE_BLOCKED = new Error(ErrorType.EntitlementError, null);
-    public static final Error GEO_BLOCKED = new Error(ErrorType.EntitlementError, null);
-    public static final Error ANONYMOUS_IP_BLOCKED = new Error(ErrorType.EntitlementError, null);
-    public static final Error EXPIRED_ASSET = new Error(ErrorType.AssetError, null);
-    public static final Error NOT_ENABLED = new Error(ErrorType.AssetError, null);
-    public static final Error TOO_MANY_CONCURRENT_STREAMS = new Error(ErrorType.ConcurrentPlaysError, null);
-    public static final Error TOO_MANY_CONCURRENT_TVODS = new Error(ErrorType.ConcurrentPlaysError, null);
-    public static final Error TOO_MANY_CONCURRENT_SVODS = new Error(ErrorType.ConcurrentPlaysError, null);
-    public static final Error NO_SUPPORTED_MEDIAFORMAT_FOUND = new Error(ErrorType.AssetError, "No supported combinations of streaming format and encryption found for asset");
-
+public abstract class Error {
+    private Error cause;
     private String message;
-    private ErrorType errorType;
+    private StackTraceElement creationPoint;
 
-    public Error(ErrorType errorType, String message) {
-        this.errorType = errorType;
-        this.message = message;
+    /*package-protected*/ Error() {
+        this(null, null);
     }
 
-    public String getMessage() {
+    /*package-protected*/ Error(String message) {
+        this(message, null);
+    }
+
+    /*package-protected*/ Error(Error cause) {
+        this(null, cause);
+    }
+
+    /*package-protected*/ Error(String message, Error cause) {
+        this.message = message;
+        this.cause = cause;
+        this.creationPoint = getCreationPoint();
+    }
+
+    public String getTrace() throws IOException {
+        StringWriter stringWriter = new StringWriter();
+        writeTrace(stringWriter);
+        return stringWriter.getBuffer().toString();
+    }
+
+    public void writeTrace(Writer writer) throws IOException {
+        writer.write(this.getClass().getName());
+        writer.write(" at ");
+        writer.write(creationPoint.getFileName()+" line "+creationPoint.getLineNumber());
+        String mess = this.getMessage();
+        if(mess != null) {
+            writer.write(": ");
+            writer.write(mess);
+        }
+        if(cause != null) {
+            writer.write("\n");
+            writer.write("Caused by ");
+            cause.writeTrace(writer);
+        }
+        writer.flush();
+    }
+
+    private static StackTraceElement getCreationPoint() {
+        int i = 2;
+        StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+        while(++i < trace.length) {
+            try {
+                if(!Error.class.isAssignableFrom(Class.forName(trace[i].getClassName()))) {
+                    return trace[i];
+                }
+            } catch (ClassNotFoundException e) {
+                continue;
+            }
+        }
+        return trace[0];
+    }
+
+    private String getMessage() {
         return message;
     }
 
-    public ErrorType getErrorType() { return errorType; }
-
-   public enum ErrorType { //TODO have better types
-        NetworkError,
-        JsonError,
-       UnknownError,
-       EnigmaError, //Error related to Enigma logic
-       EntitlementError, //Error related to not being able to plat due to insufficient entitlement.
-       AssetError, //Error related to that an asset is not playable (for any users)
-       ConcurrentPlaysError //Error related to that there are too many concurrent medias playing for an account
-        //TODO: add error types
+    public Error getCause() {
+        return cause;
     }
 
+    public abstract int getErrorCode();
 }
