@@ -20,9 +20,9 @@ public class EnigmaPlayerCollectorTest {
         };
         collector.addListener(listener);
         collector.onPlaybackError(new UnexpectedError("Test"));
-        onPlaybackErrorCalled.assertCount(1);
+        onPlaybackErrorCalled.assertOnce();
         collector.removeListener(listener);
         collector.onPlaybackError(new UnexpectedError("Test 2"));
-        onPlaybackErrorCalled.assertCount(1);
+        onPlaybackErrorCalled.assertOnce();
     }
 }

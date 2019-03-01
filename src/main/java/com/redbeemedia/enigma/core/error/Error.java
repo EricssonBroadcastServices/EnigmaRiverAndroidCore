@@ -1,6 +1,7 @@
 package com.redbeemedia.enigma.core.error;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 
@@ -27,9 +28,17 @@ public abstract class Error {
         this.creationPoint = getCreationPoint();
     }
 
-    public String getTrace() throws IOException {
+    public String getTrace() {
         StringWriter stringWriter = new StringWriter();
-        writeTrace(stringWriter);
+        try {
+            writeTrace(stringWriter);
+        } catch (IOException e) {
+            stringWriter.getBuffer().setLength(0);
+            stringWriter.write("Could not get trace:");
+            PrintWriter printWriter = new PrintWriter(stringWriter);
+            e.printStackTrace(printWriter);
+            printWriter.flush();
+        }
         return stringWriter.getBuffer().toString();
     }
 

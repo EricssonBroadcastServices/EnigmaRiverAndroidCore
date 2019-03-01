@@ -80,7 +80,7 @@ public class PlayResponseHandlerTest {
 
         respondFaulty(playResponseHandler, 400, "NOT OK");
 
-        errorCounter.assertCount(1);
+        errorCounter.assertOnce();
         onSuccessCalled.assertNotSet("onSuccess was not expected to be called");
     }
 
@@ -104,7 +104,7 @@ public class PlayResponseHandlerTest {
             };
             errorExpectation.respond(new PlayResponseAdapter(playResponseHandler));
             onSuccessCalled.assertNotSet("onSuccess was not expected to be called");
-            errorCounter.assertCount(1);
+            errorCounter.assertOnce();
         }
     }
 

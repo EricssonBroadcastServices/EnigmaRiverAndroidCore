@@ -55,7 +55,7 @@ public class EnigmaPlayerTest {
             }
         });
         Assert.assertFalse(startPlaybackCalled.isTrue());
-        installCalled.assertCount(1);
+        installCalled.assertOnce();
         enigmaPlayer.play(new IPlayRequest() {
             @Override
             public void onStarted() {
@@ -186,7 +186,7 @@ public class EnigmaPlayerTest {
                 Assert.fail("Error: "+error.getErrorCode());
             }
         });
-        playbackStartedCalls.assertCount(1);
+        playbackStartedCalls.assertOnce();
         final Error[] errorGotten = new Error[]{null};
         enigmaPlayer.play(new PlayRequest(new MockPlayable("7s4s4ts")) {
             @Override
@@ -198,7 +198,7 @@ public class EnigmaPlayerTest {
                 errorGotten[0] = error;
             }
         });
-        playbackStartedCalls.assertCount(1);
+        playbackStartedCalls.assertOnce();
         Assert.assertNotEquals(null, errorGotten[0]);
         Assert.assertThat(errorGotten[0], new InstanceOfMatcher<>(NoSupportedMediaFormatsError.class));
     }

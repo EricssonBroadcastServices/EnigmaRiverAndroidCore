@@ -56,8 +56,7 @@ public final class EnigmaRiverContext {
 
     public static class EnigmaRiverContextInitialization {
         private IHttpHandler httpHandler = null;
-        //TODO remove this default path to prestage exposure.
-        private String exposureBaseUrl = "https://psempexposureapi.ebsd.ericsson.net:443";
+        private String exposureBaseUrl = null;
         private IDeviceInfo deviceInfo = null;
         private IActivityLifecycleManagerFactory activityLifecycleManagerFactory = new DefaultActivityLifecycleManagerFactory();
 
@@ -115,7 +114,11 @@ public final class EnigmaRiverContext {
 
         public EnigmaRiverInitializedContext(Application application, EnigmaRiverContextInitialization initialization) {
             try {
-                this.exposureBaseUrl = new UrlPath(initialization.getExposureBaseUrl());
+                String baseUrl = initialization.getExposureBaseUrl();
+                if(baseUrl == null) {
+                    throw new IllegalStateException("No exposure base url supplied.");
+                }
+                this.exposureBaseUrl = new UrlPath(baseUrl);
                 this.httpHandler = initialization.getHttpHandler();
                 this.deviceInfo = initialization.getDeviceInfo(application);
                 this.activityLifecycleManager = initialization.getActivityLifecycleManager(application);

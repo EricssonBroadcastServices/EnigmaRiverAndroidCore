@@ -17,6 +17,10 @@ public class Counter {
         Assert.assertEquals(0, counts);
     }
 
+    public void assertOnce() {
+        Assert.assertEquals(1, counts);
+    }
+
     public void assertOneOrMore() {
         Assert.assertTrue( counts > 0);
     }

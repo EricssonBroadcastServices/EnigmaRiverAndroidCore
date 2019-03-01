@@ -70,7 +70,7 @@ public class LoginResponseHandlerTest {
             });
             errorExpectation.respond(new LoginResponseAdapter(responseHandler));
             onSuccessCalled.assertNotSet("onSuccess was not expected to be called");
-            errorCounter.assertCount(1);
+            errorCounter.assertOnce();
         }
     }
 
@@ -97,7 +97,7 @@ public class LoginResponseHandlerTest {
         });
         loginResponseHandler.onResponse(new HttpStatus(400, "Fail!"), new ByteArrayInputStream(new byte[]{23,42}));
         onSuccessCalled.assertNotSet("onSuccess was not expected to be called");
-        errorCounter.assertCount(1);
+        errorCounter.assertOnce();
     }
 
     private static class LoginResponseAdapter implements HttpToErrorValidator.IHttpResponseHandler {

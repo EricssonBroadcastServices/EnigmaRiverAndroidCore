@@ -9,6 +9,7 @@ import com.redbeemedia.enigma.core.util.device.MockDeviceInfo;
 
 public class MockEnigmaRiverContextInitialization extends EnigmaRiverContext.EnigmaRiverContextInitialization {
     public MockEnigmaRiverContextInitialization() {
+        setExposureBaseUrl("https://mock.unittests.example.com");
         setDeviceInfo(new MockDeviceInfo());
         setHttpHandler(new MockHttpHandler());
         setActivityLifecycleManagerFactory(new MockActivityLifecycleManagerFactory());
