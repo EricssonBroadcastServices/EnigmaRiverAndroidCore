@@ -22,13 +22,21 @@ public class DefaultHttpHandler implements IHttpHandler {
         }.execute(job);
     }
 
+    protected int getDefaultConnectTimeout() {
+        return 0;
+    }
+
+    protected int getDefaultReadTimeout() {
+        return 0;
+    }
+
     @Override
     public void doHttpBlocking(URL url, IHttpCall httpCall, IHttpResponseHandler responseHandler) {
         Runnable runnable = new HttpJob(url, httpCall, responseHandler);
         runnable.run();
     }
 
-    private static class HttpJob implements Runnable {
+    private class HttpJob implements Runnable {
         private URL url;
         private IHttpCall httpCall;
         private IHttpResponseHandler responseHandler;
@@ -43,6 +51,8 @@ public class DefaultHttpHandler implements IHttpHandler {
         public void run() {
             try {
                 final HttpURLConnection connection = ((HttpURLConnection) url.openConnection());
+                connection.setConnectTimeout(getDefaultConnectTimeout());
+                connection.setReadTimeout(getDefaultReadTimeout());
                 connection.setDoInput(true);
                 httpCall.prepare(new IHttpConnection() {
                     @Override

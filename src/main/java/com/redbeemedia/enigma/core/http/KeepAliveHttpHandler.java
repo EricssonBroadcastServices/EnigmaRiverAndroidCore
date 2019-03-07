@@ -64,14 +64,21 @@ public class KeepAliveHttpHandler implements IHttpHandler {
         mService.execute(runnable);
     }
 
+    protected int getDefaultConnectTimeout() {
+        return 0;
+    }
+
+    protected int getDefaultReadTimeout() {
+        return 0;
+    }
+
     @Override
     public void doHttpBlocking(URL url, IHttpCall httpCall, IHttpResponseHandler responseHandler) {
         URLConnectionRunnable runnable = new URLConnectionRunnable(url, httpCall, responseHandler);
         runnable.run();
     }
 
-    private static final class URLConnectionRunnable implements Runnable {
-
+    private final class URLConnectionRunnable implements Runnable {
         private final URL mURL;
         private final IHttpCall mCall;
         private final IHttpResponseHandler mHandler;
@@ -95,6 +102,8 @@ public class KeepAliveHttpHandler implements IHttpHandler {
                 final String method = mCall.getRequestMethod();
 
                 urlConnection.setRequestMethod(method);
+                urlConnection.setConnectTimeout(getDefaultConnectTimeout());
+                urlConnection.setReadTimeout(getDefaultReadTimeout());
                 // Perhaps we should just pass down the HttpURLConnection and remove the setRequestMethod?
                 mCall.prepare(new IHttpConnection() {
                     @Override
