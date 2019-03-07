@@ -3,7 +3,6 @@ package com.redbeemedia.enigma.core.error;
 import java.io.IOException;
 import java.lang.Exception;
 import java.io.Writer;
-import java.io.PrintWriter;
 
 
 public class UnexpectedError extends Error {
@@ -55,11 +54,6 @@ public class UnexpectedError extends Error {
     @Override
     public void writeTrace(Writer writer) throws IOException {
         super.writeTrace(writer);
-        if(exception != null) {
-            writer.write("\n");
-            writer.write("Caused by ");
-            exception.printStackTrace(new PrintWriter(writer, true));
-        }
-        writer.flush();
+        addExceptionStackTrace(writer, exception);
     }
 }

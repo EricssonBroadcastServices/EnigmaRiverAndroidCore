@@ -2,6 +2,7 @@ package com.redbeemedia.enigma.core.player;
 
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
+import com.redbeemedia.enigma.core.error.EmptyResponseError;
 import com.redbeemedia.enigma.core.error.Error;
 import com.redbeemedia.enigma.core.error.NoSupportedMediaFormatsError;
 import com.redbeemedia.enigma.core.error.UnexpectedError;
@@ -15,10 +16,13 @@ import com.redbeemedia.enigma.core.player.listener.BaseEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
 import com.redbeemedia.enigma.core.playrequest.PlayRequest;
+import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.session.MockSession;
 import com.redbeemedia.enigma.core.testutil.Counter;
 import com.redbeemedia.enigma.core.testutil.Flag;
 import com.redbeemedia.enigma.core.testutil.InstanceOfMatcher;
+import com.redbeemedia.enigma.core.time.ITimeProvider;
+import com.redbeemedia.enigma.core.time.MockTimeProvider;
 import com.redbeemedia.enigma.core.util.MockHandler;
 
 import org.json.JSONArray;
@@ -43,7 +47,7 @@ public class EnigmaPlayerTest {
         final Flag onErrorCalled = new Flag();
         final Flag useWithCalled = new Flag();
         final Counter installCalled = new Counter();
-        EnigmaPlayer enigmaPlayer = new EnigmaPlayer(new MockSession(), new MockPlayerImplementation() {
+        IPlayerImplementation impl = new MockPlayerImplementation() {
             @Override
             public void install(IEnigmaPlayerEnvironment environment) {
                 installCalled.count();
@@ -53,7 +57,13 @@ public class EnigmaPlayerTest {
             public void startPlayback(String url) {
                 startPlaybackCalled.setFlag();
             }
-        });
+        };
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayer(new MockSession(), impl) {
+            @Override
+            protected ITimeProvider newTimeProvider(ISession session) {
+                return new MockTimeProvider();
+            }
+        };
         Assert.assertFalse(startPlaybackCalled.isTrue());
         installCalled.assertOnce();
         enigmaPlayer.play(new IPlayRequest() {
@@ -174,7 +184,12 @@ public class EnigmaPlayerTest {
             }
         };
         installed.assertNotSet();
-        EnigmaPlayer enigmaPlayer = new EnigmaPlayer(new MockSession(), playerImpl);
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayer(new MockSession(), playerImpl) {
+            @Override
+            protected ITimeProvider newTimeProvider(ISession session) {
+                return new MockTimeProvider();
+            }
+        };
         installed.assertSet();
         enigmaPlayer.play(new PlayRequest(new MockPlayable("123")) {
             @Override
@@ -207,30 +222,37 @@ public class EnigmaPlayerTest {
     public void testListeners() {
         final IPlayerImplementationListener[] playerImplementationListener = new IPlayerImplementationListener[]{null};
         final Flag installCalled = new Flag();
-        EnigmaPlayer enigmaPlayer = new EnigmaPlayer(new MockSession(), new MockPlayerImplementation() {
+        IPlayerImplementation impl = new MockPlayerImplementation() {
             @Override
             public void install(IEnigmaPlayerEnvironment environment) {
                 playerImplementationListener[0] = environment.getPlayerImplementationListener();
                 installCalled.setFlag();
             }
-        });
+        };
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayer(new MockSession(), impl) {
+            @Override
+            protected ITimeProvider newTimeProvider(ISession session) {
+                return new MockTimeProvider();
+            }
+        };
         installCalled.assertSet();
         Assert.assertNotEquals(null, playerImplementationListener[0]);
         Counter onPlaybackErrorCalled = new Counter();
         BaseEnigmaPlayerListener listener = new BaseEnigmaPlayerListener() {
             @Override
             public void onPlaybackError(Error error) {
+                Assert.assertThat(error, new InstanceOfMatcher<>(EmptyResponseError.class));
                 onPlaybackErrorCalled.count();
             }
         };
         Assert.assertTrue(enigmaPlayer.addListener(listener));
         onPlaybackErrorCalled.assertNone();
-        playerImplementationListener[0].onError(new UnexpectedError("TEST!"));
+        playerImplementationListener[0].onError(new EmptyResponseError("TEST!"));
         onPlaybackErrorCalled.assertCount(1);
-        playerImplementationListener[0].onError(new UnexpectedError("TEST 2!"));
+        playerImplementationListener[0].onError(new EmptyResponseError("TEST 2!"));
         onPlaybackErrorCalled.assertCount(2);
         Assert.assertTrue(enigmaPlayer.removeListener(listener));
-        playerImplementationListener[0].onError(new UnexpectedError("TEST 3!"));
+        playerImplementationListener[0].onError(new EmptyResponseError("TEST 3!"));
         onPlaybackErrorCalled.assertCount(2);
         Assert.assertFalse(enigmaPlayer.removeListener(listener));
     }
@@ -241,13 +263,19 @@ public class EnigmaPlayerTest {
         final Flag installCalled = new Flag();
 
         MockHandler handler = new MockHandler();
-        EnigmaPlayer enigmaPlayer = new EnigmaPlayer(new MockSession(), new MockPlayerImplementation() {
+        IPlayerImplementation impl = new MockPlayerImplementation() {
             @Override
             public void install(IEnigmaPlayerEnvironment environment) {
                 playerImplementationListener[0] = environment.getPlayerImplementationListener();
                 installCalled.setFlag();
             }
-        });
+        };
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayer(new MockSession(), impl) {
+            @Override
+            protected ITimeProvider newTimeProvider(ISession session) {
+                return new MockTimeProvider();
+            }
+        };
         installCalled.assertSet();
         Assert.assertNotEquals(null, playerImplementationListener[0]);
 

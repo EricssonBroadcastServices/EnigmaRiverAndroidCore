@@ -5,6 +5,7 @@ import java.net.URL;
 
 public interface IHttpHandler {
     void doHttp(URL url, IHttpCall httpCall, IHttpResponseHandler responseHandler);
+    void doHttpBlocking(URL url, IHttpCall httpCall, IHttpResponseHandler responseHandler) throws InterruptedException;
 
     interface IHttpResponseHandler {
         void onResponse(HttpStatus httpStatus);

@@ -7,8 +7,8 @@ import com.redbeemedia.enigma.core.http.mockresponses.MockOnResponseResponse;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -34,7 +34,7 @@ public class MockHttpHandler implements IHttpHandler {
             logEntry.put("headers", headerMap);
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             httpCall.writeBodyTo(byteArrayOutputStream);
-            logEntry.put("body", new String(byteArrayOutputStream.toByteArray(), "utf-8"));
+            logEntry.put("body", new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8));
             log.add(logEntry.toString());
             if(!responses.isEmpty()) {
                 responses.poll().doHttp(url, httpCall, response);
@@ -42,6 +42,11 @@ public class MockHttpHandler implements IHttpHandler {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void doHttpBlocking(URL url, IHttpCall httpCall, IHttpResponseHandler responseHandler) {
+        doHttp(url, httpCall, responseHandler);
     }
 
     public void queueResponse(IHttpHandler response) {
@@ -57,11 +62,7 @@ public class MockHttpHandler implements IHttpHandler {
     }
 
     public void queueResponse(HttpStatus httpStatus, String responseBody) {
-        try {
-            this.queueResponse(new MockOnResponseResponse(httpStatus, responseBody.getBytes("utf-8")));
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
+        this.queueResponse(new MockOnResponseResponse(httpStatus, responseBody.getBytes(StandardCharsets.UTF_8)));
     }
 
     public List<String> getLog() {

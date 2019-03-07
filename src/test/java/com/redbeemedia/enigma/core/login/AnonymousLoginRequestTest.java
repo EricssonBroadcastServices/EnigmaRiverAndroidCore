@@ -13,9 +13,9 @@ import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 public class AnonymousLoginRequestTest {
     @Test
@@ -33,7 +33,7 @@ public class AnonymousLoginRequestTest {
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         anonymousLoginRequest.writeBodyTo(byteArrayOutputStream);
-        JSONObject bodyJson = new JSONObject(new String(byteArrayOutputStream.toByteArray(), "utf-8"));
+        JSONObject bodyJson = new JSONObject(new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8));
 
         Assert.assertEquals(deviceInfo.getDeviceId(), bodyJson.getString("deviceId"));
         Assert.assertEquals(deviceInfo.getType(), bodyJson.getJSONObject("device").getString("type"));

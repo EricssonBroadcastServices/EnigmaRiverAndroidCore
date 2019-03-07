@@ -30,7 +30,7 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 public class PlayResponseHandlerTest {
     private static HttpToErrorValidator errorValidator = new HttpToErrorValidator() {
@@ -112,11 +112,7 @@ public class PlayResponseHandlerTest {
         JSONObject jsonResponse = new JSONObject();
         jsonResponse.put("code", code);
         jsonResponse.put("massage", message);
-        try {
-            playResponseHandler.onResponse(new HttpStatus(code, message), new ByteArrayInputStream(jsonResponse.toString().getBytes("utf-8")));
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
+        playResponseHandler.onResponse(new HttpStatus(code, message), new ByteArrayInputStream(jsonResponse.toString().getBytes(StandardCharsets.UTF_8)));
     }
 
     private static class PlayResponseAdapter implements HttpToErrorValidator.IHttpResponseHandler {

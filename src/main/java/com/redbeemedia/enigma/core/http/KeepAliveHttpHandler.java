@@ -64,6 +64,12 @@ public class KeepAliveHttpHandler implements IHttpHandler {
         mService.execute(runnable);
     }
 
+    @Override
+    public void doHttpBlocking(URL url, IHttpCall httpCall, IHttpResponseHandler responseHandler) {
+        URLConnectionRunnable runnable = new URLConnectionRunnable(url, httpCall, responseHandler);
+        runnable.run();
+    }
+
     private static final class URLConnectionRunnable implements Runnable {
 
         private final URL mURL;

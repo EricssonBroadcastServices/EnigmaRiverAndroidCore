@@ -14,6 +14,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 public class UserLoginRequestTest {
     @Test
@@ -23,7 +24,7 @@ public class UserLoginRequestTest {
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         userLoginRequest.writeBodyTo(byteArrayOutputStream);
-        JSONObject bodyJson = new JSONObject(new String(byteArrayOutputStream.toByteArray(), "utf-8"));
+        JSONObject bodyJson = new JSONObject(new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8));
 
         Assert.assertEquals("matte", bodyJson.getString("username"));
         Assert.assertEquals("secret_pass", bodyJson.getString("password"));

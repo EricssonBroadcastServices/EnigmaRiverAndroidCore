@@ -40,6 +40,7 @@ public class ErrorCode {
     public static final int NO_SUPPORTED_MEDIAFORMAT_FOUND = 38;
     public static final int SERVER_TIMEOUT = 39;
     public static final int PLAYER_IMPLEMENTATION_ERROR = 40;
+    public static final int ANALYTICS_ERROR = 41;
 
 
     private ErrorCode() {}

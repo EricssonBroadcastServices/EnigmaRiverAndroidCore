@@ -5,6 +5,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 public class UserLoginRequest extends AbstractLoginRequest implements ILoginRequest {
     private String username;
@@ -25,7 +26,7 @@ public class UserLoginRequest extends AbstractLoginRequest implements ILoginRequ
             body.put("username", username);
             body.put("password", password);
 
-            outputStream.write(body.toString().getBytes("utf-8"));
+            outputStream.write(body.toString().getBytes(StandardCharsets.UTF_8));
         } catch (JSONException e){
             throw new IOException(e);
         }

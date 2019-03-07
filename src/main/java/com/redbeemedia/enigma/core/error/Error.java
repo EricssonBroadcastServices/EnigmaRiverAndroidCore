@@ -8,7 +8,7 @@ import java.io.Writer;
 public abstract class Error {
     private Error cause;
     private String message;
-    private StackTraceElement creationPoint;
+    private StackTraceElement[] errorStackTrace;
 
     /*package-protected*/ Error() {
         this(null, null);
@@ -25,7 +25,30 @@ public abstract class Error {
     /*package-protected*/ Error(String message, Error cause) {
         this.message = message;
         this.cause = cause;
-        this.creationPoint = getCreationPoint();
+        this.errorStackTrace = createStackTrace();
+    }
+
+    private StackTraceElement[] createStackTrace() {
+        int i = 2;
+        StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+        int stackTraceStart = -1;
+        while(++i < trace.length) {
+            try {
+                if(!Error.class.isAssignableFrom(Class.forName(trace[i].getClassName()))) {
+                    stackTraceStart = i;
+                    break;
+                }
+            } catch (ClassNotFoundException e) {
+                continue;
+            }
+        }
+        if(stackTraceStart != -1 && trace.length-stackTraceStart >= 0) {
+            StackTraceElement[] stackTrace = new StackTraceElement[trace.length-stackTraceStart];
+            System.arraycopy(trace, stackTraceStart, stackTrace, 0, stackTrace.length);
+            return stackTrace;
+        } else {
+            return new StackTraceElement[0];
+        }
     }
 
     public String getTrace() {
@@ -42,36 +65,35 @@ public abstract class Error {
         return stringWriter.getBuffer().toString();
     }
 
-    public void writeTrace(Writer writer) throws IOException {
-        writer.write(this.getClass().getName());
-        writer.write(" at ");
-        writer.write(creationPoint.getFileName()+" line "+creationPoint.getLineNumber());
-        String mess = this.getMessage();
-        if(mess != null) {
-            writer.write(": ");
-            writer.write(mess);
+    public void printStackTrace() {
+        try {
+            writeTrace(new PrintWriter(System.err));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+    }
+
+    public void writeTrace(Writer writer) throws IOException {
+        PrintWriter printWriter = new PrintWriter(writer);
+        printWriter.println(this);
+        for(StackTraceElement traceElement : errorStackTrace) {
+            printWriter.println("\tat "+traceElement);
+        }
+        printWriter.flush();
+
         if(cause != null) {
             writer.write("\n");
-            writer.write("Caused by ");
+            writer.write("Caused by: ");
             cause.writeTrace(writer);
         }
         writer.flush();
     }
 
-    private static StackTraceElement getCreationPoint() {
-        int i = 2;
-        StackTraceElement[] trace = Thread.currentThread().getStackTrace();
-        while(++i < trace.length) {
-            try {
-                if(!Error.class.isAssignableFrom(Class.forName(trace[i].getClassName()))) {
-                    return trace[i];
-                }
-            } catch (ClassNotFoundException e) {
-                continue;
-            }
-        }
-        return trace[0];
+    @Override
+    public String toString() {
+        String name = getClass().getName();
+        String mess = getMessage();
+        return (mess != null) ? (name + ": " + mess) : name;
     }
 
     private String getMessage() {
@@ -83,4 +105,13 @@ public abstract class Error {
     }
 
     public abstract int getErrorCode();
+
+    protected static void addExceptionStackTrace(Writer writer, Exception exception) throws IOException {
+        if(exception != null) {
+            writer.write("\n");
+            writer.write("Caused by: ");
+            exception.printStackTrace(new PrintWriter(writer, true));
+        }
+        writer.flush();
+    }
 }

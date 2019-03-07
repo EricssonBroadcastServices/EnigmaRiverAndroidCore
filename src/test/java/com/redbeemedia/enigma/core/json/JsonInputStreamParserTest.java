@@ -6,14 +6,14 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public class JsonInputStreamParserTest {
     @Test
     public void testJsonParsing() throws JSONException {
         JsonInputStreamParser jsonInputStreamParser = JsonInputStreamParser.obtain();
 
-        ByteArrayInputStream bais = new ByteArrayInputStream("{\"test\": \"value\", \"other\": 123}".getBytes(Charset.forName("utf-8")));
+        ByteArrayInputStream bais = new ByteArrayInputStream("{\"test\": \"value\", \"other\": 123}".getBytes(StandardCharsets.UTF_8));
         JSONObject jsonObject = jsonInputStreamParser.parse(bais);
 
         JSONObject expectedJsonObject = new JSONObject();

@@ -10,7 +10,7 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -69,11 +69,7 @@ public abstract class HttpToErrorValidator {
             JSONObject jsonResponse = new JSONObject();
             jsonResponse.put("httpCode", errorResponse.code);
             jsonResponse.put("message", errorResponse.message);
-            try {
-                playResponseHandler.onResponse(new HttpStatus(errorResponse.code, errorResponse.message), new ByteArrayInputStream(jsonResponse.toString().getBytes("utf-8")));
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
-            }
+            playResponseHandler.onResponse(new HttpStatus(errorResponse.code, errorResponse.message), new ByteArrayInputStream(jsonResponse.toString().getBytes(StandardCharsets.UTF_8)));
         }
     }
 

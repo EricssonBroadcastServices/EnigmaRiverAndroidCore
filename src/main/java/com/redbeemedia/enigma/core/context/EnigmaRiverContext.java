@@ -6,6 +6,7 @@ import com.redbeemedia.enigma.core.activity.IActivityLifecycleManager;
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleManagerFactory;
 import com.redbeemedia.enigma.core.http.DefaultHttpHandler;
 import com.redbeemedia.enigma.core.http.IHttpHandler;
+import com.redbeemedia.enigma.core.task.ITaskFactory;
 import com.redbeemedia.enigma.core.util.UrlPath;
 import com.redbeemedia.enigma.core.util.device.DeviceInfo;
 import com.redbeemedia.enigma.core.util.device.IDeviceInfo;
@@ -53,12 +54,18 @@ public final class EnigmaRiverContext {
         return initializedContext.activityLifecycleManager;
     }
 
+    public static ITaskFactory getTaskFactory() {
+        //TODO assert initialized
+        return initializedContext.taskFactory;
+    }
+
 
     public static class EnigmaRiverContextInitialization {
         private IHttpHandler httpHandler = null;
         private String exposureBaseUrl = null;
         private IDeviceInfo deviceInfo = null;
         private IActivityLifecycleManagerFactory activityLifecycleManagerFactory = new DefaultActivityLifecycleManagerFactory();
+        private ITaskFactory taskFactory = new DefaultTaskFactory();
 
         public String getExposureBaseUrl() {
             return exposureBaseUrl;
@@ -104,6 +111,15 @@ public final class EnigmaRiverContext {
         public IActivityLifecycleManager getActivityLifecycleManager(Application application) {
             return activityLifecycleManagerFactory.createActivityLifecycleManager(application);
         }
+
+        public ITaskFactory getTaskFactory() {
+            return taskFactory;
+        }
+
+        protected EnigmaRiverContextInitialization setTaskFactory(ITaskFactory taskFactory) {
+            this.taskFactory = taskFactory;
+            return this;
+        }
     }
 
     private static class EnigmaRiverInitializedContext {
@@ -111,6 +127,7 @@ public final class EnigmaRiverContext {
         private final IHttpHandler httpHandler;
         private final IDeviceInfo deviceInfo;
         private final IActivityLifecycleManager activityLifecycleManager;
+        private final ITaskFactory taskFactory;
 
         public EnigmaRiverInitializedContext(Application application, EnigmaRiverContextInitialization initialization) {
             try {
@@ -122,6 +139,7 @@ public final class EnigmaRiverContext {
                 this.httpHandler = initialization.getHttpHandler();
                 this.deviceInfo = initialization.getDeviceInfo(application);
                 this.activityLifecycleManager = initialization.getActivityLifecycleManager(application);
+                this.taskFactory = initialization.getTaskFactory();
             } catch (Exception e) {
                 //TODO throw ContextInitializationException
                 throw new RuntimeException(e);

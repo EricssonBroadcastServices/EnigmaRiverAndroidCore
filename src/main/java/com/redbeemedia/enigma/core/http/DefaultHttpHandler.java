@@ -22,6 +22,12 @@ public class DefaultHttpHandler implements IHttpHandler {
         }.execute(job);
     }
 
+    @Override
+    public void doHttpBlocking(URL url, IHttpCall httpCall, IHttpResponseHandler responseHandler) {
+        Runnable runnable = new HttpJob(url, httpCall, responseHandler);
+        runnable.run();
+    }
+
     private static class HttpJob implements Runnable {
         private URL url;
         private IHttpCall httpCall;

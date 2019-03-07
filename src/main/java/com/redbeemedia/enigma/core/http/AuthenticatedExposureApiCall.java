@@ -6,6 +6,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 public class AuthenticatedExposureApiCall implements IHttpCall {
     private final String requestMethod;
@@ -37,7 +38,7 @@ public class AuthenticatedExposureApiCall implements IHttpCall {
     @Override
     public void writeBodyTo(OutputStream outputStream) throws IOException {
         if(jsonBody != null) {
-            outputStream.write(jsonBody.toString().getBytes("utf-8"));
+            outputStream.write(jsonBody.toString().getBytes(StandardCharsets.UTF_8));
         }
     }
 }

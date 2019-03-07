@@ -5,7 +5,7 @@ import com.redbeemedia.enigma.core.http.IHttpCall;
 
 import java.net.URL;
 
-public class MockOnExceptionResponse implements IHttpHandler {
+public class MockOnExceptionResponse extends AbstractMockResponse {
     private Exception exception;
 
     public MockOnExceptionResponse(Exception exception) {

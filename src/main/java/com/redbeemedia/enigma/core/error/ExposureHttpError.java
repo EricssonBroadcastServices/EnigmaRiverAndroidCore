@@ -22,6 +22,11 @@ public class ExposureHttpError {
         return message;
     }
 
+    @Override
+    public String toString() {
+        return httpCode+" "+message;
+    }
+
     //TODO: change name
     public static boolean isError(int statusCode) {
         return statusCode >= HttpsURLConnection.HTTP_BAD_REQUEST && statusCode <= HttpsURLConnection.HTTP_INTERNAL_ERROR;

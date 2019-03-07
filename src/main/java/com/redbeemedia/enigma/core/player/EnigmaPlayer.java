@@ -23,6 +23,7 @@ import com.redbeemedia.enigma.core.playable.IPlayableHandler;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
 import com.redbeemedia.enigma.core.session.ISession;
+import com.redbeemedia.enigma.core.time.ITimeProvider;
 import com.redbeemedia.enigma.core.util.Collector;
 import com.redbeemedia.enigma.core.util.HandlerWrapper;
 import com.redbeemedia.enigma.core.util.IHandler;
@@ -48,8 +49,13 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     private EnigmaPlayerEnvironment environment = new EnigmaPlayerEnvironment();
     private WeakReference<Activity> weakActivity = new WeakReference<>(null);
     private IActivityLifecycleListener activityLifecycleListener;
+    private ITimeProvider timeProvider;
+
     private Collector<IEnigmaPlayerListener> enigmaPlayerCollector;
     private IEnigmaPlayerListener enigmaPlayerListeners;
+
+    private IPlaybackSessionFactory playbackSessionFactory = new DefaultPlaybackSessionFactory();
+    private IPlaybackSession currentPlaybackSession = null;
 
     public EnigmaPlayer(ISession session, IPlayerImplementation playerImplementation) {
         this.session = session;
@@ -62,8 +68,20 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             @Override
             public void onDestroy() {
                 playerImplementation.release();
+                ((LegacyTimeProvider) timeProvider).release();
+                synchronized (EnigmaPlayer.this) {
+                    if(currentPlaybackSession != null) {
+                        currentPlaybackSession.onStop(EnigmaPlayer.this);
+                    }
+                    currentPlaybackSession = null;
+                }
             }
         };
+        this.timeProvider = newTimeProvider(session);
+    }
+
+    protected ITimeProvider newTimeProvider(ISession session) {
+        return new LegacyTimeProvider(session);
     }
 
     public EnigmaPlayer setActivity(Activity activity) {
@@ -147,8 +165,8 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                         }
                         String manifestUrl = usableMediaFormat.getString("mediaLocator");
                         //TODO need to call onStarted on the playRequest at some point.
-                        //TODO here we also need to create a playback-session
                         playerImplementation.startPlayback(manifestUrl);
+                        replacePlaybackSession(playbackSessionFactory.createPlaybackSession(session, jsonObject, timeProvider));
                     } else {
                         onError(new NoSupportedMediaFormatsError("Could not find a media format supported by the current player implementation."));
                     }
@@ -161,6 +179,15 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             //TODO handle callbacks to IPlayRequest
             playerImplementation.startPlayback(url.toString());
         }
+    }
+
+
+    private synchronized void replacePlaybackSession(IPlaybackSession playbackSession) {
+        if(this.currentPlaybackSession != null) {
+            this.currentPlaybackSession.onStop(this);
+        }
+        this.currentPlaybackSession = playbackSession;
+        this.currentPlaybackSession.onStart(this);
     }
 
 
@@ -238,6 +265,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             return new IPlayerImplementationListener() {
                 @Override
                 public void onError(Error error) {
+                    //TODO feed to current playbackSession and have that object propagate to listeneres.
                     enigmaPlayerListeners.onPlaybackError(error);
                 }
             };
