@@ -1,1 +1,3 @@
-Initial commit
+# Core
+
+The core library.
