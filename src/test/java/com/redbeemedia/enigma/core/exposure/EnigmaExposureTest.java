@@ -1,5 +1,6 @@
 package com.redbeemedia.enigma.core.exposure;
 
+import com.redbeemedia.enigma.core.businessunit.IBusinessUnit;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
 import com.redbeemedia.enigma.core.error.Error;
@@ -44,8 +45,8 @@ public class EnigmaExposureTest {
             }
         }) {
             @Override
-            public UrlPath getUrl(ISession session) {
-                return session.getApiBaseUrl().append("test/expo");
+            public UrlPath getUrl(IBusinessUnit businessUnit) {
+                return businessUnit.getApiBaseUrl().append("test/expo");
             }
         });
 
@@ -85,8 +86,8 @@ public class EnigmaExposureTest {
             }
         }) {
             @Override
-            public UrlPath getUrl(ISession session) {
-                return session.getApiBaseUrl().append("test/expo");
+            public UrlPath getUrl(IBusinessUnit businessUnit) {
+                return businessUnit.getApiBaseUrl().append("test/expo");
             }
         });
 
@@ -111,8 +112,8 @@ public class EnigmaExposureTest {
             }
         }) {
             @Override
-            public UrlPath getUrl(ISession session) {
-                return session.getApiBaseUrl().append("test2/expo");
+            public UrlPath getUrl(IBusinessUnit businessUnit) {
+                return businessUnit.getApiBaseUrl().append("test2/expo");
             }
         });
         onSuccessCalled2.assertNotSet();

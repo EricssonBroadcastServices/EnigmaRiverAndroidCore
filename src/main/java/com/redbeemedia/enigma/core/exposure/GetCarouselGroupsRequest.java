@@ -1,5 +1,6 @@
 package com.redbeemedia.enigma.core.exposure;
 
+import com.redbeemedia.enigma.core.businessunit.IBusinessUnit;
 import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.util.UrlPath;
 
@@ -11,7 +12,7 @@ public class GetCarouselGroupsRequest extends AbstractExposureRequest<List<Strin
     }
 
     @Override
-    public UrlPath getUrl(ISession session) {
-        return session.getApiBaseUrl().append("/carouselgroup");
+    public UrlPath getUrl(IBusinessUnit businessUnit) {
+        return businessUnit.getApiBaseUrl().append("/carouselgroup");
     }
 }

@@ -12,7 +12,9 @@ import com.redbeemedia.enigma.core.drm.DrmInfoFactory;
 import com.redbeemedia.enigma.core.drm.IDrmInfo;
 import com.redbeemedia.enigma.core.drm.IDrmProvider;
 import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.InvalidAssetError;
 import com.redbeemedia.enigma.core.error.NoSupportedMediaFormatsError;
+import com.redbeemedia.enigma.core.error.UnexpectedError;
 import com.redbeemedia.enigma.core.format.EnigmaMediaFormat;
 import com.redbeemedia.enigma.core.format.EnigmaMediaFormat.DrmTechnology;
 import com.redbeemedia.enigma.core.format.EnigmaMediaFormat.StreamFormat;
@@ -22,6 +24,7 @@ import com.redbeemedia.enigma.core.playable.IPlayable;
 import com.redbeemedia.enigma.core.playable.IPlayableHandler;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
+import com.redbeemedia.enigma.core.playrequest.IPlayResultHandler;
 import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.time.ITimeProvider;
 import com.redbeemedia.enigma.core.util.Collector;
@@ -50,6 +53,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     private WeakReference<Activity> weakActivity = new WeakReference<>(null);
     private IActivityLifecycleListener activityLifecycleListener;
     private ITimeProvider timeProvider;
+    private IHandler callbackHandler = null;
 
     private Collector<IEnigmaPlayerListener> enigmaPlayerCollector;
     private IEnigmaPlayerListener enigmaPlayerListeners;
@@ -99,7 +103,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     @Override
     public void play(IPlayRequest playRequest) {
         IPlayable playable = playRequest.getPlayable();
-        playable.useWith(new PlayableHandler(playRequest));
+        playable.useWith(new PlayableHandler(playRequest.getResultHandler()));
     }
 
     @Override
@@ -120,30 +124,35 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     @Override
     public EnigmaPlayer setCallbackHandler(IHandler handler) {
         this.enigmaPlayerListeners = ProxyCallback.createCallbackOnThread(handler, IEnigmaPlayerListener.class, (IEnigmaPlayerListener) enigmaPlayerCollector);
+        this.callbackHandler = handler;
         return this;
     }
 
     private class PlayableHandler implements IPlayableHandler {
-        private IPlayRequest playRequest;
+        private IPlayResultHandler playResultHandler;
 
-        public PlayableHandler(IPlayRequest playRequest) {
-            this.playRequest = playRequest;
+        public PlayableHandler(IPlayResultHandler playResultHandler) {
+            if(callbackHandler != null) {
+                this.playResultHandler = ProxyCallback.createCallbackOnThread(callbackHandler, IPlayResultHandler.class, playResultHandler);
+            } else {
+                this.playResultHandler = playResultHandler;
+            }
         }
 
         @Override
         public void startUsingAssetId(String assetId) {
             URL url = null;
             try {
-                url = session.getApiBaseUrl("v2").append("entitlement").append(assetId).append("play").toURL();
+                url = session.getBusinessUnit().getApiBaseUrl("v2").append("entitlement").append(assetId).append("play").toURL();
             } catch (MalformedURLException e) {
-                //TODO invalid assetID error
-                throw new RuntimeException(e);
+                playResultHandler.onError(new InvalidAssetError(assetId, new UnexpectedError(e)));
+                return;
             }
             AuthenticatedExposureApiCall apiCall = new AuthenticatedExposureApiCall("GET", session);
             EnigmaRiverContext.getHttpHandler().doHttp(url, apiCall, new PlayResponseHandler(assetId) {
                 @Override
                 protected void onError(Error error) {
-                    playRequest.onError(error);
+                    playResultHandler.onError(error);
                 }
 
                 @Override

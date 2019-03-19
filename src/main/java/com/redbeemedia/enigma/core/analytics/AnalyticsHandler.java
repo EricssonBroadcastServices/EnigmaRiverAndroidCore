@@ -1,5 +1,6 @@
 package com.redbeemedia.enigma.core.analytics;
 
+import com.redbeemedia.enigma.core.businessunit.IBusinessUnit;
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.error.ExposureHttpError;
 import com.redbeemedia.enigma.core.http.AuthenticatedExposureApiCall;
@@ -53,8 +54,9 @@ public class AnalyticsHandler implements IAnalyticsHandler {
     public void init() throws AnalyticsException, InterruptedException {
         JSONObject envelope = new JSONObject();
         try {
-            envelope.put(CUSTOMER, session.getCustomerUnitName());
-            envelope.put(BUSINESS_UNIT, session.getBusinessUnitName());
+            IBusinessUnit businessUnit = session.getBusinessUnit();
+            envelope.put(CUSTOMER, businessUnit.getCustomerName());
+            envelope.put(BUSINESS_UNIT, businessUnit.getName());
             envelope.put(SESSION_ID, playbackSessionId);
         } catch (JSONException e) {
             throw new AnalyticsException("Failed to construct envelope.", e);
@@ -96,8 +98,9 @@ public class AnalyticsHandler implements IAnalyticsHandler {
         try {
             JSONObject envelope = new JSONObject();
             try {
-                envelope.put(CUSTOMER, session.getCustomerUnitName());
-                envelope.put(BUSINESS_UNIT, session.getBusinessUnitName());
+                IBusinessUnit businessUnit = session.getBusinessUnit();
+                envelope.put(CUSTOMER, businessUnit.getCustomerName());
+                envelope.put(BUSINESS_UNIT, businessUnit.getName());
                 envelope.put(SESSION_ID, playbackSessionId);
                 envelope.put(DISPATCH_TIME, timeProvider.getTime());
                 envelope.put(PAYLOAD, currentEvents);

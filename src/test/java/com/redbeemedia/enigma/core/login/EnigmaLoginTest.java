@@ -7,7 +7,6 @@ import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.http.MockHttpHandler;
 import com.redbeemedia.enigma.core.testutil.Flag;
 import com.redbeemedia.enigma.core.util.MockHandler;
-import com.redbeemedia.enigma.core.util.UrlPath;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,17 +14,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
 
 public class EnigmaLoginTest {
-    @Test
-    public void testApiPath() throws MalformedURLException {
-        EnigmaLogin enigmaLogin = new EnigmaLogin("cU", "bU");
-        UrlPath url = enigmaLogin.getBusinessUnitBaseUrl(new UrlPath("http://example.com"));
-        Assert.assertEquals(new URL("http://example.com/v1/customer/cU/businessunit/bU"), url.toURL());
-    }
-
     @Test
     public void testLogin() throws MalformedURLException, JSONException {
         MockHttpHandler mockHandler = new MockHttpHandler();

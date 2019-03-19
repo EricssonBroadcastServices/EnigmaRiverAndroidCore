@@ -1,5 +1,6 @@
 package com.redbeemedia.enigma.core.exposure;
 
+import com.redbeemedia.enigma.core.businessunit.BusinessUnit;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
 import com.redbeemedia.enigma.core.error.Error;
@@ -79,11 +80,11 @@ public class GetProgramForChannelRequestTest {
     public void testGetUrl() throws MalformedURLException {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setExposureBaseUrl("http://unittest.ericsson.net:443"));
         GetProgramForChannelRequest request = new GetProgramForChannelRequest("mockChannelId", "mockProgramId",new MockExposureResultHandler<ApiProgramResponse>());
-        UrlPath urlPath = request.getUrl(new Session("sessToken", "cU", "bU"));
+        UrlPath urlPath = request.getUrl(new BusinessUnit("cU", "bU"));
         Assert.assertEquals("http://unittest.ericsson.net:443/v1/customer/cU/businessunit/bU/epg/mockChannelId/program/mockProgramId?", urlPath.toURL().toString());
 
         request = request.setIncludeUserData(false);
-        urlPath = request.getUrl(new Session("sessToken", "cU", "bU"));
+        urlPath = request.getUrl(new BusinessUnit("cU", "bU"));
         Assert.assertEquals("http://unittest.ericsson.net:443/v1/customer/cU/businessunit/bU/epg/mockChannelId/program/mockProgramId?includeUserData=false", urlPath.toURL().toString());
     }
 

@@ -1,5 +1,6 @@
 package com.redbeemedia.enigma.core.analytics;
 
+import com.redbeemedia.enigma.core.businessunit.IBusinessUnit;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
 import com.redbeemedia.enigma.core.http.HttpStatus;
@@ -30,8 +31,9 @@ public class AnalyticsHandlerTest {
         Assert.assertEquals(1, mockHttpHandler.getLog().size());
         JSONObject envelope = getEnvelope(mockHttpHandler.getLog().get(0));
         Assert.assertEquals("pbs7", envelope.getString("SessionId"));
-        Assert.assertEquals(session.getCustomerUnitName(), envelope.getString("Customer"));
-        Assert.assertEquals(session.getBusinessUnitName(), envelope.getString("BusinessUnit"));
+        IBusinessUnit businessUnit = session.getBusinessUnit();
+        Assert.assertEquals(businessUnit.getCustomerName(), envelope.getString("Customer"));
+        Assert.assertEquals(businessUnit.getName(), envelope.getString("BusinessUnit"));
 
         Assert.assertEquals( Long.valueOf(-37),analyticsHandler.getClockOffsetForUnitTests());
     }

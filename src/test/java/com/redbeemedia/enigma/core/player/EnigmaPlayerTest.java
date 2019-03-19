@@ -14,7 +14,9 @@ import com.redbeemedia.enigma.core.playable.IPlayable;
 import com.redbeemedia.enigma.core.playable.IPlayableHandler;
 import com.redbeemedia.enigma.core.player.listener.BaseEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
+import com.redbeemedia.enigma.core.playrequest.BasePlayResultHandler;
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
+import com.redbeemedia.enigma.core.playrequest.IPlayResultHandler;
 import com.redbeemedia.enigma.core.playrequest.PlayRequest;
 import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.session.MockSession;
@@ -66,27 +68,17 @@ public class EnigmaPlayerTest {
         };
         Assert.assertFalse(startPlaybackCalled.isTrue());
         installCalled.assertOnce();
-        enigmaPlayer.play(new IPlayRequest() {
+        enigmaPlayer.play(new PlayRequest(new MockPlayable("123") {
             @Override
-            public void onStarted() {
-
+            public void useWith(IPlayableHandler playableHandler) {
+                useWithCalled.setFlag();
+                super.useWith(playableHandler);
             }
-
+        }) {
             @Override
             public void onError(Error error) {
                 onErrorCalled.setFlag();
                 throw new RuntimeException("Error:"+error.getErrorCode());
-            }
-
-            @Override
-            public IPlayable getPlayable() {
-                return new MockPlayable("123") {
-                    @Override
-                    public void useWith(IPlayableHandler playableHandler) {
-                        useWithCalled.setFlag();
-                        super.useWith(playableHandler);
-                    }
-                };
             }
         });
         Assert.assertTrue(useWithCalled.isTrue());

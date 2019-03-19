@@ -3,8 +3,8 @@ package com.redbeemedia.enigma.core.session;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
-import com.redbeemedia.enigma.core.util.UrlPath;
+import com.redbeemedia.enigma.core.businessunit.BusinessUnit;
+import com.redbeemedia.enigma.core.businessunit.IBusinessUnit;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,14 +15,12 @@ public class Session implements ISession {
 
     private final UUID id;
     private String sessionToken;
-    private String custumerUnit;
-    private String businessUnit;
+    private final IBusinessUnit businessUnit;
 
-    public Session(String sessionToken, String custumerUnit, String businessUnit) {
+    public Session(String sessionToken, String customerUnit, String businessUnit) {
         this.id = UUID.randomUUID();
         this.sessionToken = sessionToken;
-        this.custumerUnit = custumerUnit;
-        this.businessUnit = businessUnit;
+        this.businessUnit = new BusinessUnit(customerUnit, businessUnit);
         sessionMap.put(this.id, this);
     }
 
@@ -32,23 +30,8 @@ public class Session implements ISession {
     }
 
     @Override
-    public String getCustomerUnitName() {
-        return custumerUnit;
-    }
-
-    @Override
-    public String getBusinessUnitName() {
+    public IBusinessUnit getBusinessUnit() {
         return businessUnit;
-    }
-
-    @Override
-    public UrlPath getApiBaseUrl() {
-        return getApiBaseUrl("v1");
-    }
-
-    @Override
-    public UrlPath getApiBaseUrl(String apiVersion) {
-        return EnigmaRiverContext.getExposureBaseUrl().append(apiVersion).append("customer").append(custumerUnit).append("businessunit").append(businessUnit);
     }
 
     @Override

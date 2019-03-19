@@ -73,7 +73,7 @@ import java.net.URL;
 
     private URL getTimeSyncUrl() {
         try {
-            return session.getApiBaseUrl().append("/time").toURL();
+            return session.getBusinessUnit().getApiBaseUrl().append("/time").toURL();
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }

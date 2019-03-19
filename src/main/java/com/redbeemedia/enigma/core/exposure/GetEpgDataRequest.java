@@ -1,5 +1,6 @@
 package com.redbeemedia.enigma.core.exposure;
 
+import com.redbeemedia.enigma.core.businessunit.IBusinessUnit;
 import com.redbeemedia.enigma.core.exposure.models.channel.ApiChannelEPGResponse;
 import com.redbeemedia.enigma.core.exposure.query.IQueryParameter;
 import com.redbeemedia.enigma.core.exposure.query.QueryParameterBuilder;
@@ -25,7 +26,7 @@ public class GetEpgDataRequest extends AbstractExposureRequest<List<ApiChannelEP
     }
 
     @Override
-    public UrlPath getUrl(ISession session) {
-        return qps.applyAll(session.getApiBaseUrl().append("epg"));
+    public UrlPath getUrl(IBusinessUnit businessUnit) {
+        return qps.applyAll(businessUnit.getApiBaseUrl().append("epg"));
     }
 }

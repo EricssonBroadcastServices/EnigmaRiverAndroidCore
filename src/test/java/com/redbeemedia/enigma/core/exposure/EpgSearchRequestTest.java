@@ -1,5 +1,6 @@
 package com.redbeemedia.enigma.core.exposure;
 
+import com.redbeemedia.enigma.core.businessunit.BusinessUnit;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
 import com.redbeemedia.enigma.core.error.Error;
@@ -79,15 +80,15 @@ public class EpgSearchRequestTest {
     public void testGetUrl() throws MalformedURLException {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setExposureBaseUrl("http://unittest.ericsson.net:443"));
         EpgSearchRequest request = new EpgSearchRequest(0,1,"queryString:yes",new MockExposureResultHandler<ApiEpgSearchHits>());
-        UrlPath urlPath = request.getUrl(new Session("sessToken", "cU", "bU"));
+        UrlPath urlPath = request.getUrl(new BusinessUnit("cU", "bU"));
         Assert.assertEquals("http://unittest.ericsson.net:443/v1/customer/cU/businessunit/bU/content/search/epg/queryString:yes?from=0&to=1", urlPath.toURL().toString());
 
         request = request.setPageNumber(2);
-        urlPath = request.getUrl(new Session("sessToken", "cU", "bU"));
+        urlPath = request.getUrl(new BusinessUnit("cU", "bU"));
         Assert.assertEquals("http://unittest.ericsson.net:443/v1/customer/cU/businessunit/bU/content/search/epg/queryString:yes?from=0&to=1&pageNumber=2", urlPath.toURL().toString());
 
         request = request.setPageSize(33);
-        urlPath = request.getUrl(new Session("sessToken", "cU", "bU"));
+        urlPath = request.getUrl(new BusinessUnit("cU", "bU"));
         Assert.assertEquals("http://unittest.ericsson.net:443/v1/customer/cU/businessunit/bU/content/search/epg/queryString:yes?from=0&to=1&pageSize=33&pageNumber=2", urlPath.toURL().toString());
     }
 

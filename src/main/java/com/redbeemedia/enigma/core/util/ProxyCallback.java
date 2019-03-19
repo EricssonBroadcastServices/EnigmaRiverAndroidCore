@@ -52,8 +52,12 @@ public class ProxyCallback {
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e); //TODO handle better
             } catch (InvocationTargetException e) {
-                throw new RuntimeException(e);//TODO handle better
+                doThrow(e.getTargetException());
             }
+        }
+
+        private <T extends Throwable> void doThrow(Throwable t) throws T {
+            throw (T) t;
         }
     }
 }

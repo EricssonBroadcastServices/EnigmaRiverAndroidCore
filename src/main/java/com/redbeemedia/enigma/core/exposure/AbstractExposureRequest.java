@@ -2,10 +2,12 @@ package com.redbeemedia.enigma.core.exposure;
 
 import android.util.JsonReader;
 
+import com.redbeemedia.enigma.core.businessunit.IBusinessUnit;
 import com.redbeemedia.enigma.core.error.Error;
 import com.redbeemedia.enigma.core.exposure.query.IQueryParameterSet;
 import com.redbeemedia.enigma.core.exposure.query.QueryParameterSet;
 import com.redbeemedia.enigma.core.http.AuthenticatedExposureApiCall;
+import com.redbeemedia.enigma.core.http.ExposureApiCall;
 import com.redbeemedia.enigma.core.http.IHttpCall;
 import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.util.JsonReaderUtil;
@@ -44,6 +46,11 @@ import java.util.List;
     @Override
     public IHttpCall getHttpCall(ISession session) {
         return new AuthenticatedExposureApiCall(requestMethod,session);
+    }
+
+    @Override
+    public IHttpCall getHttpCall(IBusinessUnit businessUnit) {
+        return new ExposureApiCall(requestMethod, businessUnit);
     }
 
     @Override

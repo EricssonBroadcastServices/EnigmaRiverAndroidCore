@@ -14,8 +14,8 @@ import com.redbeemedia.enigma.core.util.device.IDeviceInfo;
 public final class EnigmaRiverContext {
     private static volatile EnigmaRiverInitializedContext initializedContext = null;
 
-    public static synchronized void initialize(Application application) {
-        EnigmaRiverContext.initialize(application, new EnigmaRiverContextInitialization());
+    public static synchronized void initialize(Application application, String exposureBaseUrl) {
+        EnigmaRiverContext.initialize(application, new EnigmaRiverContextInitialization(exposureBaseUrl));
     }
 
     public static synchronized void initialize(Application application, EnigmaRiverContextInitialization initialization) {
@@ -35,30 +35,37 @@ public final class EnigmaRiverContext {
     }
 
     public static UrlPath getExposureBaseUrl() {
-        //TODO assert initialized
+        assertInitialized();
         return initializedContext.exposureBaseUrl;
     }
 
     public static IHttpHandler getHttpHandler() {
-        //TODO assert initialized
+        assertInitialized();
         return initializedContext.httpHandler;
     }
 
     public static IDeviceInfo getDeviceInfo() {
-        //TODO assert initialized
+        assertInitialized();
         return initializedContext.deviceInfo;
     }
 
     public static IActivityLifecycleManager getActivityLifecycleManager() {
-        //TODO assert initialized
+        assertInitialized();
         return initializedContext.activityLifecycleManager;
     }
 
     public static ITaskFactory getTaskFactory() {
-        //TODO assert initialized
+        assertInitialized();
         return initializedContext.taskFactory;
     }
 
+
+
+    private static void assertInitialized() {
+        if(initializedContext == null) {
+            throw new IllegalStateException("EnigmaRiverContext is not initialized.");
+        }
+    }
 
     public static class EnigmaRiverContextInitialization {
         private IHttpHandler httpHandler = null;
@@ -66,6 +73,10 @@ public final class EnigmaRiverContext {
         private IDeviceInfo deviceInfo = null;
         private IActivityLifecycleManagerFactory activityLifecycleManagerFactory = new DefaultActivityLifecycleManagerFactory();
         private ITaskFactory taskFactory = new DefaultTaskFactory();
+
+        public EnigmaRiverContextInitialization(String exposureBaseUrl) {
+            this.exposureBaseUrl = exposureBaseUrl;
+        }
 
         public String getExposureBaseUrl() {
             return exposureBaseUrl;

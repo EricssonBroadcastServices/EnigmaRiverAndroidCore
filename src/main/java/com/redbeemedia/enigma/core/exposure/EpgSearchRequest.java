@@ -1,9 +1,9 @@
 package com.redbeemedia.enigma.core.exposure;
 
+import com.redbeemedia.enigma.core.businessunit.IBusinessUnit;
 import com.redbeemedia.enigma.core.exposure.models.epg.ApiEpgSearchHits;
 import com.redbeemedia.enigma.core.exposure.query.IQueryParameter;
 import com.redbeemedia.enigma.core.exposure.query.QueryParameterBuilder;
-import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.util.UrlPath;
 
 public class EpgSearchRequest extends AbstractExposureRequest<ApiEpgSearchHits> {
@@ -33,7 +33,7 @@ public class EpgSearchRequest extends AbstractExposureRequest<ApiEpgSearchHits> 
     }
 
     @Override
-    public UrlPath getUrl(ISession session) {
-        return qps.applyAll(session.getApiBaseUrl().append("content/search/epg").append(query));
+    public UrlPath getUrl(IBusinessUnit businessUnit) {
+        return qps.applyAll(businessUnit.getApiBaseUrl().append("content/search/epg").append(query));
     }
 }

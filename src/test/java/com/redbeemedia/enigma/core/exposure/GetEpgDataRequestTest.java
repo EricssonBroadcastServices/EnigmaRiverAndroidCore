@@ -1,5 +1,6 @@
 package com.redbeemedia.enigma.core.exposure;
 
+import com.redbeemedia.enigma.core.businessunit.BusinessUnit;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
 import com.redbeemedia.enigma.core.error.Error;
@@ -76,11 +77,11 @@ public class GetEpgDataRequestTest {
     public void testGetUrl() throws MalformedURLException {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setExposureBaseUrl("http://unittest.ericsson.net:443"));
         GetEpgDataRequest request = new GetEpgDataRequest(0,1,new MockExposureResultHandler<List<ApiChannelEPGResponse>>());
-        UrlPath urlPath1 = request.getUrl(new Session("sessToken", "cU", "bU"));
+        UrlPath urlPath1 = request.getUrl(new BusinessUnit("cU", "bU"));
         Assert.assertEquals("http://unittest.ericsson.net:443/v1/customer/cU/businessunit/bU/epg?from=0&to=1", urlPath1.toURL().toString());
 
         request = request.setIncludeUserData(true);
-        UrlPath urlPath2 = request.getUrl(new Session("sessToken", "cU", "bU"));
+        UrlPath urlPath2 = request.getUrl(new BusinessUnit("cU", "bU"));
         Assert.assertEquals("http://unittest.ericsson.net:443/v1/customer/cU/businessunit/bU/epg?from=0&to=1&includeUserData=true", urlPath2.toURL().toString());
     }
 

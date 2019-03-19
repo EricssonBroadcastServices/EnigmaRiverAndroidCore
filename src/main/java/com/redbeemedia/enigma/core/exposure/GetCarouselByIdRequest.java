@@ -1,5 +1,6 @@
 package com.redbeemedia.enigma.core.exposure;
 
+import com.redbeemedia.enigma.core.businessunit.IBusinessUnit;
 import com.redbeemedia.enigma.core.exposure.models.carousel.ApiCarousel;
 import com.redbeemedia.enigma.core.exposure.query.IQueryParameter;
 import com.redbeemedia.enigma.core.exposure.query.QueryParameterBuilder;
@@ -26,8 +27,8 @@ public class GetCarouselByIdRequest extends AbstractExposureRequest<ApiCarousel>
     }
 
     @Override
-    public UrlPath getUrl(ISession session) {
-        return qps.applyAll(session.getApiBaseUrl().append("carouselgroup").append(groupId).append("carousel").append(carouselId));
+    public UrlPath getUrl(IBusinessUnit businessUnit) {
+        return qps.applyAll(businessUnit.getApiBaseUrl().append("carouselgroup").append(groupId).append("carousel").append(carouselId));
     }
 
     public GetCarouselByIdRequest setParentalRatings(String parentalRatings) {
