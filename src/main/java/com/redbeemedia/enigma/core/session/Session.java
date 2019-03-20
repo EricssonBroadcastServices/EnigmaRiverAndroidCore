@@ -55,4 +55,14 @@ public class Session implements ISession {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeSerializable(this.id);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof Session && this.id.equals(((Session) obj).id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
 }
