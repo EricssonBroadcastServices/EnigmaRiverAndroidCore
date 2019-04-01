@@ -8,4 +8,6 @@ import com.redbeemedia.enigma.core.error.Error;
  */
 public interface IPlayerImplementationListener {
     void onError(Error error);
+    void onLoadCompleted();
+    void onPlaybackStarted();
 }

@@ -7,4 +7,5 @@ public interface IEnigmaPlayerEnvironment {
     IDrmProvider getDrmProvider();
     void setMediaFormatSupportSpec(IMediaFormatSupportSpec formatSupportSpec);
     IPlayerImplementationListener getPlayerImplementationListener();
+    void setControls(IPlayerImplementationControls controls);
 }

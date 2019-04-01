@@ -1,31 +1,20 @@
 package com.redbeemedia.enigma.core.playrequest;
 
-import com.redbeemedia.enigma.core.error.Error;
 import com.redbeemedia.enigma.core.playable.IPlayable;
 
 public class PlayRequest implements IPlayRequest {
     private IPlayable playable;
+    private IPlaybackProperties playbackProperties;
     private IPlayResultHandler resultHandler;
 
-    @Deprecated
-    public PlayRequest(IPlayable playable) {
-        this.playable = playable;
-        this.resultHandler = new DefaultResultHandler();
-    }
-
     public PlayRequest(IPlayable playable, IPlayResultHandler resultHandler) {
+        this(playable, new PlaybackProperties() ,resultHandler);
+    }
+
+    public PlayRequest(IPlayable playable, IPlaybackProperties playbackProperties, IPlayResultHandler resultHandler) {
         this.playable = playable;
+        this.playbackProperties = playbackProperties;
         this.resultHandler = resultHandler;
-    }
-
-    @Deprecated
-    @Override
-    public void onStarted() {
-    }
-
-    @Deprecated
-    @Override
-    public void onError(Error error) {
     }
 
     @Override
@@ -34,19 +23,12 @@ public class PlayRequest implements IPlayRequest {
     }
 
     @Override
-    public IPlayResultHandler getResultHandler() {
-        return resultHandler;
+    public IPlaybackProperties getPlaybackProperties() {
+        return playbackProperties;
     }
 
-    private class DefaultResultHandler implements IPlayResultHandler {
-        @Override
-        public void onStarted(Object object) {
-            PlayRequest.this.onStarted();
-        }
-
-        @Override
-        public void onError(Error error) {
-            PlayRequest.this.onError(error);
-        }
+    @Override
+    public IPlayResultHandler getResultHandler() {
+        return resultHandler;
     }
 }
