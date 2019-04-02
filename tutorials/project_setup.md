@@ -9,6 +9,8 @@
 
 ## Adding Enigma River libraries to your project
 The Enigma River Android SDK uses [jitpack.io](https://jitpack.io/) for library distribution. So to add the libraries as dependencies to your project you also need to add jitpack as a repository.
+#### Note
+There are 2 `build.gradle` files in your project. One in the 'parent-project' and one in the 'app-module'. You should be editing the `build.gradle` file located in your *app-module* (typically located at <code>/MyProjectName/<b>app</b>/build.gradle</code>)
 ```gradle
 ...
 repositories {
@@ -21,7 +23,7 @@ repositories {
 
 The Enigma River SDK does not handle video playback itself - it uses a 'player implementation' for this. So in addition to the `core` library you also need to add a player implementation library and any additional libraries needed for that particular player implementation. 
 
-For using [ExoPlayer](https://github.com/google/ExoPlayer/tree/r2.9.1) as the player implementation, add the following lines to your `build.gradle` file.
+For using [ExoPlayer](https://github.com/google/ExoPlayer/tree/r2.9.1) as the player implementation, add the following lines to your app-module `build.gradle` file.
 ```gradle
 ...
 repositories {
