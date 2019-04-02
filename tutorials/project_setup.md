@@ -7,6 +7,10 @@
 * Simple android app that manages to build and run on a device
 * Internet connection
 
+## Permissions required by the SDK
+The following permissions are required for the SDK to function. Remember to add them to your `AndroidManifest.xml`.
+* `<uses-permission android:name="android.permission.INTERNET" />` - Needed to access the Red Bee Media OTT backend.
+
 ## Adding Enigma River libraries to your project
 The Enigma River Android SDK uses [jitpack.io](https://jitpack.io/) for library distribution. So to add the libraries as dependencies to your project you also need to add jitpack as a repository.
 #### Note
