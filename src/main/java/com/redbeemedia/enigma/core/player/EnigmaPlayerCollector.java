@@ -19,4 +19,9 @@ import com.redbeemedia.enigma.core.util.Collector;
     public void onPlaybackError(Error error) {
         forEach(listener -> listener.onPlaybackError(error));
     }
+
+    @Override
+    public void onStateChanged(EnigmaPlayerState from, EnigmaPlayerState to) {
+        forEach(listener -> listener.onStateChanged(from, to));
+    }
 }

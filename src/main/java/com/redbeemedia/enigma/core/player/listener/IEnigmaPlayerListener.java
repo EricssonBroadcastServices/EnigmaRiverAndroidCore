@@ -1,6 +1,8 @@
 package com.redbeemedia.enigma.core.player.listener;
 
 import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
+import com.redbeemedia.enigma.core.player.EnigmaPlayerState;
 import com.redbeemedia.enigma.core.util.IInternalListener;
 
 public interface IEnigmaPlayerListener extends IInternalListener {
@@ -14,4 +16,8 @@ public interface IEnigmaPlayerListener extends IInternalListener {
     void _dont_implement_IEnigmaPlayerListener___instead_extend_BaseEnigmaPlayerListener_();
 
     void onPlaybackError(Error error); //An error occurred during playback
+
+    void onStateChanged(EnigmaPlayerState from, EnigmaPlayerState to);
+
+    void onPlaybackSessionChanged(IPlaybackSession from, IPlaybackSession to);
 }

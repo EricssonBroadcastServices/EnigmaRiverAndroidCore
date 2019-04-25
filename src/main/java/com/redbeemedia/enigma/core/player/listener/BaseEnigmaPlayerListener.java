@@ -1,6 +1,7 @@
 package com.redbeemedia.enigma.core.player.listener;
 
 import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.player.EnigmaPlayerState;
 
 public class BaseEnigmaPlayerListener implements IEnigmaPlayerListener {
     @Override
@@ -10,5 +11,9 @@ public class BaseEnigmaPlayerListener implements IEnigmaPlayerListener {
 
     @Override
     public void onPlaybackError(Error error) {
+    }
+
+    @Override
+    public void onStateChanged(EnigmaPlayerState from, EnigmaPlayerState to) {
     }
 }
