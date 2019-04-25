@@ -287,19 +287,19 @@ public class EnigmaPlayerTest {
         playerImplementationListener[0].onError(new UnexpectedError("Testing"));
         onErrorCalled.assertCount(1);
 
-        enigmaPlayer.setCallbackHandler(handler);
+        enigmaPlayer.addListener(listener, handler);
 
         playerImplementationListener[0].onError(new UnexpectedError("Testing again"));
         Assert.assertEquals(1, handler.runnables.size());
-        onErrorCalled.assertCount(1);
-        handler.runnables.get(0).run();
         onErrorCalled.assertCount(2);
+        handler.runnables.get(0).run();
+        onErrorCalled.assertCount(3);
 
         playerImplementationListener[0].onError(new UnexpectedError("Testing third"));
         Assert.assertEquals(2, handler.runnables.size());
 
         enigmaPlayer.removeListener(listener);
         handler.runnables.get(1).run();
-        onErrorCalled.assertCount(2);
+        onErrorCalled.assertCount(5);
     }
 }
