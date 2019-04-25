@@ -153,6 +153,9 @@ public class EnigmaPlayerTest {
             formatArray.put(createFormatJson("https://media.example.com", "DASH"));
             formatArray.put(createFormatJson("https://media.example.com", "DASH", EnigmaMediaFormat.DrmTechnology.WIDEVINE.getKey()));
             response.put("formats", formatArray);
+            JSONObject streamInfo = new JSONObject();
+            streamInfo.put("live", false);
+            response.put("streamInfo", streamInfo);
             mockHttpHandler.queueResponse(new HttpStatus(200, "OK"), response.toString());
         }
         {
@@ -161,6 +164,10 @@ public class EnigmaPlayerTest {
             formatArray.put(createFormatJson("https://media.example.com", "DASH", EnigmaMediaFormat.DrmTechnology.WIDEVINE.getKey()));
             formatArray.put(createFormatJson("https://media.example.com?format=HLS", "HLS"));
             response.put("formats", formatArray);
+            JSONObject streamInfo = new JSONObject();
+            streamInfo.put("live", true);
+            streamInfo.put("start", 1505574300000L);
+            response.put("streamInfo", streamInfo);
             mockHttpHandler.queueResponse(new HttpStatus(200, "OK"), response.toString());
         }
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(mockHttpHandler));

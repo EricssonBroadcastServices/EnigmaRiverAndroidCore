@@ -1,10 +1,11 @@
 package com.redbeemedia.enigma.core.playrequest;
 
 import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 
-public class MockPlayResultHandler implements IPlayResultHandler {
+public class MockPlayResultHandler extends BasePlayResultHandler {
     @Override
-    public void onStarted(Object object) {
+    public void onStarted(IPlaybackSession playbackSession) {
     }
 
     @Override
