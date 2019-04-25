@@ -1,7 +1,19 @@
 package com.redbeemedia.enigma.core.playrequest;
 
-public abstract class BasePlayResultHandler implements IPlayResultHandler {
+import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
+
+public class BasePlayResultHandler implements IPlayResultHandler {
+    @Deprecated
     @Override
-    public void onStarted(Object object) {
+    public final void _dont_implement_IPlayResultHandler___instead_extend_BasePlayResultHandler_() {
+    }
+
+    @Override
+    public void onStarted(IPlaybackSession playbackSession) {
+    }
+
+    @Override
+    public void onError(Error error) {
     }
 }

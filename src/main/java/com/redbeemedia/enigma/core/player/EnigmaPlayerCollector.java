@@ -1,6 +1,7 @@
 package com.redbeemedia.enigma.core.player;
 
 import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.util.Collector;
 
@@ -23,5 +24,10 @@ import com.redbeemedia.enigma.core.util.Collector;
     @Override
     public void onStateChanged(EnigmaPlayerState from, EnigmaPlayerState to) {
         forEach(listener -> listener.onStateChanged(from, to));
+    }
+
+    @Override
+    public void onPlaybackSessionChanged(IPlaybackSession from, IPlaybackSession to) {
+        forEach(listener -> listener.onPlaybackSessionChanged(from, to));
     }
 }

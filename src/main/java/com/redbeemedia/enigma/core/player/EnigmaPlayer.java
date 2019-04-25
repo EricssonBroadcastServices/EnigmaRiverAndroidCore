@@ -68,7 +68,8 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     private EnigmaPlayerCollector enigmaPlayerListeners = new EnigmaPlayerCollector();
 
     private IPlaybackSessionFactory playbackSessionFactory = new DefaultPlaybackSessionFactory();
-    private IPlaybackSession currentPlaybackSession = null;
+    private final OpenContainer<IInternalPlaybackSession> currentPlaybackSession = new OpenContainer<>(null);
+    private PlaybackSessionContainerCollector playbackSessionContainerCollector = new PlaybackSessionContainerCollector();
     private final OpenContainer<IPlaybackStartAction> currentPlaybackStartAction = new OpenContainer<>(null);
 
     public EnigmaPlayer(ISession session, IPlayerImplementation playerImplementation) {
@@ -81,11 +82,11 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             public void onDestroy() {
                 playerImplementation.release();
                 ((LegacyTimeProvider) timeProvider).release();
-                synchronized (EnigmaPlayer.this) {
-                    if(currentPlaybackSession != null) {
-                        currentPlaybackSession.onStop(EnigmaPlayer.this);
+                synchronized (currentPlaybackSession) {
+                    if(currentPlaybackSession.value != null) {
+                        currentPlaybackSession.value.onStop(EnigmaPlayer.this);
                     }
-                    currentPlaybackSession = null;
+                    currentPlaybackSession.value = null;
                 }
             }
         };
@@ -189,16 +190,46 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
         @Override
         public void startUsingUrl(URL url) {
-            //TODO handle callbacks to IPlayRequest
-            environment.playerImplementationControls.load(url.toString());
-            environment.playerImplementationControls.start();
+            environment.playerImplementationControls.load(url.toString(), new PlayResultControlResultHandler(playResultHandler) {
+                @Override
+                public void onDone() {
+                    try {
+                        environment.playerImplementationControls.start(new PlayResultControlResultHandler(playResultHandler) {
+                            @Override
+                            public void onDone() {
+                                playResultHandler.onStarted(null); //TODO provide PlaybackSession
+                            }
+                        });
+                    } catch (RuntimeException e) {
+                        playResultHandler.onError(new UnexpectedError(e));
+                    }
+                }
+            });
+        }
+
+        private class PlayResultControlResultHandler extends BasePlayerImplementationControlResultHandler {
+            private IPlayResultHandler playResultHandler;
+
+            public PlayResultControlResultHandler(IPlayResultHandler playResultHandler) {
+                this.playResultHandler = playResultHandler;
+            }
+
+            @Override
+            public void onRejected(IControlResultHandler.IRejectReason rejectReason) {
+                this.playResultHandler.onError(new UnexpectedError("Rejected"));
+            }
+
+            @Override
+            public void onError(Error error) {
+                playResultHandler.onError(error);
+            }
         }
     }
 
     private interface IPlaybackStartAction {
         void startUsingAssetId(IPlaybackProperties playbackProperties, IPlayResultHandler playResultHandler, String assetId);
         IPlaybackProperties.PlayFrom getPlayFrom();
-        void onStarted(Object object);
+        void onStarted(IInternalPlaybackSession playbackSession);
         void cancel();
     }
 
@@ -294,8 +325,9 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         }
 
         @Override
-        public void onStarted(Object object) {
-            playResultHandler.onStarted(object);
+        public void onStarted(IInternalPlaybackSession playbackSession) {
+            updatePlayingFromLive();
+            playResultHandler.onStarted(playbackSession);
         }
 
         @Override
@@ -304,12 +336,17 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     }
 
 
-    private synchronized void replacePlaybackSession(IPlaybackSession playbackSession) {
-        if(this.currentPlaybackSession != null) {
-            this.currentPlaybackSession.onStop(this);
+    private void replacePlaybackSession(IInternalPlaybackSession playbackSession) {
+        synchronized (currentPlaybackSession) {
+            IInternalPlaybackSession oldSession = this.currentPlaybackSession.value;
+            if(this.currentPlaybackSession.value != null) {
+                this.currentPlaybackSession.value.onStop(this);
+            }
+            this.currentPlaybackSession.value = playbackSession;
+            playbackSessionContainerCollector.onPlaybackSessionChanged(oldSession, playbackSession);
+            enigmaPlayerListeners.onPlaybackSessionChanged(oldSession, playbackSession);
+            this.currentPlaybackSession.value.onStart(this);
         }
-        this.currentPlaybackSession = playbackSession;
-        this.currentPlaybackSession.onStart(this);
     }
 
 
