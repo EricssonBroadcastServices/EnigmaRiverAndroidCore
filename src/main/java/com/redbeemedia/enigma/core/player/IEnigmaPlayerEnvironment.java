@@ -11,6 +11,7 @@ public interface IEnigmaPlayerEnvironment {
     IDrmProvider getDrmProvider();
     void setMediaFormatSupportSpec(IMediaFormatSupportSpec formatSupportSpec);
     IPlayerImplementationListener getPlayerImplementationListener();
+    ITimelinePositionFactory getTimelinePositionFactory();
     void setControls(IPlayerImplementationControls controls);
     void setInternals(IPlayerImplementationInternals internals);
 }

@@ -3,6 +3,8 @@ package com.redbeemedia.enigma.core.player;
 import android.app.Activity;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 
 import com.redbeemedia.enigma.core.activity.AbstractActivityLifecycleListener;
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleListener;
@@ -28,10 +30,19 @@ import com.redbeemedia.enigma.core.player.controls.IControlResultHandler;
 import com.redbeemedia.enigma.core.player.controls.IEnigmaPlayerControls;
 import com.redbeemedia.enigma.core.player.listener.BaseEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
+import com.redbeemedia.enigma.core.player.timeline.BaseTimelineListener;
+import com.redbeemedia.enigma.core.player.timeline.ITimeline;
+import com.redbeemedia.enigma.core.player.timeline.ITimelineListener;
+import com.redbeemedia.enigma.core.player.timeline.ITimelinePosition;
+import com.redbeemedia.enigma.core.player.timeline.TimelineListenerCollector;
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
 import com.redbeemedia.enigma.core.playrequest.IPlayResultHandler;
 import com.redbeemedia.enigma.core.playrequest.IPlaybackProperties;
 import com.redbeemedia.enigma.core.session.ISession;
+import com.redbeemedia.enigma.core.task.HandlerTaskFactory;
+import com.redbeemedia.enigma.core.task.ITaskFactory;
+import com.redbeemedia.enigma.core.task.Repeater;
+import com.redbeemedia.enigma.core.time.Duration;
 import com.redbeemedia.enigma.core.time.ITimeProvider;
 import com.redbeemedia.enigma.core.util.HandlerWrapper;
 import com.redbeemedia.enigma.core.util.IHandler;
@@ -58,6 +69,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     private ISession session;
     private IPlayerImplementation playerImplementation;
     private final EnigmaPlayerControls controls = new EnigmaPlayerControls();
+    private final EnigmaPlayerTimeline timeline = new EnigmaPlayerTimeline();
     private EnigmaPlayerEnvironment environment = new EnigmaPlayerEnvironment();
     private EnigmaPlayerState state = EnigmaPlayerState.IDLE;
     private WeakReference<Activity> weakActivity = new WeakReference<>(null);
@@ -76,6 +88,8 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         this.session = session;
         this.playerImplementation = playerImplementation;
         this.playerImplementation.install(environment);
+        timeline.init();
+        playbackSessionContainerCollector.addListener(environment.timelinePositionFactory);
         environment.validateInstallation();
         this.activityLifecycleListener = new AbstractActivityLifecycleListener() {
             @Override
@@ -158,6 +172,11 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     @Override
     public IEnigmaPlayerControls getControls() {
         return controls;
+    }
+
+    @Override
+    public ITimeline getTimeline() {
+        return timeline;
     }
 
     @Override
@@ -349,6 +368,24 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         }
     }
 
+    private void setPlayingFromLive(boolean live) {
+        synchronized (currentPlaybackSession) {
+            if(currentPlaybackSession.value != null) {
+                currentPlaybackSession.value.setPlayingFromLive(live);
+            }
+        }
+    }
+
+    private void updatePlayingFromLive() {
+        ITimelinePosition timelinePosition = environment.playerImplementationInternals.getCurrentPosition();
+        ITimelinePosition endPos = environment.playerImplementationInternals.getCurrentEndBound();
+        if(timelinePosition != null && endPos != null) {
+            long seconds = endPos.subtract(timelinePosition).inWholeUnits(Duration.Unit.SECONDS);
+            setPlayingFromLive(seconds < 60 && state == EnigmaPlayerState.PLAYING);
+        } else {
+            setPlayingFromLive(false);
+        }
+    }
 
 
     private synchronized void changeState(EnigmaPlayerState newState) {
@@ -418,6 +455,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     private class EnigmaPlayerEnvironment implements IEnigmaPlayerEnvironment, IDrmProvider {
         private IMediaFormatSupportSpec formatSupportSpec = new DefaultFormatSupportSpec();
         private IDrmInfo drmInfo;
+        private DefaultTimelinePositionFactory timelinePositionFactory = new DefaultTimelinePositionFactory();
         private IPlayerImplementationControls playerImplementationControls;
         private IPlayerImplementationInternals playerImplementationInternals;
         private IPlayerImplementationListener playerImplementationListener;
@@ -440,6 +478,11 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         @Override
         public void setInternals(IPlayerImplementationInternals internals) {
             this.playerImplementationInternals = internals;
+        }
+
+        @Override
+        public ITimelinePositionFactory getTimelinePositionFactory() {
+            return timelinePositionFactory;
         }
 
         @Override
@@ -473,6 +516,11 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                                     changeState(EnigmaPlayerState.PLAYING);
                                 }
                             }
+                        }
+
+                        @Override
+                        public void onTimelineBoundsChanged(ITimelinePosition start, ITimelinePosition end) {
+                            timeline.onTimelineBoundsChanged(start, end);
                         }
                     };
                 }
@@ -606,4 +654,79 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         }
     }
 
+    private class EnigmaPlayerTimeline implements ITimeline {
+        private TimelineListenerCollector collector = new TimelineListenerCollector();
+        private boolean lastVisibleValue = false;
+        private Repeater repeater;
+
+        public EnigmaPlayerTimeline() {
+            ITaskFactory mainThreadTaskFactory = new HandlerTaskFactory(new HandlerWrapper(new Handler(Looper.getMainLooper())));
+            repeater = new Repeater(mainThreadTaskFactory, 1000 / 30, () -> collector.onCurrentPositionChanged(environment.playerImplementationInternals.getCurrentPosition()));
+            collector.addListener(new BaseTimelineListener() {
+                @Override
+                public void onVisibilityChanged(boolean visible) {
+                    lastVisibleValue = visible;
+                }
+            });
+        }
+
+        public void init() {
+            EnigmaPlayer.this.addListener(new BaseEnigmaPlayerListener() {
+                @Override
+                public void onStateChanged(EnigmaPlayerState from, EnigmaPlayerState to) {
+                    if(to == EnigmaPlayerState.PLAYING) {
+                        repeater.setEnabled(true);
+                    } else if(from == EnigmaPlayerState.PLAYING) {
+                        repeater.setEnabled(false);
+                    }
+                    if(to == EnigmaPlayerState.LOADED) {
+                        collector.onVisibilityChanged(true);
+                    } else if(to == EnigmaPlayerState.IDLE || to == EnigmaPlayerState.LOADING) {
+                        collector.onVisibilityChanged(false);
+                    }
+                }
+            });
+        }
+
+        @Override
+        public ITimelinePosition getCurrentPosition() {
+            return environment.playerImplementationInternals.getCurrentPosition();
+        }
+
+        @Override
+        public ITimelinePosition getCurrentEndBound() {
+            return environment.playerImplementationInternals.getCurrentEndBound();
+        }
+
+        @Override
+        public ITimelinePosition getCurrentStartBound() {
+            return environment.playerImplementationInternals.getCurrentEndBound();
+        }
+
+        @Override
+        public boolean getVisibility() {
+            return lastVisibleValue;
+        }
+
+        @Override
+        public void addListener(ITimelineListener listener) {
+            collector.addListener(listener);
+        }
+
+        @Override
+        public void addListener(ITimelineListener listener, Handler handler) {
+            collector.addListener(listener, new HandlerWrapper(handler));
+        }
+
+        @Override
+        public void removeListener(ITimelineListener listener) {
+            collector.removeListener(listener);
+        }
+
+        public void onTimelineBoundsChanged(ITimelinePosition start, ITimelinePosition end) {
+            updatePlayingFromLive();
+            collector.onBoundsChanged(start, end);
+            repeater.executeNow();
+        }
+    }
 }
