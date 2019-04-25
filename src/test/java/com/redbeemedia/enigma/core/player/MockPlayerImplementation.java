@@ -1,14 +1,17 @@
 package com.redbeemedia.enigma.core.player;
 
+import com.redbeemedia.enigma.core.player.timeline.ITimelinePosition;
 
 public class MockPlayerImplementation implements IPlayerImplementation, IPlayerImplementationControls, IPlayerImplementationInternals {
     private IPlayerImplementationListener playerImplementationListener;
+    private ITimelinePositionFactory timelinePositionFactory;
 
     @Override
     public void install(IEnigmaPlayerEnvironment environment) {
         environment.setControls(this);
         environment.setInternals(this);
         this.playerImplementationListener = environment.getPlayerImplementationListener();
+        this.timelinePositionFactory = environment.getTimelinePositionFactory();
     }
 
     @Override
@@ -45,5 +48,20 @@ public class MockPlayerImplementation implements IPlayerImplementation, IPlayerI
 
     @Override
     public void release() {
+    }
+
+    @Override
+    public ITimelinePosition getCurrentPosition() {
+        return timelinePositionFactory.newPosition(1234L);
+    }
+
+    @Override
+    public ITimelinePosition getCurrentStartBound() {
+        return timelinePositionFactory.newPosition(0L);
+    }
+
+    @Override
+    public ITimelinePosition getCurrentEndBound() {
+        return timelinePositionFactory.newPosition(10000L);
     }
 }
