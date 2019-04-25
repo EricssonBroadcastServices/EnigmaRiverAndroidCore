@@ -10,6 +10,11 @@ public class MockTaskFactory implements ITaskFactory {
             }
 
             @Override
+            public void startDelayed(long delayMillis) throws TaskException {
+
+            }
+
+            @Override
             public void cancel(long joinMillis) throws IllegalStateException {
 
             }
