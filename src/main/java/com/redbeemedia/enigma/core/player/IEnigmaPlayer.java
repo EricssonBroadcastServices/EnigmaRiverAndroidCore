@@ -10,6 +10,7 @@ import com.redbeemedia.enigma.core.util.IHandler;
 public interface IEnigmaPlayer {
     void play(IPlayRequest playerRequest);
     boolean addListener(IEnigmaPlayerListener playerListener);
+    boolean addListener(IEnigmaPlayerListener playerListener, Handler handler);
     boolean removeListener(IEnigmaPlayerListener playerListener);
     IEnigmaPlayer setCallbackHandler(IHandler handler);
     IEnigmaPlayer setCallbackHandler(Handler handler);

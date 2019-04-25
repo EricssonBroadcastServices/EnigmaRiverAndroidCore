@@ -28,9 +28,9 @@ import com.redbeemedia.enigma.core.playrequest.IPlayResultHandler;
 import com.redbeemedia.enigma.core.playrequest.IPlaybackProperties;
 import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.time.ITimeProvider;
-import com.redbeemedia.enigma.core.util.Collector;
 import com.redbeemedia.enigma.core.util.HandlerWrapper;
 import com.redbeemedia.enigma.core.util.IHandler;
+import com.redbeemedia.enigma.core.util.IInternalCallbackObject;
 import com.redbeemedia.enigma.core.util.OpenContainer;
 import com.redbeemedia.enigma.core.util.ProxyCallback;
 
@@ -57,8 +57,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     private ITimeProvider timeProvider;
     private IHandler callbackHandler = null;
 
-    private Collector<IEnigmaPlayerListener> enigmaPlayerCollector;
-    private IEnigmaPlayerListener enigmaPlayerListeners;
+    private EnigmaPlayerCollector enigmaPlayerListeners = new EnigmaPlayerCollector();
 
     private IPlaybackSessionFactory playbackSessionFactory = new DefaultPlaybackSessionFactory();
     private IPlaybackSession currentPlaybackSession = null;
@@ -67,9 +66,6 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     public EnigmaPlayer(ISession session, IPlayerImplementation playerImplementation) {
         this.session = session;
         this.playerImplementation = playerImplementation;
-        EnigmaPlayerCollector playerCollector = new EnigmaPlayerCollector();
-        this.enigmaPlayerCollector = playerCollector;
-        this.enigmaPlayerListeners = playerCollector;
         this.playerImplementation.install(environment);
         environment.validateInstallation();
         this.activityLifecycleListener = new AbstractActivityLifecycleListener() {
@@ -114,12 +110,21 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
     @Override
     public boolean addListener(IEnigmaPlayerListener playerListener) {
-        return enigmaPlayerCollector.addListener(playerListener);
+        return enigmaPlayerListeners.addListener(playerListener);
+    }
+
+    @Override
+    public boolean addListener(IEnigmaPlayerListener playerListener, Handler handler) {
+        return addListener(playerListener, new HandlerWrapper(handler));
+    }
+
+    protected boolean addListener(IEnigmaPlayerListener playerListener, IHandler handler) {
+        return enigmaPlayerListeners.addListener(playerListener, handler);
     }
 
     @Override
     public boolean removeListener(IEnigmaPlayerListener playerListener) {
-        return enigmaPlayerCollector.removeListener(playerListener);
+        return enigmaPlayerListeners.removeListener(playerListener);
     }
 
     @Override
@@ -129,22 +134,24 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
     @Override
     public EnigmaPlayer setCallbackHandler(IHandler handler) {
-        this.enigmaPlayerListeners = ProxyCallback.createCallbackOnThread(handler, IEnigmaPlayerListener.class, (IEnigmaPlayerListener) enigmaPlayerCollector);
         this.callbackHandler = handler;
         return this;
     }
 
+    private <T extends IInternalCallbackObject> T useCallbackHandlerIfPresent(Class<T> callbackInterface, T callback) {
+        if(callbackHandler != null) {
+            return ProxyCallback.createCallbackOnThread(callbackHandler, callbackInterface, callback);
+        } else {
+            return callback;
+        }
+    }
     private class PlayableHandler implements IPlayableHandler {
         private IPlaybackProperties playbackProperties;
         private IPlayResultHandler playResultHandler;
 
         public PlayableHandler(IPlaybackProperties playbackProperties, IPlayResultHandler playResultHandler) {
             this.playbackProperties = playbackProperties;
-            if(callbackHandler != null) {
-                this.playResultHandler = ProxyCallback.createCallbackOnThread(callbackHandler, IPlayResultHandler.class, playResultHandler);
-            } else {
-                this.playResultHandler = playResultHandler;
-            }
+            this.playResultHandler = useCallbackHandlerIfPresent(IPlayResultHandler.class, playResultHandler);
         }
 
         @Override
