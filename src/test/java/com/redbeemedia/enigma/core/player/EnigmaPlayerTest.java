@@ -56,15 +56,15 @@ public class EnigmaPlayerTest {
             }
 
             @Override
-            public void load(String url) {
+            public void load(String url, IPlayerImplementationControlResultHandler resultHandler) {
                 loadCalled.setFlag();
-                super.load(url);
+                super.load(url, resultHandler);
             }
 
             @Override
-            public void start() {
+            public void start(IPlayerImplementationControlResultHandler resultHandler) {
                 startCalled.setFlag();
-                super.start();
+                super.start(resultHandler);
             }
         };
         EnigmaPlayer enigmaPlayer = new EnigmaPlayer(new MockSession(), impl) {
@@ -181,9 +181,9 @@ public class EnigmaPlayerTest {
             }
 
             @Override
-            public void start() {
+            public void start(IPlayerImplementationControlResultHandler resultHandler) {
                 playbackStartedCalls.count();
-                super.start();
+                super.start(resultHandler);
             }
         };
         installed.assertNotSet();
