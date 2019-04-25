@@ -86,7 +86,8 @@ public class EnigmaPlayerTest {
             @Override
             public void onError(Error error) {
                 onErrorCalled.setFlag();
-                throw new RuntimeException("Error:"+error.getErrorCode());
+                error.printStackTrace();
+                throw new RuntimeException(error.getClass().getSimpleName()+": "+error.getErrorCode());
             }
         }));
         Assert.assertTrue(useWithCalled.isTrue());
@@ -204,7 +205,8 @@ public class EnigmaPlayerTest {
         enigmaPlayer.play(new MockPlayRequest("123").setResultHandler(new MockPlayResultHandler() {
             @Override
             public void onError(Error error) {
-                Assert.fail("Error: "+error.getErrorCode());
+                error.printStackTrace();
+                Assert.fail(error.getClass().getSimpleName()+": "+error.getErrorCode());
             }
         }));
         playbackStartedCalls.assertOnce();

@@ -48,11 +48,15 @@ public class ProxyCallback {
     }
 
     private static class RunnableMethodInvocation implements Runnable {
+        private static final StackTraceElement[] MAGIC_STE = new StackTraceElement[]{new StackTraceElement("vitrual","magicThreadSwitching","magic",0)};
+
+        private final StackTraceElement[] callStack;
         private final Method method;
         private final Object object;
         private final Object[] args;
 
-        public RunnableMethodInvocation(Method method, Object object, Object[] args) {
+        public RunnableMethodInvocation(StackTraceElement[] callStack, Method method, Object object, Object[] args) {
+                this.callStack = callStack;
                 this.method = method;
                 this.object = object;
                 this.args = args;
@@ -65,7 +69,22 @@ public class ProxyCallback {
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e); //TODO handle better
             } catch (InvocationTargetException e) {
-                doThrow(e.getTargetException());
+                Throwable throwable = e.getTargetException();
+                StackTraceElement[] throwableStack = throwable.getStackTrace();
+                //Remove all before and including the "run-method call"
+                int cutoffPoint = throwableStack.length;
+                for(int i = 0; i < throwableStack.length; ++i) {
+                    if(this.getClass().getName().equals(throwableStack[i].getClassName()) && "run".equals(throwableStack[i].getMethodName())) {
+                        cutoffPoint = i;
+                        break;
+                    }
+                }
+                StackTraceElement[] merged = new StackTraceElement[cutoffPoint+callStack.length-5+1]; //First 6 from the callStack are removed
+                System.arraycopy(throwableStack, 0, merged, 0, cutoffPoint);
+                System.arraycopy(MAGIC_STE,0, merged, cutoffPoint, 1);
+                System.arraycopy(callStack, 5, merged, cutoffPoint+1, callStack.length-5);
+                throwable.setStackTrace(merged);
+                doThrow(throwable);
             }
         }
 
