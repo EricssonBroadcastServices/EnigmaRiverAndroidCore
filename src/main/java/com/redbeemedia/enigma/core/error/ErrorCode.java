@@ -41,6 +41,7 @@ public class ErrorCode {
     public static final int SERVER_TIMEOUT = 39;
     public static final int PLAYER_IMPLEMENTATION_ERROR = 40;
     public static final int ANALYTICS_ERROR = 41;
+    public static final int ILLEGAL_SEEK_POSITION = 42;
 
 
     private ErrorCode() {}

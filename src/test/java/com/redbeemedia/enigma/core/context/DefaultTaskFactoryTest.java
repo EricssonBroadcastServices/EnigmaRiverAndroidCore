@@ -50,6 +50,63 @@ public class DefaultTaskFactoryTest {
         runCalled.assertNone();
     }
 
+    @Test
+    public void testStartDelayed() throws Throwable {
+        runWithRetries(3, new UnsafeRunnable() {
+            @Override
+            public void run() throws Throwable {
+                DefaultTaskFactory taskFactory = new DefaultTaskFactory();
+                final Counter runCalled = new Counter();
+                ITask task = taskFactory.newTask(new Runnable() {
+                    @Override
+                    public void run() {
+                        runCalled.count();
+                    }
+                });
+                runCalled.assertNone();
+                task.startDelayed(100);
+                runCalled.assertNone();
+                Thread.sleep(110);
+                runCalled.assertOnce();
+            }
+        });
+    }
+
+    @Test
+    public void testStartDelayedCancellable() throws Throwable {
+        DefaultTaskFactory taskFactory = new DefaultTaskFactory();
+        final Counter runCalled = new Counter();
+        ITask task = taskFactory.newTask(new Runnable() {
+            @Override
+            public void run() {
+                runCalled.count();
+            }
+        });
+        runCalled.assertNone();
+        task.startDelayed(50);
+        Thread.sleep(30);
+        task.cancel(1);
+        runCalled.assertNone();
+        Thread.sleep(50);
+        runCalled.assertNone();
+    }
+
+    private static void runWithRetries(int retries, UnsafeRunnable runnable) throws Throwable {
+        int retriesLeft = retries;
+        while(--retriesLeft >= 0) {
+            try {
+                runnable.run();
+                return;
+            } catch (Throwable e) {
+                if(retriesLeft <= 0) {
+                    throw e;
+                } else {
+                    System.out.println("Test failed, retrying...");
+                }
+            }
+        }
+    }
+
     private static void waitUntilTrue(Flag flag, long timeout) throws TimeoutException {
         long startWait = System.currentTimeMillis();
         while(System.currentTimeMillis()-startWait < timeout) {
@@ -65,5 +122,9 @@ public class DefaultTaskFactoryTest {
             }
         }
         throw new TimeoutException();
+    }
+
+    private interface UnsafeRunnable {
+        void run() throws Throwable;
     }
 }

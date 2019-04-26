@@ -25,7 +25,7 @@ public class InvalidAssetError extends AssetPlayRequestError {
         return this.assetId;
     }
 
-    public static String getAssetMessage(String assetId) {
+    private static String getAssetMessage(String assetId) {
         return "Could not find asset with id "+assetId;
     }
 }

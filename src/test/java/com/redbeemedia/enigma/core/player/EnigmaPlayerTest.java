@@ -56,15 +56,15 @@ public class EnigmaPlayerTest {
             }
 
             @Override
-            public void load(String url) {
+            public void load(String url, IPlayerImplementationControlResultHandler resultHandler) {
                 loadCalled.setFlag();
-                super.load(url);
+                super.load(url, resultHandler);
             }
 
             @Override
-            public void start() {
+            public void start(IPlayerImplementationControlResultHandler resultHandler) {
                 startCalled.setFlag();
-                super.start();
+                super.start(resultHandler);
             }
         };
         EnigmaPlayer enigmaPlayer = new EnigmaPlayer(new MockSession(), impl) {
@@ -86,7 +86,8 @@ public class EnigmaPlayerTest {
             @Override
             public void onError(Error error) {
                 onErrorCalled.setFlag();
-                throw new RuntimeException("Error:"+error.getErrorCode());
+                error.printStackTrace();
+                throw new RuntimeException(error.getClass().getSimpleName()+": "+error.getErrorCode());
             }
         }));
         Assert.assertTrue(useWithCalled.isTrue());
@@ -153,6 +154,9 @@ public class EnigmaPlayerTest {
             formatArray.put(createFormatJson("https://media.example.com", "DASH"));
             formatArray.put(createFormatJson("https://media.example.com", "DASH", EnigmaMediaFormat.DrmTechnology.WIDEVINE.getKey()));
             response.put("formats", formatArray);
+            JSONObject streamInfo = new JSONObject();
+            streamInfo.put("live", false);
+            response.put("streamInfo", streamInfo);
             mockHttpHandler.queueResponse(new HttpStatus(200, "OK"), response.toString());
         }
         {
@@ -161,6 +165,10 @@ public class EnigmaPlayerTest {
             formatArray.put(createFormatJson("https://media.example.com", "DASH", EnigmaMediaFormat.DrmTechnology.WIDEVINE.getKey()));
             formatArray.put(createFormatJson("https://media.example.com?format=HLS", "HLS"));
             response.put("formats", formatArray);
+            JSONObject streamInfo = new JSONObject();
+            streamInfo.put("live", true);
+            streamInfo.put("start", 1505574300000L);
+            response.put("streamInfo", streamInfo);
             mockHttpHandler.queueResponse(new HttpStatus(200, "OK"), response.toString());
         }
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(mockHttpHandler));
@@ -181,9 +189,9 @@ public class EnigmaPlayerTest {
             }
 
             @Override
-            public void start() {
+            public void start(IPlayerImplementationControlResultHandler resultHandler) {
                 playbackStartedCalls.count();
-                super.start();
+                super.start(resultHandler);
             }
         };
         installed.assertNotSet();
@@ -197,7 +205,8 @@ public class EnigmaPlayerTest {
         enigmaPlayer.play(new MockPlayRequest("123").setResultHandler(new MockPlayResultHandler() {
             @Override
             public void onError(Error error) {
-                Assert.fail("Error: "+error.getErrorCode());
+                error.printStackTrace();
+                Assert.fail(error.getClass().getSimpleName()+": "+error.getErrorCode());
             }
         }));
         playbackStartedCalls.assertOnce();
@@ -287,19 +296,19 @@ public class EnigmaPlayerTest {
         playerImplementationListener[0].onError(new UnexpectedError("Testing"));
         onErrorCalled.assertCount(1);
 
-        enigmaPlayer.setCallbackHandler(handler);
+        enigmaPlayer.addListener(listener, handler);
 
         playerImplementationListener[0].onError(new UnexpectedError("Testing again"));
         Assert.assertEquals(1, handler.runnables.size());
-        onErrorCalled.assertCount(1);
-        handler.runnables.get(0).run();
         onErrorCalled.assertCount(2);
+        handler.runnables.get(0).run();
+        onErrorCalled.assertCount(3);
 
         playerImplementationListener[0].onError(new UnexpectedError("Testing third"));
         Assert.assertEquals(2, handler.runnables.size());
 
         enigmaPlayer.removeListener(listener);
         handler.runnables.get(1).run();
-        onErrorCalled.assertCount(2);
+        onErrorCalled.assertCount(5);
     }
 }
