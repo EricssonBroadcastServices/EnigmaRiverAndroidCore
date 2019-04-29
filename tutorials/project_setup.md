@@ -30,6 +30,14 @@ The Enigma River SDK does not handle video playback itself - it uses a 'player i
 For using [ExoPlayer](https://github.com/google/ExoPlayer/tree/r2.9.1) as the player implementation, add the following lines to your app-module `build.gradle` file.
 ```gradle
 ...
+android {
+    ...
+    compileOptions {
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    ...
+}
+...
 repositories {
 	...
 	google() //Needed for ExoPlayer
@@ -41,7 +49,7 @@ dependencies {
 	...
 	implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:core:r1.0.6"
 	implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exoplayerintegration:r1.0.6"
-    implementation 'com.google.android.exoplayer:exoplayer:2.9.1'
+    implementation 'com.google.android.exoplayer:exoplayer:2.9.6'
 }
 ...
 ```
