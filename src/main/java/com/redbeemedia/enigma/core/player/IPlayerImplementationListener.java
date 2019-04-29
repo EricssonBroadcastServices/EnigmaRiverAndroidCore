@@ -12,4 +12,5 @@ public interface IPlayerImplementationListener {
     void onLoadCompleted();
     void onPlaybackStarted();
     void onTimelineBoundsChanged(ITimelinePosition start, ITimelinePosition end);
+    void onPositionChanged();
 }

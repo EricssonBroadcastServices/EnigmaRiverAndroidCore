@@ -10,6 +10,7 @@ import com.redbeemedia.enigma.core.format.EnigmaMediaFormat;
 import com.redbeemedia.enigma.core.format.IMediaFormatSupportSpec;
 import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.http.MockHttpHandler;
+import com.redbeemedia.enigma.core.playable.IPlayable;
 import com.redbeemedia.enigma.core.playable.IPlayableHandler;
 import com.redbeemedia.enigma.core.playable.MockPlayable;
 import com.redbeemedia.enigma.core.player.listener.BaseEnigmaPlayerListener;
@@ -224,6 +225,7 @@ public class EnigmaPlayerTest {
 
     @Test
     public void testListeners() {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
         final IPlayerImplementationListener[] playerImplementationListener = new IPlayerImplementationListener[]{null};
         final Flag installCalled = new Flag();
         IPlayerImplementation impl = new MockPlayerImplementation() {
@@ -264,6 +266,7 @@ public class EnigmaPlayerTest {
 
     @Test
     public void testCallbackHandler() {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
         final IPlayerImplementationListener[] playerImplementationListener = new IPlayerImplementationListener[]{null};
         final Flag installCalled = new Flag();
 
@@ -310,5 +313,45 @@ public class EnigmaPlayerTest {
         enigmaPlayer.removeListener(listener);
         handler.runnables.get(1).run();
         onErrorCalled.assertCount(5);
+    }
+
+    @Test
+    public void testStateChangeListener() throws JSONException {
+        MockHttpHandler mockHttpHandler = new MockHttpHandler();
+        JSONObject response = new JSONObject();
+        {
+            JSONArray formatArray = new JSONArray();
+            formatArray.put(createFormatJson("https://media.example.com", "DASH"));
+            response.put("formats", formatArray);
+            JSONObject streamInfo = new JSONObject();
+            streamInfo.put("live", true);
+            streamInfo.put("start", 1505574300000L);
+            response.put("streamInfo", streamInfo);
+        }
+        mockHttpHandler.queueResponse(new HttpStatus(200, "OK"), response.toString());
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(mockHttpHandler));
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayer(new MockSession(), new MockPlayerImplementation() {
+            @Override
+            public void install(IEnigmaPlayerEnvironment environment) {
+                super.install(environment);
+                environment.setMediaFormatSupportSpec(enigmaMediaFormat -> true);
+            }
+        }) {
+            @Override
+            protected ITimeProvider newTimeProvider(ISession session) {
+                return new MockTimeProvider();
+            }
+        };
+
+        final StringBuilder log = new StringBuilder();
+        enigmaPlayer.addListener(new BaseEnigmaPlayerListener() {
+            @Override
+            public void onStateChanged(EnigmaPlayerState from, EnigmaPlayerState to) {
+                log.append("["+from+"->"+to+"]");
+            }
+        });
+        MockPlayRequest mockPlayRequest = new MockPlayRequest();
+        enigmaPlayer.play(mockPlayRequest);
+        Assert.assertEquals("[IDLE->LOADING][LOADING->LOADED][LOADED->PLAYING][PLAYING->LOADED]",log.toString());
     }
 }

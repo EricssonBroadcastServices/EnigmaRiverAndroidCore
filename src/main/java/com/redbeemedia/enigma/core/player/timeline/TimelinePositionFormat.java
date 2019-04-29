@@ -31,19 +31,19 @@ public class TimelinePositionFormat {
         }
     }
 
-    public static TimelinePositionFormat newTimestampFormat(IDurationFormat durationFormat, DateFormat dateFormat) {
+    public static TimelinePositionFormat newFormat(IDurationFormat durationFormat, DateFormat dateFormat) {
         return new TimelinePositionFormat(durationFormat, dateFormat);
     }
 
-    public static TimelinePositionFormat newTimestampFormat(String durationPattern, DateFormat dateFormat) {
-        return newTimestampFormat(new SimpleDurationFormat(durationPattern), dateFormat);
+    public static TimelinePositionFormat newFormat(String durationPattern, DateFormat dateFormat) {
+        return newFormat(new SimpleDurationFormat(durationPattern), dateFormat);
     }
 
-    public static TimelinePositionFormat newTimestampFormat(String durationPattern, String datePattern) {
-        return newTimestampFormat(durationPattern, new SimpleDateFormat(datePattern));
+    public static TimelinePositionFormat newFormat(String durationPattern, String datePattern) {
+        return newFormat(durationPattern, new SimpleDateFormat(datePattern));
     }
 
-    public static TimelinePositionFormat newTimestampFormat(IDurationFormat durationFormat, String datePattern) {
-        return newTimestampFormat(durationFormat, new SimpleDateFormat(datePattern));
+    public static TimelinePositionFormat newFormat(IDurationFormat durationFormat, String datePattern) {
+        return newFormat(durationFormat, new SimpleDateFormat(datePattern));
     }
 }

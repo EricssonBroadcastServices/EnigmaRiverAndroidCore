@@ -29,7 +29,7 @@ public class DefaultTimelinePositionFactoryTest {
         ITimelinePosition timelinePosition2 = factory.newPosition(5250);
         long millisDiff = timelinePosition2.subtract(timelinePosition).inWholeUnits(Duration.Unit.MILLISECONDS);
         Assert.assertEquals(5250-2500, millisDiff);
-        String formatted = timelinePosition.toString(TimelinePositionFormat.newTimestampFormat(duration -> "DUR_FORMAT", "'x'"));
+        String formatted = timelinePosition.toString(TimelinePositionFormat.newFormat(duration -> "DUR_FORMAT", "'x'"));
         Assert.assertEquals("DUR_FORMAT", formatted);
     }
 
@@ -41,7 +41,7 @@ public class DefaultTimelinePositionFactoryTest {
         ITimelinePosition timelinePosition2 = factory.newPosition(5250);
         long millisDiff = timelinePosition2.subtract(timelinePosition).inWholeUnits(Duration.Unit.MILLISECONDS);
         Assert.assertEquals(2750, millisDiff);
-        String formatted = timelinePosition.toString(TimelinePositionFormat.newTimestampFormat(duration -> "DUR_FORMAT", "'x'"));
+        String formatted = timelinePosition.toString(TimelinePositionFormat.newFormat(duration -> "DUR_FORMAT", "'x'"));
         Assert.assertEquals("x", formatted);
     }
 
@@ -56,13 +56,13 @@ public class DefaultTimelinePositionFactoryTest {
         ITimelinePosition timelinePosition2 = factory.newPosition(5250);
         long millisDiff = timelinePosition2.subtract(timelinePosition).inWholeUnits(Duration.Unit.MILLISECONDS);
         Assert.assertEquals(2750, millisDiff);
-        String formatted = timelinePosition2.toString(TimelinePositionFormat.newTimestampFormat(duration -> "DUR_FORMAT", "'x'"));
+        String formatted = timelinePosition2.toString(TimelinePositionFormat.newFormat(duration -> "DUR_FORMAT", "'x'"));
         Assert.assertEquals("x", formatted);
         factory.onPlaybackSessionChanged(secondSession, firstSession);
         ITimelinePosition timelinePosition3 = factory.newPosition(10000L);
         long millisDiff2 = timelinePosition3.subtract(timelinePosition2).inWholeUnits(Duration.Unit.MILLISECONDS);
         Assert.assertEquals(4750, millisDiff2);
-        String formatted2 = timelinePosition3.toString(TimelinePositionFormat.newTimestampFormat(duration -> "DUR_FORMAT", "'x'"));
+        String formatted2 = timelinePosition3.toString(TimelinePositionFormat.newFormat(duration -> "DUR_FORMAT", "'x'"));
         Assert.assertEquals("DUR_FORMAT", formatted2);
     }
 
