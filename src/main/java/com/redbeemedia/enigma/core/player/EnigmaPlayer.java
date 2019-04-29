@@ -514,6 +514,11 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                         public void onTimelineBoundsChanged(ITimelinePosition start, ITimelinePosition end) {
                             timeline.onTimelineBoundsChanged(start, end);
                         }
+
+                        @Override
+                        public void onPositionChanged() {
+                            timeline.onPositionNeedsUpdating();
+                        }
                     };
                 }
                 return playerImplementationListener;
@@ -713,6 +718,10 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         public void onTimelineBoundsChanged(ITimelinePosition start, ITimelinePosition end) {
             updatePlayingFromLive();
             collector.onBoundsChanged(start, end);
+            repeater.executeNow();
+        }
+
+        public void onPositionNeedsUpdating() {
             repeater.executeNow();
         }
     }
