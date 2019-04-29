@@ -47,6 +47,7 @@ import com.redbeemedia.enigma.core.time.ITimeProvider;
 import com.redbeemedia.enigma.core.util.HandlerWrapper;
 import com.redbeemedia.enigma.core.util.IHandler;
 import com.redbeemedia.enigma.core.util.IInternalCallbackObject;
+import com.redbeemedia.enigma.core.util.IStateMachine;
 import com.redbeemedia.enigma.core.util.OpenContainer;
 import com.redbeemedia.enigma.core.util.ProxyCallback;
 
@@ -71,7 +72,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     private final EnigmaPlayerControls controls = new EnigmaPlayerControls();
     private final EnigmaPlayerTimeline timeline = new EnigmaPlayerTimeline();
     private EnigmaPlayerEnvironment environment = new EnigmaPlayerEnvironment();
-    private EnigmaPlayerState state = EnigmaPlayerState.IDLE;
+    private IStateMachine<EnigmaPlayerState> stateMachine = EnigmaStateMachineFactory.create();
     private WeakReference<Activity> weakActivity = new WeakReference<>(null);
     private IActivityLifecycleListener activityLifecycleListener;
     private ITimeProvider timeProvider;
@@ -90,6 +91,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         this.playerImplementation.install(environment);
         timeline.init();
         playbackSessionContainerCollector.addListener(environment.timelinePositionFactory);
+        stateMachine.addListener((from, to) -> enigmaPlayerListeners.onStateChanged(from, to));
         environment.validateInstallation();
         this.activityLifecycleListener = new AbstractActivityLifecycleListener() {
             @Override
@@ -152,7 +154,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
     @Override
     public EnigmaPlayer setCallbackHandler(Handler handler) {
-        return (EnigmaPlayer) setCallbackHandler(new HandlerWrapper(handler));
+        return setCallbackHandler(new HandlerWrapper(handler));
     }
 
     @Override
@@ -181,7 +183,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
     @Override
     public EnigmaPlayerState getState() {
-        return state;
+        return stateMachine.getState();
     }
 
     private class PlayableHandler implements IPlayableHandler {
@@ -275,7 +277,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                 @Override
                 protected void onError(Error error) {
                     playResultHandler.onError(error);
-                    changeState(EnigmaPlayerState.IDLE);
+                    stateMachine.setState(EnigmaPlayerState.IDLE);
                 }
 
                 @Override
@@ -298,7 +300,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                         String manifestUrl = usableMediaFormat.getString("mediaLocator");
 
                         replacePlaybackSession(playbackSessionFactory.createPlaybackSession(session, jsonObject, timeProvider));
-                        changeState(EnigmaPlayerState.LOADING);
+                        stateMachine.setState(EnigmaPlayerState.LOADING);
                         environment.playerImplementationControls.load(manifestUrl, new BasePlayerImplementationControlResultHandler() {
                             @Override
                             public void onError(Error error) {
@@ -381,21 +383,11 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         ITimelinePosition endPos = environment.playerImplementationInternals.getCurrentEndBound();
         if(timelinePosition != null && endPos != null) {
             long seconds = endPos.subtract(timelinePosition).inWholeUnits(Duration.Unit.SECONDS);
-            setPlayingFromLive(seconds < 60 && state == EnigmaPlayerState.PLAYING);
+            setPlayingFromLive(seconds < 60 && stateMachine.getState() == EnigmaPlayerState.PLAYING);
         } else {
             setPlayingFromLive(false);
         }
     }
-
-
-    private synchronized void changeState(EnigmaPlayerState newState) {
-        EnigmaPlayerState oldState = this.state;
-        this.state = newState;
-        if(oldState != newState) {
-            enigmaPlayerListeners.onStateChanged(oldState, newState);
-        }
-    }
-
 
     private static JSONObject getUsableMediaFormat(JSONArray formats, IMediaFormatSupportSpec formatSupportSpec) throws JSONException {
         Map<EnigmaMediaFormat, JSONObject> foundFormats = new HashMap<>();
@@ -494,7 +486,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                         public void onError(Error error) {
                             //TODO feed to current playbackSession and have that object propagate to listeneres.
                             enigmaPlayerListeners.onPlaybackError(error);
-                            changeState(EnigmaPlayerState.IDLE);
+                            stateMachine.setState(EnigmaPlayerState.IDLE);
                         }
 
                         @Override
@@ -502,7 +494,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                             synchronized (currentPlaybackStartAction) {
                                 if(currentPlaybackStartAction.value != null) {
                                     environment.playerImplementationControls.start(new BasePlayerImplementationControlResultHandler());
-                                    changeState(EnigmaPlayerState.LOADED);
+                                    stateMachine.setState(EnigmaPlayerState.LOADED);
                                 }
                             }
                         }
@@ -513,7 +505,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                                 if(currentPlaybackStartAction.value != null) {
                                     currentPlaybackStartAction.value.onStarted(currentPlaybackSession.value);
                                     currentPlaybackStartAction.value = null;
-                                    changeState(EnigmaPlayerState.PLAYING);
+                                    stateMachine.setState(EnigmaPlayerState.PLAYING);
                                 }
                             }
                         }
@@ -581,7 +573,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             ControlResultHandlerAdapter controlResultHandler = wrapResultHandler(resultHandler);
             environment.playerImplementationControls.start(controlResultHandler);
             controlResultHandler.runWhenDone(() -> {
-                changeState(EnigmaPlayerState.PLAYING);
+                stateMachine.setState(EnigmaPlayerState.PLAYING);
                 updatePlayingFromLive();
             });
         }
@@ -591,7 +583,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             ControlResultHandlerAdapter controlResultHandler = wrapResultHandler(resultHandler);
             environment.playerImplementationControls.pause(controlResultHandler);
             controlResultHandler.runWhenDone(() -> {
-                changeState(EnigmaPlayerState.PAUSED);
+                stateMachine.setState(EnigmaPlayerState.PAUSED);
                 setPlayingFromLive(false);
             });
         }
@@ -601,7 +593,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             ControlResultHandlerAdapter controlResultHandler = wrapResultHandler(resultHandler);
             environment.playerImplementationControls.stop(controlResultHandler);
             controlResultHandler.runWhenDone(() -> {
-                changeState(EnigmaPlayerState.IDLE);
+                stateMachine.setState(EnigmaPlayerState.IDLE);
                 setPlayingFromLive(false);
             });
         }
