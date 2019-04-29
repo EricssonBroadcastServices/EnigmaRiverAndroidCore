@@ -1,6 +1,5 @@
 package com.redbeemedia.enigma.core.player.controls;
 
-import com.redbeemedia.enigma.core.player.EnigmaPlayerState;
 import com.redbeemedia.enigma.core.player.timeline.ITimelinePosition;
 
 public interface IEnigmaPlayerControls {
@@ -16,9 +15,6 @@ public interface IEnigmaPlayerControls {
     void seekTo(StreamPosition streamPosition, IControlResultHandler resultHandler);
     void seekTo(ITimelinePosition timelinePos);
     void seekTo(ITimelinePosition timelinePos, IControlResultHandler resultHandler);
-
-    EnigmaPlayerState getPlayerState();
-
     void setVolume(float volume);
     void setVolume(float volume, IControlResultHandler resultHandler);
 

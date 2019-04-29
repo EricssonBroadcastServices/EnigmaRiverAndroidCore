@@ -35,11 +35,6 @@ public class MockEnigmaPlayerControls extends AbstractEnigmaPlayerControls {
     }
 
     @Override
-    public EnigmaPlayerState getPlayerState() {
-        return state;
-    }
-
-    @Override
     public void seekTo(long millis, IControlResultHandler resultHandler) {
         resultHandler.onDone();
     }

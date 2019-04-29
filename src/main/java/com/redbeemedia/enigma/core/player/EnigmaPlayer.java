@@ -555,11 +555,6 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     }
 
     private class EnigmaPlayerControls extends AbstractEnigmaPlayerControls {
-        @Override
-        public EnigmaPlayerState getPlayerState() {
-            return EnigmaPlayer.this.getState();
-        }
-
         private ControlResultHandlerAdapter wrapResultHandler(IControlResultHandler resultHandler) {
             return new ControlResultHandlerAdapter(useCallbackHandlerIfPresent(IControlResultHandler.class, resultHandler));
         }
