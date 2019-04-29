@@ -9,5 +9,12 @@ public interface ITimelinePosition {
     ITimelinePosition add(Duration duration);
     ITimelinePosition subtract(Duration duration);
     Duration subtract(ITimelinePosition other);
+
+    /**
+     * Don't call this method.
+     * Use {@link IEnigmaPlayerControls#seekTo(ITimelinePosition)}
+     * or {@link IEnigmaPlayerControls#seekTo(ITimelinePosition, IControlResultHandler)}
+     * instead.
+     */
     void seek(IEnigmaPlayerControls controls, IControlResultHandler resultHandler);
 }
