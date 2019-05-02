@@ -2,6 +2,9 @@ package com.redbeemedia.enigma.core.error;
 
 
 
+/**
+ * Credentials were valid, but login was denied for other reason.
+ */
 public abstract class LoginDeniedError extends Error {
     /*package-protected*/ LoginDeniedError() {
         this(null, null);

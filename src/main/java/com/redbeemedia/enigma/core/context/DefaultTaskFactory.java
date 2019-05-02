@@ -2,6 +2,7 @@ package com.redbeemedia.enigma.core.context;
 
 import com.redbeemedia.enigma.core.task.ITask;
 import com.redbeemedia.enigma.core.task.ITaskFactory;
+import com.redbeemedia.enigma.core.task.TaskException;
 
 /*package-protected*/ class DefaultTaskFactory implements ITaskFactory {
     @Override
@@ -29,6 +30,21 @@ import com.redbeemedia.enigma.core.task.ITaskFactory;
                     started = true;
                 }
             }
+        }
+
+        @Override
+        public void startDelayed(long delayMillis) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep(delayMillis);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    ThreadTask.this.start();
+                }
+            }).start();
         }
 
         @Override

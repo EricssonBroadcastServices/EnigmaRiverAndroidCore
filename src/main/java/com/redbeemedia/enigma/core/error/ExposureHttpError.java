@@ -27,8 +27,7 @@ public class ExposureHttpError {
         return httpCode+" "+message;
     }
 
-    //TODO: change name
     public static boolean isError(int statusCode) {
-        return statusCode >= HttpsURLConnection.HTTP_BAD_REQUEST && statusCode <= HttpsURLConnection.HTTP_INTERNAL_ERROR;
+        return statusCode >= 400 && statusCode <= 500;
     }
 }

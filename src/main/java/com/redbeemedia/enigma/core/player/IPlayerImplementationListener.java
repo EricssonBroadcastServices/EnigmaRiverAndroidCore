@@ -1,6 +1,7 @@
 package com.redbeemedia.enigma.core.player;
 
 import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.player.timeline.ITimelinePosition;
 
 /**
  * <h3>NOTE</h3>
@@ -8,4 +9,9 @@ import com.redbeemedia.enigma.core.error.Error;
  */
 public interface IPlayerImplementationListener {
     void onError(Error error);
+    void onLoadCompleted();
+    void onPlaybackStarted();
+    void onTimelineBoundsChanged(ITimelinePosition start, ITimelinePosition end);
+    void onPositionChanged();
+    void onStreamEnded();
 }

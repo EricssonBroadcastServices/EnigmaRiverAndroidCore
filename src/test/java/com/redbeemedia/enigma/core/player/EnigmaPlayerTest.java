@@ -12,12 +12,11 @@ import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.http.MockHttpHandler;
 import com.redbeemedia.enigma.core.playable.IPlayable;
 import com.redbeemedia.enigma.core.playable.IPlayableHandler;
+import com.redbeemedia.enigma.core.playable.MockPlayable;
 import com.redbeemedia.enigma.core.player.listener.BaseEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
-import com.redbeemedia.enigma.core.playrequest.BasePlayResultHandler;
-import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
-import com.redbeemedia.enigma.core.playrequest.IPlayResultHandler;
-import com.redbeemedia.enigma.core.playrequest.PlayRequest;
+import com.redbeemedia.enigma.core.playrequest.MockPlayRequest;
+import com.redbeemedia.enigma.core.playrequest.MockPlayResultHandler;
 import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.session.MockSession;
 import com.redbeemedia.enigma.core.testutil.Counter;
@@ -45,19 +44,28 @@ public class EnigmaPlayerTest {
         mockHttpHandler.queueResponse(new HttpStatus(200, "OK"), response.toString());
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(mockHttpHandler));
 
-        final Flag startPlaybackCalled = new Flag();
+        final Flag loadCalled = new Flag();
+        final Flag startCalled = new Flag();
         final Flag onErrorCalled = new Flag();
         final Flag useWithCalled = new Flag();
         final Counter installCalled = new Counter();
         IPlayerImplementation impl = new MockPlayerImplementation() {
             @Override
             public void install(IEnigmaPlayerEnvironment environment) {
+                super.install(environment);
                 installCalled.count();
             }
 
             @Override
-            public void startPlayback(String url) {
-                startPlaybackCalled.setFlag();
+            public void load(String url, IPlayerImplementationControlResultHandler resultHandler) {
+                loadCalled.setFlag();
+                super.load(url, resultHandler);
+            }
+
+            @Override
+            public void start(IPlayerImplementationControlResultHandler resultHandler) {
+                startCalled.setFlag();
+                super.start(resultHandler);
             }
         };
         EnigmaPlayer enigmaPlayer = new EnigmaPlayer(new MockSession(), impl) {
@@ -66,24 +74,27 @@ public class EnigmaPlayerTest {
                 return new MockTimeProvider();
             }
         };
-        Assert.assertFalse(startPlaybackCalled.isTrue());
+        Assert.assertFalse(loadCalled.isTrue());
+        Assert.assertFalse(startCalled.isTrue());
         installCalled.assertOnce();
-        enigmaPlayer.play(new PlayRequest(new MockPlayable("123") {
+        enigmaPlayer.play(new MockPlayRequest().setPlayable(new MockPlayable("123") {
             @Override
             public void useWith(IPlayableHandler playableHandler) {
                 useWithCalled.setFlag();
                 super.useWith(playableHandler);
             }
-        }) {
+        }).setResultHandler(new MockPlayResultHandler() {
             @Override
             public void onError(Error error) {
                 onErrorCalled.setFlag();
-                throw new RuntimeException("Error:"+error.getErrorCode());
+                error.printStackTrace();
+                throw new RuntimeException(error.getClass().getSimpleName()+": "+error.getErrorCode());
             }
-        });
+        }));
         Assert.assertTrue(useWithCalled.isTrue());
         Assert.assertFalse(onErrorCalled.isTrue());
-        Assert.assertTrue(startPlaybackCalled.isTrue());
+        Assert.assertTrue(loadCalled.isTrue());
+        Assert.assertTrue(startCalled.isTrue());
     }
 
     private JSONObject createFormatJson(String mediaLocator, String format) throws JSONException {
@@ -144,6 +155,9 @@ public class EnigmaPlayerTest {
             formatArray.put(createFormatJson("https://media.example.com", "DASH"));
             formatArray.put(createFormatJson("https://media.example.com", "DASH", EnigmaMediaFormat.DrmTechnology.WIDEVINE.getKey()));
             response.put("formats", formatArray);
+            JSONObject streamInfo = new JSONObject();
+            streamInfo.put("live", false);
+            response.put("streamInfo", streamInfo);
             mockHttpHandler.queueResponse(new HttpStatus(200, "OK"), response.toString());
         }
         {
@@ -152,6 +166,10 @@ public class EnigmaPlayerTest {
             formatArray.put(createFormatJson("https://media.example.com", "DASH", EnigmaMediaFormat.DrmTechnology.WIDEVINE.getKey()));
             formatArray.put(createFormatJson("https://media.example.com?format=HLS", "HLS"));
             response.put("formats", formatArray);
+            JSONObject streamInfo = new JSONObject();
+            streamInfo.put("live", true);
+            streamInfo.put("start", 1505574300000L);
+            response.put("streamInfo", streamInfo);
             mockHttpHandler.queueResponse(new HttpStatus(200, "OK"), response.toString());
         }
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(mockHttpHandler));
@@ -160,6 +178,7 @@ public class EnigmaPlayerTest {
         IPlayerImplementation playerImpl = new MockPlayerImplementation() {
             @Override
             public void install(IEnigmaPlayerEnvironment environment) {
+                super.install(environment);
                 environment.setMediaFormatSupportSpec(new IMediaFormatSupportSpec() {
                     private final EnigmaMediaFormat DASH_UNENC = new EnigmaMediaFormat(EnigmaMediaFormat.StreamFormat.DASH, EnigmaMediaFormat.DrmTechnology.NONE);
                     @Override
@@ -171,8 +190,9 @@ public class EnigmaPlayerTest {
             }
 
             @Override
-            public void startPlayback(String url) {
+            public void start(IPlayerImplementationControlResultHandler resultHandler) {
                 playbackStartedCalls.count();
+                super.start(resultHandler);
             }
         };
         installed.assertNotSet();
@@ -183,28 +203,21 @@ public class EnigmaPlayerTest {
             }
         };
         installed.assertSet();
-        enigmaPlayer.play(new PlayRequest(new MockPlayable("123")) {
-            @Override
-            public void onStarted() {
-            }
-
+        enigmaPlayer.play(new MockPlayRequest("123").setResultHandler(new MockPlayResultHandler() {
             @Override
             public void onError(Error error) {
-                Assert.fail("Error: "+error.getErrorCode());
+                error.printStackTrace();
+                Assert.fail(error.getClass().getSimpleName()+": "+error.getErrorCode());
             }
-        });
+        }));
         playbackStartedCalls.assertOnce();
         final Error[] errorGotten = new Error[]{null};
-        enigmaPlayer.play(new PlayRequest(new MockPlayable("7s4s4ts")) {
-            @Override
-            public void onStarted() {
-            }
-
+        enigmaPlayer.play(new MockPlayRequest("7s4s4ts").setResultHandler(new MockPlayResultHandler() {
             @Override
             public void onError(Error error) {
                 errorGotten[0] = error;
             }
-        });
+        }));
         playbackStartedCalls.assertOnce();
         Assert.assertNotEquals(null, errorGotten[0]);
         Assert.assertThat(errorGotten[0], new InstanceOfMatcher<>(NoSupportedMediaFormatsError.class));
@@ -212,11 +225,13 @@ public class EnigmaPlayerTest {
 
     @Test
     public void testListeners() {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
         final IPlayerImplementationListener[] playerImplementationListener = new IPlayerImplementationListener[]{null};
         final Flag installCalled = new Flag();
         IPlayerImplementation impl = new MockPlayerImplementation() {
             @Override
             public void install(IEnigmaPlayerEnvironment environment) {
+                super.install(environment);
                 playerImplementationListener[0] = environment.getPlayerImplementationListener();
                 installCalled.setFlag();
             }
@@ -251,6 +266,7 @@ public class EnigmaPlayerTest {
 
     @Test
     public void testCallbackHandler() {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
         final IPlayerImplementationListener[] playerImplementationListener = new IPlayerImplementationListener[]{null};
         final Flag installCalled = new Flag();
 
@@ -258,6 +274,7 @@ public class EnigmaPlayerTest {
         IPlayerImplementation impl = new MockPlayerImplementation() {
             @Override
             public void install(IEnigmaPlayerEnvironment environment) {
+                super.install(environment);
                 playerImplementationListener[0] = environment.getPlayerImplementationListener();
                 installCalled.setFlag();
             }
@@ -282,32 +299,59 @@ public class EnigmaPlayerTest {
         playerImplementationListener[0].onError(new UnexpectedError("Testing"));
         onErrorCalled.assertCount(1);
 
-        enigmaPlayer.setCallbackHandler(handler);
+        enigmaPlayer.addListener(listener, handler);
 
         playerImplementationListener[0].onError(new UnexpectedError("Testing again"));
         Assert.assertEquals(1, handler.runnables.size());
-        onErrorCalled.assertCount(1);
-        handler.runnables.get(0).run();
         onErrorCalled.assertCount(2);
+        handler.runnables.get(0).run();
+        onErrorCalled.assertCount(3);
 
         playerImplementationListener[0].onError(new UnexpectedError("Testing third"));
         Assert.assertEquals(2, handler.runnables.size());
 
         enigmaPlayer.removeListener(listener);
         handler.runnables.get(1).run();
-        onErrorCalled.assertCount(2);
+        onErrorCalled.assertCount(5);
     }
 
-    private static class MockPlayable implements IPlayable {
-        private String assetId;
-
-        public MockPlayable(String assetId) {
-            this.assetId = assetId;
+    @Test
+    public void testStateChangeListener() throws JSONException {
+        MockHttpHandler mockHttpHandler = new MockHttpHandler();
+        JSONObject response = new JSONObject();
+        {
+            JSONArray formatArray = new JSONArray();
+            formatArray.put(createFormatJson("https://media.example.com", "DASH"));
+            response.put("formats", formatArray);
+            JSONObject streamInfo = new JSONObject();
+            streamInfo.put("live", true);
+            streamInfo.put("start", 1505574300000L);
+            response.put("streamInfo", streamInfo);
         }
+        mockHttpHandler.queueResponse(new HttpStatus(200, "OK"), response.toString());
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(mockHttpHandler));
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayer(new MockSession(), new MockPlayerImplementation() {
+            @Override
+            public void install(IEnigmaPlayerEnvironment environment) {
+                super.install(environment);
+                environment.setMediaFormatSupportSpec(enigmaMediaFormat -> true);
+            }
+        }) {
+            @Override
+            protected ITimeProvider newTimeProvider(ISession session) {
+                return new MockTimeProvider();
+            }
+        };
 
-        @Override
-        public void useWith(IPlayableHandler playableHandler) {
-            playableHandler.startUsingAssetId(assetId);
-        }
+        final StringBuilder log = new StringBuilder();
+        enigmaPlayer.addListener(new BaseEnigmaPlayerListener() {
+            @Override
+            public void onStateChanged(EnigmaPlayerState from, EnigmaPlayerState to) {
+                log.append("["+from+"->"+to+"]");
+            }
+        });
+        MockPlayRequest mockPlayRequest = new MockPlayRequest();
+        enigmaPlayer.play(mockPlayRequest);
+        Assert.assertEquals("[IDLE->LOADING][LOADING->LOADED][LOADED->PLAYING][PLAYING->LOADED]",log.toString());
     }
 }

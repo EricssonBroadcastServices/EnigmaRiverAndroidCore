@@ -2,7 +2,6 @@ package com.redbeemedia.enigma.core.util;
 
 import android.os.Handler;
 
-//TODO generate this class and the IHandler interface with buildSrc
 public class HandlerWrapper implements IHandler {
     private Handler handler;
 
@@ -13,5 +12,10 @@ public class HandlerWrapper implements IHandler {
     @Override
     public boolean post(Runnable runnable) {
         return handler.post(runnable);
+    }
+
+    @Override
+    public boolean postDelayed(Runnable runnable, long delayMillis) {
+        return handler.postDelayed(runnable, delayMillis);
     }
 }

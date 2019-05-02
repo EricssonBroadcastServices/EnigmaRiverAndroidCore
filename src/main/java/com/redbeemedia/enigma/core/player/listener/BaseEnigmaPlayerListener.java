@@ -1,14 +1,24 @@
 package com.redbeemedia.enigma.core.player.listener;
 
 import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
+import com.redbeemedia.enigma.core.player.EnigmaPlayerState;
 
-public abstract class BaseEnigmaPlayerListener implements IEnigmaPlayerListener {
+public class BaseEnigmaPlayerListener implements IEnigmaPlayerListener {
     @Override
     @Deprecated
-    public void _dont_implement_IEnigmaPlayerListener___instead_extend_BaseEnigmaPlayerListener_() {
+    public final void _dont_implement_IEnigmaPlayerListener___instead_extend_BaseEnigmaPlayerListener_() {
     }
 
     @Override
     public void onPlaybackError(Error error) {
+    }
+
+    @Override
+    public void onStateChanged(EnigmaPlayerState from, EnigmaPlayerState to) {
+    }
+
+    @Override
+    public void onPlaybackSessionChanged(IPlaybackSession from, IPlaybackSession to) {
     }
 }

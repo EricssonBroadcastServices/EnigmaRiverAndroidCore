@@ -27,7 +27,7 @@ public class MyApplication extends Application {
 }
 ```
 
-Also make sure that your app is actually using the subclass of Application where you initialize the `EnigmaRiverContext`.
+Also make sure that your app is actually using this subclass of Application. This is done by setting the <code>android:name</code>-attribute of the <code>&lt;application /&gt;</code> tag in your `AndroidManifest.xml`. See [Android tutorials](https://developer.android.com/guide/topics/manifest/application-element) for further information.
 
 ## Retrieving a `Session`
 Next, our end user needs a `Session` to be able to access content from the Red Bee backend. If you are using Red Bee Medias default authentification the `Session` object can be obtained using the `EnigmaLogin` utility class.
@@ -150,7 +150,7 @@ Since we are using ExoPlayer as our player implementation we will create a layou
     android:keepScreenOn="true"/>
 ```
 
-In the `onCreate` methoud of our `PlaybackActivity` class we begin by connecting the layout, retrieving the `Session` and creating a Handler for the main thread.
+In the `onCreate` method of our `PlaybackActivity` class we begin by connecting the layout, retrieving the `Session` and creating a Handler for the main thread.
 ```java
 ...
 import android.os.Handler;
@@ -326,7 +326,7 @@ import com.redbeemedia.enigma.core.error.NoSupportedMediaFormatsError;
 
 This is what our finished `PlaybackActivity` class looks like:
 ```java
-package com.mattiasselin.simpleapp;
+package com.example.yourfirstapp;
 
 import android.app.Activity;
 import android.content.Intent;
