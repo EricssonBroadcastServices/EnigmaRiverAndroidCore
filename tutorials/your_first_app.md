@@ -150,7 +150,7 @@ Since we are using ExoPlayer as our player implementation we will create a layou
     android:keepScreenOn="true"/>
 ```
 
-In the `onCreate` methoud of our `PlaybackActivity` class we begin by connecting the layout, retrieving the `Session` and creating a Handler for the main thread.
+In the `onCreate` method of our `PlaybackActivity` class we begin by connecting the layout, retrieving the `Session` and creating a Handler for the main thread.
 ```java
 ...
 import android.os.Handler;
