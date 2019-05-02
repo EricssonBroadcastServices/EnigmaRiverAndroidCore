@@ -144,6 +144,11 @@ import com.redbeemedia.enigma.core.util.HandlerWrapper;
     }
 
     @Override
+    public void fireEndReached() {
+        collector.onEndReached();
+    }
+
+    @Override
     public boolean isPlayingFromLive() {
         return streamInfo.isLiveStream() && playingFromLive;
     }
@@ -186,6 +191,11 @@ import com.redbeemedia.enigma.core.util.HandlerWrapper;
         @Override
         public void onPlayingFromLiveChanged(boolean live) {
             forEach(listener -> listener.onPlayingFromLiveChanged(live));
+        }
+
+        @Override
+        public void onEndReached() {
+            forEach(listener -> listener.onEndReached());
         }
     }
 }

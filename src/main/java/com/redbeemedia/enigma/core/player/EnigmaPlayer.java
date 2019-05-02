@@ -519,6 +519,15 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                         public void onPositionChanged() {
                             timeline.onPositionNeedsUpdating();
                         }
+
+                        @Override
+                        public void onStreamEnded() {
+                            synchronized (currentPlaybackSession) {
+                                if(currentPlaybackSession.value != null) {
+                                    currentPlaybackSession.value.fireEndReached();
+                                }
+                            }
+                        }
                     };
                 }
                 return playerImplementationListener;

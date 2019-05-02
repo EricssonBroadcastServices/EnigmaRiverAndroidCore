@@ -9,4 +9,8 @@ public class BasePlaybackSessionListener implements IPlaybackSessionListener {
     @Override
     public void onPlayingFromLiveChanged(boolean live) {
     }
+
+    @Override
+    public void onEndReached() {
+    }
 }

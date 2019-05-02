@@ -8,4 +8,5 @@ import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 
     StreamInfo getStreamInfo();
     void setPlayingFromLive(boolean live);
+    void fireEndReached();
 }

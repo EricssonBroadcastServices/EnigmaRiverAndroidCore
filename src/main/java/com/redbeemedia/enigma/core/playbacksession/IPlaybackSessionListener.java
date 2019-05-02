@@ -13,4 +13,5 @@ public interface IPlaybackSessionListener extends IInternalListener {
     void _dont_implement_IPlaybackSessionListener___instead_extend_BasePlaybackSessionListener_();
 
     void onPlayingFromLiveChanged(boolean live);
+    void onEndReached();
 }
