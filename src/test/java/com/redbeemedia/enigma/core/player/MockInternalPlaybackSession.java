@@ -43,6 +43,10 @@ public class MockInternalPlaybackSession implements IInternalPlaybackSession {
     }
 
     @Override
+    public void fireEndReached() {
+    }
+
+    @Override
     public void addListener(IPlaybackSessionListener listener) {
     }
 
