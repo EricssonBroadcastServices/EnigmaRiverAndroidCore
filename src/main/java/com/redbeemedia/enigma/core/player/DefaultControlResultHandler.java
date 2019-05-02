@@ -29,6 +29,5 @@ import com.redbeemedia.enigma.core.player.controls.IControlResultHandler;
 
     @Override
     public void onDone() {
-        Log.i(tag, "ControlRequest completed successfully.");
     }
 }
