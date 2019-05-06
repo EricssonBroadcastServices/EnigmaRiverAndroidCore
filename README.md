@@ -1,5 +1,5 @@
 # Core
 
-The core library, version r1.0.6.
+The core library, version $$${&&VERSION!!}.
 
 See the [tutorials](tutorials/index.md) for more information.
