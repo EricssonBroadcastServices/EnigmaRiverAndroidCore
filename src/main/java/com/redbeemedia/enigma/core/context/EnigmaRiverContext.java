@@ -59,7 +59,7 @@ public final class EnigmaRiverContext {
         return initializedContext.taskFactory;
     }
 
-    public static String getVersion() {return "r1.0.10-BETA-2";};
+    public static String getVersion() {return "r1.0.10-BETA-3";};
 
     private static void assertInitialized() {
         if(initializedContext == null) {
