@@ -1,5 +1,5 @@
 # Core
 
-The core library, version r1.0.15-BETA-10.
+The core library, version r1.0.15-BETA-11.
 
 See the [tutorials](tutorials/index.md) for more information.
