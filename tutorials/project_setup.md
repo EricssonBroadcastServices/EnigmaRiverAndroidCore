@@ -47,8 +47,8 @@ repositories {
 ...
 dependencies {
     ...
-    implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:core:r1.0.15-BETA-11"
-    implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exoplayerintegration:r1.0.15-BETA-11"
+    implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:core:r1.0.15-BETA-12"
+    implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exoplayerintegration:r1.0.15-BETA-12"
     implementation 'com.google.android.exoplayer:exoplayer:2.9.6'
 }
 ...
