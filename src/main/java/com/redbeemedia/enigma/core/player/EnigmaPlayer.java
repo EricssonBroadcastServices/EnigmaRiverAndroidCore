@@ -50,6 +50,7 @@ import com.redbeemedia.enigma.core.util.IInternalCallbackObject;
 import com.redbeemedia.enigma.core.util.IStateMachine;
 import com.redbeemedia.enigma.core.util.OpenContainer;
 import com.redbeemedia.enigma.core.util.ProxyCallback;
+import com.redbeemedia.enigma.core.util.RuntimeExceptionHandler;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -58,7 +59,9 @@ import org.json.JSONObject;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -107,6 +110,8 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             }
         };
         this.timeProvider = newTimeProvider(session);
+
+        environment.fireEnigmaPlayerReady(this);
     }
 
     protected ITimeProvider newTimeProvider(ISession session) {
@@ -451,6 +456,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         private IPlayerImplementationControls playerImplementationControls;
         private IPlayerImplementationInternals playerImplementationInternals;
         private IPlayerImplementationListener playerImplementationListener;
+        private List<IEnigmaPlayerReadyListener> playerReadyListeners = new ArrayList<>();
 
         @Override
         public IDrmProvider getDrmProvider() {
@@ -550,6 +556,25 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             if(playerImplementationInternals == null) {
                 throw new IllegalStateException("PlayerImplementation did not provide internals!");
             }
+        }
+
+        @Override
+        public void addEnigmaPlayerReadyListener(IEnigmaPlayerReadyListener listener) {
+            synchronized (playerReadyListeners) {
+                playerReadyListeners.add(listener);
+            }
+        }
+
+        public void fireEnigmaPlayerReady(IEnigmaPlayer enigmaPlayer) {
+            RuntimeExceptionHandler exceptionHandler = new RuntimeExceptionHandler();
+            synchronized (playerReadyListeners) {
+                exceptionHandler.catchExceptions(playerReadyListeners, listener -> {
+                        listener.onReady(enigmaPlayer);
+                });
+                playerReadyListeners.clear();
+                playerReadyListeners = null;
+            }
+            exceptionHandler.rethrowIfAnyExceptions();
         }
     }
 

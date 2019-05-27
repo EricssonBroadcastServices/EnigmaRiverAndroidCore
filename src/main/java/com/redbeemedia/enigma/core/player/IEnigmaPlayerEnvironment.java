@@ -14,4 +14,9 @@ public interface IEnigmaPlayerEnvironment {
     ITimelinePositionFactory getTimelinePositionFactory();
     void setControls(IPlayerImplementationControls controls);
     void setInternals(IPlayerImplementationInternals internals);
+    void addEnigmaPlayerReadyListener(IEnigmaPlayerReadyListener listener);
+
+    interface IEnigmaPlayerReadyListener {
+        void onReady(IEnigmaPlayer enigmaPlayer);
+    }
 }

@@ -10,7 +10,6 @@ import com.redbeemedia.enigma.core.format.EnigmaMediaFormat;
 import com.redbeemedia.enigma.core.format.IMediaFormatSupportSpec;
 import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.http.MockHttpHandler;
-import com.redbeemedia.enigma.core.playable.IPlayable;
 import com.redbeemedia.enigma.core.playable.IPlayableHandler;
 import com.redbeemedia.enigma.core.playable.MockPlayable;
 import com.redbeemedia.enigma.core.player.listener.BaseEnigmaPlayerListener;
@@ -353,5 +352,69 @@ public class EnigmaPlayerTest {
         MockPlayRequest mockPlayRequest = new MockPlayRequest();
         enigmaPlayer.play(mockPlayRequest);
         Assert.assertEquals("[IDLE->LOADING][LOADING->LOADED][LOADED->PLAYING][PLAYING->LOADED]",log.toString());
+    }
+
+    @Test
+    public void testOnReadyListenersSimple() {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+        final Counter onReadyCalled = new Counter();
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayer(new MockSession(), new MockPlayerImplementation() {
+            @Override
+            public void install(IEnigmaPlayerEnvironment environment) {
+                super.install(environment);
+                environment.addEnigmaPlayerReadyListener(enigmaPlayer1 -> onReadyCalled.count());
+            }
+        }) {
+            @Override
+            protected ITimeProvider newTimeProvider(ISession session) {
+                return new MockTimeProvider();
+            }
+        };
+        onReadyCalled.assertOnce();
+    }
+
+    @Test
+    public void testOnReadyListenersFail() {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+        final Counter onReadyCalled = new Counter();
+        try {
+            EnigmaPlayer enigmaPlayer = new EnigmaPlayer(new MockSession(), new MockPlayerImplementation() {
+                @Override
+                public void install(IEnigmaPlayerEnvironment environment) {
+                    environment.addEnigmaPlayerReadyListener(enigmaPlayer1 -> onReadyCalled.count());
+                }
+            }) {
+                @Override
+                protected ITimeProvider newTimeProvider(ISession session) {
+                    return new MockTimeProvider();
+                }
+            };
+            Assert.fail("Expected exception to have been thrown");
+        } catch (IllegalStateException e) {
+            Assert.assertEquals("PlayerImplementation did not provide controls!",e.getMessage());
+        }
+        onReadyCalled.assertNone();
+    }
+
+    @Test
+    public void testOnReadyListenersMultiple() {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+        final Counter onReadyCalled = new Counter();
+        final Counter onReadyCalled2 = new Counter();
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayer(new MockSession(), new MockPlayerImplementation() {
+            @Override
+            public void install(IEnigmaPlayerEnvironment environment) {
+                super.install(environment);
+                environment.addEnigmaPlayerReadyListener(enigmaPlayer1 -> onReadyCalled.count());
+                environment.addEnigmaPlayerReadyListener(enigmaPlayer1 -> onReadyCalled2.count());
+            }
+        }) {
+            @Override
+            protected ITimeProvider newTimeProvider(ISession session) {
+                return new MockTimeProvider();
+            }
+        };
+        onReadyCalled.assertOnce();
+        onReadyCalled2.assertOnce();
     }
 }
