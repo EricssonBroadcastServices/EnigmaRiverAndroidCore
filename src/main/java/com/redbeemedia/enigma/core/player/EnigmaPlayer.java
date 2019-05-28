@@ -1,7 +1,6 @@
 package com.redbeemedia.enigma.core.player;
 
 import android.app.Activity;
-import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -287,6 +286,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
                 @Override
                 protected void onSuccess(JSONObject jsonObject) throws JSONException {
+                    String requestId = jsonObject.optString("requestId");
                     String playToken = jsonObject.optString("playToken");
                     JSONArray formats = jsonObject.getJSONArray("formats");
                     JSONObject usableMediaFormat = getUsableMediaFormat(formats, environment.formatSupportSpec);
@@ -295,11 +295,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                         if (drms != null) {
                             JSONObject drmTypeInfo = drms.optJSONObject(DrmTechnology.WIDEVINE.getKey());
                             String licenseUrl = drmTypeInfo.getString("licenseServerUrl");
-                            String licenseWithToken = Uri.parse(licenseUrl)
-                                    .buildUpon()
-                                    .appendQueryParameter("token", "Bearer " + playToken)
-                                    .build().toString();
-                            IDrmInfo drmInfo = DrmInfoFactory.createWidevineDrmInfo(licenseWithToken, playToken);
+                            IDrmInfo drmInfo = DrmInfoFactory.createWidevineDrmInfo(licenseUrl, playToken, requestId);
                             environment.setDrmInfo(drmInfo);
                         }
                         String manifestUrl = usableMediaFormat.getString("mediaLocator");

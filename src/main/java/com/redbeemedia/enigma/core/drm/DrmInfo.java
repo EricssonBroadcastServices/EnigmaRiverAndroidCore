@@ -9,8 +9,19 @@ import java.util.Map;
     private Iterable<Map.Entry<String,String>> drmKeyRequestProperties;
 
     public DrmInfo(String licenseUrl, String playToken) {
+        this(licenseUrl, playToken, null);
+    }
+
+    public DrmInfo(String licenseUrl, String playToken, String requestId) {
         this.licenseUrl = licenseUrl;
-        this.drmKeyRequestProperties = createEntryIterable(createDrmKeyRequestPropertiesArray(playToken));
+        List<Map.Entry<String,String>> headers = new ArrayList<>();
+        if(playToken != null) {
+            headers.add(new KeyValuePair("Authorization", "Bearer " + playToken));
+        }
+        if(requestId != null) {
+            headers.add(new KeyValuePair("X-Request-Id", requestId));
+        }
+        this.drmKeyRequestProperties = headers;
     }
 
     @Override
@@ -23,41 +34,28 @@ import java.util.Map;
         return drmKeyRequestProperties;
     }
 
-    private String[] createDrmKeyRequestPropertiesArray(String playToken) {
-        return new String[]{"Authorization", "Bearer " + playToken};
-    }
+    private static class KeyValuePair implements Map.Entry<String,String> {
+        private final String key;
+        private final String value;
 
-    private static <T> Iterable<Map.Entry<T,T>> createEntryIterable(T[] array) {
-        class Pair implements Map.Entry<T,T> {
-            private T[] array;
-            private final int index;
-
-            private Pair(T[] array, int index) {
-                this.array = array;
-                this.index = index;
-            }
-
-            @Override
-            public T getKey() {
-                return array[index];
-            }
-
-            @Override
-            public T getValue() {
-                return array[index+1];
-            }
-
-            @Override
-            public T setValue(T value) {
-                T old = array[index];
-                array[index] = value;
-                return old;
-            }
+        public KeyValuePair(String key, String value) {
+            this.key = key;
+            this.value = value;
         }
-        List<Map.Entry<T,T>> list = new ArrayList<>(array.length/2);
-        for(int i = 0; i+1 < array.length; i+=2) {
-            list.add(new Pair(array, i));
+
+        @Override
+        public String getKey() {
+            return key;
         }
-        return list;
+
+        @Override
+        public String getValue() {
+            return value;
+        }
+
+        @Override
+        public String setValue(String value) {
+            throw new UnsupportedOperationException();
+        }
     }
 }
