@@ -30,4 +30,9 @@ android {
 dependencies {
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.json:json:20080701'
+    if(findProject(':internalTestUtils') != null) {
+        testImplementation project(":internalTestUtils")
+    } else {
+        testImplementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:internalTestUtils:r1.0.17-BETA-1'
+    }
 }

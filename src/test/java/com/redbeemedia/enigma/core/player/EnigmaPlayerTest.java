@@ -417,4 +417,16 @@ public class EnigmaPlayerTest {
         onReadyCalled.assertOnce();
         onReadyCalled2.assertOnce();
     }
+
+
+    @Test
+    public void testLegacyTimeProviderMockCheck() {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+        try {
+            LegacyTimeProvider legacyTimeProvider = new LegacyTimeProvider(new MockSession());
+            Assert.fail("Expected exception to be thrown in constructor when created in unit tests.");
+        } catch (Exception e) {
+            Assert.assertEquals("LegacyTimeProvider not mocked!", e.getMessage());
+        }
+    }
 }
