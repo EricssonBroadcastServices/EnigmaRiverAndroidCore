@@ -16,7 +16,9 @@ import org.json.JSONObject;
 
     @Override
     public <T> void addData(IEventProperty<E,T> property, T value) throws JSONException {
-        jsonObject.put(property.getName(), value);
+        if(value != null || !property.skipIfNull()) {
+            jsonObject.put(property.getName(), value);
+        }
     }
 
     @Override

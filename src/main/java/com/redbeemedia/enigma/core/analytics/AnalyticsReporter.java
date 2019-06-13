@@ -1,41 +1,144 @@
 package com.redbeemedia.enigma.core.analytics;
 
+import android.util.Log;
+
 import com.redbeemedia.enigma.core.BuildConfig;
+import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.error.Error;
 import com.redbeemedia.enigma.core.error.PlayerImplementationError;
+import com.redbeemedia.enigma.core.time.Duration;
 import com.redbeemedia.enigma.core.time.ITimeProvider;
+import com.redbeemedia.enigma.core.util.device.IDeviceInfo;
 
 import org.json.JSONException;
 
 public class AnalyticsReporter {
+    private static final String TAG = "AnalyticsReporter";
+
     private final IAnalyticsHandler analyticsHandler;
     private final ITimeProvider timeProvider;
+    private volatile boolean terminalStateReached = false;
 
     public AnalyticsReporter(ITimeProvider timeProvider, IAnalyticsHandler analyticsHandler) {
         this.timeProvider = timeProvider;
         this.analyticsHandler = analyticsHandler;
     }
 
-    public void error(Error error) {
-        try {
-            IAnalyticsEventBuilder<AnalyticsEvents.AnalyticsErrorEvent> builder = newEventBuilder(AnalyticsEvents.ERROR);
-            builder.addData(AnalyticsEvents.ERROR.CODE, error.getErrorCode());
+    public void playbackError(Error error) {
+        event(AnalyticsEvents.ERROR, (builder, eventType) -> {
+            builder.addData(eventType.CODE, error.getErrorCode());
 
             if(error instanceof PlayerImplementationError) {
                 PlayerImplementationError playerImplementationError = (PlayerImplementationError) error;
                 builder.addData(new PlayerSpecificErrorCode(playerImplementationError), playerImplementationError.getInternalErrorCode());
             }
 
-            builder.addData(AnalyticsEvents.ERROR.MESSAGE, error.getClass().getSimpleName());
-            builder.addData(AnalyticsEvents.ERROR.DETAILS, error.getTrace());
+            builder.addData(eventType.MESSAGE, error.getClass().getSimpleName());
+            builder.addData(eventType.DETAILS, error.getTrace());
+        });
+    }
 
-            analyticsHandler.onAnalytics(builder.build());
-        } catch (Exception e) {
-            if(BuildConfig.DEBUG) {
-                throw new RuntimeException(e);
+    public void deviceInfo() {
+        event(AnalyticsEvents.DEVICE_INFO, (builder, eventType) -> {
+            IDeviceInfo deviceInfo = EnigmaRiverContext.getDeviceInfo();
+
+            builder.addData(eventType.DEVICE_ID, deviceInfo.getDeviceId());
+            builder.addData(eventType.DEVICE_MODEL, deviceInfo.getModel());
+            builder.addData(eventType.OS, deviceInfo.getOS());
+            builder.addData(eventType.OS_VERSION, deviceInfo.getOSVersion());
+            builder.addData(eventType.MANUFACTURER, deviceInfo.getManufacturer());
+            builder.addData(eventType.IS_ROOTED, deviceInfo.isDeviceRooted());
+            builder.addData(eventType.WIDEVINE_SECURITY_LEVEL, deviceInfo.getWidevineDrmSecurityLevel());
+        });
+    }
+
+    public void playbackCreated(String assetId) {
+        event(AnalyticsEvents.CREATED, (builder, eventType) -> {
+            builder.addData(eventType.PLAYER, "EnigmaRiver.Android");
+            builder.addData(eventType.VERSION, EnigmaRiverContext.getVersion());
+            builder.addData(eventType.ASSET_ID, assetId);
+        });
+    }
+
+    public void playbackHandshakeStarted(String assetId) {
+        event(AnalyticsEvents.HANDSHAKE_STARTED, (builder, eventType) -> {
+            builder.addData(eventType.ASSET_ID, assetId);
+        });
+    }
+
+    public void playbackPlayerReady(Duration offsetTime, String playerImplementationTechnology, String playerImplementationTechnologyVersion) {
+        event(AnalyticsEvents.PLAYER_READY, (builder, eventType) -> {
+            builder.addData(eventType.OFFSET_TIME, offsetTime.inWholeUnits(Duration.Unit.MILLISECONDS));
+            builder.addData(eventType.TECHNOLOGY, playerImplementationTechnology);
+            builder.addData(eventType.TECH_VERSION, playerImplementationTechnologyVersion);
+        });
+    }
+
+    public void playbackStarted(Duration offsetTime, String playMode, String mediaLocator, Long referenceTime) {
+        event(AnalyticsEvents.STARTED, (builder, eventType) -> {
+            builder.addData(eventType.OFFSET_TIME, offsetTime.inWholeUnits(Duration.Unit.MILLISECONDS));
+            builder.addData(eventType.PLAY_MODE, playMode);
+            builder.addData(eventType.MEDIA_LOCATOR, mediaLocator);
+            builder.addData(eventType.REFERENCE_TIME, referenceTime);
+        });
+    }
+
+    public void playbackPaused(Duration offsetTime) {
+        event(AnalyticsEvents.PAUSED, (builder, eventType) -> {
+            builder.addData(eventType.OFFSET_TIME, offsetTime.inWholeUnits(Duration.Unit.MILLISECONDS));
+        });
+    }
+
+    public void playbackResumed(Duration offsetTime) {
+        event(AnalyticsEvents.RESUMED, (builder, eventType) -> {
+            builder.addData(eventType.OFFSET_TIME, offsetTime.inWholeUnits(Duration.Unit.MILLISECONDS));
+        });
+    }
+
+    public void playbackCompleted(Duration offsetTime) {
+        event(AnalyticsEvents.COMPLETED, (builder, eventType) -> {
+            builder.addData(eventType.OFFSET_TIME, offsetTime.inWholeUnits(Duration.Unit.MILLISECONDS));
+        });
+    }
+
+    public void playbackAborted(Duration offsetTime) {
+        event(AnalyticsEvents.ABORTED, (builder, eventType) -> {
+            builder.addData(eventType.OFFSET_TIME, offsetTime.inWholeUnits(Duration.Unit.MILLISECONDS));
+        });
+    }
+
+    public void playbackHeartbeat(Duration offsetTime) {
+        event(AnalyticsEvents.HEARTBEAT, (builder, eventType) -> {
+            builder.addData(eventType.OFFSET_TIME, offsetTime.inWholeUnits(Duration.Unit.MILLISECONDS));
+        });
+    }
+
+    private interface IEventConstruction<T extends IAnalyticsEventType> {
+        void construct(IAnalyticsEventBuilder<T> builder, T eventType) throws Exception;
+    }
+
+    private <T extends IAnalyticsEventType> void event(T eventType, IEventConstruction<T> construction) {
+        try {
+            if(!terminalStateReached) {
+                IAnalyticsEventBuilder<T> builder = newEventBuilder(eventType);
+                construction.construct(builder, eventType);
+                analyticsHandler.onAnalytics(builder.build());
+                if(AnalyticsEvents.isTerminal(eventType)) {
+                    terminalStateReached = true;
+                }
             } else {
-                e.printStackTrace();
+                Log.d(TAG, "Skipping "+eventType.getName()+" after terminal event");
             }
+        } catch (Exception e) {
+            handleException(e);
+        }
+    }
+
+    private void handleException(Exception e) {
+        if(BuildConfig.DEBUG) {
+            throw new RuntimeException(e);
+        } else {
+            e.printStackTrace();
         }
     }
 
@@ -48,6 +151,11 @@ public class AnalyticsReporter {
 
         public PlayerSpecificErrorCode(PlayerImplementationError playerImplementationError) {
             this.name = playerImplementationError.getInternalErrorCodeFieldName();
+        }
+
+        @Override
+        public boolean skipIfNull() {
+            return false;
         }
 
         @Override

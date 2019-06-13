@@ -2,26 +2,32 @@ package com.redbeemedia.enigma.core.player;
 
 import android.os.Handler;
 
+import com.redbeemedia.enigma.core.analytics.AnalyticsReporter;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
+import com.redbeemedia.enigma.core.http.HttpStatus;
+import com.redbeemedia.enigma.core.http.MockHttpHandler;
 import com.redbeemedia.enigma.core.playbacksession.BasePlaybackSessionListener;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSessionListener;
 import com.redbeemedia.enigma.core.player.controls.IEnigmaPlayerControls;
-import com.redbeemedia.enigma.core.player.timeline.ITimeline;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
+import com.redbeemedia.enigma.core.player.timeline.ITimeline;
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
-import com.redbeemedia.enigma.core.session.MockSession;
 import com.redbeemedia.enigma.core.task.ITask;
 import com.redbeemedia.enigma.core.task.ITaskFactory;
 import com.redbeemedia.enigma.core.task.TaskException;
 import com.redbeemedia.enigma.core.testutil.Counter;
 import com.redbeemedia.enigma.core.time.MockTimeProvider;
 import com.redbeemedia.enigma.core.util.IHandler;
+import com.redbeemedia.enigma.core.util.IStateMachine;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -30,11 +36,13 @@ import java.util.concurrent.TimeUnit;
 public class InternalPlaybackSessionTest {
     @Test
     public void testLifecycle() {
+        MockHttpHandler mockHttpHandler = new MockHttpHandler();
+
         final Counter newTaskCalled = new Counter();
         final Counter taskStartCalled = new Counter();
         final Counter taskCancelCalled = new Counter();
 
-        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setTaskFactory(new ITaskFactory() {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(mockHttpHandler).setTaskFactory(new ITaskFactory() {
             @Override
             public ITask newTask(Runnable runnable) {
                 newTaskCalled.count();
@@ -57,7 +65,7 @@ public class InternalPlaybackSessionTest {
         }));
 
 
-        InternalPlaybackSession playbackSession = new InternalPlaybackSession(new MockSession(), "mockPbSId", new MockTimeProvider(), null);
+        InternalPlaybackSession playbackSession = new InternalPlaybackSession(new MockInternalPlaybackSessionConstructorArgs().create());
         newTaskCalled.assertOnce();
 
         final Counter addListenerCalled = new Counter();
@@ -88,6 +96,7 @@ public class InternalPlaybackSessionTest {
         addListenerCalled.assertOnce();
         removeListenerCalled.assertNone();
 
+        mockHttpHandler.queueResponse(new HttpStatus(200, "OK"));
         playbackSession.onStop(mockEnigmaPlayer);
         newTaskCalled.assertOnce();
         taskStartCalled.assertOnce();
@@ -98,9 +107,10 @@ public class InternalPlaybackSessionTest {
 
     @Test
     public void testThreadJoins() throws InterruptedException {
+        MockHttpHandler mockHttpHandler = new MockHttpHandler();
         TestTaskFactory taskFactory = new TestTaskFactory();
-        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setTaskFactory(taskFactory));
-        InternalPlaybackSession playbackSession = new InternalPlaybackSession(new MockSession(), "junit", new MockTimeProvider(), null);
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setTaskFactory(taskFactory).setHttpHandler(mockHttpHandler));
+        InternalPlaybackSession playbackSession = new InternalPlaybackSession(new MockInternalPlaybackSessionConstructorArgs().create());
 
         MockEnigmaPlayer mockPlayer = new MockEnigmaPlayer() {
             @Override
@@ -115,6 +125,7 @@ public class InternalPlaybackSessionTest {
         };
         playbackSession.onStart(mockPlayer);
         Thread.sleep(100);
+        mockHttpHandler.queueResponse(new HttpStatus(200, "OK"));
         playbackSession.onStop(mockPlayer);
 
         taskFactory.joinAllThreads();
@@ -127,8 +138,8 @@ public class InternalPlaybackSessionTest {
         StreamInfo liveStreamInfo = new MockStreamInfo(true);
 
         {
-            StreamInfo streamInfo = nonLiveStreamInfo;
-            InternalPlaybackSession playbackSession = new InternalPlaybackSession(new MockSession(), "junit", new MockTimeProvider(), streamInfo);
+            MockInternalPlaybackSessionConstructorArgs args = new MockInternalPlaybackSessionConstructorArgs();
+            InternalPlaybackSession playbackSession = new InternalPlaybackSession(args.setStreamInfo(nonLiveStreamInfo).create());
             Assert.assertFalse(playbackSession.isPlayingFromLive());
             Assert.assertTrue(playbackSession.isSeekAllowed());
             Assert.assertFalse(playbackSession.isSeekToLiveAllowed());
@@ -139,8 +150,8 @@ public class InternalPlaybackSessionTest {
             Assert.assertFalse(playbackSession.isPlayingFromLive());
         }
         {
-            StreamInfo streamInfo = liveStreamInfo;
-            InternalPlaybackSession playbackSession = new InternalPlaybackSession(new MockSession(), "junit", new MockTimeProvider(), streamInfo);
+            MockInternalPlaybackSessionConstructorArgs args = new MockInternalPlaybackSessionConstructorArgs();
+            InternalPlaybackSession playbackSession = new InternalPlaybackSession(args.setStreamInfo(liveStreamInfo).create());
             Assert.assertFalse(playbackSession.isPlayingFromLive());
             Assert.assertTrue(playbackSession.isSeekAllowed());
             Assert.assertTrue(playbackSession.isSeekToLiveAllowed());
@@ -155,7 +166,8 @@ public class InternalPlaybackSessionTest {
     @Test
     public void testListeners() throws JSONException {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
-        InternalPlaybackSession playbackSession = new InternalPlaybackSession(new MockSession(), "junit", new MockTimeProvider(), new MockStreamInfo(true));
+        MockInternalPlaybackSessionConstructorArgs args = new MockInternalPlaybackSessionConstructorArgs();
+        InternalPlaybackSession playbackSession = new InternalPlaybackSession(args.setStreamInfo(new MockStreamInfo(true)).create());
         final StringBuilder log = new StringBuilder();
         IPlaybackSessionListener listener = new BasePlaybackSessionListener() {
             @Override
@@ -196,6 +208,100 @@ public class InternalPlaybackSessionTest {
         onLiveChangedCalls.assertCount(4);
         Assert.assertEquals("[true][false][true]", log.toString());
 
+    }
+
+    @Test
+    public void testAnalyticsEvents() throws JSONException {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+        MockTimeProvider timeProvider = new MockTimeProvider();
+        final List<JSONObject> analyticsEvents = new ArrayList<>();
+        AnalyticsReporter analyticsReporter = new AnalyticsReporter(timeProvider, jsonObject -> analyticsEvents.add(jsonObject));
+        MockPlaybackSessionInfo playbackSessionInfo = new MockPlaybackSessionInfo();
+        InternalPlaybackSession.EnigmaPlayerListenerForAnalytics analytics = new InternalPlaybackSession.EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, StreamInfo.createForNull());
+
+        IStateMachine<EnigmaPlayerState> stateMachine = EnigmaStateMachineFactory.create();
+        stateMachine.addListener((from, to) -> analytics.onStateChanged(from, to));
+
+        int expectedEvents = 0;
+        timeProvider.addTime(100);
+        stateMachine.setState(EnigmaPlayerState.LOADING);
+        expectedEvents++;
+        Assert.assertEquals(expectedEvents,analyticsEvents.size());
+        Assert.assertEquals("Playback.HandshakeStarted",analyticsEvents.get(expectedEvents-1).getString("EventType"));
+
+        timeProvider.addTime(200);
+        stateMachine.setState(EnigmaPlayerState.LOADED);
+        expectedEvents++;
+        Assert.assertEquals(expectedEvents,analyticsEvents.size());
+        Assert.assertEquals("Playback.PlayerReady",analyticsEvents.get(expectedEvents-1).getString("EventType"));
+
+        timeProvider.addTime(50);
+        stateMachine.setState(EnigmaPlayerState.PLAYING);
+        expectedEvents++;
+        Assert.assertEquals(expectedEvents,analyticsEvents.size());
+        Assert.assertEquals("Playback.Started",analyticsEvents.get(expectedEvents-1).getString("EventType"));
+
+        timeProvider.addTime(150);
+        stateMachine.setState(EnigmaPlayerState.PAUSED);
+        expectedEvents++;
+        Assert.assertEquals(expectedEvents,analyticsEvents.size());
+        Assert.assertEquals("Playback.Paused",analyticsEvents.get(expectedEvents-1).getString("EventType"));
+
+        timeProvider.addTime(550);
+        stateMachine.setState(EnigmaPlayerState.PLAYING);
+        expectedEvents++;
+        Assert.assertEquals(expectedEvents,analyticsEvents.size());
+        Assert.assertEquals("Playback.Resumed",analyticsEvents.get(expectedEvents-1).getString("EventType"));
+
+        timeProvider.addTime(150);
+        stateMachine.setState(EnigmaPlayerState.PAUSED);
+        expectedEvents++;
+        Assert.assertEquals(expectedEvents,analyticsEvents.size());
+        Assert.assertEquals("Playback.Paused",analyticsEvents.get(expectedEvents-1).getString("EventType"));
+
+        timeProvider.addTime(123);
+        stateMachine.setState(EnigmaPlayerState.PLAYING);
+        expectedEvents++;
+        Assert.assertEquals(expectedEvents,analyticsEvents.size());
+        Assert.assertEquals("Playback.Resumed",analyticsEvents.get(expectedEvents-1).getString("EventType"));
+    }
+
+    @Test
+    public void testReferenceTimePresentForLiveStreams() throws JSONException {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+
+        MockTimeProvider timeProvider = new MockTimeProvider();
+        final List<JSONObject> analyticsEvents = new ArrayList<>();
+        AnalyticsReporter analyticsReporter = new AnalyticsReporter(timeProvider, jsonObject -> analyticsEvents.add(jsonObject));
+        MockPlaybackSessionInfo playbackSessionInfo = new MockPlaybackSessionInfo();
+        StreamInfo streamInfo = new StreamInfo(new JSONObject("{\"live\" : true, \"start\" : 8765432}"));
+        InternalPlaybackSession.EnigmaPlayerListenerForAnalytics analytics = new InternalPlaybackSession.EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, streamInfo);
+
+        analytics.onStateChanged(EnigmaPlayerState.LOADED, EnigmaPlayerState.PLAYING);
+        Assert.assertEquals(1,analyticsEvents.size());
+        JSONObject event = analyticsEvents.get(0);
+        Assert.assertEquals("Playback.Started", event.getString("EventType"));
+        Assert.assertEquals("live", event.getString("PlayMode"));
+        Assert.assertEquals(8765432L*1000L, event.getLong("ReferenceTime"));
+    }
+
+    @Test
+    public void testReferenceTimeNotPresentForVodStreams() throws JSONException {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+
+        MockTimeProvider timeProvider = new MockTimeProvider();
+        final List<JSONObject> analyticsEvents = new ArrayList<>();
+        AnalyticsReporter analyticsReporter = new AnalyticsReporter(timeProvider, jsonObject -> analyticsEvents.add(jsonObject));
+        MockPlaybackSessionInfo playbackSessionInfo = new MockPlaybackSessionInfo();
+        StreamInfo streamInfo = new StreamInfo(new JSONObject("{\"live\" : false, \"start\" : 8765432}"));
+        InternalPlaybackSession.EnigmaPlayerListenerForAnalytics analytics = new InternalPlaybackSession.EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, streamInfo);
+
+        analytics.onStateChanged(EnigmaPlayerState.LOADED, EnigmaPlayerState.PLAYING);
+        Assert.assertEquals(1,analyticsEvents.size());
+        JSONObject event = analyticsEvents.get(0);
+        Assert.assertEquals("Playback.Started", event.getString("EventType"));
+        Assert.assertEquals("vod", event.getString("PlayMode"));
+        Assert.assertFalse("Did not expect event to have property ReferenceTime",event.has("ReferenceTime"));
     }
 
     private abstract static class MockEnigmaPlayer implements IEnigmaPlayer {

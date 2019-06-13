@@ -1,7 +1,9 @@
 package com.redbeemedia.enigma.core.context;
 
 import android.app.Application;
+import android.os.Build;
 
+import com.redbeemedia.enigma.core.BuildConfig;
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleManager;
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleManagerFactory;
 import com.redbeemedia.enigma.core.http.DefaultHttpHandler;
@@ -60,7 +62,14 @@ public final class EnigmaRiverContext {
     }
 
     //Version if the core library
-    public static String getVersion() {return "r1.0.17";};
+    public static String getVersion() {
+        String version = "r1.0.18-BETA-1";
+        if(version.contains("REPLACE_WITH_RELEASE_VERSION")) {
+            return "dev-snapshot-"+BuildConfig.VERSION_NAME;
+        } else {
+            return version;
+        }
+    }
 
     private static void assertInitialized() {
         if(initializedContext == null) {

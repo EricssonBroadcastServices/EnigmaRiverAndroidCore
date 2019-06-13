@@ -10,8 +10,10 @@ import com.redbeemedia.enigma.core.format.EnigmaMediaFormat;
 import com.redbeemedia.enigma.core.format.IMediaFormatSupportSpec;
 import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.http.MockHttpHandler;
+import com.redbeemedia.enigma.core.playable.IPlayable;
 import com.redbeemedia.enigma.core.playable.IPlayableHandler;
 import com.redbeemedia.enigma.core.playable.MockPlayable;
+import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.player.listener.BaseEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.playrequest.MockPlayRequest;
@@ -401,32 +403,65 @@ public class EnigmaPlayerTest {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
         final Counter onReadyCalled = new Counter();
         final Counter onReadyCalled2 = new Counter();
-        EnigmaPlayer enigmaPlayer = new EnigmaPlayer(new MockSession(), new MockPlayerImplementation() {
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayerWithMockedTimeProvider(new MockSession(), new MockPlayerImplementation() {
             @Override
             public void install(IEnigmaPlayerEnvironment environment) {
                 super.install(environment);
                 environment.addEnigmaPlayerReadyListener(enigmaPlayer1 -> onReadyCalled.count());
                 environment.addEnigmaPlayerReadyListener(enigmaPlayer1 -> onReadyCalled2.count());
             }
-        }) {
-            @Override
-            protected ITimeProvider newTimeProvider(ISession session) {
-                return new MockTimeProvider();
-            }
-        };
+        });
         onReadyCalled.assertOnce();
         onReadyCalled2.assertOnce();
     }
 
 
     @Test
-    public void testLegacyTimeProviderMockCheck() {
-        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
-        try {
-            LegacyTimeProvider legacyTimeProvider = new LegacyTimeProvider(new MockSession());
-            Assert.fail("Expected exception to be thrown in constructor when created in unit tests.");
-        } catch (Exception e) {
-            Assert.assertEquals("LegacyTimeProvider not mocked!", e.getMessage());
+    public void testPlayableReachableFromPlaybackSession() throws JSONException {
+        MockHttpHandler httpHandler = new MockHttpHandler();
+
+        JSONObject response = new JSONObject();
+        JSONArray formatArray = new JSONArray();
+        formatArray.put(createFormatJson("https://media.example.com","DASH"));
+        response.put("formats", formatArray);
+        for(int i = 0; i < 3; ++i) {
+            httpHandler.queueResponse(new HttpStatus(200, "OK"), response.toString());
+        }
+
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(httpHandler));
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayerWithMockedTimeProvider(new MockSession(), new MockPlayerImplementation());
+
+        IPlayable playable1 = new MockPlayable("asset1");
+        IPlayable playable2 = new MockPlayable("asset2");
+
+        final Counter onPlaybackSessionChangedCalled = new Counter();
+        final IPlayable[] currentPlayable = new IPlayable[]{null};
+        enigmaPlayer.addListener(new BaseEnigmaPlayerListener() {
+            @Override
+            public void onPlaybackSessionChanged(IPlaybackSession from, IPlaybackSession to) {
+                onPlaybackSessionChangedCalled.count();
+                Assert.assertEquals(currentPlayable[0], to.getPlayable());
+            }
+        });
+        onPlaybackSessionChangedCalled.assertCount(0);
+
+        currentPlayable[0] = playable1;
+        enigmaPlayer.play(new MockPlayRequest().setPlayable(currentPlayable[0]));
+        onPlaybackSessionChangedCalled.assertCount(1);
+
+        currentPlayable[0] = playable2;
+        enigmaPlayer.play(new MockPlayRequest().setPlayable(currentPlayable[0]));
+        onPlaybackSessionChangedCalled.assertCount(2);
+    }
+
+    private static class EnigmaPlayerWithMockedTimeProvider extends EnigmaPlayer {
+        public EnigmaPlayerWithMockedTimeProvider(ISession session, IPlayerImplementation playerImplementation) {
+            super(session, playerImplementation);
+        }
+
+        @Override
+        protected ITimeProvider newTimeProvider(ISession session) {
+            return new MockTimeProvider();
         }
     }
 }

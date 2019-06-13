@@ -8,40 +8,53 @@ import com.redbeemedia.enigma.core.analytics.AnalyticsHandler;
 import com.redbeemedia.enigma.core.analytics.AnalyticsReporter;
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.playable.IPlayable;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSessionListener;
 import com.redbeemedia.enigma.core.player.listener.BaseEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.task.ITask;
 import com.redbeemedia.enigma.core.task.ITaskFactory;
+import com.redbeemedia.enigma.core.task.MainThreadTaskFactory;
+import com.redbeemedia.enigma.core.task.Repeater;
 import com.redbeemedia.enigma.core.task.TaskException;
+import com.redbeemedia.enigma.core.time.Duration;
 import com.redbeemedia.enigma.core.time.ITimeProvider;
 import com.redbeemedia.enigma.core.util.Collector;
 import com.redbeemedia.enigma.core.util.HandlerWrapper;
 
+import org.json.JSONException;
+
+import java.util.UUID;
+
 /*package-protected*/ class InternalPlaybackSession implements IInternalPlaybackSession {
     private static final int CYCLE_SLEEP_MILLIS = 1000;
+    private static final long HEARTBEAT_RATE_MILLIS = 60L*1000L;
 
     private final AnalyticsReporter analyticsReporter;
     private final AnalyticsHandler analyticsHandler;
     private final ITask analyticsHandlerTask;
+    private final Repeater heartbeatRepeater;
     private final StreamInfo streamInfo;
     private final ListenerCollector collector = new ListenerCollector();
+    private final IPlaybackSessionInfo playbackSessionInfo;
     private boolean playingFromLive = false;
 
     private static final int STATE_NEW = 0;
     private static final int STATE_STARTED = 1;
-    private static final int STATE_DEAD = 2;
+    private static final int STATE_END_REACHED = 2;
+    private static final int STATE_DEAD = 3;
     private volatile int state = STATE_NEW;
 
-    private final IEnigmaPlayerListener playerListener = new BaseEnigmaPlayerListener() {
-        @Override
-        public void onPlaybackError(Error error) {
-            analyticsReporter.error(error);
-        }
-    };
+    private final IEnigmaPlayerListener playerListener;
 
-    public InternalPlaybackSession(ISession session, String id, ITimeProvider timeProvider, StreamInfo streamInfo) {
+
+    public InternalPlaybackSession(ConstructorArgs constructorArgs) {
+        this(constructorArgs.session, constructorArgs.id, constructorArgs.timeProvider, constructorArgs.streamInfo, constructorArgs.playbackSessionInfo);
+    }
+
+    public InternalPlaybackSession(ISession session, String id, ITimeProvider timeProvider, StreamInfo streamInfo, IPlaybackSessionInfo playbackSessionInfo) {
+        this.playbackSessionInfo = playbackSessionInfo;
         this.streamInfo = streamInfo;
         this.analyticsHandler = new AnalyticsHandler(session, id, timeProvider);
         ITaskFactory taskFactory = EnigmaRiverContext.getTaskFactory();
@@ -84,6 +97,9 @@ import com.redbeemedia.enigma.core.util.HandlerWrapper;
             }
         });
         this.analyticsReporter = new AnalyticsReporter(timeProvider, analyticsHandler);
+        this.playerListener = new EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, streamInfo);
+        ITaskFactory mainThreadTaskFactory = new MainThreadTaskFactory();
+        heartbeatRepeater = new Repeater(mainThreadTaskFactory, HEARTBEAT_RATE_MILLIS, new HeartbeatRunnable());
     }
 
     private void changeState(int newState) {
@@ -98,6 +114,9 @@ import com.redbeemedia.enigma.core.util.HandlerWrapper;
         } else {
             changeState(STATE_STARTED);
         }
+        analyticsReporter.deviceInfo();
+        analyticsReporter.playbackCreated(playbackSessionInfo.getAssetId());
+        heartbeatRepeater.setEnabled(true);
         enigmaPlayer.addListener(playerListener);
         try {
             analyticsHandlerTask.start();
@@ -108,10 +127,18 @@ import com.redbeemedia.enigma.core.util.HandlerWrapper;
 
     @Override
     public void onStop(IEnigmaPlayer enigmaPlayer) {
-        if(state != STATE_STARTED) {
+        boolean aborted = false;
+        if(state != STATE_STARTED && state != STATE_END_REACHED) {
             throw new IllegalStateException("state="+String.valueOf(state));
         } else {
+            if(state != STATE_END_REACHED) {
+                aborted = true;
+            }
             changeState(STATE_DEAD);
+        }
+        heartbeatRepeater.setEnabled(false);
+        if(aborted) {
+            analyticsReporter.playbackAborted(playbackSessionInfo.getCurrentPlaybackOffset());
         }
         enigmaPlayer.removeListener(playerListener);
         try {
@@ -119,12 +146,18 @@ import com.redbeemedia.enigma.core.util.HandlerWrapper;
         } catch (TaskException e) {
             e.printStackTrace(); //Suppress
         }
+        ITask sendRemainingDataTask = EnigmaRiverContext.getTaskFactory().newTask(() -> {
+            try {
+                analyticsHandler.sendData(); //Try to send any remaining data.
+            } catch (Exception e) {
+                e.printStackTrace(); //Suppress
+            }
+        });
         try {
-            analyticsHandler.sendData(); //Try to send any remaining data.
-        } catch (Exception e) {
+            sendRemainingDataTask.start();
+        } catch (TaskException e) {
             e.printStackTrace(); //Suppress
         }
-        //Additional cleanup goes here.
     }
 
     @Override
@@ -144,7 +177,18 @@ import com.redbeemedia.enigma.core.util.HandlerWrapper;
     }
 
     @Override
+    public IPlayable getPlayable() {
+        return playbackSessionInfo.getPlayable();
+    }
+
+    @Override
     public void fireEndReached() {
+        if(state != STATE_STARTED) {
+            throw new IllegalStateException("state="+String.valueOf(state));
+        } else {
+            changeState(STATE_END_REACHED);
+        }
+        analyticsReporter.playbackCompleted(playbackSessionInfo.getCurrentPlaybackOffset());
         collector.onEndReached();
     }
 
@@ -196,6 +240,88 @@ import com.redbeemedia.enigma.core.util.HandlerWrapper;
         @Override
         public void onEndReached() {
             forEach(listener -> listener.onEndReached());
+        }
+    }
+
+    /*package-protected*/ static class ConstructorArgs {
+        public final ISession session;
+        public final String id;
+        public final ITimeProvider timeProvider;
+        public final StreamInfo streamInfo;
+        public final IPlaybackSessionInfo playbackSessionInfo;
+
+        public ConstructorArgs(ISession session, String id, ITimeProvider timeProvider, StreamInfo streamInfo, IPlaybackSessionInfo playbackSessionInfo) {
+            this.session = session;
+            this.id = id;
+            this.timeProvider = timeProvider;
+            this.streamInfo = streamInfo;
+            this.playbackSessionInfo = playbackSessionInfo;
+        }
+
+        public static ConstructorArgs of(IPlaybackSessionFactory.PlaybackSessionArgs pbsArgs, ITimeProvider timeProvider) throws JSONException {
+            String playbackSessionId = pbsArgs.jsonObject.optString("playSessionId", UUID.randomUUID().toString());
+            StreamInfo streamInfo = new StreamInfo(pbsArgs.jsonObject.optJSONObject("streamInfo"));
+            return new ConstructorArgs(pbsArgs.session, playbackSessionId, timeProvider, streamInfo, pbsArgs.playbackSessionInfo);
+        }
+    }
+
+    private class HeartbeatRunnable implements Runnable {
+        private Duration lastOffset = null;
+
+        @Override
+        public void run() {
+            try {
+                lastOffset = playbackSessionInfo.getCurrentPlaybackOffset();
+            } catch (Exception e) {
+                //Ignore
+            }
+            if(lastOffset != null) {
+                analyticsReporter.playbackHeartbeat(lastOffset);
+            }
+        }
+    }
+
+    /*package-protected*/ static class EnigmaPlayerListenerForAnalytics extends BaseEnigmaPlayerListener {
+        private final AnalyticsReporter analyticsReporter;
+        private final IPlaybackSessionInfo playbackSessionInfo;
+        private final StreamInfo streamInfo;
+        private boolean hasStartedAtLeastOnce = false;
+
+        public EnigmaPlayerListenerForAnalytics(AnalyticsReporter analyticsReporter, IPlaybackSessionInfo playbackSessionInfo, StreamInfo streamInfo) {
+            this.analyticsReporter = analyticsReporter;
+            this.playbackSessionInfo = playbackSessionInfo;
+            this.streamInfo = streamInfo;
+        }
+
+        @Override
+        public void onPlaybackError(Error error) {
+            analyticsReporter.playbackError(error);
+        }
+
+        @Override
+        public void onStateChanged(EnigmaPlayerState from, EnigmaPlayerState to) {
+            if(to == EnigmaPlayerState.LOADING) {
+                analyticsReporter.playbackHandshakeStarted(playbackSessionInfo.getAssetId());
+            } else if(to == EnigmaPlayerState.LOADED) {
+                analyticsReporter.playbackPlayerReady(playbackSessionInfo.getCurrentPlaybackOffset(),
+                        playbackSessionInfo.getPlayerTechnologyName(),
+                        playbackSessionInfo.getPlayerTechnologyVersion());
+            } else if(to == EnigmaPlayerState.PLAYING) {
+                if(hasStartedAtLeastOnce) {
+                    analyticsReporter.playbackResumed(playbackSessionInfo.getCurrentPlaybackOffset());
+                } else {
+                    hasStartedAtLeastOnce = true;
+                    Duration playbackOffset = playbackSessionInfo.getCurrentPlaybackOffset();
+                    String playMode = streamInfo.isLiveStream() ? "live" : "vod";
+                    String mediaLocator = playbackSessionInfo.getMediaLocator();
+                    Long referenceTime = streamInfo.isLiveStream() ? streamInfo.getStartUtcSeconds()*1000L : null;
+                    analyticsReporter.playbackStarted(playbackOffset, playMode, mediaLocator, referenceTime);
+                }
+            } else if(to == EnigmaPlayerState.PAUSED) {
+                if(hasStartedAtLeastOnce) {
+                    analyticsReporter.playbackPaused(playbackSessionInfo.getCurrentPlaybackOffset());
+                }
+            }
         }
     }
 }

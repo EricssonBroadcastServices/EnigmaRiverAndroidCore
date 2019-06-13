@@ -10,4 +10,5 @@ public interface IPlayerImplementationInternals {
     ITimelinePosition getCurrentPosition();
     ITimelinePosition getCurrentStartBound();
     ITimelinePosition getCurrentEndBound();
+    IPlaybackTechnologyIdentifier getTechnologyIdentifier();
 }

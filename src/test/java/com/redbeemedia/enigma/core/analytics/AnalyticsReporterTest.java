@@ -1,17 +1,39 @@
 package com.redbeemedia.enigma.core.analytics;
 
+import android.util.Log;
+import android.util.MockLog;
+
 import com.redbeemedia.enigma.core.error.ErrorCode;
+import com.redbeemedia.enigma.core.error.IllegalSeekPositionError;
 import com.redbeemedia.enigma.core.error.PlayerImplementationError;
 import com.redbeemedia.enigma.core.error.UnexpectedError;
 import com.redbeemedia.enigma.core.testutil.Counter;
+import com.redbeemedia.enigma.core.time.Duration;
 import com.redbeemedia.enigma.core.time.MockTimeProvider;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
+import java.io.PrintStream;
+
 public class AnalyticsReporterTest {
+    private PrintStream originalOutput;
+
+    @Before
+    public void disableLogging() {
+        this.originalOutput = MockLog.getOut();
+        MockLog.setOut(null);
+    }
+
+    @After
+    public void restoreLogging() {
+        MockLog.setOut(originalOutput);
+    }
+
     @Test
     public void testOnErrorWithSimpleError() {
         final Counter onAnalyticsCalled = new Counter();
@@ -29,7 +51,7 @@ public class AnalyticsReporterTest {
             }
         });
         onAnalyticsCalled.assertNone();
-        analyticsReporter.error(new UnexpectedError("UnitTest"));
+        analyticsReporter.playbackError(new UnexpectedError("UnitTest"));
         onAnalyticsCalled.assertOnce();
     }
 
@@ -51,7 +73,72 @@ public class AnalyticsReporterTest {
             }
         });
         onAnalyticsCalled.assertNone();
-        analyticsReporter.error(new PlayerImplementationError(777, "UnitTestPlayerErrorCode"));
+        analyticsReporter.playbackError(new PlayerImplementationError(777, "UnitTestPlayerErrorCode"));
         onAnalyticsCalled.assertOnce();
     }
+
+    @Test
+    public void testNoEventsAfterTerminalAborted() {
+        final Counter onAnalyticsCalled = new Counter();
+        AnalyticsReporter analyticsReporter = new AnalyticsReporter(new MockTimeProvider(), new IAnalyticsHandler() {
+            @Override
+            public void onAnalytics(JSONObject jsonObject) {
+                onAnalyticsCalled.count();
+            }
+        });
+        onAnalyticsCalled.assertCount(0);
+
+        analyticsReporter.playbackResumed(Duration.hours(1));
+        onAnalyticsCalled.assertCount(1);
+
+        analyticsReporter.playbackAborted(Duration.minutes(2));
+        onAnalyticsCalled.assertCount(2);
+
+        analyticsReporter.playbackPaused(Duration.minutes(5));
+        onAnalyticsCalled.assertCount(2);
+
+    }
+
+    @Test
+    public void testNoEventsAfterTerminalError() {
+        final Counter onAnalyticsCalled = new Counter();
+        AnalyticsReporter analyticsReporter = new AnalyticsReporter(new MockTimeProvider(), new IAnalyticsHandler() {
+            @Override
+            public void onAnalytics(JSONObject jsonObject) {
+                onAnalyticsCalled.count();
+            }
+        });
+        onAnalyticsCalled.assertCount(0);
+
+        analyticsReporter.playbackHeartbeat(Duration.hours(1));
+        onAnalyticsCalled.assertCount(1);
+
+        analyticsReporter.playbackError(new IllegalSeekPositionError());
+        onAnalyticsCalled.assertCount(2);
+
+        analyticsReporter.playbackHandshakeStarted("mockAsset");
+        onAnalyticsCalled.assertCount(2);
+    }
+
+    @Test
+    public void testNoEventsAfterTerminalCompleted() {
+        final Counter onAnalyticsCalled = new Counter();
+        AnalyticsReporter analyticsReporter = new AnalyticsReporter(new MockTimeProvider(), new IAnalyticsHandler() {
+            @Override
+            public void onAnalytics(JSONObject jsonObject) {
+                onAnalyticsCalled.count();
+            }
+        });
+        onAnalyticsCalled.assertCount(0);
+
+        analyticsReporter.playbackCreated("mockAsset");
+        onAnalyticsCalled.assertCount(1);
+
+        analyticsReporter.playbackCompleted(Duration.seconds(123));
+        onAnalyticsCalled.assertCount(2);
+
+        analyticsReporter.playbackPlayerReady(Duration.hours(100), "MockTech", "1.0");
+        onAnalyticsCalled.assertCount(2);
+    }
+
 }

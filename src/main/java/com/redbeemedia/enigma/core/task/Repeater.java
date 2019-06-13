@@ -32,7 +32,11 @@ public class Repeater {
             if(!enabled) {
                 stop();
             } else {
-                executeNow();
+                try {
+                    taskFactory.newTask(() -> executeNow()).start();
+                } catch (TaskException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
     }

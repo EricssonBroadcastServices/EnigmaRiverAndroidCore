@@ -33,4 +33,12 @@ import org.json.JSONObject;
     public long getStartUtcSeconds() {
         return startUtcSeconds;
     }
+
+    public static StreamInfo createForNull() {
+        try {
+            return new StreamInfo(null);
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
