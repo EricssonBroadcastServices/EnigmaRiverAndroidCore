@@ -40,4 +40,43 @@ public class JsonReaderUtilTest {
         List<Double> list = JsonReaderUtil.readArray(new JsonReader(new StringReader("[42.1337,1337.42]")), Double.class);
         Assert.assertEquals(Arrays.asList(42.1337,1337.42), list);
     }
+
+    @Test
+    public void testCustomValueCreator() throws IOException {
+        List<Number> numbers = JsonReaderUtil.readArray(new JsonReader(new StringReader("[{\"type\": \"long\",\"value\": 4},{\"value\": 4,\"type\": \"float\"}]")), Number.class, new JsonReaderUtil.IObjectFactory<Number>() {
+            @Override
+            public Number newInstance(JsonReader jsonReader) throws Exception {
+                class Model {
+                    private String type;
+                    private String value;
+
+                    public Number createNumber() {
+                        if("long".equals(type)) {
+                            return Long.valueOf(value);
+                        } else if("float".equals(type)) {
+                            return Float.valueOf(value);
+                        } else {
+                          throw new RuntimeException(type);
+                        }
+                    }
+                }
+                Model model = new Model();
+                jsonReader.beginObject();
+                while(jsonReader.hasNext()) {
+                    switch (jsonReader.nextName()) {
+                        case "type": {
+                            model.type = jsonReader.nextString();
+                        } break;
+                        default:
+                            model.value = jsonReader.nextString();
+                    }
+                }
+                jsonReader.endObject();
+                return model.createNumber();
+            }
+        });
+        Assert.assertEquals(2, numbers.size());
+        Assert.assertTrue("Expected long", numbers.get(0) instanceof Long);
+        Assert.assertTrue("Expected float", numbers.get(1) instanceof Float);
+    }
 }

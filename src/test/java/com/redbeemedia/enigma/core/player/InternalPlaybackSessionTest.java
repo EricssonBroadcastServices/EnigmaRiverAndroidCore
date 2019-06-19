@@ -98,8 +98,8 @@ public class InternalPlaybackSessionTest {
 
         mockHttpHandler.queueResponse(new HttpStatus(200, "OK"));
         playbackSession.onStop(mockEnigmaPlayer);
-        newTaskCalled.assertOnce();
-        taskStartCalled.assertOnce();
+        newTaskCalled.assertCount(2);
+        taskStartCalled.assertCount(2);
         taskCancelCalled.assertOnce();
         addListenerCalled.assertOnce();
         removeListenerCalled.assertOnce();
