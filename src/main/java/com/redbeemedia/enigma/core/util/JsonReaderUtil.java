@@ -49,7 +49,7 @@ public class JsonReaderUtil {
         }
     }
 
-    interface IObjectFactory<T> {
+    public interface IObjectFactory<T> {
         T newInstance(JsonReader jsonReader) throws Exception;
     }
 

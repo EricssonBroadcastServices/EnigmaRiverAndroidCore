@@ -106,8 +106,8 @@ import java.net.URL;
         }
     }
 
-    protected IStopWatch createStopWatch() {
-        return new StopWatch(() -> SystemClock.uptimeMillis());
+    private IStopWatch createStopWatch() {
+        return new StopWatch(() -> getLocalTimeMillis());
     }
 
     public void stop() {
@@ -122,7 +122,7 @@ import java.net.URL;
         }
     }
 
-    private static long getLocalTimeMillis() {
+    protected long getLocalTimeMillis() {
         return SystemClock.uptimeMillis();
     }
 }

@@ -42,8 +42,8 @@ public class ServerTimeServiceTest {
             }
 
             @Override
-            protected IStopWatch createStopWatch() {
-                return new StopWatch(() -> System.currentTimeMillis());
+            protected long getLocalTimeMillis() {
+                return System.currentTimeMillis();
             }
         };
         serverTimeService.start(false);
