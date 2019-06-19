@@ -79,4 +79,31 @@ public class JsonReaderUtilTest {
         Assert.assertTrue("Expected long", numbers.get(0) instanceof Long);
         Assert.assertTrue("Expected float", numbers.get(1) instanceof Float);
     }
+
+    @Test
+    public void testDefaultConstructor() throws IOException {
+        List<ConformingType> list = JsonReaderUtil.readArray(new JsonReader(new StringReader("[{\"name\": \"alpha\"},{\"name\": \"beta\"}]")),ConformingType.class);
+        Assert.assertEquals(2, list.size());
+        Assert.assertEquals("alpha", list.get(0).name);
+        Assert.assertEquals("beta", list.get(1).name);
+    }
+
+
+    private static class ConformingType {
+        private String name = null;
+
+        public ConformingType(JsonReader jsonReader) throws IOException {
+            jsonReader.beginObject();
+            while (jsonReader.hasNext()) {
+                switch (jsonReader.nextName()) {
+                    case "name":
+                        this.name = jsonReader.nextString();
+                        break;
+                    default:
+                        jsonReader.skipValue();
+                }
+            }
+            jsonReader.endObject();
+        }
+    }
 }

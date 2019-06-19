@@ -68,7 +68,7 @@ public class JsonReaderUtil {
 
             @Override
             public T newInstance(JsonReader jsonReader) throws Exception {
-                return null;
+                return constructor.newInstance(jsonReader);
             }
         }
     }
