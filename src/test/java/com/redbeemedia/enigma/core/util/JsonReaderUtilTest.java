@@ -2,6 +2,8 @@ package com.redbeemedia.enigma.core.util;
 
 import android.util.JsonReader;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -88,6 +90,36 @@ public class JsonReaderUtilTest {
         Assert.assertEquals("beta", list.get(1).name);
     }
 
+    @Test
+    public void testReadJsonObject() throws Exception {
+        JSONObject expected = new JSONObject();
+        expected.put("number", 5);
+        expected.put("string", "This is a string");
+        expected.put("boolean", true);
+        JSONArray intArray = new JSONArray();
+        intArray.put(1);
+        intArray.put(2);
+        intArray.put(3);
+        expected.put("intArray", intArray);
+        JSONArray objectArray = new JSONArray();
+        for(int i = 0; i < 5; ++i) {
+            JSONObject arrayItem = new JSONObject();
+            arrayItem.put("index", i);
+            objectArray.put(arrayItem);
+        }
+        expected.put("objectArray", objectArray);
+        JSONArray mixedArray = new JSONArray();
+        mixedArray.put("One");
+        mixedArray.put(2);
+        mixedArray.put(new JSONArray());
+        mixedArray.put(4d);
+        JSONObject objectInArray = new JSONObject();
+        objectInArray.put("secondArray", new JSONArray());
+        mixedArray.put(objectInArray);
+        expected.put("mixedArray", mixedArray);
+        JSONObject jsonObject = JsonReaderUtil.JSON_OBJECT_FACTORY.newInstance(new JsonReader(new StringReader(expected.toString())));
+        Assert.assertEquals("{\"number\":5,\"objectArray\":[{\"index\":0},{\"index\":1},{\"index\":2},{\"index\":3},{\"index\":4}],\"boolean\":true,\"string\":\"This is a string\",\"mixedArray\":[\"One\",2,[],4,{\"secondArray\":[]}],\"intArray\":[1,2,3]}", jsonObject.toString());
+    }
 
     private static class ConformingType {
         private String name = null;

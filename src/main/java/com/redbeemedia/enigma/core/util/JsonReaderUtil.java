@@ -2,6 +2,9 @@ package com.redbeemedia.enigma.core.util;
 
 import android.util.JsonReader;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -72,4 +75,46 @@ public class JsonReaderUtil {
             }
         }
     }
+
+    public static final IObjectFactory<JSONObject> JSON_OBJECT_FACTORY = new IObjectFactory<JSONObject>() {
+        @Override
+        public JSONObject newInstance(JsonReader jsonReader) throws Exception {
+            JSONObject jsonObject = new JSONObject();
+            jsonReader.beginObject();
+            while (jsonReader.hasNext()) {
+                jsonObject.put(jsonReader.nextName(), nextValue(jsonReader));
+            }
+            jsonReader.endObject();
+            return jsonObject;
+        }
+
+        private Object nextValue(JsonReader jsonReader) throws Exception {
+            switch (jsonReader.peek()) {
+                case BEGIN_ARRAY: {
+                    JSONArray jsonArray = new JSONArray();
+                    for(Object arrayItem : JsonReaderUtil.readArray(jsonReader, Object.class, jsonReader1 -> nextValue(jsonReader1))) {
+                        jsonArray.put(arrayItem);
+                    }
+                    return jsonArray;
+                }
+                case BEGIN_OBJECT: {
+                    return JSON_OBJECT_FACTORY.newInstance(jsonReader);
+                }
+                case STRING: {
+                    return jsonReader.nextString();
+                }
+                case NUMBER: {
+                    return jsonReader.nextDouble();
+                }
+                case BOOLEAN: {
+                    return jsonReader.nextBoolean();
+                }
+                case NULL: {
+                    jsonReader.skipValue();
+                    return null;
+                }
+            }
+            throw new IllegalStateException();
+        }
+    };
 }
