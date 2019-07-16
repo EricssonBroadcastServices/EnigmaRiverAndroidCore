@@ -101,7 +101,11 @@ public class DeviceInfo implements IDeviceInfo {
             } catch (RuntimeException e) {
                 return "Error_"+e.getClass().getSimpleName();
             } finally {
-                mediaDrm.close();
+                if(Build.VERSION.SDK_INT >= 18 && Build.VERSION.SDK_INT <= 27) {
+                    mediaDrm.release();
+                } else if(Build.VERSION.SDK_INT >= 28) {
+                    mediaDrm.close();
+                }
             }
         } catch (UnsupportedSchemeException e) {
             return "Widevine N/A";
