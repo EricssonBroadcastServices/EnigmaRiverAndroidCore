@@ -543,6 +543,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                                     currentPlaybackSession.value.fireEndReached();
                                 }
                             }
+                            stateMachine.setState(EnigmaPlayerState.LOADED);
                         }
                     };
                 }
@@ -736,7 +737,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
         @Override
         public ITimelinePosition getCurrentStartBound() {
-            return environment.playerImplementationInternals.getCurrentEndBound();
+            return environment.playerImplementationInternals.getCurrentStartBound();
         }
 
         @Override
