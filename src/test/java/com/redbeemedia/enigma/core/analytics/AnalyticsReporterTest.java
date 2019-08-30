@@ -88,13 +88,13 @@ public class AnalyticsReporterTest {
         });
         onAnalyticsCalled.assertCount(0);
 
-        analyticsReporter.playbackResumed(Duration.hours(1));
+        analyticsReporter.playbackResumed(Duration.hours(1).inWholeUnits(Duration.Unit.MILLISECONDS));
         onAnalyticsCalled.assertCount(1);
 
-        analyticsReporter.playbackAborted(Duration.minutes(2));
+        analyticsReporter.playbackAborted(Duration.minutes(2).inWholeUnits(Duration.Unit.MILLISECONDS));
         onAnalyticsCalled.assertCount(2);
 
-        analyticsReporter.playbackPaused(Duration.minutes(5));
+        analyticsReporter.playbackPaused(Duration.minutes(5).inWholeUnits(Duration.Unit.MILLISECONDS));
         onAnalyticsCalled.assertCount(2);
 
     }
@@ -110,7 +110,7 @@ public class AnalyticsReporterTest {
         });
         onAnalyticsCalled.assertCount(0);
 
-        analyticsReporter.playbackHeartbeat(Duration.hours(1));
+        analyticsReporter.playbackHeartbeat(Duration.hours(1).inWholeUnits(Duration.Unit.MILLISECONDS));
         onAnalyticsCalled.assertCount(1);
 
         analyticsReporter.playbackError(new IllegalSeekPositionError());
@@ -134,10 +134,10 @@ public class AnalyticsReporterTest {
         analyticsReporter.playbackCreated("mockAsset");
         onAnalyticsCalled.assertCount(1);
 
-        analyticsReporter.playbackCompleted(Duration.seconds(123));
+        analyticsReporter.playbackCompleted(Duration.seconds(123).inWholeUnits(Duration.Unit.MILLISECONDS));
         onAnalyticsCalled.assertCount(2);
 
-        analyticsReporter.playbackPlayerReady(Duration.hours(100), "MockTech", "1.0");
+        analyticsReporter.playbackPlayerReady(Duration.hours(100).inWholeUnits(Duration.Unit.MILLISECONDS), "MockTech", "1.0");
         onAnalyticsCalled.assertCount(2);
     }
 

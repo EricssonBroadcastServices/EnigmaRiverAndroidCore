@@ -1,11 +1,11 @@
 package com.redbeemedia.enigma.core.context;
 
 import android.app.Application;
-import android.os.Build;
 
 import com.redbeemedia.enigma.core.BuildConfig;
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleManager;
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleManagerFactory;
+import com.redbeemedia.enigma.core.epg.IEpg;
 import com.redbeemedia.enigma.core.http.DefaultHttpHandler;
 import com.redbeemedia.enigma.core.http.IHttpHandler;
 import com.redbeemedia.enigma.core.task.ITaskFactory;
@@ -61,9 +61,14 @@ public final class EnigmaRiverContext {
         return initializedContext.taskFactory;
     }
 
+    public static IEpg getEpg() {
+        assertInitialized();
+        return initializedContext.epg;
+    }
+
     //Version if the core library
     public static String getVersion() {
-        String version = "r1.0.21-BETA-1";
+        String version = "r1.0.21-BETA-2";
         if(version.contains("REPLACE_WITH_RELEASE_VERSION")) {
             return "dev-snapshot-"+BuildConfig.VERSION_NAME;
         } else {
@@ -83,6 +88,7 @@ public final class EnigmaRiverContext {
         private IDeviceInfo deviceInfo = null;
         private IActivityLifecycleManagerFactory activityLifecycleManagerFactory = new DefaultActivityLifecycleManagerFactory();
         private ITaskFactory taskFactory = new DefaultTaskFactory();
+        private IEpg epg = new DefaultEpg();
 
         public EnigmaRiverContextInitialization(String exposureBaseUrl) {
             this.exposureBaseUrl = exposureBaseUrl;
@@ -141,6 +147,15 @@ public final class EnigmaRiverContext {
             this.taskFactory = taskFactory;
             return this;
         }
+
+        public IEpg getEpg() {
+            return epg;
+        }
+
+        public EnigmaRiverContextInitialization setEpg(IEpg epg) {
+            this.epg = epg;
+            return this;
+        }
     }
 
     private static class EnigmaRiverInitializedContext {
@@ -149,6 +164,7 @@ public final class EnigmaRiverContext {
         private final IDeviceInfo deviceInfo;
         private final IActivityLifecycleManager activityLifecycleManager;
         private final ITaskFactory taskFactory;
+        private final IEpg epg;
 
         public EnigmaRiverInitializedContext(Application application, EnigmaRiverContextInitialization initialization) {
             try {
@@ -161,6 +177,7 @@ public final class EnigmaRiverContext {
                 this.deviceInfo = initialization.getDeviceInfo(application);
                 this.activityLifecycleManager = initialization.getActivityLifecycleManager(application);
                 this.taskFactory = initialization.getTaskFactory();
+                this.epg = initialization.getEpg();
             } catch (Exception e) {
                 //TODO throw ContextInitializationException
                 throw new RuntimeException(e);

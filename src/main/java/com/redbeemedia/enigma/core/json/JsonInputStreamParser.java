@@ -1,5 +1,6 @@
 package com.redbeemedia.enigma.core.json;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -25,7 +26,18 @@ public class JsonInputStreamParser {
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-        return new JSONObject(strResponse.toString());
+        try {
+            return new JSONObject(strResponse.toString());
+        } catch (JSONException firstException) {
+            try {
+                JSONArray array = new JSONArray(strResponse.toString());
+                JSONObject container = new JSONObject();
+                container.put("array", array);
+                return container;
+            } catch (JSONException otherException) {
+                throw firstException;
+            }
+        }
     }
 
     public static JsonInputStreamParser obtain() {

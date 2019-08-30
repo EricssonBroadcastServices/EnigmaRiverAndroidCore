@@ -36,6 +36,7 @@ import java.util.UUID;
     private final ITask analyticsHandlerTask;
     private final Repeater heartbeatRepeater;
     private final StreamInfo streamInfo;
+    private final IStreamPrograms streamPrograms;
     private final ListenerCollector collector = new ListenerCollector();
     private final IPlaybackSessionInfo playbackSessionInfo;
     private boolean playingFromLive = false;
@@ -56,6 +57,7 @@ import java.util.UUID;
     public InternalPlaybackSession(ISession session, String id, ITimeProvider timeProvider, StreamInfo streamInfo, IPlaybackSessionInfo playbackSessionInfo) {
         this.playbackSessionInfo = playbackSessionInfo;
         this.streamInfo = streamInfo;
+        this.streamPrograms = streamInfo.hasStreamPrograms() ? new StreamPrograms(streamInfo) : null;
         this.analyticsHandler = new AnalyticsHandler(session, id, timeProvider);
         ITaskFactory taskFactory = EnigmaRiverContext.getTaskFactory();
         this.analyticsHandlerTask = taskFactory.newTask(new Runnable() {
@@ -138,7 +140,7 @@ import java.util.UUID;
         }
         heartbeatRepeater.setEnabled(false);
         if(aborted) {
-            analyticsReporter.playbackAborted(playbackSessionInfo.getCurrentPlaybackOffset());
+            analyticsReporter.playbackAborted(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
         }
         enigmaPlayer.removeListener(playerListener);
         try {
@@ -166,6 +168,11 @@ import java.util.UUID;
     }
 
     @Override
+    public IStreamPrograms getStreamPrograms() {
+        return streamPrograms;
+    }
+
+    @Override
     public void setPlayingFromLive(boolean live) {
         if(!streamInfo.isLiveStream()) {
             live = false;
@@ -188,7 +195,7 @@ import java.util.UUID;
         } else {
             changeState(STATE_END_REACHED);
         }
-        analyticsReporter.playbackCompleted(playbackSessionInfo.getCurrentPlaybackOffset());
+        analyticsReporter.playbackCompleted(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
         collector.onEndReached();
     }
 
@@ -266,17 +273,17 @@ import java.util.UUID;
     }
 
     private class HeartbeatRunnable implements Runnable {
-        private Duration lastOffset = null;
+        private Long lastOffset = null;
 
         @Override
         public void run() {
             try {
-                lastOffset = playbackSessionInfo.getCurrentPlaybackOffset();
+                lastOffset = getCurrentPlaybackOffset(playbackSessionInfo, streamInfo);
             } catch (Exception e) {
                 //Ignore
             }
             if(lastOffset != null) {
-                analyticsReporter.playbackHeartbeat(lastOffset);
+                analyticsReporter.playbackHeartbeat(lastOffset.longValue());
             }
         }
     }
@@ -303,25 +310,33 @@ import java.util.UUID;
             if(to == EnigmaPlayerState.LOADING) {
                 analyticsReporter.playbackHandshakeStarted(playbackSessionInfo.getAssetId());
             } else if(to == EnigmaPlayerState.LOADED) {
-                analyticsReporter.playbackPlayerReady(playbackSessionInfo.getCurrentPlaybackOffset(),
+                analyticsReporter.playbackPlayerReady(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo),
                         playbackSessionInfo.getPlayerTechnologyName(),
                         playbackSessionInfo.getPlayerTechnologyVersion());
             } else if(to == EnigmaPlayerState.PLAYING) {
                 if(hasStartedAtLeastOnce) {
-                    analyticsReporter.playbackResumed(playbackSessionInfo.getCurrentPlaybackOffset());
+                    analyticsReporter.playbackResumed(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
                 } else {
                     hasStartedAtLeastOnce = true;
-                    Duration playbackOffset = playbackSessionInfo.getCurrentPlaybackOffset();
-                    String playMode = streamInfo.isLiveStream() ? "live" : "vod";
+                    long playbackOffset = getCurrentPlaybackOffset(playbackSessionInfo, streamInfo);
+                    String playMode = streamInfo.getPlayMode();
                     String mediaLocator = playbackSessionInfo.getMediaLocator();
                     Long referenceTime = streamInfo.isLiveStream() ? streamInfo.getStartUtcSeconds()*1000L : null;
                     analyticsReporter.playbackStarted(playbackOffset, playMode, mediaLocator, referenceTime);
                 }
             } else if(to == EnigmaPlayerState.PAUSED) {
                 if(hasStartedAtLeastOnce) {
-                    analyticsReporter.playbackPaused(playbackSessionInfo.getCurrentPlaybackOffset());
+                    analyticsReporter.playbackPaused(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
                 }
             }
         }
+    }
+
+    private static long getCurrentPlaybackOffset(IPlaybackSessionInfo playbackSessionInfo, StreamInfo streamInfo) {
+        long playbackOffset = playbackSessionInfo.getCurrentPlaybackOffset().inWholeUnits(Duration.Unit.MILLISECONDS);
+        long startUtcSeconds = streamInfo.hasStartUtcSeconds() ? streamInfo.getStartUtcSeconds() : 0;
+        long startUtcMillis = startUtcSeconds*1000L;
+        long sum = playbackOffset+startUtcMillis;
+        return sum;
     }
 }

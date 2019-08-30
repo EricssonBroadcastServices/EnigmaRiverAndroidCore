@@ -274,14 +274,14 @@ public class InternalPlaybackSessionTest {
         final List<JSONObject> analyticsEvents = new ArrayList<>();
         AnalyticsReporter analyticsReporter = new AnalyticsReporter(timeProvider, jsonObject -> analyticsEvents.add(jsonObject));
         MockPlaybackSessionInfo playbackSessionInfo = new MockPlaybackSessionInfo();
-        StreamInfo streamInfo = new StreamInfo(new JSONObject("{\"live\" : true, \"start\" : 8765432}"));
+        StreamInfo streamInfo = new StreamInfo(new JSONObject("{\"live\" : true, \"static\" : false, \"start\" : 8765432}"));
         InternalPlaybackSession.EnigmaPlayerListenerForAnalytics analytics = new InternalPlaybackSession.EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, streamInfo);
 
         analytics.onStateChanged(EnigmaPlayerState.LOADED, EnigmaPlayerState.PLAYING);
         Assert.assertEquals(1,analyticsEvents.size());
         JSONObject event = analyticsEvents.get(0);
         Assert.assertEquals("Playback.Started", event.getString("EventType"));
-        Assert.assertEquals("live", event.getString("PlayMode"));
+        Assert.assertEquals("LIVE", event.getString("PlayMode"));
         Assert.assertEquals(8765432L*1000L, event.getLong("ReferenceTime"));
     }
 
@@ -300,7 +300,7 @@ public class InternalPlaybackSessionTest {
         Assert.assertEquals(1,analyticsEvents.size());
         JSONObject event = analyticsEvents.get(0);
         Assert.assertEquals("Playback.Started", event.getString("EventType"));
-        Assert.assertEquals("vod", event.getString("PlayMode"));
+        Assert.assertEquals("VOD", event.getString("PlayMode"));
         Assert.assertFalse("Did not expect event to have property ReferenceTime",event.has("ReferenceTime"));
     }
 

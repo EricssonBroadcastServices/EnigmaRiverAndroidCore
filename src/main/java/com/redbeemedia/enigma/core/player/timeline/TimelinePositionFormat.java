@@ -39,6 +39,12 @@ public class TimelinePositionFormat {
         return newFormat(new SimpleDurationFormat(durationPattern), dateFormat);
     }
 
+    /**
+     * @see SimpleDurationFormat
+     * @param durationPattern
+     * @param datePattern
+     * @return
+     */
     public static TimelinePositionFormat newFormat(String durationPattern, String datePattern) {
         return newFormat(durationPattern, new SimpleDateFormat(datePattern));
     }

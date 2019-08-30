@@ -12,7 +12,7 @@ public class AuthenticatedExposureApiCall extends ExposureApiCall {
     }
 
     public AuthenticatedExposureApiCall(String requestMethod, ISession session, JSONObject jsonObject) {
-        super(requestMethod, session.getBusinessUnit(), jsonObject);
+        super(requestMethod, jsonObject);
         this.session = session;
     }
 

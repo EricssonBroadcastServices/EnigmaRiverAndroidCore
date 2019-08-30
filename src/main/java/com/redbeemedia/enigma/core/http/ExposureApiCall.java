@@ -11,16 +11,14 @@ import java.nio.charset.StandardCharsets;
 
 public class ExposureApiCall implements IHttpCall {
     private final String requestMethod;
-    private IBusinessUnit businessUnit;
     private JSONObject jsonBody;
 
-    public ExposureApiCall(String requestMethod, IBusinessUnit businessUnit) {
-        this(requestMethod, businessUnit, null);
+    public ExposureApiCall(String requestMethod) {
+        this(requestMethod, null);
     }
 
-    public ExposureApiCall(String requestMethod, IBusinessUnit businessUnit, JSONObject jsonObject) {
+    public ExposureApiCall(String requestMethod, JSONObject jsonObject) {
         this.requestMethod = requestMethod;
-        this.businessUnit = businessUnit;
         this.jsonBody = jsonObject;
     }
 

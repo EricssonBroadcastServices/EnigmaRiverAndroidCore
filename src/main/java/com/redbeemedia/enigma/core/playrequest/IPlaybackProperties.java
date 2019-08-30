@@ -14,7 +14,7 @@ public interface IPlaybackProperties {
 
         public static final PlayFrom PLAYER_DEFAULT = new PlayerDefault();
         public static final PlayFrom BEGINNING = new Beginning();
-//        public static final PlayFrom BOOKMARK = new Bookmark();
+        public static final PlayFrom BOOKMARK = new Bookmark();
 //        public static final PlayFrom LIVE_EDGE = new LiveEdge();
 
         private final String id;
@@ -61,6 +61,12 @@ public interface IPlaybackProperties {
 
             protected Beginning() {
                 super("beginning");
+            }
+        }
+        private static class Bookmark extends PlayFrom {
+
+            protected Bookmark() {
+                super("bookmark");
             }
         }
     }

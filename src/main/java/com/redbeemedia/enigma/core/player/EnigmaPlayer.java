@@ -11,8 +11,8 @@ import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.drm.DrmInfoFactory;
 import com.redbeemedia.enigma.core.drm.IDrmInfo;
 import com.redbeemedia.enigma.core.drm.IDrmProvider;
+import com.redbeemedia.enigma.core.epg.IProgram;
 import com.redbeemedia.enigma.core.error.Error;
-import com.redbeemedia.enigma.core.error.IllegalSeekPositionError;
 import com.redbeemedia.enigma.core.error.InvalidAssetError;
 import com.redbeemedia.enigma.core.error.NoSupportedMediaFormatsError;
 import com.redbeemedia.enigma.core.error.UnexpectedError;
@@ -42,6 +42,7 @@ import com.redbeemedia.enigma.core.task.MainThreadTaskFactory;
 import com.redbeemedia.enigma.core.task.Repeater;
 import com.redbeemedia.enigma.core.time.Duration;
 import com.redbeemedia.enigma.core.time.ITimeProvider;
+import com.redbeemedia.enigma.core.util.AndroidThreadUtil;
 import com.redbeemedia.enigma.core.util.HandlerWrapper;
 import com.redbeemedia.enigma.core.util.IHandler;
 import com.redbeemedia.enigma.core.util.IInternalCallbackObject;
@@ -309,36 +310,10 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                         IPlaybackSessionInfo playbackSessionInfo = new PlaybackSessionInfo(playable, assetId, manifestUrl, technologyIdentifier);
                         replacePlaybackSession(playbackSessionFactory.createPlaybackSession(new IPlaybackSessionFactory.PlaybackSessionArgs(session, jsonObject, playbackSessionInfo)));
                         stateMachine.setState(EnigmaPlayerState.LOADING);
-                        environment.playerImplementationControls.load(manifestUrl, new BasePlayerImplementationControlResultHandler() {
+                        environment.playerImplementationControls.load(manifestUrl, new StartPlaybackControlResultHandler(playResultHandler, jsonObject, playbackProperties.getPlayFrom(), environment.playerImplementationControls) {
                             @Override
-                            public void onError(Error error) {
-                                playResultHandler.onError(error);
-                            }
-
-                            @Override
-                            public void onRejected(IControlResultHandler.IRejectReason rejectReason) {
-                                String message = "Manifest load was rejected ("+rejectReason.getType()+"): "+rejectReason.getDetails();
-                                playResultHandler.onError(new UnexpectedError(message));
-                            }
-
-                            @Override
-                            public void onDone() {
-                                IPlaybackProperties.PlayFrom playFrom = playbackProperties.getPlayFrom();
-                                if(playFrom == IPlaybackProperties.PlayFrom.BEGINNING) {
-                                    environment.playerImplementationControls.seekTo(IPlayerImplementationControls.ISeekPosition.TIMELINE_START, new BasePlayerImplementationControlResultHandler() {
-                                        @Override
-                                        public void onRejected(IControlResultHandler.IRejectReason rejectReason) {
-                                            String message = "Could not start from requested position ("+rejectReason.getType()+"): "+rejectReason.getDetails();
-                                            Log.d(TAG, message);
-                                            playResultHandler.onError(new IllegalSeekPositionError(message));
-                                        }
-
-                                        @Override
-                                        public void onError(Error error) {
-                                            playResultHandler.onError(error);
-                                        }
-                                    });
-                                }
+                            protected void onLogDebug(String message) {
+                                Log.d(TAG, message);
                             }
                         });
                     } else {
@@ -493,7 +468,6 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                     playerImplementationListener = new IPlayerImplementationListener() {
                         @Override
                         public void onError(Error error) {
-                            //TODO feed to current playbackSession and have that object propagate to listeneres.
                             enigmaPlayerListeners.onPlaybackError(error);
                             stateMachine.setState(EnigmaPlayerState.IDLE);
                         }
@@ -528,7 +502,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
                         @Override
                         public void onTimelineBoundsChanged(ITimelinePosition start, ITimelinePosition end) {
-                            timeline.onTimelineBoundsChanged(start, end);
+                            timeline.onStreamTimelineBoundsChanged(start, end);
                         }
 
                         @Override
@@ -695,6 +669,38 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         private TimelineListenerCollector collector = new TimelineListenerCollector();
         private boolean lastVisibleValue = false;
         private Repeater repeater;
+        private ITimelinePosition streamTimelineStart = null;
+        private ITimelinePosition streamTimelineEnd = null;
+        private ITimelinePosition streamTimelinePosition = null;
+        private long currentStreamOffset = 0;
+        private boolean hasProgram = false;
+        private final ProgramTracker programTracker = new ProgramTracker().addListener(new ProgramTracker.IProgramChangedListener() {
+            @Override
+            public void onProgramChanged(IProgram oldProgram, IProgram newProgram) {
+                if(newProgram != null) {
+                    IInternalPlaybackSession playbackSession;
+                    synchronized (currentPlaybackSession) {
+                        playbackSession = currentPlaybackSession.value;
+                    }
+                    if(playbackSession != null) {
+                        StreamInfo streamInfo = playbackSession.getStreamInfo();
+                        if(streamInfo.hasStartUtcSeconds()) {
+                            long streamStartUtcMillis = streamInfo.getStartUtcSeconds()*1000L;
+                            ITimelinePositionFactory positionFactory = environment.timelinePositionFactory;
+                            long startOffset = newProgram.getStartUtcMillis()-streamStartUtcMillis;
+                            long endOffset = newProgram.getEndUtcMillis()-streamStartUtcMillis;
+                            ITimelinePosition start = positionFactory.newPosition(startOffset);
+                            ITimelinePosition end = positionFactory.newPosition(endOffset);
+                            EnigmaPlayerTimeline.this.onExposedTimelineBoundsChanged(start, end);
+                            hasProgram = true;
+                        }
+                    }
+                } else {
+                    hasProgram = false;
+                    EnigmaPlayerTimeline.this.onExposedTimelineBoundsChanged(streamTimelineStart, streamTimelineEnd);
+                }
+            }
+        });
 
         public EnigmaPlayerTimeline() {
             ITaskFactory mainThreadTaskFactory = new MainThreadTaskFactory();
@@ -708,6 +714,15 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         }
 
         public void init() {
+            programTracker.addListener(environment.timelinePositionFactory);
+            programTracker.init(EnigmaPlayer.this);
+            collector.addListener(new BaseTimelineListener() {
+                @Override
+                public void onCurrentPositionChanged(ITimelinePosition timelinePosition) {
+                    streamTimelinePosition = timelinePosition;
+                    updateStreamOffset();
+                }
+            });
             EnigmaPlayer.this.addListener(new BaseEnigmaPlayerListener() {
                 @Override
                 public void onStateChanged(EnigmaPlayerState from, EnigmaPlayerState to) {
@@ -760,10 +775,34 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             collector.removeListener(listener);
         }
 
-        public void onTimelineBoundsChanged(ITimelinePosition start, ITimelinePosition end) {
+        public void onStreamTimelineBoundsChanged(ITimelinePosition start, ITimelinePosition end) {
+            streamTimelineStart = start;
+            streamTimelineEnd = end;
+            updateStreamOffset();
+            if(!hasProgram) {
+                EnigmaPlayerTimeline.this.onExposedTimelineBoundsChanged(streamTimelineStart, streamTimelineEnd);
+            }
             updatePlayingFromLive();
-            collector.onBoundsChanged(start, end);
-            repeater.executeNow();
+        }
+
+        private void updateStreamOffset() {
+            if(streamTimelineStart != null && streamTimelinePosition != null) {
+                long oldOffset = currentStreamOffset;
+                currentStreamOffset = streamTimelinePosition.subtract(streamTimelineStart).inWholeUnits(Duration.Unit.MILLISECONDS);
+                if(oldOffset != currentStreamOffset) {
+                    programTracker.onOffsetChanged(currentStreamOffset);
+                }
+            }
+        }
+
+        public void onExposedTimelineBoundsChanged(ITimelinePosition start, ITimelinePosition end) {
+            AndroidThreadUtil.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    collector.onBoundsChanged(start, end);
+                    repeater.executeNow();
+                }
+            });
         }
 
         public void onPositionNeedsUpdating() {

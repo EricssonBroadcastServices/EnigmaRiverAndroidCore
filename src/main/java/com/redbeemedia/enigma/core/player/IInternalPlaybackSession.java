@@ -7,6 +7,7 @@ import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
     void onStop(IEnigmaPlayer enigmaPlayer);
 
     StreamInfo getStreamInfo();
+    IStreamPrograms getStreamPrograms();
     void setPlayingFromLive(boolean live);
     void fireEndReached();
 }

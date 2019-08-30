@@ -66,50 +66,50 @@ public class AnalyticsReporter {
         });
     }
 
-    public void playbackPlayerReady(Duration offsetTime, String playerImplementationTechnology, String playerImplementationTechnologyVersion) {
+    public void playbackPlayerReady(long offsetTime, String playerImplementationTechnology, String playerImplementationTechnologyVersion) {
         event(AnalyticsEvents.PLAYER_READY, (builder, eventType) -> {
-            builder.addData(eventType.OFFSET_TIME, offsetTime.inWholeUnits(Duration.Unit.MILLISECONDS));
+            builder.addData(eventType.OFFSET_TIME, offsetTime);
             builder.addData(eventType.TECHNOLOGY, playerImplementationTechnology);
             builder.addData(eventType.TECH_VERSION, playerImplementationTechnologyVersion);
         });
     }
 
-    public void playbackStarted(Duration offsetTime, String playMode, String mediaLocator, Long referenceTime) {
+    public void playbackStarted(long offsetTime, String playMode, String mediaLocator, Long referenceTime) {
         event(AnalyticsEvents.STARTED, (builder, eventType) -> {
-            builder.addData(eventType.OFFSET_TIME, offsetTime.inWholeUnits(Duration.Unit.MILLISECONDS));
+            builder.addData(eventType.OFFSET_TIME, offsetTime);
             builder.addData(eventType.PLAY_MODE, playMode);
             builder.addData(eventType.MEDIA_LOCATOR, mediaLocator);
             builder.addData(eventType.REFERENCE_TIME, referenceTime);
         });
     }
 
-    public void playbackPaused(Duration offsetTime) {
+    public void playbackPaused(long offsetTime) {
         event(AnalyticsEvents.PAUSED, (builder, eventType) -> {
-            builder.addData(eventType.OFFSET_TIME, offsetTime.inWholeUnits(Duration.Unit.MILLISECONDS));
+            builder.addData(eventType.OFFSET_TIME, offsetTime);
         });
     }
 
-    public void playbackResumed(Duration offsetTime) {
+    public void playbackResumed(long offsetTime) {
         event(AnalyticsEvents.RESUMED, (builder, eventType) -> {
-            builder.addData(eventType.OFFSET_TIME, offsetTime.inWholeUnits(Duration.Unit.MILLISECONDS));
+            builder.addData(eventType.OFFSET_TIME, offsetTime);
         });
     }
 
-    public void playbackCompleted(Duration offsetTime) {
+    public void playbackCompleted(long offsetTime) {
         event(AnalyticsEvents.COMPLETED, (builder, eventType) -> {
-            builder.addData(eventType.OFFSET_TIME, offsetTime.inWholeUnits(Duration.Unit.MILLISECONDS));
+            builder.addData(eventType.OFFSET_TIME, offsetTime);
         });
     }
 
-    public void playbackAborted(Duration offsetTime) {
+    public void playbackAborted(long offsetTime) {
         event(AnalyticsEvents.ABORTED, (builder, eventType) -> {
-            builder.addData(eventType.OFFSET_TIME, offsetTime.inWholeUnits(Duration.Unit.MILLISECONDS));
+            builder.addData(eventType.OFFSET_TIME, offsetTime);
         });
     }
 
-    public void playbackHeartbeat(Duration offsetTime) {
+    public void playbackHeartbeat(long offsetTime) {
         event(AnalyticsEvents.HEARTBEAT, (builder, eventType) -> {
-            builder.addData(eventType.OFFSET_TIME, offsetTime.inWholeUnits(Duration.Unit.MILLISECONDS));
+            builder.addData(eventType.OFFSET_TIME, offsetTime);
         });
     }
 

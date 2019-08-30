@@ -32,6 +32,9 @@ import java.net.URL;
     private final Repeater getFirstSyncRepeater;
 
     public ServerTimeService(ISession session, ITaskFactory taskFactory) {
+        if(session == null) {
+            throw new NullPointerException();
+        }
         this.session = session;
         this.repeater = new Repeater(taskFactory, REFRESH_INTERVAL, new Runnable() {
             @Override
