@@ -1,5 +1,9 @@
 package com.redbeemedia.enigma.core.playbacksession;
 
+import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
+
+import java.util.List;
+
 public class BasePlaybackSessionListener implements IPlaybackSessionListener {
     @Deprecated
     @Override
@@ -12,5 +16,13 @@ public class BasePlaybackSessionListener implements IPlaybackSessionListener {
 
     @Override
     public void onEndReached() {
+    }
+
+    @Override
+    public void onSubtitleTracks(List<ISubtitleTrack> tracks) {
+    }
+
+    @Override
+    public void onSelectedSubtitleTrackChanged(ISubtitleTrack oldselectedTrack, ISubtitleTrack newSelectedTrack) {
     }
 }

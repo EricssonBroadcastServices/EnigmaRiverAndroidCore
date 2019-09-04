@@ -1,6 +1,9 @@
 package com.redbeemedia.enigma.core.playbacksession;
 
+import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
 import com.redbeemedia.enigma.core.util.IInternalListener;
+
+import java.util.List;
 
 public interface IPlaybackSessionListener extends IInternalListener {
     /**
@@ -14,4 +17,6 @@ public interface IPlaybackSessionListener extends IInternalListener {
 
     void onPlayingFromLiveChanged(boolean live);
     void onEndReached();
+    void onSubtitleTracks(List<ISubtitleTrack> tracks);
+    void onSelectedSubtitleTrackChanged(ISubtitleTrack oldselectedTrack, ISubtitleTrack newSelectedTrack);
 }

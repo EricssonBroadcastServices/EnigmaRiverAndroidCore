@@ -12,7 +12,9 @@ import com.redbeemedia.enigma.core.playable.IPlayable;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSessionListener;
 import com.redbeemedia.enigma.core.player.listener.BaseEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
+import com.redbeemedia.enigma.core.player.track.IPlayerImplementationTrack;
 import com.redbeemedia.enigma.core.session.ISession;
+import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
 import com.redbeemedia.enigma.core.task.ITask;
 import com.redbeemedia.enigma.core.task.ITaskFactory;
 import com.redbeemedia.enigma.core.task.MainThreadTaskFactory;
@@ -22,9 +24,14 @@ import com.redbeemedia.enigma.core.time.Duration;
 import com.redbeemedia.enigma.core.time.ITimeProvider;
 import com.redbeemedia.enigma.core.util.Collector;
 import com.redbeemedia.enigma.core.util.HandlerWrapper;
+import com.redbeemedia.enigma.core.util.OpenContainer;
 
 import org.json.JSONException;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 /*package-protected*/ class InternalPlaybackSession implements IInternalPlaybackSession {
@@ -40,6 +47,8 @@ import java.util.UUID;
     private final ListenerCollector collector = new ListenerCollector();
     private final IPlaybackSessionInfo playbackSessionInfo;
     private boolean playingFromLive = false;
+    private OpenContainer<List<ISubtitleTrack>> subtitleTracks = new OpenContainer<>(null);
+    private OpenContainer<ISubtitleTrack> selectedSubtitleTrack = new OpenContainer<>(null);
 
     private static final int STATE_NEW = 0;
     private static final int STATE_STARTED = 1;
@@ -184,6 +193,60 @@ import java.util.UUID;
     }
 
     @Override
+    public void setTracks(Collection<? extends IPlayerImplementationTrack> tracks) {
+        List<ISubtitleTrack> newSubtitleTracks = new ArrayList<>();
+        for(IPlayerImplementationTrack track : tracks) {
+            ISubtitleTrack subtitleTrack = track.asSubtitleTrack();
+            if(subtitleTrack != null) {
+                newSubtitleTracks.add(subtitleTrack);
+            }
+        }
+
+        boolean subtitlesChanged = false;
+
+        synchronized (subtitleTracks) {
+            if(subtitleTracks.value == null || !subtitleTracks.value.equals(newSubtitleTracks)) {
+                subtitleTracks.value = newSubtitleTracks;
+                subtitlesChanged = true;
+            }
+        }
+
+        if(subtitlesChanged) {
+            collector.onSubtitleTracks(newSubtitleTracks);
+        }
+    }
+
+    @Override
+    public List<ISubtitleTrack> getSubtitleTracks() {
+        synchronized (subtitleTracks) {
+            if(subtitleTracks.value != null) {
+                return Collections.unmodifiableList(subtitleTracks.value);
+            } else {
+                return null;
+            }
+        }
+    }
+
+    @Override
+    public ISubtitleTrack getSelectedSubtitleTrack() {
+        synchronized (selectedSubtitleTrack) {
+            return selectedSubtitleTrack.value;
+        }
+    }
+
+    @Override
+    public void setSelectedSubtitleTrack(ISubtitleTrack track) {
+        ISubtitleTrack oldTrack;
+        synchronized (selectedSubtitleTrack) {
+            oldTrack = selectedSubtitleTrack.value;
+            selectedSubtitleTrack.value = track;
+        }
+        if(oldTrack == null ? track != null : !oldTrack.equals(track)) {
+            collector.onSelectedSubtitleTrackChanged(oldTrack, track);
+        }
+    }
+
+    @Override
     public IPlayable getPlayable() {
         return playbackSessionInfo.getPlayable();
     }
@@ -247,6 +310,16 @@ import java.util.UUID;
         @Override
         public void onEndReached() {
             forEach(listener -> listener.onEndReached());
+        }
+
+        @Override
+        public void onSubtitleTracks(List<ISubtitleTrack> tracks) {
+            forEach(listener -> listener.onSubtitleTracks(tracks));
+        }
+
+        @Override
+        public void onSelectedSubtitleTrackChanged(ISubtitleTrack oldselectedTrack, ISubtitleTrack newSelectedTrack) {
+            forEach(listener -> listener.onSelectedSubtitleTrackChanged(oldselectedTrack, newSelectedTrack));
         }
     }
 

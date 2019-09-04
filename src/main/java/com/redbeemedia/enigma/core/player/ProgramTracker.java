@@ -1,7 +1,5 @@
 package com.redbeemedia.enigma.core.player;
 
-import android.util.Log;
-
 import com.redbeemedia.enigma.core.epg.IProgram;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.player.listener.BaseEnigmaPlayerListener;
@@ -39,7 +37,6 @@ import java.util.List;
     }
 
     public void onOffsetChanged(long millis) {
-        Log.d("MATTE_PROGRAMS", "offset changed to "+millis+" millis ("+(((double) millis)/(1000d*60d))+" minutes)");
         IProgram newCurrentProgram = null;
         synchronized (currentStreamPrograms) {
              if(currentStreamPrograms.value != null) {
@@ -53,7 +50,6 @@ import java.util.List;
             }
         }
         if(programChanged) {
-            Log.d("MATTE_PROGRAMS", "Program changed!");
             changeProgram(newCurrentProgram);
         }
     }

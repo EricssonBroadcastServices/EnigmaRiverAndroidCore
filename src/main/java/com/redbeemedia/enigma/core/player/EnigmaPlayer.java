@@ -33,10 +33,12 @@ import com.redbeemedia.enigma.core.player.timeline.ITimeline;
 import com.redbeemedia.enigma.core.player.timeline.ITimelineListener;
 import com.redbeemedia.enigma.core.player.timeline.ITimelinePosition;
 import com.redbeemedia.enigma.core.player.timeline.TimelineListenerCollector;
+import com.redbeemedia.enigma.core.player.track.IPlayerImplementationTrack;
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
 import com.redbeemedia.enigma.core.playrequest.IPlayResultHandler;
 import com.redbeemedia.enigma.core.playrequest.IPlaybackProperties;
 import com.redbeemedia.enigma.core.session.ISession;
+import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
 import com.redbeemedia.enigma.core.task.ITaskFactory;
 import com.redbeemedia.enigma.core.task.MainThreadTaskFactory;
 import com.redbeemedia.enigma.core.task.Repeater;
@@ -59,6 +61,7 @@ import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -519,6 +522,15 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                             }
                             stateMachine.setState(EnigmaPlayerState.LOADED);
                         }
+
+                        @Override
+                        public void onTracksChanged(Collection<? extends IPlayerImplementationTrack> tracks) {
+                            synchronized (currentPlaybackSession) {
+                                if(currentPlaybackSession.value != null) {
+                                    currentPlaybackSession.value.setTracks(tracks);
+                                }
+                            }
+                        }
                     };
                 }
                 return playerImplementationListener;
@@ -662,6 +674,20 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         @Override
         public void setVolume(float volume, IControlResultHandler resultHandler) {
             environment.playerImplementationControls.setVolume(volume, wrapResultHandler(resultHandler));
+        }
+
+        @Override
+        public void setSubtitleTrack(final ISubtitleTrack track, IControlResultHandler resultHandler) {
+            environment.playerImplementationControls.setSubtitleTrack(track, wrapResultHandler(resultHandler).runWhenDone(new Runnable() {
+                @Override
+                public void run() {
+                    synchronized (currentPlaybackSession) {
+                        if(currentPlaybackSession.value != null) {
+                            currentPlaybackSession.value.setSelectedSubtitleTrack(track);
+                        }
+                    }
+                }
+            }));
         }
     }
 

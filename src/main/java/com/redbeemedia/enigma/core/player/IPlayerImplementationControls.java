@@ -1,5 +1,7 @@
 package com.redbeemedia.enigma.core.player;
 
+import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
+
 /**
  * <h3>NOTE</h3>
  * <p>This interface is not part of the public API.</p>
@@ -11,6 +13,7 @@ public interface IPlayerImplementationControls {
     void stop(IPlayerImplementationControlResultHandler resultHandler);
     void seekTo(ISeekPosition seekPosition, IPlayerImplementationControlResultHandler resultHandler);
     void setVolume(float volume, IPlayerImplementationControlResultHandler resultHandler);
+    void setSubtitleTrack(ISubtitleTrack track, IPlayerImplementationControlResultHandler resultHandler);
 
     interface ISeekPosition {
         public static ISeekPosition TIMELINE_START = new ISeekPosition() {

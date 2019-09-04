@@ -39,11 +39,12 @@ import com.redbeemedia.enigma.core.player.controls.IControlResultHandler;
         }
     }
 
-    public synchronized void runWhenDone(Runnable runnable) {
+    public synchronized ControlResultHandlerAdapter runWhenDone(Runnable runnable) {
         if(this.done) {
             runnable.run();
         } else {
             this.onDone = runnable;
         }
+        return this;
     }
 }

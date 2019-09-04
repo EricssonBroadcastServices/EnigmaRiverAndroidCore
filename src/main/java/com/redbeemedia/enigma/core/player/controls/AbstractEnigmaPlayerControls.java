@@ -1,6 +1,7 @@
 package com.redbeemedia.enigma.core.player.controls;
 
 import com.redbeemedia.enigma.core.player.timeline.ITimelinePosition;
+import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
 
 public abstract class AbstractEnigmaPlayerControls implements IEnigmaPlayerControls {
     @Override
@@ -41,6 +42,11 @@ public abstract class AbstractEnigmaPlayerControls implements IEnigmaPlayerContr
     @Override
     public void setVolume(float volume) {
         setVolume(volume, getDefaultResultHandler());
+    }
+
+    @Override
+    public void setSubtitleTrack(ISubtitleTrack track) {
+        setSubtitleTrack(track, getDefaultResultHandler());
     }
 
     protected abstract IControlResultHandler getDefaultResultHandler();

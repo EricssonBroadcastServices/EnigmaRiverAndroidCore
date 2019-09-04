@@ -13,13 +13,18 @@ import com.redbeemedia.enigma.core.http.MockHttpHandler;
 import com.redbeemedia.enigma.core.playable.IPlayable;
 import com.redbeemedia.enigma.core.playable.IPlayableHandler;
 import com.redbeemedia.enigma.core.playable.MockPlayable;
+import com.redbeemedia.enigma.core.playbacksession.BasePlaybackSessionListener;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.player.listener.BaseEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
+import com.redbeemedia.enigma.core.player.track.IPlayerImplementationTrack;
+import com.redbeemedia.enigma.core.player.track.MockPlayerImplementationTrack;
 import com.redbeemedia.enigma.core.playrequest.MockPlayRequest;
 import com.redbeemedia.enigma.core.playrequest.MockPlayResultHandler;
 import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.session.MockSession;
+import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
+import com.redbeemedia.enigma.core.subtitle.MockSubtitleTrack;
 import com.redbeemedia.enigma.core.testutil.Counter;
 import com.redbeemedia.enigma.core.testutil.Flag;
 import com.redbeemedia.enigma.core.testutil.InstanceOfMatcher;
@@ -32,6 +37,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class EnigmaPlayerTest {
     @Test
@@ -452,6 +461,125 @@ public class EnigmaPlayerTest {
         currentPlayable[0] = playable2;
         enigmaPlayer.play(new MockPlayRequest().setPlayable(currentPlayable[0]));
         onPlaybackSessionChangedCalled.assertCount(2);
+    }
+
+    private void setupForSubtitleTests() throws JSONException {
+        MockHttpHandler httpHandler = new MockHttpHandler();
+
+        JSONObject response = new JSONObject();
+        JSONArray formatArray = new JSONArray();
+        formatArray.put(createFormatJson("https://media.example.com","DASH"));
+        response.put("formats", formatArray);
+        for(int i = 0; i < 1; ++i) {
+            httpHandler.queueResponse(new HttpStatus(200, "OK"), response.toString());
+        }
+
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(httpHandler));
+    }
+
+    @Test
+    public void testSelectedSubtitleSetCorrectly() throws JSONException {
+        setupForSubtitleTests();
+        final Counter sessionChanged = new Counter();
+        final Counter subtitleChanged = new Counter();
+        final Counter trackSentToImpl = new Counter();
+        final IPlayerImplementationListener[] playerImplementationListener = new IPlayerImplementationListener[]{null};
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayerWithMockedTimeProvider(new MockSession(), new MockPlayerImplementation() {
+            @Override
+            public void install(IEnigmaPlayerEnvironment environment) {
+                super.install(environment);
+                playerImplementationListener[0] = environment.getPlayerImplementationListener();
+            }
+
+            @Override
+            public void setSubtitleTrack(ISubtitleTrack track, IPlayerImplementationControlResultHandler resultHandler) {
+                trackSentToImpl.count();
+                if("duck".equals(track.getLanguageCode())) {
+                    resultHandler.onRejected(RejectReason.inapplicable("Test"));
+                } else {
+                    resultHandler.onDone();
+                }
+            }
+        });
+        enigmaPlayer.addListener(new BaseEnigmaPlayerListener() {
+            @Override
+            public void onPlaybackSessionChanged(IPlaybackSession from, IPlaybackSession to) {
+                sessionChanged.count();
+                to.addListener(new BasePlaybackSessionListener() {
+                    @Override
+                    public void onSelectedSubtitleTrackChanged(ISubtitleTrack oldselectedTrack, ISubtitleTrack newSelectedTrack) {
+                        Assert.assertEquals("cow",newSelectedTrack.getLanguageCode());
+                        subtitleChanged.count();
+                    }
+                });
+            }
+        });
+        sessionChanged.assertNone();
+        enigmaPlayer.play(new MockPlayRequest());
+        sessionChanged.assertCount(1);
+        trackSentToImpl.assertNone();
+        subtitleChanged.assertNone();
+        enigmaPlayer.getControls().setSubtitleTrack(new MockSubtitleTrack("cow").asSubtitleTrack());
+        subtitleChanged.assertCount(1);
+        trackSentToImpl.assertCount(1);
+        final Counter controlRejected = new Counter();
+        enigmaPlayer.getControls().setSubtitleTrack(new MockSubtitleTrack("duck").asSubtitleTrack(), new DefaultControlResultHandler("test") {
+            @Override
+            public void onRejected(IRejectReason reason) {
+                controlRejected.count();
+            }
+        });
+        controlRejected.assertCount(1);
+        trackSentToImpl.assertCount(2);
+        subtitleChanged.assertCount(1);
+    }
+
+    @Test
+    public void testSubtitleReturnedCorrectly() throws JSONException {
+        setupForSubtitleTests();
+        final IPlayerImplementationListener[] playerImplementationListener = new IPlayerImplementationListener[]{null};
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayerWithMockedTimeProvider(new MockSession(), new MockPlayerImplementation() {
+            @Override
+            public void install(IEnigmaPlayerEnvironment environment) {
+                super.install(environment);
+                playerImplementationListener[0] = environment.getPlayerImplementationListener();
+            }
+        });
+        final Counter sessionChanged = new Counter();
+        final Counter gotCorrectSubtitles = new Counter();
+        enigmaPlayer.addListener(new BaseEnigmaPlayerListener() {
+            @Override
+            public void onPlaybackSessionChanged(IPlaybackSession from, IPlaybackSession to) {
+                sessionChanged.count();
+                to.addListener(new BasePlaybackSessionListener() {
+                    @Override
+                    public void onSubtitleTracks(List<ISubtitleTrack> tracks) {
+                        Assert.assertEquals(4, tracks.size());
+                        Assert.assertEquals("eng", tracks.get(0).getLanguageCode());
+                        Assert.assertEquals("swe", tracks.get(1).getLanguageCode());
+                        Assert.assertEquals("deu", tracks.get(2).getLanguageCode());
+                        Assert.assertEquals("nor", tracks.get(3).getLanguageCode());
+
+                        gotCorrectSubtitles.count();
+                    }
+                });
+            }
+        });
+        sessionChanged.assertNone();
+        enigmaPlayer.play(new MockPlayRequest());
+        sessionChanged.assertOnce();
+        Collection<IPlayerImplementationTrack> newTracks = new ArrayList<>();
+        newTracks.add(new MockSubtitleTrack("eng"));
+        newTracks.add(new MockPlayerImplementationTrack());
+        newTracks.add(new MockSubtitleTrack("swe"));
+        newTracks.add(new MockSubtitleTrack("deu"));
+        newTracks.add(new MockPlayerImplementationTrack());
+        newTracks.add(new MockPlayerImplementationTrack());
+        newTracks.add(new MockPlayerImplementationTrack());
+        newTracks.add(new MockSubtitleTrack("nor"));
+        gotCorrectSubtitles.assertNone();
+        playerImplementationListener[0].onTracksChanged(newTracks);
+        gotCorrectSubtitles.assertOnce();
     }
 
     private static class EnigmaPlayerWithMockedTimeProvider extends EnigmaPlayer {
