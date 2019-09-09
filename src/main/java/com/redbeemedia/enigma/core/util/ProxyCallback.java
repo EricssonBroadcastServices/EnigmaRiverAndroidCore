@@ -39,6 +39,8 @@ public class ProxyCallback {
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             if(method.getDeclaringClass().equals(Object.class) && "equals".equals(method.getName())) {
                 return proxy == args[0];
+            } else if("toString".equals(method.getName())) {
+                return "Proxy";
             } else {
                 StackTraceElement[] callTrace = Thread.currentThread().getStackTrace();
                 handler.post(new RunnableMethodInvocation(callTrace, method, originalObject, args));

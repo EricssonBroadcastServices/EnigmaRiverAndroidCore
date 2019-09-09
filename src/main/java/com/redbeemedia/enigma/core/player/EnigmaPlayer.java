@@ -291,7 +291,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                 @Override
                 protected void onError(Error error) {
                     playResultHandler.onError(error);
-                    stateMachine.setState(EnigmaPlayerState.IDLE);
+                    setStateIfCurrentStartAction(EnigmaPlayerState.IDLE);
                 }
 
                 @Override
@@ -340,6 +340,14 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         @Override
         public void cancel() {
         }
+
+        private void setStateIfCurrentStartAction(EnigmaPlayerState newState) {
+            synchronized (currentPlaybackStartAction) {
+                if(currentPlaybackSession.value == this) {
+                    stateMachine.setState(newState);
+                }
+            }
+        }
     }
 
 
@@ -352,7 +360,9 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             this.currentPlaybackSession.value = playbackSession;
             playbackSessionContainerCollector.onPlaybackSessionChanged(oldSession, playbackSession);
             enigmaPlayerListeners.onPlaybackSessionChanged(oldSession, playbackSession);
-            this.currentPlaybackSession.value.onStart(this);
+            if(this.currentPlaybackSession.value != null) {
+                this.currentPlaybackSession.value.onStart(this);
+            }
         }
     }
 
@@ -520,7 +530,8 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                                     currentPlaybackSession.value.fireEndReached();
                                 }
                             }
-                            stateMachine.setState(EnigmaPlayerState.LOADED);
+                            replacePlaybackSession(null);
+                            stateMachine.setState(EnigmaPlayerState.IDLE);
                         }
 
                         @Override
@@ -606,22 +617,34 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
         @Override
         public void start(IControlResultHandler resultHandler) {
-            ControlResultHandlerAdapter controlResultHandler = wrapResultHandler(resultHandler);
-            environment.playerImplementationControls.start(controlResultHandler);
-            controlResultHandler.runWhenDone(() -> {
-                stateMachine.setState(EnigmaPlayerState.PLAYING);
-                updatePlayingFromLive();
-            });
+            EnigmaPlayerState currentState = stateMachine.getState();
+            if(currentState == EnigmaPlayerState.IDLE) {
+                resultHandler.onRejected(RejectReason.incorrectState("Player is IDLE"));
+            } else if(currentState == EnigmaPlayerState.LOADING) {
+                resultHandler.onRejected(RejectReason.incorrectState("Player is LOADING"));
+            } else {
+                ControlResultHandlerAdapter controlResultHandler = wrapResultHandler(resultHandler);
+                environment.playerImplementationControls.start(controlResultHandler);
+                controlResultHandler.runWhenDone(() -> {
+                    stateMachine.setState(EnigmaPlayerState.PLAYING);
+                    updatePlayingFromLive();
+                });
+            }
         }
 
         @Override
         public void pause(IControlResultHandler resultHandler) {
-            ControlResultHandlerAdapter controlResultHandler = wrapResultHandler(resultHandler);
-            environment.playerImplementationControls.pause(controlResultHandler);
-            controlResultHandler.runWhenDone(() -> {
-                stateMachine.setState(EnigmaPlayerState.PAUSED);
-                setPlayingFromLive(false);
-            });
+            EnigmaPlayerState currentState = stateMachine.getState();
+            if(currentState != EnigmaPlayerState.PLAYING && currentState != EnigmaPlayerState.PAUSED) {
+                resultHandler.onRejected(RejectReason.incorrectState("Player is "+currentState));
+            } else {
+                ControlResultHandlerAdapter controlResultHandler = wrapResultHandler(resultHandler);
+                environment.playerImplementationControls.pause(controlResultHandler);
+                controlResultHandler.runWhenDone(() -> {
+                    stateMachine.setState(EnigmaPlayerState.PAUSED);
+                    setPlayingFromLive(false);
+                });
+            }
         }
 
         @Override

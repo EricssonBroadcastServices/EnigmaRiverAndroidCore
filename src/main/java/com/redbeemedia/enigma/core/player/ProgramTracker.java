@@ -17,12 +17,19 @@ import java.util.List;
         enigmaPlayer.addListener(new BaseEnigmaPlayerListener() {
             @Override
             public void onPlaybackSessionChanged(IPlaybackSession from, IPlaybackSession to) {
-                IInternalPlaybackSession playbackSession = ((IInternalPlaybackSession) to);
-                IStreamPrograms streamPrograms = playbackSession.getStreamPrograms();
-                synchronized (currentStreamPrograms) {
-                    currentStreamPrograms.value = streamPrograms;
+                if(to != null) {
+                    IInternalPlaybackSession playbackSession = ((IInternalPlaybackSession) to);
+                    IStreamPrograms streamPrograms = playbackSession.getStreamPrograms();
+                    synchronized (currentStreamPrograms) {
+                        currentStreamPrograms.value = streamPrograms;
+                    }
+                    changeProgram(streamPrograms != null ? streamPrograms.getProgramAtOffset(0L) : null);
+                } else {
+                    synchronized (currentStreamPrograms) {
+                        currentStreamPrograms.value = null;
+                    }
+                    changeProgram(null);
                 }
-                changeProgram(streamPrograms != null ? streamPrograms.getProgramAtOffset(0L) : null);
             }
         });
     }

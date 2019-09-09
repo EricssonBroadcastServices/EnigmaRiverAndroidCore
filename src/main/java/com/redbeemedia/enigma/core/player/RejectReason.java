@@ -33,6 +33,9 @@ import com.redbeemedia.enigma.core.player.controls.IControlResultHandler;
     public static IControlResultHandler.IRejectReason contractRestriction(String details) {
         return new RejectReason(IControlResultHandler.RejectReasonType.CONTRACT_RESTRICTION_LIMITATION, details);
     }
+    public static IControlResultHandler.IRejectReason incorrectState(String details) {
+        return new RejectReason(IControlResultHandler.RejectReasonType.INCORRECT_STATE, details);
+    }
 
     public static IControlResultHandler.IRejectReason other(String details) {
         return new RejectReason(IControlResultHandler.RejectReasonType.OTHER, details);

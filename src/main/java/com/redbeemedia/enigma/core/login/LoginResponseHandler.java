@@ -3,6 +3,7 @@ package com.redbeemedia.enigma.core.login;
 import com.redbeemedia.enigma.core.error.DeviceLimitReachedError;
 import com.redbeemedia.enigma.core.error.EmptyResponseError;
 import com.redbeemedia.enigma.core.error.ExposureHttpError;
+import com.redbeemedia.enigma.core.error.HttpResourceNotFoundError;
 import com.redbeemedia.enigma.core.error.InvalidCredentialsError;
 import com.redbeemedia.enigma.core.error.InvalidJsonToServerError;
 import com.redbeemedia.enigma.core.error.InvalidSessionTokenError;
@@ -30,12 +31,14 @@ import javax.net.ssl.HttpsURLConnection;
 /*package-protected*/ class LoginResponseHandler implements IHttpHandler.IHttpResponseHandler {
     private String customerUnit;
     private String businessUnit;
+    private String requestUrl;
     private IHandler callbackHandler;
     private ILoginRequest loginRequest;
 
-    /*package-protected*/ LoginResponseHandler(String customerUnit, String businessUnit, IHandler callbackHandler, ILoginRequest loginRequest) {
+    /*package-protected*/ LoginResponseHandler(String customerUnit, String businessUnit, String requestUrl, IHandler callbackHandler, ILoginRequest loginRequest) {
         this.customerUnit = customerUnit;
         this.businessUnit = businessUnit;
+        this.requestUrl = requestUrl;
         this.callbackHandler = callbackHandler;
         this.loginRequest = loginRequest;
     }
@@ -86,7 +89,11 @@ import javax.net.ssl.HttpsURLConnection;
                 resultHandler.onError(new UnexpectedHttpStatusError(httpStatus));
             }
         } catch (JSONException e) {
-            resultHandler.onError(new JsonResponseError("Failed to parse login response.", new UnexpectedError(e)));
+            if(httpStatus.getResponseCode() == 404) {
+                resultHandler.onError(new HttpResourceNotFoundError(requestUrl, new UnexpectedError(e)));
+            } else {
+                resultHandler.onError(new JsonResponseError("Failed to parse login response.", new UnexpectedError(e)));
+            }
         }
     }
 

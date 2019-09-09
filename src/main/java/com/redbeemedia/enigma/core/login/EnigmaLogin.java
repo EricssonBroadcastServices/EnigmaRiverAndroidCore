@@ -43,6 +43,6 @@ public class EnigmaLogin {
         }
 
         IHttpHandler httpHandler = EnigmaRiverContext.getHttpHandler();
-        httpHandler.doHttp(loginUrl, loginRequest, new LoginResponseHandler(businessUnit.getCustomerName(), businessUnit.getName(), callbackHandler, loginRequest));
+        httpHandler.doHttp(loginUrl, loginRequest, new LoginResponseHandler(businessUnit.getCustomerName(), businessUnit.getName(), loginUrl.toString(), callbackHandler, loginRequest));
     }
 }

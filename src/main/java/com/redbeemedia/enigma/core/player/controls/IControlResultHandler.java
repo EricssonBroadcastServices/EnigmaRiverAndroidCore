@@ -18,6 +18,7 @@ public interface IControlResultHandler extends IInternalCallbackObject {
         public static final RejectReasonType INAPPLICABLE_FOR_CURRENT_STREAM = new RejectReasonType("INAPPLICABLE_FOR_CURRENT_STREAM");
         public static final RejectReasonType CONTRACT_RESTRICTION_LIMITATION = new RejectReasonType("CONTRACT_RESTRICTION_LIMITATION");
         public static final RejectReasonType ILLEGAL_ARGUMENT = new RejectReasonType("ILLEGAL_ARGUMENT");
+        public static final RejectReasonType INCORRECT_STATE = new RejectReasonType("INCORRECT_STATE");
         public static final RejectReasonType OTHER = new RejectReasonType("OTHER");
 
         private final String name;
