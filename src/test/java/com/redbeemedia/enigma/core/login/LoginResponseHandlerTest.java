@@ -51,7 +51,7 @@ public class LoginResponseHandlerTest {
         for (final HttpToErrorValidator.ErrorExpectation errorExpectation : errorValidator.getErrorExpectations()) {
             final Flag onSuccessCalled = new Flag();
             final Counter errorCounter = new Counter();
-            LoginResponseHandler responseHandler = new LoginResponseHandler("cU", "bU", null, new MockLoginRequest() {
+            LoginResponseHandler responseHandler = new LoginResponseHandler("cU", "bU", "mockUrl",null, new MockLoginRequest() {
                 @Override
                 public ILoginResultHandler getResultHandler() {
                     return new ILoginResultHandler() {
@@ -78,7 +78,7 @@ public class LoginResponseHandlerTest {
     public void testInvalidJsonResponse() {
         final Flag onSuccessCalled = new Flag();
         final Counter errorCounter = new Counter();
-        LoginResponseHandler loginResponseHandler = new LoginResponseHandler("cU", "bU", null, new MockLoginRequest() {
+        LoginResponseHandler loginResponseHandler = new LoginResponseHandler("cU", "bU", "mockUrl",null, new MockLoginRequest() {
             @Override
             public ILoginResultHandler getResultHandler() {
                 return new ILoginResultHandler() {

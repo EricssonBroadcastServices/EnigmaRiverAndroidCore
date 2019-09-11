@@ -6,6 +6,7 @@ import com.redbeemedia.enigma.core.BuildConfig;
 import com.redbeemedia.enigma.core.analytics.AnalyticsException;
 import com.redbeemedia.enigma.core.analytics.AnalyticsHandler;
 import com.redbeemedia.enigma.core.analytics.AnalyticsReporter;
+import com.redbeemedia.enigma.core.audio.IAudioTrack;
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.error.Error;
 import com.redbeemedia.enigma.core.playable.IPlayable;
@@ -25,6 +26,7 @@ import com.redbeemedia.enigma.core.time.ITimeProvider;
 import com.redbeemedia.enigma.core.util.Collector;
 import com.redbeemedia.enigma.core.util.HandlerWrapper;
 import com.redbeemedia.enigma.core.util.OpenContainer;
+import com.redbeemedia.enigma.core.util.OpenContainerUtil;
 
 import org.json.JSONException;
 
@@ -49,6 +51,8 @@ import java.util.UUID;
     private boolean playingFromLive = false;
     private OpenContainer<List<ISubtitleTrack>> subtitleTracks = new OpenContainer<>(null);
     private OpenContainer<ISubtitleTrack> selectedSubtitleTrack = new OpenContainer<>(null);
+    private OpenContainer<List<IAudioTrack>> audioTracks = new OpenContainer<>(null);
+    private OpenContainer<IAudioTrack> selectedAudioTrack = new OpenContainer<>(null);
 
     private static final int STATE_NEW = 0;
     private static final int STATE_STARTED = 1;
@@ -194,33 +198,38 @@ import java.util.UUID;
 
     @Override
     public void setTracks(Collection<? extends IPlayerImplementationTrack> tracks) {
-        List<ISubtitleTrack> newSubtitleTracks = new ArrayList<>();
+        Collection<TracksUtil.TracksUpdate<?>> tracksUpdates = new ArrayList<>();
+        tracksUpdates.add(new TracksUtil.TracksUpdate<>(
+                track -> track.asSubtitleTrack(),
+                collector::onSubtitleTracks,
+                subtitleTracks));
+        tracksUpdates.add(new TracksUtil.TracksUpdate<>(
+                track -> track.asAudioTrack(),
+                collector::onAudioTracks,
+                audioTracks));
+
+        //Filter out matching tracks
         for(IPlayerImplementationTrack track : tracks) {
-            ISubtitleTrack subtitleTrack = track.asSubtitleTrack();
-            if(subtitleTrack != null) {
-                newSubtitleTracks.add(subtitleTrack);
+            for(TracksUtil.TracksUpdate<?> tracksUpdate : tracksUpdates) {
+                tracksUpdate.onPossibleNew(track);
             }
         }
 
-        boolean subtitlesChanged = false;
-
-        synchronized (subtitleTracks) {
-            if(subtitleTracks.value == null || !subtitleTracks.value.equals(newSubtitleTracks)) {
-                subtitleTracks.value = newSubtitleTracks;
-                subtitlesChanged = true;
-            }
+        //Update list in a thread-safe manner
+        for(TracksUtil.TracksUpdate<?> tracksUpdate : tracksUpdates) {
+            tracksUpdate.update();
         }
 
-        if(subtitlesChanged) {
-            collector.onSubtitleTracks(newSubtitleTracks);
+        //Fire events to listeners if value changed
+        for(TracksUtil.TracksUpdate<?> tracksUpdate : tracksUpdates) {
+            tracksUpdate.fireIfChanged();
         }
     }
 
-    @Override
-    public List<ISubtitleTrack> getSubtitleTracks() {
-        synchronized (subtitleTracks) {
-            if(subtitleTracks.value != null) {
-                return Collections.unmodifiableList(subtitleTracks.value);
+    private static <T> List<T> getUnmodifiableViewOf(OpenContainer<List<T>> container) {
+        synchronized (container) {
+            if(container.value != null) {
+                return Collections.unmodifiableList(container.value);
             } else {
                 return null;
             }
@@ -228,22 +237,33 @@ import java.util.UUID;
     }
 
     @Override
+    public List<ISubtitleTrack> getSubtitleTracks() {
+        return getUnmodifiableViewOf(subtitleTracks);
+    }
+
+    @Override
     public ISubtitleTrack getSelectedSubtitleTrack() {
-        synchronized (selectedSubtitleTrack) {
-            return selectedSubtitleTrack.value;
-        }
+        return OpenContainerUtil.getValueSynchronized(selectedSubtitleTrack);
     }
 
     @Override
     public void setSelectedSubtitleTrack(ISubtitleTrack track) {
-        ISubtitleTrack oldTrack;
-        synchronized (selectedSubtitleTrack) {
-            oldTrack = selectedSubtitleTrack.value;
-            selectedSubtitleTrack.value = track;
-        }
-        if(oldTrack == null ? track != null : !oldTrack.equals(track)) {
-            collector.onSelectedSubtitleTrackChanged(oldTrack, track);
-        }
+        OpenContainerUtil.setValueSynchronized(selectedSubtitleTrack, track, collector::onSelectedSubtitleTrackChanged);
+    }
+
+    @Override
+    public List<IAudioTrack> getAudioTracks() {
+        return getUnmodifiableViewOf(audioTracks);
+    }
+
+    @Override
+    public IAudioTrack getSelectedAudioTrack() {
+        return OpenContainerUtil.getValueSynchronized(selectedAudioTrack);
+    }
+
+    @Override
+    public void setSelectedAudioTrack(IAudioTrack track) {
+        OpenContainerUtil.setValueSynchronized(selectedAudioTrack, track, collector::onSelectedAudioTrackChanged);
     }
 
     @Override
@@ -318,8 +338,18 @@ import java.util.UUID;
         }
 
         @Override
-        public void onSelectedSubtitleTrackChanged(ISubtitleTrack oldselectedTrack, ISubtitleTrack newSelectedTrack) {
-            forEach(listener -> listener.onSelectedSubtitleTrackChanged(oldselectedTrack, newSelectedTrack));
+        public void onSelectedSubtitleTrackChanged(ISubtitleTrack oldSelectedTrack, ISubtitleTrack newSelectedTrack) {
+            forEach(listener -> listener.onSelectedSubtitleTrackChanged(oldSelectedTrack, newSelectedTrack));
+        }
+
+        @Override
+        public void onAudioTracks(List<IAudioTrack> tracks) {
+            forEach(listener -> listener.onAudioTracks(tracks));
+        }
+
+        @Override
+        public void onSelectedAudioTrackChanged(IAudioTrack oldSelectedTrack, IAudioTrack newSelectedTrack) {
+            forEach(listener -> listener.onSelectedAudioTrackChanged(oldSelectedTrack, newSelectedTrack));
         }
     }
 

@@ -7,6 +7,7 @@ import android.util.Log;
 import com.redbeemedia.enigma.core.activity.AbstractActivityLifecycleListener;
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleListener;
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleManager;
+import com.redbeemedia.enigma.core.audio.IAudioTrack;
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.drm.DrmInfoFactory;
 import com.redbeemedia.enigma.core.drm.IDrmInfo;
@@ -534,13 +535,27 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                             stateMachine.setState(EnigmaPlayerState.IDLE);
                         }
 
-                        @Override
-                        public void onTracksChanged(Collection<? extends IPlayerImplementationTrack> tracks) {
+                        private <T> void propagateToCurrentPlaybackSession(T arg, IInternalPlaybackSessionsMethod<T> playbackSessionsMethod) {
                             synchronized (currentPlaybackSession) {
                                 if(currentPlaybackSession.value != null) {
-                                    currentPlaybackSession.value.setTracks(tracks);
+                                    playbackSessionsMethod.call(currentPlaybackSession.value, arg);
                                 }
                             }
+                        }
+
+                        @Override
+                        public void onTracksChanged(Collection<? extends IPlayerImplementationTrack> tracks) {
+                            propagateToCurrentPlaybackSession(tracks, IInternalPlaybackSession::setTracks);
+                        }
+
+                        @Override
+                        public void onAudioTrackSelectionChanged(IAudioTrack track) {
+                            propagateToCurrentPlaybackSession(track, IInternalPlaybackSession::setSelectedAudioTrack);
+                        }
+
+                        @Override
+                        public void onSubtitleTrackSelectionChanged(ISubtitleTrack track) {
+                            propagateToCurrentPlaybackSession(track, IInternalPlaybackSession::setSelectedSubtitleTrack);
                         }
                     };
                 }
@@ -699,18 +714,30 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             environment.playerImplementationControls.setVolume(volume, wrapResultHandler(resultHandler));
         }
 
-        @Override
-        public void setSubtitleTrack(final ISubtitleTrack track, IControlResultHandler resultHandler) {
-            environment.playerImplementationControls.setSubtitleTrack(track, wrapResultHandler(resultHandler).runWhenDone(new Runnable() {
-                @Override
-                public void run() {
-                    synchronized (currentPlaybackSession) {
-                        if(currentPlaybackSession.value != null) {
-                            currentPlaybackSession.value.setSelectedSubtitleTrack(track);
-                        }
+
+        private <T> void setTrack(T track, IControlResultHandler resultHandler,
+                                  IPlayerImplementationControlsMethod<T> controlsMethod,
+                                  IInternalPlaybackSessionsMethod<T>  playbackSessionsMethod) {
+            controlsMethod.call(environment.playerImplementationControls, track, wrapResultHandler(resultHandler).runWhenDone(() -> {
+                synchronized (currentPlaybackSession) {
+                    if(currentPlaybackSession.value != null) {
+                        playbackSessionsMethod.call(currentPlaybackSession.value, track);
                     }
                 }
             }));
+        }
+
+        @Override
+        public void setSubtitleTrack(final ISubtitleTrack track, IControlResultHandler resultHandler) {
+            setTrack(track, resultHandler,
+                    IPlayerImplementationControls::setSubtitleTrack,
+                    IInternalPlaybackSession::setSelectedSubtitleTrack);
+        }
+        @Override
+        public void setAudioTrack(IAudioTrack track, IControlResultHandler resultHandler) {
+            setTrack(track, resultHandler,
+                    IPlayerImplementationControls::setAudioTrack,
+                    IInternalPlaybackSession::setSelectedAudioTrack);
         }
     }
 
@@ -903,5 +930,13 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         public String getMediaLocator() {
             return mediaLocator;
         }
+    }
+
+    private interface IPlayerImplementationControlsMethod<T> {
+        void call(IPlayerImplementationControls controls, T arg, IPlayerImplementationControlResultHandler resultHandler);
+    }
+
+    private interface IInternalPlaybackSessionsMethod<T> {
+        void call(IInternalPlaybackSession internalPlaybackSession, T arg);
     }
 }

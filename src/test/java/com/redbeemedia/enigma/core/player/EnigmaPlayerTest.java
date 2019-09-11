@@ -1,5 +1,7 @@
 package com.redbeemedia.enigma.core.player;
 
+import com.redbeemedia.enigma.core.audio.IAudioTrack;
+import com.redbeemedia.enigma.core.audio.MockAudioTrack;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
 import com.redbeemedia.enigma.core.error.EmptyResponseError;
@@ -463,7 +465,7 @@ public class EnigmaPlayerTest {
         onPlaybackSessionChangedCalled.assertCount(2);
     }
 
-    private void setupForSubtitleTests() throws JSONException {
+    private void setupForTrackTests() throws JSONException {
         MockHttpHandler httpHandler = new MockHttpHandler();
 
         JSONObject response = new JSONObject();
@@ -479,7 +481,7 @@ public class EnigmaPlayerTest {
 
     @Test
     public void testSelectedSubtitleSetCorrectly() throws JSONException {
-        setupForSubtitleTests();
+        setupForTrackTests();
         final Counter sessionChanged = new Counter();
         final Counter subtitleChanged = new Counter();
         final Counter trackSentToImpl = new Counter();
@@ -535,8 +537,8 @@ public class EnigmaPlayerTest {
     }
 
     @Test
-    public void testSubtitleReturnedCorrectly() throws JSONException {
-        setupForSubtitleTests();
+    public void testTracksReturnedCorrectly() throws JSONException {
+        setupForTrackTests();
         final IPlayerImplementationListener[] playerImplementationListener = new IPlayerImplementationListener[]{null};
         EnigmaPlayer enigmaPlayer = new EnigmaPlayerWithMockedTimeProvider(new MockSession(), new MockPlayerImplementation() {
             @Override
@@ -547,6 +549,7 @@ public class EnigmaPlayerTest {
         });
         final Counter sessionChanged = new Counter();
         final Counter gotCorrectSubtitles = new Counter();
+        final Counter gotCorrectAudio = new Counter();
         enigmaPlayer.addListener(new BaseEnigmaPlayerListener() {
             @Override
             public void onPlaybackSessionChanged(IPlaybackSession from, IPlaybackSession to) {
@@ -562,6 +565,16 @@ public class EnigmaPlayerTest {
 
                         gotCorrectSubtitles.count();
                     }
+
+                    @Override
+                    public void onAudioTracks(List<IAudioTrack> tracks) {
+                        Assert.assertEquals(3, tracks.size());
+                        Assert.assertEquals("sv", tracks.get(0).getLanguageCode());
+                        Assert.assertEquals("dk", tracks.get(1).getLanguageCode());
+                        Assert.assertEquals("en", tracks.get(2).getLanguageCode());
+
+                        gotCorrectAudio.count();
+                    }
                 });
             }
         });
@@ -575,11 +588,76 @@ public class EnigmaPlayerTest {
         newTracks.add(new MockSubtitleTrack("deu"));
         newTracks.add(new MockPlayerImplementationTrack());
         newTracks.add(new MockPlayerImplementationTrack());
+        newTracks.add(new MockAudioTrack("sv"));
         newTracks.add(new MockPlayerImplementationTrack());
         newTracks.add(new MockSubtitleTrack("nor"));
+        newTracks.add(new MockAudioTrack("dk"));
+        newTracks.add(new MockPlayerImplementationTrack());
+        newTracks.add(new MockPlayerImplementationTrack());
+        newTracks.add(new MockAudioTrack("en"));
+        newTracks.add(new MockPlayerImplementationTrack());
         gotCorrectSubtitles.assertNone();
+        gotCorrectAudio.assertNone();
         playerImplementationListener[0].onTracksChanged(newTracks);
         gotCorrectSubtitles.assertOnce();
+        gotCorrectAudio.assertOnce();
+    }
+
+    @Test
+    public void testSelectedAudioSetCorrectly() throws JSONException {
+        setupForTrackTests();
+        final Counter sessionChanged = new Counter();
+        final Counter audioChanged = new Counter();
+        final Counter trackSentToImpl = new Counter();
+        final IPlayerImplementationListener[] playerImplementationListener = new IPlayerImplementationListener[]{null};
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayerWithMockedTimeProvider(new MockSession(), new MockPlayerImplementation() {
+            @Override
+            public void install(IEnigmaPlayerEnvironment environment) {
+                super.install(environment);
+                playerImplementationListener[0] = environment.getPlayerImplementationListener();
+            }
+
+            @Override
+            public void setAudioTrack(IAudioTrack track, IPlayerImplementationControlResultHandler resultHandler) {
+                trackSentToImpl.count();
+                if("sv".equals(track.getLanguageCode())) {
+                    resultHandler.onRejected(RejectReason.illegal("UnitTest"));
+                } else {
+                    resultHandler.onDone();
+                }
+            }
+        });
+        enigmaPlayer.addListener(new BaseEnigmaPlayerListener() {
+            @Override
+            public void onPlaybackSessionChanged(IPlaybackSession from, IPlaybackSession to) {
+                sessionChanged.count();
+                to.addListener(new BasePlaybackSessionListener() {
+                    @Override
+                    public void onSelectedAudioTrackChanged(IAudioTrack oldSelectedTrack, IAudioTrack newSelectedTrack) {
+                        Assert.assertEquals("de",newSelectedTrack.getLanguageCode());
+                        audioChanged.count();
+                    }
+                });
+            }
+        });
+        sessionChanged.assertNone();
+        enigmaPlayer.play(new MockPlayRequest());
+        sessionChanged.assertCount(1);
+        trackSentToImpl.assertNone();
+        audioChanged.assertNone();
+        enigmaPlayer.getControls().setAudioTrack(new MockAudioTrack("de").asAudioTrack());
+        audioChanged.assertCount(1);
+        trackSentToImpl.assertCount(1);
+        final Counter controlRejected = new Counter();
+        enigmaPlayer.getControls().setAudioTrack(new MockAudioTrack("sv").asAudioTrack(), new DefaultControlResultHandler("test") {
+            @Override
+            public void onRejected(IRejectReason reason) {
+                controlRejected.count();
+            }
+        });
+        controlRejected.assertCount(1);
+        trackSentToImpl.assertCount(2);
+        audioChanged.assertCount(1);
     }
 
     private static class EnigmaPlayerWithMockedTimeProvider extends EnigmaPlayer {

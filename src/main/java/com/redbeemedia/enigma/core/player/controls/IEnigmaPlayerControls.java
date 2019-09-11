@@ -1,5 +1,6 @@
 package com.redbeemedia.enigma.core.player.controls;
 
+import com.redbeemedia.enigma.core.audio.IAudioTrack;
 import com.redbeemedia.enigma.core.player.timeline.ITimelinePosition;
 import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
 
@@ -20,6 +21,8 @@ public interface IEnigmaPlayerControls {
     void setVolume(float volume, IControlResultHandler resultHandler);
     void setSubtitleTrack(ISubtitleTrack track);
     void setSubtitleTrack(ISubtitleTrack track, IControlResultHandler resultHandler);
+    void setAudioTrack(IAudioTrack track);
+    void setAudioTrack(IAudioTrack track, IControlResultHandler resultHandler);
 
     enum StreamPosition {
         START, LIVE_EDGE

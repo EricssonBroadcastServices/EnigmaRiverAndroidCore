@@ -1,5 +1,6 @@
 package com.redbeemedia.enigma.core.player.track;
 
+import com.redbeemedia.enigma.core.audio.IAudioTrack;
 import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
 
 /**
@@ -19,5 +20,10 @@ public class BasePlayerImplementationTrack implements IPlayerImplementationTrack
     @Override
     public ISubtitleTrack asSubtitleTrack() {
         return asType(ISubtitleTrack.class);
+    }
+
+    @Override
+    public IAudioTrack asAudioTrack() {
+        return asType(IAudioTrack.class);
     }
 }

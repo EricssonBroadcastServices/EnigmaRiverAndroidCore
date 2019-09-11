@@ -1,5 +1,6 @@
 package com.redbeemedia.enigma.core.player;
 
+import com.redbeemedia.enigma.core.audio.IAudioTrack;
 import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
 
 /**
@@ -14,6 +15,7 @@ public interface IPlayerImplementationControls {
     void seekTo(ISeekPosition seekPosition, IPlayerImplementationControlResultHandler resultHandler);
     void setVolume(float volume, IPlayerImplementationControlResultHandler resultHandler);
     void setSubtitleTrack(ISubtitleTrack track, IPlayerImplementationControlResultHandler resultHandler);
+    void setAudioTrack(IAudioTrack track, IPlayerImplementationControlResultHandler resultHandler);
 
     interface ISeekPosition {
         public static ISeekPosition TIMELINE_START = new ISeekPosition() {
