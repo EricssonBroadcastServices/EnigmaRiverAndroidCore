@@ -34,6 +34,11 @@ public class DurationTest {
 
         Assert.assertEquals(2L, Duration.minutes(120).inWholeUnits(Duration.Unit.HOURS));
         Assert.assertEquals(1f, Duration.seconds(3600).inUnits(Duration.Unit.HOURS), 0f);
+
+        Assert.assertEquals(24, Duration.days(1).inWholeUnits(Duration.Unit.HOURS));
+        Assert.assertEquals(2880, Duration.days(2).inWholeUnits(Duration.Unit.MINUTES));
+        Assert.assertEquals(0, Duration.hours(23).inWholeUnits(Duration.Unit.DAYS));
+        Assert.assertEquals(1, Duration.hours(24).inWholeUnits(Duration.Unit.DAYS));
     }
 
     @Test

@@ -49,8 +49,12 @@ public final class Duration {
         return of(hours, Unit.HOURS);
     }
 
+    public static Duration days(long days) {
+        return of(days, Unit.DAYS);
+    }
+
     public enum Unit {
-        MILLISECONDS(1L), SECONDS(1000L), MINUTES(1000L*60L), HOURS(1000L*60L*60L);
+        MILLISECONDS(1L), SECONDS(1000L), MINUTES(1000L*60L), HOURS(1000L*60L*60L), DAYS(1000L*60L*60L*24L);
 
         private long millisPerUnit;
 
