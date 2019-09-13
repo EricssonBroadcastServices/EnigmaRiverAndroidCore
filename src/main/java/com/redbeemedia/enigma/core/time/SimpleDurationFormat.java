@@ -16,12 +16,15 @@ import java.util.Map;
  * <p>
  *  The following tags are currently supported:
  *  <ul>
+ *      <li>${hou} - Hours within day (00-23) (length 2)</li>
+ *      <li>${hour_in_day} = Hours within day (0-23) (length 1 or 2)</li>
  *      <li>${min} - Minutes within hour (00-59) (length 2)</li>
  *      <li>${sec} - Seconds within minute (00-59) (length 2)</li>
  *      <li>${millis} = Milliseconds within second (000-999) (length 3)</li>
  *      <li>${seconds} = The total number of whole seconds of the {@link Duration}</li>
  *      <li>${minutes} - The total number of whole minutes of the {@link Duration}</li>
  *      <li>${hours} = The total number of whole hours of the {@link Duration}</li>
+ *      <li>${days} = The total number of whole days of the {@link Duration}</li>
  *  </ul>
  * </p>
  * <h3>Examples:</h3>
@@ -54,6 +57,13 @@ import java.util.Map;
  *      <div>60 seconds -> {@code "Length is 60 seconds"}</div>
  *      <div>120 minutes-> {@code "Length is 7200 seconds"}</div>
  *   </div>
+ *   {@code pattern "Starting in ${days} day(s) and ${hour_in_day} hours!"}
+ *   <div style="margin-left: 10px;">
+ *      <div>24 hours -> {@code "Starting in 1 day(s) and 0 hours!"}</div>
+ *      <div>22 hours -> {@code "Starting in 0 day(s) and 23 hours!"}</div>
+ *      <div>40 hours -> {@code "Starting in 1 day(s) and 16 hours!"}</div>
+ *      <div>50 hours -> {@code "Starting in 2 day(s) and 2 hours!"}</div>
+ *   </div>
  * </p>
  *
  * @see Duration
@@ -68,6 +78,9 @@ public class SimpleDurationFormat implements IDurationFormat {
         supportedVars.put("sec", new PartialWholeUnits(Duration.Unit.SECONDS, 60L));
         supportedVars.put("millis", new PartialWholeUnits(Duration.Unit.MILLISECONDS, 1000L));
         supportedVars.put("hours", new WholeUnits(Duration.Unit.HOURS));
+        supportedVars.put("hou", new PartialWholeUnits(Duration.Unit.HOURS, 24L));
+        supportedVars.put("hour_in_day", new PartialWholeUnits(Duration.Unit.HOURS, 24L, false));
+        supportedVars.put("days", new WholeUnits(Duration.Unit.DAYS));
         SUPPORTED_VARS = Collections.unmodifiableMap(supportedVars);
     }
 
@@ -135,9 +148,13 @@ public class SimpleDurationFormat implements IDurationFormat {
         private final int padding;
 
         public PartialWholeUnits(Duration.Unit unit, long mod) {
+            this(unit, mod, true);
+        }
+
+        public PartialWholeUnits(Duration.Unit unit, long mod, boolean usePadding) {
             this.unit = unit;
             this.mod = mod;
-            this.padding = String.valueOf(mod-1).length();
+            this.padding = usePadding ? String.valueOf(mod-1).length() : 0;
         }
 
         @Override

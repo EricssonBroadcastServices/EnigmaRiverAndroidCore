@@ -61,6 +61,24 @@ public class SimpleDurationFormatTest {
     }
 
     @Test
+    public void testHoursAndDays() {
+        SimpleDurationFormat format = new SimpleDurationFormat("${days} day(s) and ${hou}:${min}:${sec}");
+        Assert.assertEquals("0 day(s) and 00:59:35", format.format(Duration.minutes(59).add(Duration.seconds(35)).add(Duration.millis(23))));
+        Assert.assertEquals("0 day(s) and 00:00:00", format.format(Duration.seconds(0)));
+        Assert.assertEquals("0 day(s) and 02:46:40", format.format(Duration.seconds(10000)));
+        Assert.assertEquals("4 day(s) and 04:00:00", format.format(Duration.hours(100)));
+        Assert.assertEquals("11 day(s) and 13:46:40", format.format(Duration.seconds(1000000)));
+
+
+        format = new SimpleDurationFormat("${days} day(s) and ${hour_in_day}:${min}:${sec}");
+        Assert.assertEquals("0 day(s) and 0:59:35", format.format(Duration.minutes(59).add(Duration.seconds(35)).add(Duration.millis(23))));
+        Assert.assertEquals("0 day(s) and 0:00:00", format.format(Duration.seconds(0)));
+        Assert.assertEquals("0 day(s) and 2:46:40", format.format(Duration.seconds(10000)));
+        Assert.assertEquals("4 day(s) and 4:00:00", format.format(Duration.hours(100)));
+        Assert.assertEquals("11 day(s) and 13:46:40", format.format(Duration.seconds(1000000)));
+    }
+
+    @Test
     public void testCustomVars() {
         SimpleDurationFormat format = new SimpleDurationFormat("My ${MyVar}");
         Assert.assertEquals("My ${MyVar}", format.format(Duration.seconds(10)));
