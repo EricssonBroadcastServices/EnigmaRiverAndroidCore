@@ -26,6 +26,7 @@ public class ServerTimeServiceTest {
         mockHttpHandler.queueResponse(new HttpStatus(200, "OK"), "{\"epochMillis\" : 123}");
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(mockHttpHandler));
         TestTaskFactory mockTaskFactory = new TestTaskFactory(50);
+        final long[] currentTimeMillis = new long[]{977698800000L};
         ServerTimeService serverTimeService = new ServerTimeService(new MockSession(), mockTaskFactory) {
             @Override
             protected void handleError(Error error) {
@@ -43,7 +44,7 @@ public class ServerTimeServiceTest {
 
             @Override
             protected long getLocalTimeMillis() {
-                return System.currentTimeMillis();
+                return currentTimeMillis[0];
             }
         };
         serverTimeService.start(false);
@@ -51,8 +52,10 @@ public class ServerTimeServiceTest {
         mockTaskFactory.letTimePass(300);
         expectNotSynced(() -> serverTimeService.getTime());
         mockTaskFactory.letTimePass(1000);
+        int virtualDeviceTimePassed = 107;
+        currentTimeMillis[0] += virtualDeviceTimePassed;
         long currentTime = serverTimeService.getTime();
-        Assert.assertEquals(123, currentTime);
+        Assert.assertEquals(123+virtualDeviceTimePassed, currentTime);
     }
 
     private static void expectNotSynced(Runnable runnable) {

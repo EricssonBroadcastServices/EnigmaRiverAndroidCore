@@ -10,10 +10,13 @@ import com.redbeemedia.enigma.core.audio.IAudioTrack;
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.error.Error;
 import com.redbeemedia.enigma.core.playable.IPlayable;
+import com.redbeemedia.enigma.core.playbacksession.BasePlaybackSessionListener;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSessionListener;
 import com.redbeemedia.enigma.core.player.listener.BaseEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.track.IPlayerImplementationTrack;
+import com.redbeemedia.enigma.core.restriction.ContractRestriction;
+import com.redbeemedia.enigma.core.restriction.IContractRestrictions;
 import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
 import com.redbeemedia.enigma.core.task.ITask;
@@ -29,6 +32,7 @@ import com.redbeemedia.enigma.core.util.OpenContainer;
 import com.redbeemedia.enigma.core.util.OpenContainerUtil;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,10 +53,12 @@ import java.util.UUID;
     private final ListenerCollector collector = new ListenerCollector();
     private final IPlaybackSessionInfo playbackSessionInfo;
     private boolean playingFromLive = false;
-    private OpenContainer<List<ISubtitleTrack>> subtitleTracks = new OpenContainer<>(null);
-    private OpenContainer<ISubtitleTrack> selectedSubtitleTrack = new OpenContainer<>(null);
-    private OpenContainer<List<IAudioTrack>> audioTracks = new OpenContainer<>(null);
-    private OpenContainer<IAudioTrack> selectedAudioTrack = new OpenContainer<>(null);
+    private final OpenContainer<List<ISubtitleTrack>> subtitleTracks = new OpenContainer<>(null);
+    private final OpenContainer<ISubtitleTrack> selectedSubtitleTrack = new OpenContainer<>(null);
+    private final OpenContainer<List<IAudioTrack>> audioTracks = new OpenContainer<>(null);
+    private final OpenContainer<IAudioTrack> selectedAudioTrack = new OpenContainer<>(null);
+    private final OpenContainer<IContractRestrictions> contractRestrictions;
+    private final OpenContainer<Boolean> seekAllowed = new OpenContainer<>(true);
 
     private static final int STATE_NEW = 0;
     private static final int STATE_STARTED = 1;
@@ -64,13 +70,14 @@ import java.util.UUID;
 
 
     public InternalPlaybackSession(ConstructorArgs constructorArgs) {
-        this(constructorArgs.session, constructorArgs.id, constructorArgs.timeProvider, constructorArgs.streamInfo, constructorArgs.playbackSessionInfo);
+        this(constructorArgs.session, constructorArgs.id, constructorArgs.timeProvider, constructorArgs.streamInfo, constructorArgs.playbackSessionInfo, constructorArgs.contractRestrictions);
     }
 
-    public InternalPlaybackSession(ISession session, String id, ITimeProvider timeProvider, StreamInfo streamInfo, IPlaybackSessionInfo playbackSessionInfo) {
+    public InternalPlaybackSession(ISession session, String id, ITimeProvider timeProvider, StreamInfo streamInfo, IPlaybackSessionInfo playbackSessionInfo, IContractRestrictions contractRestrictions) {
         this.playbackSessionInfo = playbackSessionInfo;
         this.streamInfo = streamInfo;
         this.streamPrograms = streamInfo.hasStreamPrograms() ? new StreamPrograms(streamInfo) : null;
+        this.contractRestrictions = new OpenContainer<>(contractRestrictions);
         this.analyticsHandler = new AnalyticsHandler(session, id, timeProvider);
         ITaskFactory taskFactory = EnigmaRiverContext.getTaskFactory();
         this.analyticsHandlerTask = taskFactory.newTask(new Runnable() {
@@ -115,6 +122,14 @@ import java.util.UUID;
         this.playerListener = new EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, streamInfo);
         ITaskFactory mainThreadTaskFactory = new MainThreadTaskFactory();
         heartbeatRepeater = new Repeater(mainThreadTaskFactory, HEARTBEAT_RATE_MILLIS, new HeartbeatRunnable());
+
+        updateSeekAllowed(contractRestrictions);
+        addListener(new BasePlaybackSessionListener() {
+            @Override
+            public void onContractRestrictionsChanged(IContractRestrictions oldContractRestrictions, IContractRestrictions newContractRestrictions) {
+                updateSeekAllowed(newContractRestrictions);
+            }
+        });
     }
 
     private void changeState(int newState) {
@@ -289,12 +304,30 @@ import java.util.UUID;
 
     @Override
     public boolean isSeekAllowed() {
-        return true;
+        return OpenContainerUtil.getValueSynchronized(seekAllowed);
+    }
+
+    private void updateSeekAllowed(IContractRestrictions contractRestrictions) {
+        boolean allowed = contractRestrictions.getValue(ContractRestriction.TIMESHIFT_ENABLED, true);
+        OpenContainerUtil.setValueSynchronized(seekAllowed, allowed, null);
     }
 
     @Override
     public boolean isSeekToLiveAllowed() {
         return isSeekAllowed() && streamInfo.isLiveStream();
+    }
+
+    @Override
+    public IContractRestrictions getContractRestrictions() {
+        return OpenContainerUtil.getValueSynchronized(contractRestrictions);
+    }
+
+    @Override
+    public void setContractRestrictions(IContractRestrictions newContractRestrictions) {
+        if(newContractRestrictions == null) {
+            throw new NullPointerException();
+        }
+        OpenContainerUtil.setValueSynchronized(contractRestrictions, newContractRestrictions, (oldValue, newValue) -> collector.onContractRestrictionsChanged(oldValue, newValue));
     }
 
     @Override
@@ -351,6 +384,11 @@ import java.util.UUID;
         public void onSelectedAudioTrackChanged(IAudioTrack oldSelectedTrack, IAudioTrack newSelectedTrack) {
             forEach(listener -> listener.onSelectedAudioTrackChanged(oldSelectedTrack, newSelectedTrack));
         }
+
+        @Override
+        public void onContractRestrictionsChanged(IContractRestrictions oldContractRestrictions, IContractRestrictions newContractRestrictions) {
+            forEach(listener -> listener.onContractRestrictionsChanged(oldContractRestrictions, newContractRestrictions));
+        }
     }
 
     /*package-protected*/ static class ConstructorArgs {
@@ -359,19 +397,22 @@ import java.util.UUID;
         public final ITimeProvider timeProvider;
         public final StreamInfo streamInfo;
         public final IPlaybackSessionInfo playbackSessionInfo;
+        public final IContractRestrictions contractRestrictions;
 
-        public ConstructorArgs(ISession session, String id, ITimeProvider timeProvider, StreamInfo streamInfo, IPlaybackSessionInfo playbackSessionInfo) {
+        public ConstructorArgs(ISession session, String id, ITimeProvider timeProvider, StreamInfo streamInfo, IPlaybackSessionInfo playbackSessionInfo, IContractRestrictions contractRestrictions) {
             this.session = session;
             this.id = id;
             this.timeProvider = timeProvider;
             this.streamInfo = streamInfo;
             this.playbackSessionInfo = playbackSessionInfo;
+            this.contractRestrictions = contractRestrictions;
         }
 
-        public static ConstructorArgs of(IPlaybackSessionFactory.PlaybackSessionArgs pbsArgs, ITimeProvider timeProvider) throws JSONException {
-            String playbackSessionId = pbsArgs.jsonObject.optString("playSessionId", UUID.randomUUID().toString());
-            StreamInfo streamInfo = new StreamInfo(pbsArgs.jsonObject.optJSONObject("streamInfo"));
-            return new ConstructorArgs(pbsArgs.session, playbackSessionId, timeProvider, streamInfo, pbsArgs.playbackSessionInfo);
+        public static ConstructorArgs of(ISession session, JSONObject jsonObject, IPlaybackSessionInfo playbackSessionInfo, ITimeProvider timeProvider) throws JSONException {
+            String playbackSessionId = jsonObject.optString("playSessionId", UUID.randomUUID().toString());
+            StreamInfo streamInfo = new StreamInfo(jsonObject.optJSONObject("streamInfo"));
+            EnigmaContractRestrictions contractRestrictions = EnigmaContractRestrictions.createWithDefaults(jsonObject.optJSONObject("contractRestrictions"));
+            return new ConstructorArgs(session, playbackSessionId, timeProvider, streamInfo, playbackSessionInfo, contractRestrictions);
         }
     }
 

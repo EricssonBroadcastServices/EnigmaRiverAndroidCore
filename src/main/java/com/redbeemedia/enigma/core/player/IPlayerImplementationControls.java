@@ -8,7 +8,7 @@ import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
  * <p>This interface is not part of the public API.</p>
  */
 public interface IPlayerImplementationControls {
-    void load(String url, IPlayerImplementationControlResultHandler resultHandler);
+    void load(ILoadRequest loadRequest, IPlayerImplementationControlResultHandler resultHandler);
     void start(IPlayerImplementationControlResultHandler resultHandler);
     void pause(IPlayerImplementationControlResultHandler resultHandler);
     void stop(IPlayerImplementationControlResultHandler resultHandler);
@@ -33,5 +33,14 @@ public interface IPlayerImplementationControls {
         public long getMillis() {
             return millis;
         }
+    }
+
+    interface ILoadRequest {
+        String getUrl();
+
+        /** <code>null</code> indicates no restriction. */
+        Integer getMaxBitrate();
+        /** <code>null</code> indicates no restriction. */
+        Integer getMaxResoultionHeight();
     }
 }

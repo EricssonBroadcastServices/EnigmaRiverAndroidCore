@@ -1,6 +1,7 @@
 package com.redbeemedia.enigma.core.playbacksession;
 
 import com.redbeemedia.enigma.core.audio.IAudioTrack;
+import com.redbeemedia.enigma.core.restriction.IContractRestrictions;
 import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
 import com.redbeemedia.enigma.core.util.IInternalListener;
 
@@ -22,4 +23,5 @@ public interface IPlaybackSessionListener extends IInternalListener {
     void onSelectedSubtitleTrackChanged(ISubtitleTrack oldSelectedTrack, ISubtitleTrack newSelectedTrack);
     void onAudioTracks(List<IAudioTrack> tracks);
     void onSelectedAudioTrackChanged(IAudioTrack oldSelectedTrack, IAudioTrack newSelectedTrack);
+    void onContractRestrictionsChanged(IContractRestrictions oldContractRestrictions, IContractRestrictions newContractRestrictions);
 }

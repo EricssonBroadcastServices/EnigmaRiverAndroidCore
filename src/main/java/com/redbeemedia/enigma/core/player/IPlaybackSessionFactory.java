@@ -1,22 +1,24 @@
 package com.redbeemedia.enigma.core.player;
 
+import com.redbeemedia.enigma.core.drm.IDrmInfo;
+import com.redbeemedia.enigma.core.playrequest.IPlayResultHandler;
+import com.redbeemedia.enigma.core.playrequest.IPlaybackProperties;
 import com.redbeemedia.enigma.core.session.ISession;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /*package-protected*/ interface IPlaybackSessionFactory {
-    IInternalPlaybackSession createPlaybackSession(PlaybackSessionArgs parameters) throws JSONException;
 
-    /*package-protected*/ class PlaybackSessionArgs {
-        public ISession session;
-        public JSONObject jsonObject;
-        public IPlaybackSessionInfo playbackSessionInfo;
+    void startAsset(ISession session, IPlaybackProperties playbackProperties, IPlayResultHandler playResultHandler, String assetId, IEnigmaPlayerCallbacks playerConnector);
 
-        public PlaybackSessionArgs(ISession session, JSONObject jsonObject, IPlaybackSessionInfo playbackSessionInfo) {
-            this.session = session;
-            this.jsonObject = jsonObject;
-            this.playbackSessionInfo = playbackSessionInfo;
-        }
+    interface IEnigmaPlayerCallbacks {
+        void deliverPlaybackSession(IInternalPlaybackSession internalPlaybackSession);
+        JSONObject getUsableMediaFormat(JSONArray formats) throws JSONException;
+        void setDrmInfo(IDrmInfo drmInfo);
+        IPlaybackSessionInfo getPlaybackSessionInfo(String manifestUrl);
+        void loadIntoPlayerImplementation(String manifestUrl, IPlayResultHandler playResultHandler, JSONObject jsonObject, IPlaybackProperties playbackProperties);
+        void setStateIfCurrentStartAction(EnigmaPlayerState state);
     }
 }

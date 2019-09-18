@@ -17,6 +17,7 @@ import com.redbeemedia.enigma.core.playable.IPlayableHandler;
 import com.redbeemedia.enigma.core.playable.MockPlayable;
 import com.redbeemedia.enigma.core.playbacksession.BasePlaybackSessionListener;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
+import com.redbeemedia.enigma.core.player.controls.AssertiveControlResultHandler;
 import com.redbeemedia.enigma.core.player.listener.BaseEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.track.IPlayerImplementationTrack;
@@ -69,9 +70,9 @@ public class EnigmaPlayerTest {
             }
 
             @Override
-            public void load(String url, IPlayerImplementationControlResultHandler resultHandler) {
+            public void load(ILoadRequest loadRequest, IPlayerImplementationControlResultHandler resultHandler) {
                 loadCalled.setFlag();
-                super.load(url, resultHandler);
+                super.load(loadRequest, resultHandler);
             }
 
             @Override
@@ -364,7 +365,7 @@ public class EnigmaPlayerTest {
         });
         MockPlayRequest mockPlayRequest = new MockPlayRequest();
         enigmaPlayer.play(mockPlayRequest);
-        Assert.assertEquals("[IDLE->LOADING][LOADING->LOADED][LOADED->PLAYING][PLAYING->LOADED]",log.toString());
+        Assert.assertEquals("[IDLE->LOADING][LOADING->LOADED][LOADED->PLAYING]",log.toString());
     }
 
     @Test
@@ -660,7 +661,58 @@ public class EnigmaPlayerTest {
         audioChanged.assertCount(1);
     }
 
-    private static class EnigmaPlayerWithMockedTimeProvider extends EnigmaPlayer {
+    @Test
+    public void testPauseDisabledIfTimeshiftNotEnabled() throws JSONException {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+        final JSONObject mock = new JSONObject();
+
+        final Counter pauseInImplementationCalled = new Counter();
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayerWithMockedTimeProvider(new MockSession(), new MockPlayerImplementation() {
+            @Override
+            public void pause(IPlayerImplementationControlResultHandler resultHandler) {
+                pauseInImplementationCalled.count();
+                super.pause(resultHandler);
+            }
+        }) {
+            @Override
+            protected IPlaybackSessionFactory newPlaybackSessionFactory(ITimeProvider timeProvider) {
+                return new MockPlaybackSessionFactory() {
+                    @Override
+                    public IInternalPlaybackSession newInternalPlaybackSession() {
+                        MockInternalPlaybackSession internalPlaybackSession = new MockInternalPlaybackSession(true);
+                        internalPlaybackSession.setContractRestrictions(EnigmaContractRestrictions.createWithDefaults(mock));
+                        return internalPlaybackSession;
+                    }
+                };
+            }
+        };
+
+        enigmaPlayer.play(new MockPlayRequest());
+        pauseInImplementationCalled.assertNone();
+
+
+        AssertiveControlResultHandler controlResultHandler = new AssertiveControlResultHandler();
+        enigmaPlayer.getControls().pause(controlResultHandler);
+        controlResultHandler.assertOnDoneCalled();
+        pauseInImplementationCalled.assertOnce();
+
+        mock.put("timeshiftEnabled", false);
+        enigmaPlayer.play(new MockPlayRequest());
+        pauseInImplementationCalled.assertCount(1);
+
+        controlResultHandler = new AssertiveControlResultHandler() {
+            @Override
+            public void onRejected(IRejectReason reason) {
+                Assert.assertEquals(RejectReasonType.CONTRACT_RESTRICTION_LIMITATION, reason.getType());
+                super.onRejected(reason);
+            }
+        };
+        enigmaPlayer.getControls().pause(controlResultHandler);
+        controlResultHandler.assertOnRejectedCalled();
+        pauseInImplementationCalled.assertCount(1);
+    }
+
+    public static class EnigmaPlayerWithMockedTimeProvider extends EnigmaPlayer {
         public EnigmaPlayerWithMockedTimeProvider(ISession session, IPlayerImplementation playerImplementation) {
             super(session, playerImplementation);
         }

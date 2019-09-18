@@ -1,6 +1,7 @@
 package com.redbeemedia.enigma.core.playbacksession;
 
 import com.redbeemedia.enigma.core.audio.IAudioTrack;
+import com.redbeemedia.enigma.core.restriction.IContractRestrictions;
 import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
 
 import java.util.List;
@@ -33,5 +34,9 @@ public class BasePlaybackSessionListener implements IPlaybackSessionListener {
 
     @Override
     public void onSelectedAudioTrackChanged(IAudioTrack oldSelectedTrack, IAudioTrack newSelectedTrack) {
+    }
+
+    @Override
+    public void onContractRestrictionsChanged(IContractRestrictions oldContractRestrictions, IContractRestrictions newContractRestrictions) {
     }
 }

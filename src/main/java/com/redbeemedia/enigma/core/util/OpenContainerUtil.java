@@ -10,7 +10,7 @@ public class OpenContainerUtil {
             oldValue = container.value;
             container.value = newValue;
         }
-        if(!Objects.equals(oldValue, newValue)) {
+        if(valueChangedListener != null && !Objects.equals(oldValue, newValue)) {
             valueChangedListener.onValueChanged(oldValue, newValue);
         }
     }
