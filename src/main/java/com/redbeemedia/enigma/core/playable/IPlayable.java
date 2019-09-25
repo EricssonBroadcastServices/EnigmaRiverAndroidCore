@@ -1,5 +1,7 @@
 package com.redbeemedia.enigma.core.playable;
 
-public interface IPlayable {
+import android.os.Parcelable;
+
+public interface IPlayable extends Parcelable {
     void useWith(IPlayableHandler playableHandler);
 }

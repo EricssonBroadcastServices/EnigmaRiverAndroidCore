@@ -71,7 +71,15 @@ public class JsonReaderUtil {
 
             @Override
             public T newInstance(JsonReader jsonReader) throws Exception {
-                return constructor.newInstance(jsonReader);
+                final boolean accessible = constructor.isAccessible();
+                try {
+                    constructor.setAccessible(true);
+                    return constructor.newInstance(jsonReader);
+                } finally {
+                    try {
+                        constructor.setAccessible(accessible);
+                    } catch (Exception e) {/*ignore*/}
+                }
             }
         }
     }
