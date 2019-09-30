@@ -120,7 +120,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
     protected ITimeProvider newTimeProvider(ISession session) {
         ServerTimeService serverTimeService = new ServerTimeService(session, EnigmaRiverContext.getTaskFactory());
-        serverTimeService.start(true);
+        serverTimeService.start(false);
         return serverTimeService;
     }
 

@@ -6,12 +6,14 @@ import com.redbeemedia.enigma.core.drm.IDrmInfo;
 import com.redbeemedia.enigma.core.error.Error;
 import com.redbeemedia.enigma.core.error.InvalidAssetError;
 import com.redbeemedia.enigma.core.error.NoSupportedMediaFormatsError;
+import com.redbeemedia.enigma.core.error.ServerTimeoutError;
 import com.redbeemedia.enigma.core.error.UnexpectedError;
 import com.redbeemedia.enigma.core.format.EnigmaMediaFormat;
 import com.redbeemedia.enigma.core.http.AuthenticatedExposureApiCall;
 import com.redbeemedia.enigma.core.playrequest.IPlayResultHandler;
 import com.redbeemedia.enigma.core.playrequest.IPlaybackProperties;
 import com.redbeemedia.enigma.core.session.ISession;
+import com.redbeemedia.enigma.core.time.Duration;
 import com.redbeemedia.enigma.core.time.ITimeProvider;
 
 import org.json.JSONArray;
@@ -30,6 +32,10 @@ import java.net.URL;
 
     @Override
     public void startAsset(ISession session, IPlaybackProperties playbackProperties, IPlayResultHandler playResultHandler, String assetId, IEnigmaPlayerCallbacks playerConnector) {
+        if(!timeProvider.isReady(Duration.seconds(30))) {
+            playResultHandler.onError(new ServerTimeoutError("Could not start time service"));
+            return;
+        }
         URL url;
         try {
             url = session.getBusinessUnit().getApiBaseUrl("v2").append("entitlement").append(assetId).append("play").toURL();

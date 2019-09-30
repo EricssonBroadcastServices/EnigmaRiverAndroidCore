@@ -93,9 +93,23 @@ import java.net.URL;
     public void start(boolean await) {
         repeater.setEnabled(true);
         if(await) {
+            if(!isReady(Duration.seconds(30))) {
+                throw new RuntimeException("Could not connect to backend");
+            }
+        }
+    }
+
+    @Override
+    public boolean isReady(Duration maxBlocktime) {
+        if(maxBlocktime == null) {
+            throw new NullPointerException("maxBlocktime is null");
+        }
+        if(localStartTime != null) {
+            return true;
+        } else {
             IStopWatch timer = createStopWatch();
             timer.start();
-            while(localStartTime == null && timer.readTime().inUnits(Duration.Unit.SECONDS) < 30) {
+            while(localStartTime == null && timer.readTime().inUnits(Duration.Unit.SECONDS) < maxBlocktime.inUnits(Duration.Unit.SECONDS)) {
                 try {
                     Thread.sleep(1);
                 } catch (InterruptedException e) {
@@ -103,14 +117,22 @@ import java.net.URL;
                 }
             }
             timer.stop();
-            if(localStartTime == null) {
-                throw new RuntimeException("Could not connect to backend");
-            }
+            return localStartTime != null;
         }
     }
 
     private IStopWatch createStopWatch() {
-        return new StopWatch(() -> getLocalTimeMillis());
+        return new StopWatch(new ITimeProvider() {
+            @Override
+            public long getTime() {
+                return getLocalTimeMillis();
+            }
+
+            @Override
+            public boolean isReady(Duration maxBlocktime) {
+                return true;
+            }
+        });
     }
 
     public void stop() {
