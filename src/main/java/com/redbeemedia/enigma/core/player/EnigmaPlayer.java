@@ -40,9 +40,11 @@ import com.redbeemedia.enigma.core.restriction.IContractRestriction;
 import com.redbeemedia.enigma.core.restriction.IContractRestrictions;
 import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
+import com.redbeemedia.enigma.core.task.ITask;
 import com.redbeemedia.enigma.core.task.ITaskFactory;
 import com.redbeemedia.enigma.core.task.MainThreadTaskFactory;
 import com.redbeemedia.enigma.core.task.Repeater;
+import com.redbeemedia.enigma.core.task.TaskException;
 import com.redbeemedia.enigma.core.time.Duration;
 import com.redbeemedia.enigma.core.time.ITimeProvider;
 import com.redbeemedia.enigma.core.util.AndroidThreadUtil;
@@ -289,6 +291,16 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
         @Override
         public void startUsingAssetId(IPlaybackProperties playbackProperties, IPlayResultHandler playResultHandler, final String assetId) {
+            ITask task = getPlayTaskFactory().newTask(() -> startUsingAssetIdBlocking(playbackProperties, playResultHandler, assetId));
+            try {
+                task.start();
+            } catch (TaskException e) {
+                playResultHandler.onError(new UnexpectedError(e));
+                return;
+            }
+        }
+
+        private void startUsingAssetIdBlocking(IPlaybackProperties playbackProperties, IPlayResultHandler playResultHandler, final String assetId) {
             playbackSessionFactory.startAsset(session, playbackProperties, playResultHandler, assetId, new IPlaybackSessionFactory.IEnigmaPlayerCallbacks() {
                 @Override
                 public void deliverPlaybackSession(IInternalPlaybackSession internalPlaybackSession) {
@@ -349,6 +361,10 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                 }
             }
         }
+    }
+
+    protected ITaskFactory getPlayTaskFactory() {
+        return EnigmaRiverContext.getTaskFactory();
     }
 
 

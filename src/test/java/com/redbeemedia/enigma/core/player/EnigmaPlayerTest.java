@@ -28,6 +28,9 @@ import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.session.MockSession;
 import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
 import com.redbeemedia.enigma.core.subtitle.MockSubtitleTrack;
+import com.redbeemedia.enigma.core.task.ITask;
+import com.redbeemedia.enigma.core.task.ITaskFactory;
+import com.redbeemedia.enigma.core.task.TaskException;
 import com.redbeemedia.enigma.core.testutil.Counter;
 import com.redbeemedia.enigma.core.testutil.Flag;
 import com.redbeemedia.enigma.core.testutil.InstanceOfMatcher;
@@ -81,12 +84,7 @@ public class EnigmaPlayerTest {
                 super.start(resultHandler);
             }
         };
-        EnigmaPlayer enigmaPlayer = new EnigmaPlayer(new MockSession(), impl) {
-            @Override
-            protected ITimeProvider newTimeProvider(ISession session) {
-                return new MockTimeProvider();
-            }
-        };
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayerWithMockedTimeProvider(new MockSession(), impl);
         Assert.assertFalse(loadCalled.isTrue());
         Assert.assertFalse(startCalled.isTrue());
         installCalled.assertOnce();
@@ -209,12 +207,7 @@ public class EnigmaPlayerTest {
             }
         };
         installed.assertNotSet();
-        EnigmaPlayer enigmaPlayer = new EnigmaPlayer(new MockSession(), playerImpl) {
-            @Override
-            protected ITimeProvider newTimeProvider(ISession session) {
-                return new MockTimeProvider();
-            }
-        };
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayerWithMockedTimeProvider(new MockSession(), playerImpl);
         installed.assertSet();
         enigmaPlayer.play(new MockPlayRequest("123").setResultHandler(new MockPlayResultHandler() {
             @Override
@@ -343,18 +336,13 @@ public class EnigmaPlayerTest {
         }
         mockHttpHandler.queueResponse(new HttpStatus(200, "OK"), response.toString());
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(mockHttpHandler));
-        EnigmaPlayer enigmaPlayer = new EnigmaPlayer(new MockSession(), new MockPlayerImplementation() {
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayerWithMockedTimeProvider(new MockSession(), new MockPlayerImplementation() {
             @Override
             public void install(IEnigmaPlayerEnvironment environment) {
                 super.install(environment);
                 environment.setMediaFormatSupportSpec(enigmaMediaFormat -> true);
             }
-        }) {
-            @Override
-            protected ITimeProvider newTimeProvider(ISession session) {
-                return new MockTimeProvider();
-            }
-        };
+        });
 
         final StringBuilder log = new StringBuilder();
         enigmaPlayer.addListener(new BaseEnigmaPlayerListener() {
@@ -372,18 +360,13 @@ public class EnigmaPlayerTest {
     public void testOnReadyListenersSimple() {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
         final Counter onReadyCalled = new Counter();
-        EnigmaPlayer enigmaPlayer = new EnigmaPlayer(new MockSession(), new MockPlayerImplementation() {
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayerWithMockedTimeProvider(new MockSession(), new MockPlayerImplementation() {
             @Override
             public void install(IEnigmaPlayerEnvironment environment) {
                 super.install(environment);
                 environment.addEnigmaPlayerReadyListener(enigmaPlayer1 -> onReadyCalled.count());
             }
-        }) {
-            @Override
-            protected ITimeProvider newTimeProvider(ISession session) {
-                return new MockTimeProvider();
-            }
-        };
+        });
         onReadyCalled.assertOnce();
     }
 
@@ -720,6 +703,31 @@ public class EnigmaPlayerTest {
         @Override
         protected ITimeProvider newTimeProvider(ISession session) {
             return new MockTimeProvider();
+        }
+
+        @Override
+        protected ITaskFactory getPlayTaskFactory() {
+            return new ITaskFactory() {
+                @Override
+                public ITask newTask(Runnable runnable) {
+                    return new ITask() {
+                        @Override
+                        public void start() throws TaskException {
+                            runnable.run();
+                        }
+
+                        @Override
+                        public void startDelayed(long delayMillis) throws TaskException {
+                            throw new UnsupportedOperationException();
+                        }
+
+                        @Override
+                        public void cancel(long joinMillis) throws TaskException {
+
+                        }
+                    };
+                }
+            };
         }
     }
 }

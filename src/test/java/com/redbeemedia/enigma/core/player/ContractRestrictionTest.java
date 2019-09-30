@@ -14,6 +14,10 @@ import com.redbeemedia.enigma.core.restriction.IContractRestriction;
 import com.redbeemedia.enigma.core.restriction.IContractRestrictions;
 import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.session.MockSession;
+import com.redbeemedia.enigma.core.task.ITask;
+import com.redbeemedia.enigma.core.task.ITaskFactory;
+import com.redbeemedia.enigma.core.task.MockTaskFactory;
+import com.redbeemedia.enigma.core.task.TaskException;
 import com.redbeemedia.enigma.core.testutil.Counter;
 import com.redbeemedia.enigma.core.time.ITimeProvider;
 
@@ -278,6 +282,31 @@ public class ContractRestrictionTest {
                         MockInternalPlaybackSession internalPlaybackSession = new MockInternalPlaybackSession(false);
                         internalPlaybackSession.setContractRestrictions(EnigmaContractRestrictions.createWithDefaults(contractRestrictions));
                         return internalPlaybackSession;
+                    }
+                };
+            }
+
+            @Override
+            protected ITaskFactory getPlayTaskFactory() {
+                return new ITaskFactory() {
+                    @Override
+                    public ITask newTask(final Runnable runnable) {
+                        return new ITask() {
+                            @Override
+                            public void start() throws TaskException {
+                                runnable.run();
+                            }
+
+                            @Override
+                            public void startDelayed(long delayMillis) throws TaskException {
+                                throw new UnsupportedOperationException();
+                            }
+
+                            @Override
+                            public void cancel(long joinMillis) throws TaskException {
+
+                            }
+                        };
                     }
                 };
             }
