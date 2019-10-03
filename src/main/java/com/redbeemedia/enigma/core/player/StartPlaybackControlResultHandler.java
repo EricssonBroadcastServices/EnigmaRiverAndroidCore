@@ -5,6 +5,7 @@ import com.redbeemedia.enigma.core.error.UnexpectedError;
 import com.redbeemedia.enigma.core.player.controls.IControlResultHandler;
 import com.redbeemedia.enigma.core.playrequest.IPlayResultHandler;
 import com.redbeemedia.enigma.core.playrequest.IPlaybackProperties;
+import com.redbeemedia.enigma.core.time.Duration;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -56,7 +57,7 @@ import org.json.JSONObject;
                             seekPosition = new IPlayerImplementationControls.TimelineRelativePosition(lastViewedOffsetMs);
                         } else if (!streamInfo.hasStaticManifest() && bookmarks.has(LIVE_TIME)) {
                             long liveTime = bookmarks.optLong(LIVE_TIME);
-                            long offset = liveTime - streamInfo.getStartUtcSeconds()*1000L;
+                            long offset = liveTime - streamInfo.getStart(Duration.Unit.MILLISECONDS);
                             seekPosition = new IPlayerImplementationControls.TimelineRelativePosition(offset);
                         }
                     }

@@ -1,42 +1,24 @@
 package com.redbeemedia.enigma.core.player;
 
-import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
-import com.redbeemedia.enigma.core.epg.IEpg;
 import com.redbeemedia.enigma.core.epg.IProgram;
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.epg.response.IEpgResponse;
 import com.redbeemedia.enigma.core.util.OpenContainer;
-import com.redbeemedia.enigma.core.util.error.EnigmaErrorException;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 /*package-protected*/ class StreamPrograms implements IStreamPrograms {
-    private final StreamInfo streamInfo;
+    private final long startUtcMillis;
     private final OpenContainer<List<IProgram>> programs = new OpenContainer<>(null);
 
-    public StreamPrograms(StreamInfo streamInfo) {
-        this.streamInfo = streamInfo;
+    public StreamPrograms(IEpgResponse epgResponse) {
+        this.startUtcMillis = epgResponse.getStartUtcMillis();
 
         List<IProgram> modifiablePrograms = new ArrayList<>();
+        modifiablePrograms.addAll(epgResponse.getPrograms());
+        Collections.sort(modifiablePrograms, (o1, o2) -> Long.compare(o1.getStartUtcMillis(), o2.getStartUtcMillis()));
 
-        IEpg epg = EnigmaRiverContext.getEpg();
-        epg.getPrograms(streamInfo.getChannelId(), streamInfo.getStartUtcSeconds() * 1000L, streamInfo.getEndUtcSeconds() * 1000L, new IEpg.IProgramListRequestResultHandler() {
-            @Override
-            public void onList(List<IProgram> programs) {
-                synchronized (programs) {
-                    modifiablePrograms.clear();
-                    modifiablePrograms.addAll(programs);
-
-                    Collections.sort(modifiablePrograms, (o1, o2) -> Long.compare(o1.getStartUtcMillis(), o2.getStartUtcMillis()));
-                }
-            }
-
-            @Override
-            public void onError(Error error) {
-                throw new EnigmaErrorException(error);
-            }
-        });
         synchronized (programs) {
             programs.value = Collections.unmodifiableList(modifiablePrograms);
         }
@@ -44,7 +26,7 @@ import java.util.List;
 
     @Override
     public IProgram getProgramAtOffset(long offset) {
-        long utcMillis = streamInfo.getStartUtcSeconds()*1000L+offset;
+        long utcMillis = startUtcMillis + offset;
         synchronized (programs) {
             if(programs.value != null) {
                 for(IProgram program : programs.value) {

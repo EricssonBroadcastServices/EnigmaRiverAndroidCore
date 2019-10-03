@@ -1,5 +1,6 @@
 package com.redbeemedia.enigma.core.player.listener;
 
+import com.redbeemedia.enigma.core.epg.IProgram;
 import com.redbeemedia.enigma.core.error.Error;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.player.EnigmaPlayerState;
@@ -20,5 +21,9 @@ public class BaseEnigmaPlayerListener implements IEnigmaPlayerListener {
 
     @Override
     public void onPlaybackSessionChanged(IPlaybackSession from, IPlaybackSession to) {
+    }
+
+    @Override
+    public void onProgramChanged(IProgram from, IProgram to) {
     }
 }

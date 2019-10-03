@@ -1,0 +1,18 @@
+package com.redbeemedia.enigma.core.time;
+
+import android.os.SystemClock;
+
+/**
+ * A <code>ITimeProvider</code> that provides the milliseconds since system was booted.
+ */
+public class SystemBootTimeProvider implements ITimeProvider {
+    @Override
+    public long getTime() {
+        return SystemClock.elapsedRealtime();
+    }
+
+    @Override
+    public boolean isReady(Duration maxBlocktime) {
+        return true;
+    }
+}

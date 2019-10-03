@@ -4,6 +4,7 @@ import com.redbeemedia.enigma.core.audio.IAudioTrack;
 import com.redbeemedia.enigma.core.audio.MockAudioTrack;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
+import com.redbeemedia.enigma.core.epg.IEpg;
 import com.redbeemedia.enigma.core.error.EmptyResponseError;
 import com.redbeemedia.enigma.core.error.Error;
 import com.redbeemedia.enigma.core.error.NoSupportedMediaFormatsError;
@@ -658,7 +659,7 @@ public class EnigmaPlayerTest {
             }
         }) {
             @Override
-            protected IPlaybackSessionFactory newPlaybackSessionFactory(ITimeProvider timeProvider) {
+            protected IPlaybackSessionFactory newPlaybackSessionFactory(ITimeProvider timeProvider, IEpg epg) {
                 return new MockPlaybackSessionFactory() {
                     @Override
                     public IInternalPlaybackSession newInternalPlaybackSession() {

@@ -2,17 +2,15 @@ package com.redbeemedia.enigma.core.player;
 
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
+import com.redbeemedia.enigma.core.epg.IEpg;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.player.controls.AssertiveControlResultHandler;
 import com.redbeemedia.enigma.core.player.listener.BaseEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.timeline.ITimelinePosition;
-import com.redbeemedia.enigma.core.playrequest.IPlayResultHandler;
-import com.redbeemedia.enigma.core.playrequest.IPlaybackProperties;
 import com.redbeemedia.enigma.core.playrequest.MockPlayRequest;
 import com.redbeemedia.enigma.core.restriction.ContractRestriction;
 import com.redbeemedia.enigma.core.restriction.IContractRestriction;
 import com.redbeemedia.enigma.core.restriction.IContractRestrictions;
-import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.session.MockSession;
 import com.redbeemedia.enigma.core.task.ITask;
 import com.redbeemedia.enigma.core.task.ITaskFactory;
@@ -275,7 +273,7 @@ public class ContractRestrictionTest {
     private static EnigmaPlayer newPlayerWithMockRestrictions(final JSONObject contractRestrictions, IPlayerImplementation playerImplementation) {
         return new EnigmaPlayerTest.EnigmaPlayerWithMockedTimeProvider(new MockSession(), playerImplementation) {
             @Override
-            protected IPlaybackSessionFactory newPlaybackSessionFactory(ITimeProvider timeProvider) {
+            protected IPlaybackSessionFactory newPlaybackSessionFactory(ITimeProvider timeProvider, IEpg epg) {
                 return new MockPlaybackSessionFactory() {
                     @Override
                     public IInternalPlaybackSession newInternalPlaybackSession() {

@@ -1,5 +1,7 @@
 package com.redbeemedia.enigma.core.player;
 
+import com.redbeemedia.enigma.core.time.Duration;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -7,8 +9,8 @@ import org.json.JSONObject;
     private boolean live;
     private boolean staticManifest;
     private boolean event;
-    private long startUtcSeconds = -1L;
-    private long endUtcSeconds = -1L;
+    private Duration startSinceEpoch = null;
+    private Duration endSinceEpoch = null;
     private String channelId;
     private String programId;
 
@@ -25,11 +27,17 @@ import org.json.JSONObject;
         if(streamInfo != null) {
             this.live = streamInfo.optBoolean("live", false);
             this.staticManifest = streamInfo.optBoolean("static", true);
-            this.startUtcSeconds = streamInfo.optLong("start", -1L);
-            this.endUtcSeconds = streamInfo.optLong("end", -1L);
+            if(streamInfo.has("start")) {
+                long startUtcSeconds = streamInfo.getLong("start");
+                startSinceEpoch = Duration.seconds(startUtcSeconds);
+            }
+            if(streamInfo.has("end")) {
+                long endUtcSeconds = streamInfo.getLong("end");
+                endSinceEpoch = Duration.seconds(endUtcSeconds);
+            }
             this.event = streamInfo.optBoolean("event", false);
-            this.channelId = streamInfo.optString("channelId");
-            this.programId = streamInfo.optString("programId");
+            this.channelId = streamInfo.optString("channelId", null);
+            this.programId = streamInfo.optString("programId", null);
         }
     }
 
@@ -37,26 +45,26 @@ import org.json.JSONObject;
         return live && !staticManifest;
     }
 
-    public boolean hasStartUtcSeconds() {
-        return startUtcSeconds != -1L;
+    public boolean hasStart() {
+        return startSinceEpoch != null;
     }
 
-    public long getStartUtcSeconds() {
-        if(startUtcSeconds == -1L) {
-            throw new IllegalArgumentException("startUtcSeconds never set");
+    public long getStart(Duration.Unit units) {
+        if(startSinceEpoch == null) {
+            throw new IllegalArgumentException("startSinceEpoch never set");
         }
-        return startUtcSeconds;
+        return startSinceEpoch.inWholeUnits(units);
     }
 
-    public boolean hasEndUtcSeconds() {
-        return endUtcSeconds != -1L;
+    public boolean hasEnd() {
+        return endSinceEpoch != null;
     }
 
-    public long getEndUtcSeconds() {
-        if(endUtcSeconds == -1L) {
-            throw new IllegalArgumentException("endUtcSeconds never set");
+    public long getEnd(Duration.Unit units) {
+        if(endSinceEpoch == null) {
+            throw new IllegalArgumentException("endSinceEpoch never set");
         }
-        return endUtcSeconds;
+        return endSinceEpoch.inWholeUnits(units);
     }
 
     public String getChannelId() {
@@ -90,6 +98,6 @@ import org.json.JSONObject;
     }
 
     public boolean hasStreamPrograms() {
-        return hasStartUtcSeconds() && hasEndUtcSeconds() && channelId != null;
+        return hasStart() && channelId != null;
     }
 }

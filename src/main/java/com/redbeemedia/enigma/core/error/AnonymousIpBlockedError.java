@@ -2,7 +2,7 @@ package com.redbeemedia.enigma.core.error;
 
 
 
-public class AnonymousIpBlockedError extends AssetNotAvailableForDeviceError {
+public class AnonymousIpBlockedError extends EntitlementError {
     public AnonymousIpBlockedError() {
         this(null, null);
     }
@@ -16,7 +16,7 @@ public class AnonymousIpBlockedError extends AssetNotAvailableForDeviceError {
     }
 
     public AnonymousIpBlockedError(String message, Error cause) {
-        super(message, cause);
+        super(com.redbeemedia.enigma.core.entitlement.EntitlementStatus.ANONYMOUS_IP_BLOCKED, message, cause);
     }
 
 

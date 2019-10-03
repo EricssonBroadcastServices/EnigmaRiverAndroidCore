@@ -31,10 +31,10 @@ import java.util.Date;
             synchronized (currentProgram) {
                 program = currentProgram.value;
             }
-            if(streamInfo.isLiveStream() && streamInfo.hasStartUtcSeconds()) {
-                return positionFormat.formatDate(new Date(streamInfo.getStartUtcSeconds()+offsetMillis));
-            } else if(streamInfo.hasStartUtcSeconds() && program != null) {
-                return positionFormat.formatDuration(Duration.millis(offsetMillis-program.getStartUtcMillis()+streamInfo.getStartUtcSeconds()*1000L));
+            if(streamInfo.isLiveStream() && streamInfo.hasStart()) {
+                return positionFormat.formatDate(new Date(streamInfo.getStart(Duration.Unit.MILLISECONDS)+offsetMillis));
+            } else if(streamInfo.hasStart() && program != null) {
+                return positionFormat.formatDuration(Duration.millis(offsetMillis-program.getStartUtcMillis()+streamInfo.getStart(Duration.Unit.MILLISECONDS)));
             }
         }
         return positionFormat.formatDuration(Duration.millis(offsetMillis));

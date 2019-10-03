@@ -1,17 +1,13 @@
 package com.redbeemedia.enigma.core.epg;
 
-import com.redbeemedia.enigma.core.businessunit.IBusinessUnit;
-import com.redbeemedia.enigma.core.error.Error;
+import android.os.Handler;
 
-import java.net.MalformedURLException;
-import java.util.List;
+import com.redbeemedia.enigma.core.epg.request.IEpgRequest;
+import com.redbeemedia.enigma.core.epg.response.IEpgResponseHandler;
+import com.redbeemedia.enigma.core.util.IHandler;
 
 public interface IEpg {
-    void loadData(IBusinessUnit businessUnit, long utcMillis, int daysBack, int daysForward) throws MalformedURLException;
-    void getPrograms(String channelId, long fromMillis, long toMillis, IProgramListRequestResultHandler resultHandler);
-
-    interface IProgramListRequestResultHandler {
-        void onList(List<IProgram> programs);
-        void onError(Error error);
-    }
+    void getPrograms(IEpgRequest request, IEpgResponseHandler responseHandler);
+    void getPrograms(IEpgRequest request, IEpgResponseHandler responseHandler, IHandler handler);
+    void getPrograms(IEpgRequest request, IEpgResponseHandler responseHandler, Handler handler);
 }

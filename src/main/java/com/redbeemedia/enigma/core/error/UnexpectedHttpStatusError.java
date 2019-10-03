@@ -7,19 +7,11 @@ public class UnexpectedHttpStatusError extends HttpResponseError {
     private HttpStatus httpStatus;
 
     public UnexpectedHttpStatusError(HttpStatus httpStatus) {
-        this(httpStatus, null, null);
+        this(httpStatus, null);
     }
 
     public UnexpectedHttpStatusError(HttpStatus httpStatus, Error cause) {
-        this(httpStatus, null, cause);
-    }
-
-    public UnexpectedHttpStatusError(HttpStatus httpStatus, String message) {
-        this(httpStatus, message, null);
-    }
-
-    public UnexpectedHttpStatusError(HttpStatus httpStatus, String message, Error cause) {
-        super(message, cause);
+        super(String.valueOf(httpStatus), cause);
         this.httpStatus = httpStatus;
     }
 

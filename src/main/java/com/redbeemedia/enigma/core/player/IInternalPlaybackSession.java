@@ -13,6 +13,7 @@ import java.util.Collection;
 
     StreamInfo getStreamInfo();
     IStreamPrograms getStreamPrograms();
+    IEnigmaPlayerConnection getPlayerConnection();
     void setPlayingFromLive(boolean live);
     void fireEndReached();
     void setTracks(Collection<? extends IPlayerImplementationTrack> tracks);

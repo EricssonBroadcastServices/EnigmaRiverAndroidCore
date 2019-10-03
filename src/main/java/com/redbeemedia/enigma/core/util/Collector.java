@@ -1,9 +1,10 @@
 package com.redbeemedia.enigma.core.util;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * <h3>NOTE</h3>
@@ -11,8 +12,9 @@ import java.util.Map;
  */
 public class Collector<T extends IInternalListener> {
     private final Class<T> listenerType;
-    private final OpenContainer<Collection<T>> listeners = new OpenContainer<>(new ArrayList<>());
+    private final OpenContainer<Collection<ListenerLink<T>>> listeners = new OpenContainer<>(new CopyOnWriteArrayList<>());
     private Map<T,T> wrapperForListener = new HashMap<>();
+    private Map<T,ListenerLink<T>> linkForListener = new HashMap<>();
 
     public Collector(Class<T> listenerType) {
         this.listenerType = listenerType;
@@ -23,7 +25,14 @@ public class Collector<T extends IInternalListener> {
             throw new NullPointerException();
         }
         synchronized (listeners) {
-            return listeners.value.add(listener);
+            ListenerLink<T> existingLink = linkForListener.get(listener);
+            if(existingLink != null && listeners.value.contains(existingLink)) {
+                return false;
+            } else {
+                ListenerLink<T> link = new ListenerLink<>(listener);
+                linkForListener.put(listener, link);
+                return listeners.value.add(link);
+            }
         }
     }
 
@@ -44,7 +53,9 @@ public class Collector<T extends IInternalListener> {
             }
             wrapperForListener.put(listener, wrapper);
             synchronized (listeners) {
-                return listeners.value.add(wrapper);
+                ListenerLink<T> link = new ListenerLink<>(wrapper);
+                linkForListener.put(listener, link);
+                return listeners.value.add(link);
             }
         }
     }
@@ -53,20 +64,34 @@ public class Collector<T extends IInternalListener> {
         T wrapper = wrapperForListener.get(listener);
         if(wrapper != null) {
             wrapperForListener.remove(listener);
-            synchronized (listeners) {
-                return listeners.value.remove(wrapper);
-            }
-        } else {
-            synchronized (listener) {
-                return listeners.value.remove(listener);
+        }
+        return removeLink(listener);
+    }
+
+    private boolean removeLink(T listener) {
+        synchronized (listeners) {
+            ListenerLink<T> listenerLink = linkForListener.remove(listener);
+            if(listenerLink != null && !listenerLink.isStale()) {
+                listenerLink.remove();
+                return listeners.value.remove(listenerLink);
+            } else {
+                return false;
             }
         }
     }
 
     protected void forEach(IListenerAction<T> listenerAction) {
         synchronized (listeners) {
-            for(T listener : listeners.value) {
-                listenerAction.onListener(listener);
+            for(ListenerLink<T> listenerLink : listeners.value) {
+                listenerLink.execute(listenerAction);
+            }
+            //Clear stale links
+            Iterator<ListenerLink<T>> iterator = listeners.value.iterator();
+            while(iterator.hasNext()) {
+                ListenerLink<T> link = iterator.next();
+                if(link.isStale()) {
+                    iterator.remove();
+                }
             }
         }
     }
@@ -75,5 +100,25 @@ public class Collector<T extends IInternalListener> {
         void onListener(T listener);
     }
 
+    private static class ListenerLink<T> {
+        private T link;
 
+        public ListenerLink(T link) {
+            this.link = link;
+        }
+
+        public synchronized void execute(IListenerAction<T> action) {
+            if(link != null) {
+                action.onListener(link);
+            }
+        }
+
+        public synchronized void remove() {
+            link = null;
+        }
+
+        public synchronized boolean isStale() {
+            return link == null;
+        }
+    }
 }

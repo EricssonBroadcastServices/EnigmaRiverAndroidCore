@@ -1,5 +1,6 @@
 package com.redbeemedia.enigma.core.player;
 
+import com.redbeemedia.enigma.core.epg.IProgram;
 import com.redbeemedia.enigma.core.error.Error;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
@@ -29,5 +30,10 @@ import com.redbeemedia.enigma.core.util.Collector;
     @Override
     public void onPlaybackSessionChanged(IPlaybackSession from, IPlaybackSession to) {
         forEach(listener -> listener.onPlaybackSessionChanged(from, to));
+    }
+
+    @Override
+    public void onProgramChanged(IProgram from, IProgram to) {
+        forEach(listener -> listener.onProgramChanged(from, to));
     }
 }

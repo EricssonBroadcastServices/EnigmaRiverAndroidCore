@@ -2,7 +2,7 @@ package com.redbeemedia.enigma.core.error;
 
 
 
-public class LicenceExpiredError extends AssetRestrictedError {
+public class LicenceExpiredError extends EntitlementError {
     public LicenceExpiredError() {
         this(null, null);
     }
@@ -16,7 +16,7 @@ public class LicenceExpiredError extends AssetRestrictedError {
     }
 
     public LicenceExpiredError(String message, Error cause) {
-        super(message, cause);
+        super(com.redbeemedia.enigma.core.entitlement.EntitlementStatus.LICENSE_EXPIRED, message, cause);
     }
 
 

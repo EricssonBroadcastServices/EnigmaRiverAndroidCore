@@ -8,7 +8,19 @@ import com.redbeemedia.enigma.core.analytics.AnalyticsHandler;
 import com.redbeemedia.enigma.core.analytics.AnalyticsReporter;
 import com.redbeemedia.enigma.core.audio.IAudioTrack;
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
+import com.redbeemedia.enigma.core.entitlement.EntitlementData;
+import com.redbeemedia.enigma.core.entitlement.EntitlementStatus;
+import com.redbeemedia.enigma.core.entitlement.IEntitlementProvider;
+import com.redbeemedia.enigma.core.entitlement.listener.BaseEntitlementListener;
+import com.redbeemedia.enigma.core.epg.IProgram;
+import com.redbeemedia.enigma.core.error.AnonymousIpBlockedError;
+import com.redbeemedia.enigma.core.error.ConcurrentStreamsLimitReachedError;
+import com.redbeemedia.enigma.core.error.DeviceBlockedError;
 import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.GeoBlockedError;
+import com.redbeemedia.enigma.core.error.LicenceExpiredError;
+import com.redbeemedia.enigma.core.error.NotEnabledError;
+import com.redbeemedia.enigma.core.error.NotEntitledError;
 import com.redbeemedia.enigma.core.playable.IPlayable;
 import com.redbeemedia.enigma.core.playbacksession.BasePlaybackSessionListener;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSessionListener;
@@ -31,18 +43,21 @@ import com.redbeemedia.enigma.core.util.HandlerWrapper;
 import com.redbeemedia.enigma.core.util.OpenContainer;
 import com.redbeemedia.enigma.core.util.OpenContainerUtil;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 /*package-protected*/ class InternalPlaybackSession implements IInternalPlaybackSession {
     private static final int CYCLE_SLEEP_MILLIS = 1000;
-    private static final long HEARTBEAT_RATE_MILLIS = 60L*1000L;
+    private static final long HEARTBEAT_RATE_MILLIS = 60L * 1000L;
+    private static final long PROGRAM_SERVICE_ENTITLEMENT_CHECK_INTERVAL_MILLIS = 4000L;
+
+    //Task ids
+    private static final String ANALYTICS_HANDLER_TASK = "analyticsHandlerTask";
+    private static final String SEND_REMAINING_DATA_TASK = "sendRemainingDataTask";
+    private static final String PROGRAM_SERVICE_REPEATER = "programServiceRepeater";
+    private static final String HEARTBEAT_REPEATER = "heartbeatRepeater";
 
     private final AnalyticsReporter analyticsReporter;
     private final AnalyticsHandler analyticsHandler;
@@ -52,6 +67,9 @@ import java.util.UUID;
     private final IStreamPrograms streamPrograms;
     private final ListenerCollector collector = new ListenerCollector();
     private final IPlaybackSessionInfo playbackSessionInfo;
+    private final ProgramService programService;
+    private final Repeater programServiceRepeater;
+    private final IEnigmaPlayerConnection.ICommunicationsChannel communicationChannel = new EnigmaPlayerCommunicationChannel();
     private boolean playingFromLive = false;
     private final OpenContainer<List<ISubtitleTrack>> subtitleTracks = new OpenContainer<>(null);
     private final OpenContainer<ISubtitleTrack> selectedSubtitleTrack = new OpenContainer<>(null);
@@ -67,20 +85,36 @@ import java.util.UUID;
     private volatile int state = STATE_NEW;
 
     private final IEnigmaPlayerListener playerListener;
+    private final IEnigmaPlayerListener programServicePlayerListener;
 
 
     public InternalPlaybackSession(ConstructorArgs constructorArgs) {
-        this(constructorArgs.session, constructorArgs.id, constructorArgs.timeProvider, constructorArgs.streamInfo, constructorArgs.playbackSessionInfo, constructorArgs.contractRestrictions);
+        this(constructorArgs.session, constructorArgs.id, constructorArgs.timeProvider, constructorArgs.streamInfo, constructorArgs.streamPrograms, constructorArgs.playbackSessionInfo, constructorArgs.contractRestrictions, constructorArgs.entitlementProvider);
     }
 
-    public InternalPlaybackSession(ISession session, String id, ITimeProvider timeProvider, StreamInfo streamInfo, IPlaybackSessionInfo playbackSessionInfo, IContractRestrictions contractRestrictions) {
+    public InternalPlaybackSession(ISession session, String id, ITimeProvider timeProvider, StreamInfo streamInfo, IStreamPrograms streamPrograms, IPlaybackSessionInfo playbackSessionInfo, IContractRestrictions contractRestrictions, IEntitlementProvider entitlementProvider) {
         this.playbackSessionInfo = playbackSessionInfo;
         this.streamInfo = streamInfo;
-        this.streamPrograms = streamInfo.hasStreamPrograms() ? new StreamPrograms(streamInfo) : null;
+        this.streamPrograms = streamPrograms;
+        this.programService = new ProgramService(session, streamInfo, streamPrograms, playbackSessionInfo, entitlementProvider, this);
+        programService.addEntitlementListener(new BaseEntitlementListener() {
+            @Override
+            public void onEntitlementChanged(EntitlementData oldData, EntitlementData newData) {
+                if (newData != null && !newData.isSuccess()) {
+                    handleEntitlementStatus(communicationChannel, newData.getStatus());
+                }
+            }
+        });
         this.contractRestrictions = new OpenContainer<>(contractRestrictions);
         this.analyticsHandler = new AnalyticsHandler(session, id, timeProvider);
-        ITaskFactory taskFactory = EnigmaRiverContext.getTaskFactory();
-        this.analyticsHandlerTask = taskFactory.newTask(new Runnable() {
+        this.programServiceRepeater = new Repeater(getTaskFactory(PROGRAM_SERVICE_REPEATER), PROGRAM_SERVICE_ENTITLEMENT_CHECK_INTERVAL_MILLIS, programService::checkEntitlement);
+        this.programServicePlayerListener = new BaseEnigmaPlayerListener() {
+            @Override
+            public void onProgramChanged(IProgram from, IProgram to) {
+                programServiceRepeater.executeNow();
+            }
+        };
+        this.analyticsHandlerTask = getTaskFactory(ANALYTICS_HANDLER_TASK).newTask(new Runnable() {
             @Override
             public void run() {
                 boolean initialized = false;
@@ -120,8 +154,7 @@ import java.util.UUID;
         });
         this.analyticsReporter = new AnalyticsReporter(timeProvider, analyticsHandler);
         this.playerListener = new EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, streamInfo);
-        ITaskFactory mainThreadTaskFactory = new MainThreadTaskFactory();
-        heartbeatRepeater = new Repeater(mainThreadTaskFactory, HEARTBEAT_RATE_MILLIS, new HeartbeatRunnable());
+        heartbeatRepeater = new Repeater(getTaskFactory(HEARTBEAT_REPEATER), HEARTBEAT_RATE_MILLIS, new HeartbeatRunnable());
 
         updateSeekAllowed(contractRestrictions);
         addListener(new BasePlaybackSessionListener() {
@@ -132,9 +165,60 @@ import java.util.UUID;
         });
     }
 
+    protected ITaskFactory getTaskFactory(String user) {
+        if(ANALYTICS_HANDLER_TASK.equals(user)) {
+            return EnigmaRiverContext.getTaskFactory();
+        } else if(SEND_REMAINING_DATA_TASK.equals(user)) {
+            return EnigmaRiverContext.getTaskFactory();
+        } else if(PROGRAM_SERVICE_REPEATER.equals(user)) {
+            return new MainThreadTaskFactory();
+        } else if(HEARTBEAT_REPEATER.equals(user)) {
+            return new MainThreadTaskFactory();
+        } else {
+            throw new IllegalArgumentException(user+" not handled");
+        }
+    }
+
     private void changeState(int newState) {
         int oldState = state;
         state = newState;
+    }
+
+    @Override
+    public IEnigmaPlayerConnection getPlayerConnection() {
+        return (IEnigmaPlayerConnection) communicationChannel;
+    }
+
+    protected static void handleEntitlementStatus(IEnigmaPlayerConnection.ICommunicationsChannel communicationsChannel, EntitlementStatus status) {
+        if(status == EntitlementStatus.SUCCESS) {
+            return;
+        }
+        switch (status) {
+            case NOT_ENTITLED: {
+                communicationsChannel.onPlaybackError(new NotEntitledError(EntitlementStatus.NOT_ENTITLED), true);
+            } break;
+            case GEO_BLOCKED: {
+                communicationsChannel.onPlaybackError(new GeoBlockedError(), true);
+            } break;
+            case DEVICE_BLOCKED: {
+                communicationsChannel.onPlaybackError(new DeviceBlockedError(), true);
+            } break;
+            case LICENSE_EXPIRED: {
+                communicationsChannel.onPlaybackError(new LicenceExpiredError(), true);
+            } break;
+            case CONCURRENT_STREAMS_LIMIT_REACHED: {
+                communicationsChannel.onPlaybackError(new ConcurrentStreamsLimitReachedError(), true);
+            } break;
+            case NOT_ENABLED: {
+                communicationsChannel.onPlaybackError(new NotEnabledError(), true);
+            } break;
+            case ANONYMOUS_IP_BLOCKED: {
+                communicationsChannel.onPlaybackError(new AnonymousIpBlockedError(), true);
+            } break;
+            default: {
+                communicationsChannel.onPlaybackError(new NotEntitledError(status), true);
+            } break;
+        }
     }
 
     @Override
@@ -147,6 +231,8 @@ import java.util.UUID;
         analyticsReporter.deviceInfo();
         analyticsReporter.playbackCreated(playbackSessionInfo.getAssetId());
         heartbeatRepeater.setEnabled(true);
+        programServiceRepeater.setEnabled(true);
+        enigmaPlayer.addListener(programServicePlayerListener);
         enigmaPlayer.addListener(playerListener);
         try {
             analyticsHandlerTask.start();
@@ -167,7 +253,9 @@ import java.util.UUID;
             changeState(STATE_DEAD);
         }
         heartbeatRepeater.setEnabled(false);
-        if(aborted) {
+        programServiceRepeater.setEnabled(false);
+        enigmaPlayer.removeListener(programServicePlayerListener);
+        if (aborted) {
             analyticsReporter.playbackAborted(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
         }
         enigmaPlayer.removeListener(playerListener);
@@ -176,7 +264,7 @@ import java.util.UUID;
         } catch (TaskException e) {
             e.printStackTrace(); //Suppress
         }
-        ITask sendRemainingDataTask = EnigmaRiverContext.getTaskFactory().newTask(() -> {
+        ITask sendRemainingDataTask = getTaskFactory(SEND_REMAINING_DATA_TASK).newTask(() -> {
             try {
                 analyticsHandler.sendData(); //Try to send any remaining data.
             } catch (Exception e) {
@@ -396,23 +484,20 @@ import java.util.UUID;
         public final String id;
         public final ITimeProvider timeProvider;
         public final StreamInfo streamInfo;
+        public final IStreamPrograms streamPrograms;
         public final IPlaybackSessionInfo playbackSessionInfo;
         public final IContractRestrictions contractRestrictions;
+        public final IEntitlementProvider entitlementProvider;
 
-        public ConstructorArgs(ISession session, String id, ITimeProvider timeProvider, StreamInfo streamInfo, IPlaybackSessionInfo playbackSessionInfo, IContractRestrictions contractRestrictions) {
+        public ConstructorArgs(ISession session, String id, ITimeProvider timeProvider, StreamInfo streamInfo, IStreamPrograms streamPrograms, IPlaybackSessionInfo playbackSessionInfo, IContractRestrictions contractRestrictions, IEntitlementProvider entitlementProvider) {
             this.session = session;
             this.id = id;
             this.timeProvider = timeProvider;
             this.streamInfo = streamInfo;
+            this.streamPrograms = streamPrograms;
             this.playbackSessionInfo = playbackSessionInfo;
             this.contractRestrictions = contractRestrictions;
-        }
-
-        public static ConstructorArgs of(ISession session, JSONObject jsonObject, IPlaybackSessionInfo playbackSessionInfo, ITimeProvider timeProvider) throws JSONException {
-            String playbackSessionId = jsonObject.optString("playSessionId", UUID.randomUUID().toString());
-            StreamInfo streamInfo = new StreamInfo(jsonObject.optJSONObject("streamInfo"));
-            EnigmaContractRestrictions contractRestrictions = EnigmaContractRestrictions.createWithDefaults(jsonObject.optJSONObject("contractRestrictions"));
-            return new ConstructorArgs(session, playbackSessionId, timeProvider, streamInfo, playbackSessionInfo, contractRestrictions);
+            this.entitlementProvider = entitlementProvider;
         }
     }
 
@@ -465,7 +550,7 @@ import java.util.UUID;
                     long playbackOffset = getCurrentPlaybackOffset(playbackSessionInfo, streamInfo);
                     String playMode = streamInfo.getPlayMode();
                     String mediaLocator = playbackSessionInfo.getMediaLocator();
-                    Long referenceTime = streamInfo.isLiveStream() ? streamInfo.getStartUtcSeconds()*1000L : null;
+                    Long referenceTime = streamInfo.isLiveStream() ? streamInfo.getStart(Duration.Unit.MILLISECONDS) : null;
                     analyticsReporter.playbackStarted(playbackOffset, playMode, mediaLocator, referenceTime);
                 }
             } else if(to == EnigmaPlayerState.PAUSED) {
@@ -478,9 +563,38 @@ import java.util.UUID;
 
     private static long getCurrentPlaybackOffset(IPlaybackSessionInfo playbackSessionInfo, StreamInfo streamInfo) {
         long playbackOffset = playbackSessionInfo.getCurrentPlaybackOffset().inWholeUnits(Duration.Unit.MILLISECONDS);
-        long startUtcSeconds = streamInfo.hasStartUtcSeconds() ? streamInfo.getStartUtcSeconds() : 0;
-        long startUtcMillis = startUtcSeconds*1000L;
+        long startUtcMillis = streamInfo.hasStart() ? streamInfo.getStart(Duration.Unit.MILLISECONDS) : 0;
         long sum = playbackOffset+startUtcMillis;
         return sum;
+    }
+
+    private static class EnigmaPlayerCommunicationChannel implements IEnigmaPlayerConnection, IEnigmaPlayerConnection.ICommunicationsChannel {
+        private final OpenContainer<IEnigmaPlayerConnection.ICommunicationsChannel> communicationsChannel = new OpenContainer<>(null);
+
+        @Override
+        public void openConnection(ICommunicationsChannel communicationsChannel) {
+            OpenContainerUtil.setValueSynchronized(this.communicationsChannel, communicationsChannel, null);
+        }
+
+        @Override
+        public void severConnection() {
+            OpenContainerUtil.setValueSynchronized(this.communicationsChannel, null, null);
+        }
+
+        private void ifConnectionOpen(ICommunicationsChannelAction action) {
+            ICommunicationsChannel activeChannel = OpenContainerUtil.getValueSynchronized(communicationsChannel);
+            if(activeChannel != null) {
+                action.onCommunicationsChannel(activeChannel);
+            }
+        }
+
+        @Override
+        public void onPlaybackError(Error error, boolean endStream) {
+            ifConnectionOpen(channel -> channel.onPlaybackError(error, endStream));
+        }
+
+        private interface ICommunicationsChannelAction {
+            void onCommunicationsChannel(ICommunicationsChannel channel);
+        }
     }
 }

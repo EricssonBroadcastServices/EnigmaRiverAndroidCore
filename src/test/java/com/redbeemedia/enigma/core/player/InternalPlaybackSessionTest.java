@@ -5,6 +5,15 @@ import android.os.Handler;
 import com.redbeemedia.enigma.core.analytics.AnalyticsReporter;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
+import com.redbeemedia.enigma.core.entitlement.EntitlementStatus;
+import com.redbeemedia.enigma.core.error.AnonymousIpBlockedError;
+import com.redbeemedia.enigma.core.error.ConcurrentStreamsLimitReachedError;
+import com.redbeemedia.enigma.core.error.DeviceBlockedError;
+import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.GeoBlockedError;
+import com.redbeemedia.enigma.core.error.LicenceExpiredError;
+import com.redbeemedia.enigma.core.error.NotEnabledError;
+import com.redbeemedia.enigma.core.error.NotEntitledError;
 import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.http.MockHttpHandler;
 import com.redbeemedia.enigma.core.playbacksession.BasePlaybackSessionListener;
@@ -27,7 +36,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -83,26 +94,36 @@ public class InternalPlaybackSessionTest {
                 return true;
             }
         };
-        newTaskCalled.assertOnce();
-        taskStartCalled.assertNone();
-        taskCancelCalled.assertNone();
-        addListenerCalled.assertNone();
+        int expectedNewTaskCalled = 1;
+        int expectedTaskStartCalled = 0;
+        int expectedTaskCancelCalled = 0;
+        int expectedAddListenerCalled = 0;
+        newTaskCalled.assertCount(expectedNewTaskCalled);
+        taskStartCalled.assertCount(expectedTaskStartCalled);
+        taskCancelCalled.assertCount(expectedTaskCancelCalled);
+        addListenerCalled.assertCount(expectedAddListenerCalled);
         removeListenerCalled.assertNone();
 
         playbackSession.onStart(mockEnigmaPlayer);
-        newTaskCalled.assertOnce();
-        taskStartCalled.assertOnce();
-        taskCancelCalled.assertNone();
-        addListenerCalled.assertOnce();
+        expectedTaskStartCalled += 1;
+        expectedAddListenerCalled += 2;
+        newTaskCalled.assertCount(expectedNewTaskCalled);
+        taskStartCalled.assertCount(expectedTaskStartCalled);
+        taskCancelCalled.assertCount(expectedTaskCancelCalled);
+        addListenerCalled.assertCount(expectedAddListenerCalled);
         removeListenerCalled.assertNone();
 
         mockHttpHandler.queueResponse(new HttpStatus(200, "OK"));
         playbackSession.onStop(mockEnigmaPlayer);
-        newTaskCalled.assertCount(2);
-        taskStartCalled.assertCount(2);
-        taskCancelCalled.assertOnce();
-        addListenerCalled.assertOnce();
-        removeListenerCalled.assertOnce();
+        expectedNewTaskCalled += 1;
+        expectedTaskStartCalled += 1;
+        expectedTaskCancelCalled += 1;
+        newTaskCalled.assertCount(expectedNewTaskCalled);
+        taskStartCalled.assertCount(expectedTaskStartCalled);
+        taskCancelCalled.assertCount(expectedTaskCancelCalled);
+        addListenerCalled.assertCount(expectedAddListenerCalled);
+        int expectedRemoveListenerCalled = expectedAddListenerCalled;
+        removeListenerCalled.assertCount(expectedRemoveListenerCalled);
     }
 
     @Test
@@ -134,8 +155,8 @@ public class InternalPlaybackSessionTest {
     @Test
     public void testStreamInfoResults() throws JSONException {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
-        StreamInfo nonLiveStreamInfo = new MockStreamInfo(false);
-        StreamInfo liveStreamInfo = new MockStreamInfo(true);
+        StreamInfo nonLiveStreamInfo = new MockStreamInfo(MockStreamInfo.Args.vod());
+        StreamInfo liveStreamInfo = new MockStreamInfo(MockStreamInfo.Args.liveStream());
 
         {
             MockInternalPlaybackSessionConstructorArgs args = new MockInternalPlaybackSessionConstructorArgs();
@@ -167,7 +188,7 @@ public class InternalPlaybackSessionTest {
     public void testListeners() throws JSONException {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
         MockInternalPlaybackSessionConstructorArgs args = new MockInternalPlaybackSessionConstructorArgs();
-        InternalPlaybackSession playbackSession = new InternalPlaybackSession(args.setStreamInfo(new MockStreamInfo(true)).create());
+        InternalPlaybackSession playbackSession = new InternalPlaybackSession(args.setStreamInfo(new MockStreamInfo(MockStreamInfo.Args.liveStream())).create());
         final StringBuilder log = new StringBuilder();
         IPlaybackSessionListener listener = new BasePlaybackSessionListener() {
             @Override
@@ -304,6 +325,96 @@ public class InternalPlaybackSessionTest {
         Assert.assertFalse("Did not expect event to have property ReferenceTime",event.has("ReferenceTime"));
     }
 
+    @Test
+    public void testCommunicationsCut() {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+
+        MockInternalPlaybackSessionConstructorArgs args = new MockInternalPlaybackSessionConstructorArgs();
+        InternalPlaybackSession internalPlaybackSession = new InternalPlaybackSession(args.create());
+
+        final EnigmaPlayerCollector eventSource = new EnigmaPlayerCollector();
+        MockEnigmaPlayer mockEnigmaPlayer = new MockEnigmaPlayer() {
+            @Override
+            public boolean addListener(IEnigmaPlayerListener playerListener) {
+                return eventSource.addListener(playerListener);
+            }
+
+            @Override
+            public boolean removeListener(IEnigmaPlayerListener playerListener) {
+                return eventSource.removeListener(playerListener);
+            }
+        };
+        final Counter onPlaybackErrorCalled = new Counter();
+        internalPlaybackSession.getPlayerConnection().openConnection(new MockCommunicationsChannel() {
+            @Override
+            public void onPlaybackError(Error error, boolean endStream) {
+                onPlaybackErrorCalled.count();
+            }
+        });
+
+        IEnigmaPlayerConnection.ICommunicationsChannel playerConnectionFromPBS = ((IEnigmaPlayerConnection.ICommunicationsChannel) internalPlaybackSession.getPlayerConnection());
+
+        int expectedCalls = 0;
+        onPlaybackErrorCalled.assertCount(expectedCalls);
+        internalPlaybackSession.onStart(mockEnigmaPlayer);
+        playerConnectionFromPBS.onPlaybackError(null, false);
+        expectedCalls++;
+        onPlaybackErrorCalled.assertCount(expectedCalls);
+
+        internalPlaybackSession.onStop(mockEnigmaPlayer);
+        playerConnectionFromPBS.onPlaybackError(null, false);
+        expectedCalls++;
+        onPlaybackErrorCalled.assertCount(expectedCalls);
+
+        internalPlaybackSession.getPlayerConnection().severConnection();
+        playerConnectionFromPBS.onPlaybackError(null, false);
+        onPlaybackErrorCalled.assertCount(expectedCalls);
+        playerConnectionFromPBS.onPlaybackError(null, false);
+        onPlaybackErrorCalled.assertCount(expectedCalls);
+    }
+
+    @Test
+    public void testPlaybackErrorForEveryStatus() {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+
+        Map<EntitlementStatus, Class<? extends Error>> expectedErrorType = new HashMap<>();
+        expectedErrorType.put(EntitlementStatus.NOT_ENTITLED, NotEntitledError.class);
+        expectedErrorType.put(EntitlementStatus.GEO_BLOCKED, GeoBlockedError.class);
+        expectedErrorType.put(EntitlementStatus.DOWNLOAD_BLOCKED, NotEntitledError.class);
+        expectedErrorType.put(EntitlementStatus.DEVICE_BLOCKED, DeviceBlockedError.class);
+        expectedErrorType.put(EntitlementStatus.LICENSE_EXPIRED, LicenceExpiredError.class);
+        expectedErrorType.put(EntitlementStatus.NOT_AVAILABLE_IN_FORMAT, NotEntitledError.class);
+        expectedErrorType.put(EntitlementStatus.CONCURRENT_STREAMS_LIMIT_REACHED, ConcurrentStreamsLimitReachedError.class);
+        expectedErrorType.put(EntitlementStatus.NOT_ENABLED, NotEnabledError.class);
+        expectedErrorType.put(EntitlementStatus.GAP_IN_EPG, NotEntitledError.class);
+        expectedErrorType.put(EntitlementStatus.EPG_PLAY_MAX_HOURS, NotEntitledError.class);
+        expectedErrorType.put(EntitlementStatus.ANONYMOUS_IP_BLOCKED, AnonymousIpBlockedError.class);
+        final Counter errorTypesChecked = new Counter();
+
+        for(EntitlementStatus status : EntitlementStatus.values()) {
+            if(status == EntitlementStatus.SUCCESS) {
+                continue;
+            }
+            final String assertMessage = "for "+status.name();
+            final Counter onPlaybackErrorCalled = new Counter();
+            MockCommunicationsChannel comChannel = new MockCommunicationsChannel() {
+                @Override
+                public void onPlaybackError(Error error, boolean endStream) {
+                    Assert.assertTrue(assertMessage, endStream);
+                    Assert.assertNotNull(assertMessage, expectedErrorType.get(status));
+                    Assert.assertNotNull(assertMessage, error);
+                    Assert.assertEquals(assertMessage, expectedErrorType.get(status), error.getClass());
+                    errorTypesChecked.count();
+                    onPlaybackErrorCalled.count();
+                }
+            };
+            onPlaybackErrorCalled.assertNone(assertMessage);
+            InternalPlaybackSession.handleEntitlementStatus(comChannel, status);
+            onPlaybackErrorCalled.assertOnce(assertMessage);
+        }
+        errorTypesChecked.assertCount(expectedErrorType.size());
+    }
+
     private abstract static class MockEnigmaPlayer implements IEnigmaPlayer {
         @Override
         public void play(IPlayRequest playerRequest) {
@@ -352,16 +463,21 @@ public class InternalPlaybackSessionTest {
 
                 @Override
                 public void start() throws IllegalStateException {
+                    onTaskStart(this);
                     this.future = executorService.submit(runnable);
                 }
 
                 @Override
                 public void cancel(long joinMillis) throws IllegalStateException {
-                    future.cancel(true);
+                    onTaskCancel(this);
+                    if(future != null) {
+                        future.cancel(true);
+                    }
                 }
 
                 @Override
                 public void startDelayed(long delayMillis) {
+                    onTaskStartDelayed(this);
                     future = executorService.submit(new Runnable() {
                         @Override
                         public void run() {
@@ -377,6 +493,15 @@ public class InternalPlaybackSessionTest {
             };
         }
 
+        protected void onTaskStart(ITask task) {
+        }
+
+        protected void onTaskStartDelayed(ITask task) {
+        }
+
+        protected void onTaskCancel(ITask task) {
+        }
+
         public void joinAllThreads() {
             executorService.shutdown();
             try {
@@ -384,20 +509,6 @@ public class InternalPlaybackSessionTest {
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-        }
-    }
-
-    private static class MockStreamInfo extends StreamInfo {
-        private final boolean liveStream;
-
-        public MockStreamInfo(boolean liveStream) throws JSONException {
-            super(null);
-            this.liveStream = liveStream;
-        }
-
-        @Override
-        public boolean isLiveStream() {
-            return liveStream;
         }
     }
 }

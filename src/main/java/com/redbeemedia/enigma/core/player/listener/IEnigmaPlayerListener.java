@@ -1,5 +1,6 @@
 package com.redbeemedia.enigma.core.player.listener;
 
+import com.redbeemedia.enigma.core.epg.IProgram;
 import com.redbeemedia.enigma.core.error.Error;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.player.EnigmaPlayerState;
@@ -20,4 +21,6 @@ public interface IEnigmaPlayerListener extends IInternalListener {
     void onStateChanged(EnigmaPlayerState from, EnigmaPlayerState to);
 
     void onPlaybackSessionChanged(IPlaybackSession from, IPlaybackSession to);
+
+    void onProgramChanged(IProgram from, IProgram to);
 }

@@ -11,6 +11,7 @@ import com.redbeemedia.enigma.core.audio.IAudioTrack;
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.drm.IDrmInfo;
 import com.redbeemedia.enigma.core.drm.IDrmProvider;
+import com.redbeemedia.enigma.core.epg.IEpg;
 import com.redbeemedia.enigma.core.epg.IProgram;
 import com.redbeemedia.enigma.core.error.Error;
 import com.redbeemedia.enigma.core.error.InternalError;
@@ -24,6 +25,7 @@ import com.redbeemedia.enigma.core.playable.IPlayableHandler;
 import com.redbeemedia.enigma.core.player.controls.AbstractEnigmaPlayerControls;
 import com.redbeemedia.enigma.core.player.controls.IControlResultHandler;
 import com.redbeemedia.enigma.core.player.controls.IEnigmaPlayerControls;
+import com.redbeemedia.enigma.core.entitlement.EntitlementProvider;
 import com.redbeemedia.enigma.core.player.listener.BaseEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.timeline.BaseTimelineListener;
@@ -89,6 +91,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     private EnigmaPlayerCollector enigmaPlayerListeners = new EnigmaPlayerCollector();
 
     private final IPlaybackSessionFactory playbackSessionFactory;
+    private final InternalEnigmaPlayerCommunicationsChannel communicationsChannel = new InternalEnigmaPlayerCommunicationsChannel();
     private final OpenContainer<IInternalPlaybackSession> currentPlaybackSession = new OpenContainer<>(null);
     private PlaybackSessionContainerCollector playbackSessionContainerCollector = new PlaybackSessionContainerCollector();
     private final OpenContainer<IPlaybackStartAction> currentPlaybackStartAction = new OpenContainer<>(null);
@@ -115,7 +118,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             }
         };
         this.timeProvider = newTimeProvider(session);
-        this.playbackSessionFactory = newPlaybackSessionFactory(timeProvider);
+        this.playbackSessionFactory = newPlaybackSessionFactory(timeProvider, EnigmaRiverContext.getEpgLocator().getEpg(session.getBusinessUnit()));
 
         environment.fireEnigmaPlayerReady(this);
     }
@@ -126,8 +129,8 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         return serverTimeService;
     }
 
-    protected IPlaybackSessionFactory newPlaybackSessionFactory(ITimeProvider timeProvider) {
-        return new DefaultPlaybackSessionFactory(timeProvider);
+    protected IPlaybackSessionFactory newPlaybackSessionFactory(ITimeProvider timeProvider, IEpg epg) {
+        return new DefaultPlaybackSessionFactory(timeProvider, epg, new EntitlementProvider(EnigmaRiverContext.getHttpHandler()));
     }
 
     public EnigmaPlayer setActivity(Activity activity) {
@@ -373,11 +376,13 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             IInternalPlaybackSession oldSession = this.currentPlaybackSession.value;
             if(this.currentPlaybackSession.value != null) {
                 this.currentPlaybackSession.value.onStop(this);
+                this.currentPlaybackSession.value.getPlayerConnection().severConnection();
             }
             this.currentPlaybackSession.value = playbackSession;
             playbackSessionContainerCollector.onPlaybackSessionChanged(oldSession, playbackSession);
             enigmaPlayerListeners.onPlaybackSessionChanged(oldSession, playbackSession);
             if(this.currentPlaybackSession.value != null) {
+                this.currentPlaybackSession.value.getPlayerConnection().openConnection(communicationsChannel);
                 this.currentPlaybackSession.value.onStart(this);
             }
         }
@@ -805,6 +810,8 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         private ITimelinePosition streamTimelinePosition = null;
         private long currentStreamOffset = 0;
         private boolean hasProgram = false;
+        private ITimelinePosition lastReturnedStartBound = null;
+        private ITimelinePosition lastReturnedEndBound = null;
         private final ProgramTracker programTracker = new ProgramTracker().addListener(new ProgramTracker.IProgramChangedListener() {
             @Override
             public void onProgramChanged(IProgram oldProgram, IProgram newProgram) {
@@ -815,8 +822,8 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                     }
                     if(playbackSession != null) {
                         StreamInfo streamInfo = playbackSession.getStreamInfo();
-                        if(streamInfo.hasStartUtcSeconds()) {
-                            long streamStartUtcMillis = streamInfo.getStartUtcSeconds()*1000L;
+                        if(streamInfo.hasStart()) {
+                            long streamStartUtcMillis = streamInfo.getStart(Duration.Unit.MILLISECONDS);
                             ITimelinePositionFactory positionFactory = environment.timelinePositionFactory;
                             long startOffset = newProgram.getStartUtcMillis()-streamStartUtcMillis;
                             long endOffset = newProgram.getEndUtcMillis()-streamStartUtcMillis;
@@ -846,6 +853,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
         public void init() {
             programTracker.addListener(environment.timelinePositionFactory);
+            programTracker.addListener((oldProgram, newProgram) -> enigmaPlayerListeners.onProgramChanged(oldProgram, newProgram));
             programTracker.init(EnigmaPlayer.this);
             collector.addListener(new BaseTimelineListener() {
                 @Override
@@ -878,12 +886,18 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
         @Override
         public ITimelinePosition getCurrentEndBound() {
-            return environment.playerImplementationInternals.getCurrentEndBound();
+            if(lastReturnedEndBound == null) {
+                lastReturnedEndBound = environment.playerImplementationInternals.getCurrentEndBound();
+            }
+            return lastReturnedEndBound;
         }
 
         @Override
         public ITimelinePosition getCurrentStartBound() {
-            return environment.playerImplementationInternals.getCurrentStartBound();
+            if(lastReturnedStartBound == null) {
+                lastReturnedStartBound = environment.playerImplementationInternals.getCurrentStartBound();
+            }
+            return lastReturnedStartBound;
         }
 
         @Override
@@ -927,6 +941,8 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         }
 
         public void onExposedTimelineBoundsChanged(ITimelinePosition start, ITimelinePosition end) {
+            this.lastReturnedStartBound = start;
+            this.lastReturnedEndBound = end;
             AndroidThreadUtil.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -987,6 +1003,22 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         @Override
         public String getMediaLocator() {
             return mediaLocator;
+        }
+    }
+
+    /**
+     * Communication interface from InternalPlaybackSession back to EnigmaPlayer
+     */
+    private class InternalEnigmaPlayerCommunicationsChannel implements IEnigmaPlayerConnection.ICommunicationsChannel {
+        @Override
+        public void onPlaybackError(Error error, boolean endStream) {
+            try {
+                enigmaPlayerListeners.onPlaybackError(error);
+            } finally {
+                if(endStream) {
+                    environment.playerImplementationControls.stop(new BasePlayerImplementationControlResultHandler());
+                }
+            }
         }
     }
 
