@@ -1,7 +1,7 @@
 package com.redbeemedia.enigma.core.player;
 
 import com.redbeemedia.enigma.core.audio.IAudioTrack;
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.player.timeline.ITimelinePosition;
 import com.redbeemedia.enigma.core.player.track.IPlayerImplementationTrack;
 import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
@@ -13,7 +13,7 @@ import java.util.Collection;
  * <p>This interface is not part of the public API.</p>
  */
 public interface IPlayerImplementationListener {
-    void onError(Error error);
+    void onError(EnigmaError error);
     void onLoadCompleted();
     void onPlaybackStarted();
     void onTimelineBoundsChanged(ITimelinePosition start, ITimelinePosition end);

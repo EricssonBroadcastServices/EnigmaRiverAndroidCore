@@ -69,7 +69,7 @@ There are different types of login requests (`UserLoginRequest`,`AnonymousLoginR
 We add a method in our `LoginActivity` to send this request and handle the results.
 ```java
 ...
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.login.ILoginResultHandler;
 import com.redbeemedia.enigma.core.login.UserLoginRequest;
 import com.redbeemedia.enigma.core.session.ISession;
@@ -84,7 +84,7 @@ public class LoginActivity extends Activity {
             }
 
             @Override
-            public void onError(Error error) {
+            public void onError(EnigmaError error) {
                 //TODO handle failed login.
             }
         }));
@@ -101,7 +101,7 @@ import android.widget.Toast;
 import com.redbeemedia.enigma.core.error.InvalidCredentialsError;
 ...
             @Override
-            public void onError(Error error) {
+            public void onError(EnigmaError error) {
                 if(error instanceof InvalidCredentialsError) {
                     Toast.makeText(LoginActivity.this, "Incorrect username/password", Toast.LENGTH_LONG).show();
                 } else {
@@ -256,7 +256,7 @@ import com.redbeemedia.enigma.core.playable.AssetPlayable;
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
 import com.redbeemedia.enigma.core.playrequest.PlayRequest;
 import com.redbeemedia.enigma.core.playrequest.BasePlayResultHandler;
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 ...
 public class PlaybackActivity extends Activity {
 ...
@@ -271,7 +271,7 @@ public class PlaybackActivity extends Activity {
         //Create a play request
         IPlayRequest playRequest = new PlayRequest(playable, new BasePlayResultHandler() {
             @Override
-            public void onError(Error error) {
+            public void onError(EnigmaError error) {
                //TODO Handle error
             }
         });
@@ -299,7 +299,7 @@ import com.redbeemedia.enigma.core.error.NoSupportedMediaFormatsError;
         ...
         IPlayRequest playRequest = new PlayRequest(playable, new BasePlayResultHandler() {
             @Override
-            public void onError(Error error) {
+            public void onError(EnigmaError error) {
                 if(error instanceof AssetGeoBlockedError) {
                     showMessage("This asset it not available for your region");
                 } else if(error instanceof AssetNotAvailableError) {
@@ -325,4 +325,4 @@ import com.redbeemedia.enigma.core.error.NoSupportedMediaFormatsError;
 # And that's all there is to it!
 
 This is what our finished app looks like:
-[yourFirstApp](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r1.0.27-BETA-2/yourFirstApp)<br />
+[yourFirstApp](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r1.0.27-BETA-3/yourFirstApp)<br />

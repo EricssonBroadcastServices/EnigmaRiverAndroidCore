@@ -7,7 +7,7 @@ public class DeviceBlockedError extends EntitlementError {
         this(null, null);
     }
 
-    public DeviceBlockedError(Error cause) {
+    public DeviceBlockedError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -15,7 +15,7 @@ public class DeviceBlockedError extends EntitlementError {
         this(message, null);
     }
 
-    public DeviceBlockedError(String message, Error cause) {
+    public DeviceBlockedError(String message, EnigmaError cause) {
         super(com.redbeemedia.enigma.core.entitlement.EntitlementStatus.DEVICE_BLOCKED, message, cause);
     }
 

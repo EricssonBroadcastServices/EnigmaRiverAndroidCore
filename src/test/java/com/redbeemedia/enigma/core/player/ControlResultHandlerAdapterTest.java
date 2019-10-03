@@ -1,6 +1,6 @@
 package com.redbeemedia.enigma.core.player;
 
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.player.controls.IControlResultHandler;
 
 import org.junit.Assert;
@@ -22,7 +22,7 @@ public class ControlResultHandlerAdapterTest {
             }
 
             @Override
-            public void onError(Error error) {
+            public void onError(EnigmaError error) {
                 Assert.fail("Should not have been called");
             }
 
@@ -60,7 +60,7 @@ public class ControlResultHandlerAdapterTest {
             }
 
             @Override
-            public void onError(Error error) {
+            public void onError(EnigmaError error) {
                 Assert.fail("Should not have been called");
             }
 

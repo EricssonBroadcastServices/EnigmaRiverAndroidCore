@@ -7,7 +7,7 @@ import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.epg.IProgram;
 import com.redbeemedia.enigma.core.epg.request.IEpgRequest;
 import com.redbeemedia.enigma.core.epg.response.IEpgResponseHandler;
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.error.InternalError;
 import com.redbeemedia.enigma.core.error.UnexpectedError;
 import com.redbeemedia.enigma.core.http.ExposureApiCall;
@@ -104,7 +104,7 @@ public class DirectEpg extends AbstractEpg {
                 }
 
                 @Override
-                public void onError(int page, Error error) {
+                public void onError(int page, EnigmaError error) {
                     responseHandler.onError(new InternalError("Error while parsing page "+page, error));
                 }
 
@@ -144,7 +144,7 @@ public class DirectEpg extends AbstractEpg {
                     try {
                         totalHitsAllChannels = pageResults.onSuccess(page, jsonReader);
                     } catch (Exception e) {
-                        Error error = new UnexpectedError(e);
+                        EnigmaError error = new UnexpectedError(e);
                         if(e instanceof EnigmaErrorException) {
                             error = ((EnigmaErrorException) e).getError();
                         }
@@ -164,7 +164,7 @@ public class DirectEpg extends AbstractEpg {
                 }
 
                 @Override
-                protected void onError(Error error) {
+                protected void onError(EnigmaError error) {
                     pageResults.onError(page, error);
                 }
             });
@@ -172,7 +172,7 @@ public class DirectEpg extends AbstractEpg {
 
         public interface IPageResults {
             int onSuccess(int page, JsonReader jsonReader) throws Exception;
-            void onError(int page, Error error);
+            void onError(int page, EnigmaError error);
             void onAllSuccess();
         }
     }

@@ -2,7 +2,7 @@ package com.redbeemedia.enigma.core.login;
 
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.http.MockHttpHandler;
 import com.redbeemedia.enigma.core.testutil.Flag;
@@ -74,7 +74,7 @@ public class EnigmaLoginTest {
         final Flag onErrorCalled = new Flag();
         enigmaLogin.login(new UserLoginRequest("tester", "test", new MockLoginResultHandler() {
             @Override
-            public void onError(Error error) {
+            public void onError(EnigmaError error) {
                 onErrorCalled.setFlag();
             }
         }));

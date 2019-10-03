@@ -7,7 +7,7 @@ public class AssetGeoBlockedError extends AssetRestrictedError {
         this(null, null);
     }
 
-    public AssetGeoBlockedError(Error cause) {
+    public AssetGeoBlockedError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -15,7 +15,7 @@ public class AssetGeoBlockedError extends AssetRestrictedError {
         this(message, null);
     }
 
-    public AssetGeoBlockedError(String message, Error cause) {
+    public AssetGeoBlockedError(String message, EnigmaError cause) {
         super(message, cause);
     }
 

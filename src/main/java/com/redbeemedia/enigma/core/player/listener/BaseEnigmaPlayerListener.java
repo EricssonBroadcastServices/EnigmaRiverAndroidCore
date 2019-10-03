@@ -1,7 +1,7 @@
 package com.redbeemedia.enigma.core.player.listener;
 
 import com.redbeemedia.enigma.core.epg.IProgram;
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.player.EnigmaPlayerState;
 
@@ -12,7 +12,7 @@ public class BaseEnigmaPlayerListener implements IEnigmaPlayerListener {
     }
 
     @Override
-    public void onPlaybackError(Error error) {
+    public void onPlaybackError(EnigmaError error) {
     }
 
     @Override

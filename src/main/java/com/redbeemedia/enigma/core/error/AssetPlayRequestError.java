@@ -2,12 +2,12 @@ package com.redbeemedia.enigma.core.error;
 
 
 
-public abstract class AssetPlayRequestError extends Error {
+public abstract class AssetPlayRequestError extends EnigmaError {
     /*package-protected*/ AssetPlayRequestError() {
         this(null, null);
     }
 
-    /*package-protected*/ AssetPlayRequestError(Error cause) {
+    /*package-protected*/ AssetPlayRequestError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -15,7 +15,7 @@ public abstract class AssetPlayRequestError extends Error {
         this(message, null);
     }
 
-    /*package-protected*/ AssetPlayRequestError(String message, Error cause) {
+    /*package-protected*/ AssetPlayRequestError(String message, EnigmaError cause) {
         super(message, cause);
     }
 

@@ -1,6 +1,6 @@
 package com.redbeemedia.enigma.core.playrequest;
 
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 
 public class BasePlayResultHandler implements IPlayResultHandler {
@@ -14,6 +14,6 @@ public class BasePlayResultHandler implements IPlayResultHandler {
     }
 
     @Override
-    public void onError(Error error) {
+    public void onError(EnigmaError error) {
     }
 }

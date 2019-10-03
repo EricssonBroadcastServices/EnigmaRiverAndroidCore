@@ -5,7 +5,7 @@ import com.redbeemedia.enigma.core.error.AssetGeoBlockedError;
 import com.redbeemedia.enigma.core.error.AssetNotAvailableForDeviceError;
 import com.redbeemedia.enigma.core.error.AssetNotEnabledError;
 import com.redbeemedia.enigma.core.error.AssetRestrictedError;
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.error.InternalError;
 import com.redbeemedia.enigma.core.error.InvalidAssetError;
 import com.redbeemedia.enigma.core.error.InvalidJsonToServerError;
@@ -73,7 +73,7 @@ public class PlayResponseHandlerTest {
             }
 
             @Override
-            protected void onError(Error error) {
+            protected void onError(EnigmaError error) {
                 errorCounter.count();
             }
         };
@@ -97,7 +97,7 @@ public class PlayResponseHandlerTest {
                 }
 
                 @Override
-                protected void onError(Error error) {
+                protected void onError(EnigmaError error) {
                     errorCounter.count();
                     Assert.assertThat(error, errorExpectation.getErrorMatcher());
                 }

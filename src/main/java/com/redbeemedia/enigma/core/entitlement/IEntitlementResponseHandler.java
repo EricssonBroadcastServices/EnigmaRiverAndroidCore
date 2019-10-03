@@ -1,6 +1,6 @@
 package com.redbeemedia.enigma.core.entitlement;
 
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 
 /**
  * <h3>NOTE</h3>
@@ -8,5 +8,5 @@ import com.redbeemedia.enigma.core.error.Error;
  */
 public interface IEntitlementResponseHandler {
     void onResponse(EntitlementData entitlementData);
-    void onError(Error error);
+    void onError(EnigmaError error);
 }

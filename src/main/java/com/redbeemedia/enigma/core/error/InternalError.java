@@ -2,12 +2,12 @@ package com.redbeemedia.enigma.core.error;
 
 
 
-public class InternalError extends Error {
+public class InternalError extends EnigmaError {
     public InternalError() {
         this(null, null);
     }
 
-    public InternalError(Error cause) {
+    public InternalError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -15,7 +15,7 @@ public class InternalError extends Error {
         this(message, null);
     }
 
-    public InternalError(String message, Error cause) {
+    public InternalError(String message, EnigmaError cause) {
         super(message, cause);
     }
 

@@ -10,7 +10,7 @@ public class JsonResponseError extends HttpResponseError {
         this(null, null);
     }
 
-    public JsonResponseError(Error cause) {
+    public JsonResponseError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -18,7 +18,7 @@ public class JsonResponseError extends HttpResponseError {
         this(message, null);
     }
 
-    public JsonResponseError(String message, Error cause) {
+    public JsonResponseError(String message, EnigmaError cause) {
         super(message, cause);
     }
 

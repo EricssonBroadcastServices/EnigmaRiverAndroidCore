@@ -7,7 +7,7 @@ public class ServerTimeoutError extends ServerError {
         this(null, null);
     }
 
-    public ServerTimeoutError(Error cause) {
+    public ServerTimeoutError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -15,7 +15,7 @@ public class ServerTimeoutError extends ServerError {
         this(message, null);
     }
 
-    public ServerTimeoutError(String message, Error cause) {
+    public ServerTimeoutError(String message, EnigmaError cause) {
         super(message, cause);
     }
 

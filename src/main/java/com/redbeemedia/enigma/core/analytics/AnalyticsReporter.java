@@ -4,9 +4,8 @@ import android.util.Log;
 
 import com.redbeemedia.enigma.core.BuildConfig;
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.error.PlayerImplementationError;
-import com.redbeemedia.enigma.core.time.Duration;
 import com.redbeemedia.enigma.core.time.ITimeProvider;
 import com.redbeemedia.enigma.core.util.device.IDeviceInfo;
 
@@ -24,7 +23,7 @@ public class AnalyticsReporter {
         this.analyticsHandler = analyticsHandler;
     }
 
-    public void playbackError(Error error) {
+    public void playbackError(EnigmaError error) {
         event(AnalyticsEvents.ERROR, (builder, eventType) -> {
             builder.addData(eventType.CODE, error.getErrorCode());
 

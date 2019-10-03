@@ -2,7 +2,7 @@ package com.redbeemedia.enigma.core.player;
 
 import android.util.Log;
 
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.player.controls.IControlResultHandler;
 
 /*package-protected*/ class DefaultControlResultHandler implements IControlResultHandler {
@@ -23,7 +23,7 @@ import com.redbeemedia.enigma.core.player.controls.IControlResultHandler;
     }
 
     @Override
-    public void onError(Error error) {
+    public void onError(EnigmaError error) {
         Log.e(tag, "ControlRequest got error "+error.getClass().getSimpleName()+" ("+error.getErrorCode()+")");
     }
 

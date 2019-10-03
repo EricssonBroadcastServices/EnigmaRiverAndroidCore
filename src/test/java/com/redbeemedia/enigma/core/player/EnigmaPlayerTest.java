@@ -6,7 +6,7 @@ import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
 import com.redbeemedia.enigma.core.epg.IEpg;
 import com.redbeemedia.enigma.core.error.EmptyResponseError;
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.error.NoSupportedMediaFormatsError;
 import com.redbeemedia.enigma.core.error.UnexpectedError;
 import com.redbeemedia.enigma.core.format.EnigmaMediaFormat;
@@ -97,7 +97,7 @@ public class EnigmaPlayerTest {
             }
         }).setResultHandler(new MockPlayResultHandler() {
             @Override
-            public void onError(Error error) {
+            public void onError(EnigmaError error) {
                 onErrorCalled.setFlag();
                 error.printStackTrace();
                 throw new RuntimeException(error.getClass().getSimpleName()+": "+error.getErrorCode());
@@ -212,16 +212,16 @@ public class EnigmaPlayerTest {
         installed.assertSet();
         enigmaPlayer.play(new MockPlayRequest("123").setResultHandler(new MockPlayResultHandler() {
             @Override
-            public void onError(Error error) {
+            public void onError(EnigmaError error) {
                 error.printStackTrace();
                 Assert.fail(error.getClass().getSimpleName()+": "+error.getErrorCode());
             }
         }));
         playbackStartedCalls.assertOnce();
-        final Error[] errorGotten = new Error[]{null};
+        final EnigmaError[] errorGotten = new EnigmaError[]{null};
         enigmaPlayer.play(new MockPlayRequest("7s4s4ts").setResultHandler(new MockPlayResultHandler() {
             @Override
-            public void onError(Error error) {
+            public void onError(EnigmaError error) {
                 errorGotten[0] = error;
             }
         }));
@@ -254,7 +254,7 @@ public class EnigmaPlayerTest {
         Counter onPlaybackErrorCalled = new Counter();
         BaseEnigmaPlayerListener listener = new BaseEnigmaPlayerListener() {
             @Override
-            public void onPlaybackError(Error error) {
+            public void onPlaybackError(EnigmaError error) {
                 Assert.assertThat(error, new InstanceOfMatcher<>(EmptyResponseError.class));
                 onPlaybackErrorCalled.count();
             }
@@ -298,7 +298,7 @@ public class EnigmaPlayerTest {
         final Counter onErrorCalled = new Counter();
         IEnigmaPlayerListener listener = new BaseEnigmaPlayerListener() {
             @Override
-            public void onPlaybackError(Error error) {
+            public void onPlaybackError(EnigmaError error) {
                 onErrorCalled.count();
             }
         };

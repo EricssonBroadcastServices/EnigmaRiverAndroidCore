@@ -7,7 +7,7 @@ public class NoSupportedMediaFormatsError extends AssetFormatError {
         this(null, null);
     }
 
-    public NoSupportedMediaFormatsError(Error cause) {
+    public NoSupportedMediaFormatsError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -15,7 +15,7 @@ public class NoSupportedMediaFormatsError extends AssetFormatError {
         this(message, null);
     }
 
-    public NoSupportedMediaFormatsError(String message, Error cause) {
+    public NoSupportedMediaFormatsError(String message, EnigmaError cause) {
         super(message, cause);
     }
 

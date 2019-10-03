@@ -10,7 +10,7 @@ public class UnexpectedHttpStatusError extends HttpResponseError {
         this(httpStatus, null);
     }
 
-    public UnexpectedHttpStatusError(HttpStatus httpStatus, Error cause) {
+    public UnexpectedHttpStatusError(HttpStatus httpStatus, EnigmaError cause) {
         super(String.valueOf(httpStatus), cause);
         this.httpStatus = httpStatus;
     }

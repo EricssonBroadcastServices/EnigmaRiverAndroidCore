@@ -7,7 +7,7 @@ public class ConcurrentStreamsLimitReachedError extends EntitlementError {
         this(null, null);
     }
 
-    public ConcurrentStreamsLimitReachedError(Error cause) {
+    public ConcurrentStreamsLimitReachedError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -15,7 +15,7 @@ public class ConcurrentStreamsLimitReachedError extends EntitlementError {
         this(message, null);
     }
 
-    public ConcurrentStreamsLimitReachedError(String message, Error cause) {
+    public ConcurrentStreamsLimitReachedError(String message, EnigmaError cause) {
         super(com.redbeemedia.enigma.core.entitlement.EntitlementStatus.CONCURRENT_STREAMS_LIMIT_REACHED, message, cause);
     }
 

@@ -11,7 +11,7 @@ public class PlayerImplementationError extends PlaybackError {
         this(internalErrorCode, internalErrorCodeFieldName, null, null);
     }
 
-    public PlayerImplementationError(int internalErrorCode, String internalErrorCodeFieldName, Error cause) {
+    public PlayerImplementationError(int internalErrorCode, String internalErrorCodeFieldName, EnigmaError cause) {
         this(internalErrorCode, internalErrorCodeFieldName, null, cause);
     }
 
@@ -19,7 +19,7 @@ public class PlayerImplementationError extends PlaybackError {
         this(internalErrorCode, internalErrorCodeFieldName, message, null);
     }
 
-    public PlayerImplementationError(int internalErrorCode, String internalErrorCodeFieldName, String message, Error cause) {
+    public PlayerImplementationError(int internalErrorCode, String internalErrorCodeFieldName, String message, EnigmaError cause) {
         super(message, cause);
         this.internalErrorCode = internalErrorCode;
         this.internalErrorCodeFieldName = internalErrorCodeFieldName;

@@ -7,7 +7,7 @@ public class DeviceLimitReachedError extends LoginDeniedError {
         this(null, null);
     }
 
-    public DeviceLimitReachedError(Error cause) {
+    public DeviceLimitReachedError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -15,7 +15,7 @@ public class DeviceLimitReachedError extends LoginDeniedError {
         this(message, null);
     }
 
-    public DeviceLimitReachedError(String message, Error cause) {
+    public DeviceLimitReachedError(String message, EnigmaError cause) {
         super(message, cause);
     }
 

@@ -7,7 +7,7 @@ public class InvalidJsonToServerError extends InternalError {
         this(null, null);
     }
 
-    public InvalidJsonToServerError(Error cause) {
+    public InvalidJsonToServerError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -15,7 +15,7 @@ public class InvalidJsonToServerError extends InternalError {
         this(message, null);
     }
 
-    public InvalidJsonToServerError(String message, Error cause) {
+    public InvalidJsonToServerError(String message, EnigmaError cause) {
         super(message, cause);
     }
 

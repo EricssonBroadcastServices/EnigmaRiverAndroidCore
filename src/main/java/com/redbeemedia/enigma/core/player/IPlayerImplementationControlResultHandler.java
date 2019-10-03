@@ -1,6 +1,6 @@
 package com.redbeemedia.enigma.core.player;
 
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.player.controls.IControlResultHandler;
 
 /**
@@ -10,6 +10,6 @@ import com.redbeemedia.enigma.core.player.controls.IControlResultHandler;
 public interface IPlayerImplementationControlResultHandler {
     void onRejected(IControlResultHandler.IRejectReason rejectReason);
     void onCancelled();
-    void onError(Error error);
+    void onError(EnigmaError error);
     void onDone();
 }

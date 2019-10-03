@@ -7,7 +7,7 @@ public class SessionLimitExceededError extends LoginDeniedError {
         this(null, null);
     }
 
-    public SessionLimitExceededError(Error cause) {
+    public SessionLimitExceededError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -15,7 +15,7 @@ public class SessionLimitExceededError extends LoginDeniedError {
         this(message, null);
     }
 
-    public SessionLimitExceededError(String message, Error cause) {
+    public SessionLimitExceededError(String message, EnigmaError cause) {
         super(message, cause);
     }
 

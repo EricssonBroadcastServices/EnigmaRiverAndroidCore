@@ -9,7 +9,7 @@ import com.redbeemedia.enigma.core.entitlement.EntitlementStatus;
 import com.redbeemedia.enigma.core.error.AnonymousIpBlockedError;
 import com.redbeemedia.enigma.core.error.ConcurrentStreamsLimitReachedError;
 import com.redbeemedia.enigma.core.error.DeviceBlockedError;
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.error.GeoBlockedError;
 import com.redbeemedia.enigma.core.error.LicenceExpiredError;
 import com.redbeemedia.enigma.core.error.NotEnabledError;
@@ -347,7 +347,7 @@ public class InternalPlaybackSessionTest {
         final Counter onPlaybackErrorCalled = new Counter();
         internalPlaybackSession.getPlayerConnection().openConnection(new MockCommunicationsChannel() {
             @Override
-            public void onPlaybackError(Error error, boolean endStream) {
+            public void onPlaybackError(EnigmaError error, boolean endStream) {
                 onPlaybackErrorCalled.count();
             }
         });
@@ -377,7 +377,7 @@ public class InternalPlaybackSessionTest {
     public void testPlaybackErrorForEveryStatus() {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
 
-        Map<EntitlementStatus, Class<? extends Error>> expectedErrorType = new HashMap<>();
+        Map<EntitlementStatus, Class<? extends EnigmaError>> expectedErrorType = new HashMap<>();
         expectedErrorType.put(EntitlementStatus.NOT_ENTITLED, NotEntitledError.class);
         expectedErrorType.put(EntitlementStatus.GEO_BLOCKED, GeoBlockedError.class);
         expectedErrorType.put(EntitlementStatus.DOWNLOAD_BLOCKED, NotEntitledError.class);
@@ -399,7 +399,7 @@ public class InternalPlaybackSessionTest {
             final Counter onPlaybackErrorCalled = new Counter();
             MockCommunicationsChannel comChannel = new MockCommunicationsChannel() {
                 @Override
-                public void onPlaybackError(Error error, boolean endStream) {
+                public void onPlaybackError(EnigmaError error, boolean endStream) {
                     Assert.assertTrue(assertMessage, endStream);
                     Assert.assertNotNull(assertMessage, expectedErrorType.get(status));
                     Assert.assertNotNull(assertMessage, error);

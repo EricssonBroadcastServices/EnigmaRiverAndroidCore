@@ -7,7 +7,7 @@ public class LicenceExpiredError extends EntitlementError {
         this(null, null);
     }
 
-    public LicenceExpiredError(Error cause) {
+    public LicenceExpiredError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -15,7 +15,7 @@ public class LicenceExpiredError extends EntitlementError {
         this(message, null);
     }
 
-    public LicenceExpiredError(String message, Error cause) {
+    public LicenceExpiredError(String message, EnigmaError cause) {
         super(com.redbeemedia.enigma.core.entitlement.EntitlementStatus.LICENSE_EXPIRED, message, cause);
     }
 

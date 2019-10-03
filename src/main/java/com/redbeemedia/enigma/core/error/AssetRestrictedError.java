@@ -11,7 +11,7 @@ public class AssetRestrictedError extends AssetNotAvailableError {
         this(null, null);
     }
 
-    public AssetRestrictedError(Error cause) {
+    public AssetRestrictedError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -19,7 +19,7 @@ public class AssetRestrictedError extends AssetNotAvailableError {
         this(message, null);
     }
 
-    public AssetRestrictedError(String message, Error cause) {
+    public AssetRestrictedError(String message, EnigmaError cause) {
         super(message, cause);
     }
 

@@ -1,7 +1,7 @@
 package com.redbeemedia.enigma.core.player;
 
 import com.redbeemedia.enigma.core.epg.IProgram;
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.util.Collector;
@@ -18,7 +18,7 @@ import com.redbeemedia.enigma.core.util.Collector;
     }
 
     @Override
-    public void onPlaybackError(Error error) {
+    public void onPlaybackError(EnigmaError error) {
         forEach(listener -> listener.onPlaybackError(error));
     }
 

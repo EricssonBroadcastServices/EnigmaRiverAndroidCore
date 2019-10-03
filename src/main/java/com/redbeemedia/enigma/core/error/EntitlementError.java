@@ -3,14 +3,14 @@ package com.redbeemedia.enigma.core.error;
 import com.redbeemedia.enigma.core.entitlement.EntitlementStatus;
 
 
-public abstract class EntitlementError extends Error {
+public abstract class EntitlementError extends EnigmaError {
     private EntitlementStatus entitlementStatus;
 
     /*package-protected*/ EntitlementError(EntitlementStatus entitlementStatus) {
         this(entitlementStatus, null, null);
     }
 
-    /*package-protected*/ EntitlementError(EntitlementStatus entitlementStatus, Error cause) {
+    /*package-protected*/ EntitlementError(EntitlementStatus entitlementStatus, EnigmaError cause) {
         this(entitlementStatus, null, cause);
     }
 
@@ -18,7 +18,7 @@ public abstract class EntitlementError extends Error {
         this(entitlementStatus, message, null);
     }
 
-    /*package-protected*/ EntitlementError(EntitlementStatus entitlementStatus, String message, Error cause) {
+    /*package-protected*/ EntitlementError(EntitlementStatus entitlementStatus, String message, EnigmaError cause) {
         super(message, cause);
         this.entitlementStatus = entitlementStatus;
     }

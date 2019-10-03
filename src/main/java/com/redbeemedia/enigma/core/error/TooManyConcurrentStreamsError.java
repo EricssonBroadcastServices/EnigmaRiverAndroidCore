@@ -7,7 +7,7 @@ public class TooManyConcurrentStreamsError extends AssetRestrictedError {
         this(null, null);
     }
 
-    public TooManyConcurrentStreamsError(Error cause) {
+    public TooManyConcurrentStreamsError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -15,7 +15,7 @@ public class TooManyConcurrentStreamsError extends AssetRestrictedError {
         this(message, null);
     }
 
-    public TooManyConcurrentStreamsError(String message, Error cause) {
+    public TooManyConcurrentStreamsError(String message, EnigmaError cause) {
         super(message, cause);
     }
 

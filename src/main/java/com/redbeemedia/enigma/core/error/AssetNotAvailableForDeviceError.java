@@ -7,7 +7,7 @@ public class AssetNotAvailableForDeviceError extends AssetNotAvailableError {
         this(null, null);
     }
 
-    public AssetNotAvailableForDeviceError(Error cause) {
+    public AssetNotAvailableForDeviceError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -15,7 +15,7 @@ public class AssetNotAvailableForDeviceError extends AssetNotAvailableError {
         this(message, null);
     }
 
-    public AssetNotAvailableForDeviceError(String message, Error cause) {
+    public AssetNotAvailableForDeviceError(String message, EnigmaError cause) {
         super(message, cause);
     }
 

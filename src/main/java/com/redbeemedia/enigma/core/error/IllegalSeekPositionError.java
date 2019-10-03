@@ -10,7 +10,7 @@ public class IllegalSeekPositionError extends IllegalControlError {
         this(null, null, null);
     }
 
-    public IllegalSeekPositionError(Error cause) {
+    public IllegalSeekPositionError(EnigmaError cause) {
         this(null, null, cause);
     }
 
@@ -18,7 +18,7 @@ public class IllegalSeekPositionError extends IllegalControlError {
         this(null, message, null);
     }
 
-    public IllegalSeekPositionError(String message, Error cause) {
+    public IllegalSeekPositionError(String message, EnigmaError cause) {
         this(null, message, cause);
     }
 
@@ -26,7 +26,7 @@ public class IllegalSeekPositionError extends IllegalControlError {
         this(exception, null, null);
     }
 
-    public IllegalSeekPositionError(Exception exception, Error cause) {
+    public IllegalSeekPositionError(Exception exception, EnigmaError cause) {
         this(exception, null, cause);
     }
 
@@ -34,7 +34,7 @@ public class IllegalSeekPositionError extends IllegalControlError {
         this(exception, message, null);
     }
 
-    public IllegalSeekPositionError(Exception exception, String message, Error cause) {
+    public IllegalSeekPositionError(Exception exception, String message, EnigmaError cause) {
         super(message, cause);
         this.exception = exception;
     }

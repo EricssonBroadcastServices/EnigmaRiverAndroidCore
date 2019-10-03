@@ -6,12 +6,12 @@ package com.redbeemedia.enigma.core.error;
  * Subclasses of this error is used when an asset is valid, but for
  * some reason can't be played.
  */
-public abstract class AssetNotAvailableError extends Error {
+public abstract class AssetNotAvailableError extends EnigmaError {
     /*package-protected*/ AssetNotAvailableError() {
         this(null, null);
     }
 
-    /*package-protected*/ AssetNotAvailableError(Error cause) {
+    /*package-protected*/ AssetNotAvailableError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -19,7 +19,7 @@ public abstract class AssetNotAvailableError extends Error {
         this(message, null);
     }
 
-    /*package-protected*/ AssetNotAvailableError(String message, Error cause) {
+    /*package-protected*/ AssetNotAvailableError(String message, EnigmaError cause) {
         super(message, cause);
     }
 

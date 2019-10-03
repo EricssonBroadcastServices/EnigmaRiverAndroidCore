@@ -2,12 +2,12 @@ package com.redbeemedia.enigma.core.error;
 
 
 
-public abstract class CredentialsError extends Error {
+public abstract class CredentialsError extends EnigmaError {
     /*package-protected*/ CredentialsError() {
         this(null, null);
     }
 
-    /*package-protected*/ CredentialsError(Error cause) {
+    /*package-protected*/ CredentialsError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -15,7 +15,7 @@ public abstract class CredentialsError extends Error {
         this(message, null);
     }
 
-    /*package-protected*/ CredentialsError(String message, Error cause) {
+    /*package-protected*/ CredentialsError(String message, EnigmaError cause) {
         super(message, cause);
     }
 

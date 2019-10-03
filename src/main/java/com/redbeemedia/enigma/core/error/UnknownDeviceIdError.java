@@ -7,7 +7,7 @@ public class UnknownDeviceIdError extends LoginDeniedError {
         this(null, null);
     }
 
-    public UnknownDeviceIdError(Error cause) {
+    public UnknownDeviceIdError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -15,7 +15,7 @@ public class UnknownDeviceIdError extends LoginDeniedError {
         this(message, null);
     }
 
-    public UnknownDeviceIdError(String message, Error cause) {
+    public UnknownDeviceIdError(String message, EnigmaError cause) {
         super(message, cause);
     }
 

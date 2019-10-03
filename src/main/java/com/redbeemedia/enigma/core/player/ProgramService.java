@@ -1,7 +1,7 @@
 package com.redbeemedia.enigma.core.player;
 
 import com.redbeemedia.enigma.core.epg.IProgram;
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.playbacksession.BasePlaybackSessionListener;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.entitlement.EntitlementData;
@@ -124,7 +124,7 @@ import java.util.Objects;
             }
 
             @Override
-            public void onError(Error error) {
+            public void onError(EnigmaError error) {
                 error.printStackTrace();
                 //Might have been a temporary network disconnection. Ignore and try again later.
             }
@@ -166,7 +166,7 @@ import java.util.Objects;
             }
 
             @Override
-            public void onError(Error error) {
+            public void onError(EnigmaError error) {
                 error.printStackTrace();
                 //Too bad
             }

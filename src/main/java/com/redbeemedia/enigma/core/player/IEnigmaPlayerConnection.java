@@ -1,6 +1,6 @@
 package com.redbeemedia.enigma.core.player;
 
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 
 /**
  * Serves as a way for the current playback session to communicate back to EnigmaPlayer
@@ -10,6 +10,6 @@ import com.redbeemedia.enigma.core.error.Error;
     void severConnection();
 
     interface ICommunicationsChannel {
-        void onPlaybackError(Error error, boolean endStream);
+        void onPlaybackError(EnigmaError error, boolean endStream);
     }
 }

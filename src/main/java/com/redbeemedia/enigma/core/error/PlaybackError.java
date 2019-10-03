@@ -2,12 +2,12 @@ package com.redbeemedia.enigma.core.error;
 
 
 
-public abstract class PlaybackError extends Error {
+public abstract class PlaybackError extends EnigmaError {
     /*package-protected*/ PlaybackError() {
         this(null, null);
     }
 
-    /*package-protected*/ PlaybackError(Error cause) {
+    /*package-protected*/ PlaybackError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -15,7 +15,7 @@ public abstract class PlaybackError extends Error {
         this(message, null);
     }
 
-    /*package-protected*/ PlaybackError(String message, Error cause) {
+    /*package-protected*/ PlaybackError(String message, EnigmaError cause) {
         super(message, cause);
     }
 

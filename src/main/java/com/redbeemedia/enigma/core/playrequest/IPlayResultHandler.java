@@ -1,6 +1,6 @@
 package com.redbeemedia.enigma.core.playrequest;
 
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.util.IInternalCallbackObject;
 
@@ -15,5 +15,5 @@ public interface IPlayResultHandler extends IInternalCallbackObject {
     void _dont_implement_IPlayResultHandler___instead_extend_BasePlayResultHandler_();
 
     void onStarted(IPlaybackSession playbackSession);
-    void onError(Error error);
+    void onError(EnigmaError error);
 }

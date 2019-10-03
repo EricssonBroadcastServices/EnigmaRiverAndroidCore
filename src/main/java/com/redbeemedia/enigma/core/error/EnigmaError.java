@@ -5,24 +5,24 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 
-public abstract class Error {
-    private Error cause;
+public abstract class EnigmaError {
+    private EnigmaError cause;
     private String message;
     private StackTraceElement[] errorStackTrace;
 
-    /*package-protected*/ Error() {
+    /*package-protected*/ EnigmaError() {
         this(null, null);
     }
 
-    /*package-protected*/ Error(String message) {
+    /*package-protected*/ EnigmaError(String message) {
         this(message, null);
     }
 
-    /*package-protected*/ Error(Error cause) {
+    /*package-protected*/ EnigmaError(EnigmaError cause) {
         this(null, cause);
     }
 
-    /*package-protected*/ Error(String message, Error cause) {
+    /*package-protected*/ EnigmaError(String message, EnigmaError cause) {
         this.message = message;
         this.cause = cause;
         this.errorStackTrace = createStackTrace();
@@ -34,7 +34,7 @@ public abstract class Error {
         int stackTraceStart = -1;
         while(++i < trace.length) {
             try {
-                if(!Error.class.isAssignableFrom(Class.forName(trace[i].getClassName()))) {
+                if(!EnigmaError.class.isAssignableFrom(Class.forName(trace[i].getClassName()))) {
                     stackTraceStart = i;
                     break;
                 }
@@ -100,7 +100,7 @@ public abstract class Error {
         return message;
     }
 
-    public Error getCause() {
+    public EnigmaError getCause() {
         return cause;
     }
 

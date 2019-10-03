@@ -3,7 +3,7 @@ package com.redbeemedia.enigma.core.player;
 import android.os.SystemClock;
 
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.error.UnexpectedError;
 import com.redbeemedia.enigma.core.http.AuthenticatedExposureApiCall;
 import com.redbeemedia.enigma.core.json.JsonObjectResponseHandler;
@@ -54,7 +54,7 @@ import java.net.URL;
         });
     }
 
-    protected void handleError(Error error) {
+    protected void handleError(EnigmaError error) {
         //Ignore
         error.printStackTrace();
     }
@@ -81,7 +81,7 @@ import java.net.URL;
             }
 
             @Override
-            protected void onError(Error error) {
+            protected void onError(EnigmaError error) {
                 handleError(error);
                 if(localStartTime == null) {
                     getFirstSyncRepeater.setEnabled(true);

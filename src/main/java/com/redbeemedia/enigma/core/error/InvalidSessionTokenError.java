@@ -7,7 +7,7 @@ public class InvalidSessionTokenError extends CredentialsError {
         this(null, null);
     }
 
-    public InvalidSessionTokenError(Error cause) {
+    public InvalidSessionTokenError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -15,7 +15,7 @@ public class InvalidSessionTokenError extends CredentialsError {
         this(message, null);
     }
 
-    public InvalidSessionTokenError(String message, Error cause) {
+    public InvalidSessionTokenError(String message, EnigmaError cause) {
         super(message, cause);
     }
 

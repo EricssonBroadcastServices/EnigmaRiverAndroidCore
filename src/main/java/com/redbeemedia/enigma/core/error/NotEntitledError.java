@@ -8,7 +8,7 @@ public class NotEntitledError extends EntitlementError {
         this(entitlementStatus, null, null);
     }
 
-    public NotEntitledError(EntitlementStatus entitlementStatus, Error cause) {
+    public NotEntitledError(EntitlementStatus entitlementStatus, EnigmaError cause) {
         this(entitlementStatus, null, cause);
     }
 
@@ -16,7 +16,7 @@ public class NotEntitledError extends EntitlementError {
         this(entitlementStatus, message, null);
     }
 
-    public NotEntitledError(EntitlementStatus entitlementStatus, String message, Error cause) {
+    public NotEntitledError(EntitlementStatus entitlementStatus, String message, EnigmaError cause) {
         super(entitlementStatus, message, cause);
     }
 

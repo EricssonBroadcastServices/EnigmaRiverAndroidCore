@@ -1,7 +1,7 @@
 package com.redbeemedia.enigma.core.login;
 
 import com.redbeemedia.enigma.core.error.DeviceLimitReachedError;
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.error.InvalidCredentialsError;
 import com.redbeemedia.enigma.core.error.InvalidJsonToServerError;
 import com.redbeemedia.enigma.core.error.InvalidSessionTokenError;
@@ -61,7 +61,7 @@ public class LoginResponseHandlerTest {
                         }
 
                         @Override
-                        public void onError(Error error) {
+                        public void onError(EnigmaError error) {
                             errorCounter.count();
                             Assert.assertThat(error, errorExpectation.getErrorMatcher());
                         }
@@ -88,7 +88,7 @@ public class LoginResponseHandlerTest {
                     }
 
                     @Override
-                    public void onError(Error error) {
+                    public void onError(EnigmaError error) {
                         errorCounter.count();
                         Assert.assertThat(error, new InstanceOfMatcher<>(JsonResponseError.class));
                     }

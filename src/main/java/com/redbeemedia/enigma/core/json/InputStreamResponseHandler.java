@@ -1,7 +1,7 @@
 package com.redbeemedia.enigma.core.json;
 
 import com.redbeemedia.enigma.core.error.EmptyResponseError;
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.error.UnexpectedError;
 import com.redbeemedia.enigma.core.error.UnexpectedHttpStatusError;
 import com.redbeemedia.enigma.core.http.HttpStatus;
@@ -50,7 +50,7 @@ import java.util.Map;
         }
     }
 
-    protected InputStreamResponseHandler handleErrorCode(int httpCode, final Error error) {
+    protected InputStreamResponseHandler handleErrorCode(int httpCode, final EnigmaError error) {
         return handleErrorCode(httpCode, new IHttpCodeHandler() {
             @Override
             public void onResponse(HttpStatus httpStatus, InputStream inputStream) {
@@ -71,7 +71,7 @@ import java.util.Map;
 
     protected abstract void onInputStream(InputStream inputStream) throws Exception;
 
-    protected abstract void onError(Error error);
+    protected abstract void onError(EnigmaError error);
 
     @Override
     public void onException(Exception e) {

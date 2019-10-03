@@ -7,7 +7,7 @@ public abstract class AssetFormatError extends AssetPlayRequestError {
         this(null, null);
     }
 
-    /*package-protected*/ AssetFormatError(Error cause) {
+    /*package-protected*/ AssetFormatError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -15,7 +15,7 @@ public abstract class AssetFormatError extends AssetPlayRequestError {
         this(message, null);
     }
 
-    /*package-protected*/ AssetFormatError(String message, Error cause) {
+    /*package-protected*/ AssetFormatError(String message, EnigmaError cause) {
         super(message, cause);
     }
 

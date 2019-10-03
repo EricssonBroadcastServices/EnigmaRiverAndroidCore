@@ -2,12 +2,12 @@ package com.redbeemedia.enigma.core.error;
 
 
 
-public class ServerError extends Error {
+public class ServerError extends EnigmaError {
     public ServerError() {
         this(null, null);
     }
 
-    public ServerError(Error cause) {
+    public ServerError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -15,7 +15,7 @@ public class ServerError extends Error {
         this(message, null);
     }
 
-    public ServerError(String message, Error cause) {
+    public ServerError(String message, EnigmaError cause) {
         super(message, cause);
     }
 

@@ -7,7 +7,7 @@ public class GeoBlockedError extends EntitlementError {
         this(null, null);
     }
 
-    public GeoBlockedError(Error cause) {
+    public GeoBlockedError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -15,7 +15,7 @@ public class GeoBlockedError extends EntitlementError {
         this(message, null);
     }
 
-    public GeoBlockedError(String message, Error cause) {
+    public GeoBlockedError(String message, EnigmaError cause) {
         super(com.redbeemedia.enigma.core.entitlement.EntitlementStatus.GEO_BLOCKED, message, cause);
     }
 

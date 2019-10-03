@@ -5,14 +5,14 @@ import java.lang.Exception;
 import java.io.Writer;
 
 
-public class UnexpectedError extends Error {
+public class UnexpectedError extends EnigmaError {
     private Exception exception = null;
 
     public UnexpectedError() {
         this(null, null, null);
     }
 
-    public UnexpectedError(Error cause) {
+    public UnexpectedError(EnigmaError cause) {
         this(null, null, cause);
     }
 
@@ -20,7 +20,7 @@ public class UnexpectedError extends Error {
         this(null, message, null);
     }
 
-    public UnexpectedError(String message, Error cause) {
+    public UnexpectedError(String message, EnigmaError cause) {
         this(null, message, cause);
     }
 
@@ -28,7 +28,7 @@ public class UnexpectedError extends Error {
         this(exception, null, null);
     }
 
-    public UnexpectedError(Exception exception, Error cause) {
+    public UnexpectedError(Exception exception, EnigmaError cause) {
         this(exception, null, cause);
     }
 
@@ -36,7 +36,7 @@ public class UnexpectedError extends Error {
         this(exception, message, null);
     }
 
-    public UnexpectedError(Exception exception, String message, Error cause) {
+    public UnexpectedError(Exception exception, String message, EnigmaError cause) {
         super(message, cause);
         this.exception = exception;
     }

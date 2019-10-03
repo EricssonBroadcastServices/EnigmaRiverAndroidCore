@@ -6,7 +6,7 @@ import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
 import com.redbeemedia.enigma.core.epg.request.EpgRequest;
 import com.redbeemedia.enigma.core.epg.response.IEpgResponse;
 import com.redbeemedia.enigma.core.epg.response.IEpgResponseHandler;
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.http.IHttpCall;
 import com.redbeemedia.enigma.core.http.IHttpHandler;
@@ -22,8 +22,6 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.TimeZone;
 
 public class DirectEpgTest {
@@ -78,7 +76,7 @@ public class DirectEpgTest {
             }
 
             @Override
-            public void onError(Error error) {
+            public void onError(EnigmaError error) {
                 Assert.fail(error.getTrace());
             }
         });

@@ -7,7 +7,7 @@ public class TooManyConcurrentSvodStreamsError extends TooManyConcurrentStreamsE
         this(null, null);
     }
 
-    public TooManyConcurrentSvodStreamsError(Error cause) {
+    public TooManyConcurrentSvodStreamsError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -15,7 +15,7 @@ public class TooManyConcurrentSvodStreamsError extends TooManyConcurrentStreamsE
         this(message, null);
     }
 
-    public TooManyConcurrentSvodStreamsError(String message, Error cause) {
+    public TooManyConcurrentSvodStreamsError(String message, EnigmaError cause) {
         super(message, cause);
     }
 

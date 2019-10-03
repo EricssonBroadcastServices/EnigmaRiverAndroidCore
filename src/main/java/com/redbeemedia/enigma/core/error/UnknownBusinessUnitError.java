@@ -6,12 +6,12 @@ package com.redbeemedia.enigma.core.error;
  * The business unit name did not correspond to a business unit for
  * the given customer unit.
  */
-public class UnknownBusinessUnitError extends Error {
+public class UnknownBusinessUnitError extends EnigmaError {
     public UnknownBusinessUnitError() {
         this(null, null);
     }
 
-    public UnknownBusinessUnitError(Error cause) {
+    public UnknownBusinessUnitError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -19,7 +19,7 @@ public class UnknownBusinessUnitError extends Error {
         this(message, null);
     }
 
-    public UnknownBusinessUnitError(String message, Error cause) {
+    public UnknownBusinessUnitError(String message, EnigmaError cause) {
         super(message, cause);
     }
 

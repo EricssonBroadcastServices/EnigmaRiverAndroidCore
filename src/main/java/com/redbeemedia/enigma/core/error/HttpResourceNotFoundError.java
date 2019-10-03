@@ -13,7 +13,7 @@ public class HttpResourceNotFoundError extends HttpResponseError {
         this(resourceUrl, null);
     }
 
-    public HttpResourceNotFoundError(String resourceUrl, Error cause) {
+    public HttpResourceNotFoundError(String resourceUrl, EnigmaError cause) {
         super("URL: "+resourceUrl, cause);
         this.resourceUrl = resourceUrl;
     }

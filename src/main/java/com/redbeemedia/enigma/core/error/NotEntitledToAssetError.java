@@ -7,7 +7,7 @@ public class NotEntitledToAssetError extends AssetNotAvailableError {
         this(null, null);
     }
 
-    public NotEntitledToAssetError(Error cause) {
+    public NotEntitledToAssetError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -15,7 +15,7 @@ public class NotEntitledToAssetError extends AssetNotAvailableError {
         this(message, null);
     }
 
-    public NotEntitledToAssetError(String message, Error cause) {
+    public NotEntitledToAssetError(String message, EnigmaError cause) {
         super(message, cause);
     }
 

@@ -7,7 +7,7 @@ public class InvalidCredentialsError extends CredentialsError {
         this(null, null);
     }
 
-    public InvalidCredentialsError(Error cause) {
+    public InvalidCredentialsError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -15,7 +15,7 @@ public class InvalidCredentialsError extends CredentialsError {
         this(message, null);
     }
 
-    public InvalidCredentialsError(String message, Error cause) {
+    public InvalidCredentialsError(String message, EnigmaError cause) {
         super(message, cause);
     }
 

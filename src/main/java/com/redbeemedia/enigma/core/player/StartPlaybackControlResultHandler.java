@@ -1,6 +1,6 @@
 package com.redbeemedia.enigma.core.player;
 
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.error.UnexpectedError;
 import com.redbeemedia.enigma.core.player.controls.IControlResultHandler;
 import com.redbeemedia.enigma.core.playrequest.IPlayResultHandler;
@@ -27,7 +27,7 @@ import org.json.JSONObject;
     }
 
     @Override
-    public void onError(Error error) {
+    public void onError(EnigmaError error) {
         playResultHandler.onError(error);
     }
 
@@ -77,7 +77,7 @@ import org.json.JSONObject;
         }
 
         @Override
-        public void onError(Error error) {
+        public void onError(EnigmaError error) {
             playResultHandler.onError(error);
         }
     }

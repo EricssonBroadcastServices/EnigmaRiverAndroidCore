@@ -12,7 +12,7 @@ public class UnsupportedMediaFormatError extends AssetFormatError {
         this(null, null);
     }
 
-    public UnsupportedMediaFormatError(Error cause) {
+    public UnsupportedMediaFormatError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -20,7 +20,7 @@ public class UnsupportedMediaFormatError extends AssetFormatError {
         this(message, null);
     }
 
-    public UnsupportedMediaFormatError(String message, Error cause) {
+    public UnsupportedMediaFormatError(String message, EnigmaError cause) {
         super(message, cause);
     }
 

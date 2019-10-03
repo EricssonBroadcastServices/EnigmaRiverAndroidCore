@@ -1,6 +1,6 @@
 package com.redbeemedia.enigma.core.player;
 
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.player.controls.IControlResultHandler;
 
 /*package-protected*/ class BasePlayerImplementationControlResultHandler implements IPlayerImplementationControlResultHandler {
@@ -13,7 +13,7 @@ import com.redbeemedia.enigma.core.player.controls.IControlResultHandler;
     }
 
     @Override
-    public void onError(Error error) {
+    public void onError(EnigmaError error) {
     }
 
     @Override

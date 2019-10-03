@@ -1,7 +1,7 @@
 package com.redbeemedia.enigma.core.entitlement;
 
 import com.redbeemedia.enigma.core.error.EmptyResponseError;
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.error.JsonResponseError;
 import com.redbeemedia.enigma.core.error.ServerError;
 import com.redbeemedia.enigma.core.error.UnexpectedError;
@@ -43,7 +43,7 @@ public class EntitlementProvider implements IEntitlementProvider {
                 }
 
                 @Override
-                protected void onError(Error error) {
+                protected void onError(EnigmaError error) {
                     responseHandler.onError(new ServerError(error));
                 }
             });
@@ -90,6 +90,6 @@ public class EntitlementProvider implements IEntitlementProvider {
 
         protected abstract void onStatus(String status);
 
-        protected abstract void onError(Error error);
+        protected abstract void onError(EnigmaError error);
     }
 }

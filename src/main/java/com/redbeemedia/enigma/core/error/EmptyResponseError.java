@@ -7,7 +7,7 @@ public class EmptyResponseError extends HttpResponseError {
         this(null, null);
     }
 
-    public EmptyResponseError(Error cause) {
+    public EmptyResponseError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -15,7 +15,7 @@ public class EmptyResponseError extends HttpResponseError {
         this(message, null);
     }
 
-    public EmptyResponseError(String message, Error cause) {
+    public EmptyResponseError(String message, EnigmaError cause) {
         super(message, cause);
     }
 

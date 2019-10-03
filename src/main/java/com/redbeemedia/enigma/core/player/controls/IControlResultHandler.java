@@ -1,12 +1,12 @@
 package com.redbeemedia.enigma.core.player.controls;
 
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.util.IInternalCallbackObject;
 
 public interface IControlResultHandler extends IInternalCallbackObject {
     void onRejected(IRejectReason reason);
     void onCancelled();
-    void onError(Error error);
+    void onError(EnigmaError error);
     void onDone();
 
     interface IRejectReason {

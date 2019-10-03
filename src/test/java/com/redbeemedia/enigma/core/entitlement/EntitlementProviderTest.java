@@ -2,11 +2,7 @@ package com.redbeemedia.enigma.core.entitlement;
 
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
-import com.redbeemedia.enigma.core.entitlement.EntitlementProvider;
-import com.redbeemedia.enigma.core.entitlement.EntitlementStatus;
-import com.redbeemedia.enigma.core.entitlement.IEntitlementRequest;
-import com.redbeemedia.enigma.core.entitlement.IEntitlementResponseHandler;
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.http.IHttpHandler;
 import com.redbeemedia.enigma.core.http.MockHttpHandler;
@@ -62,7 +58,7 @@ public class EntitlementProviderTest {
             }
 
             @Override
-            public void onError(Error error) {
+            public void onError(EnigmaError error) {
                 Assert.fail(error.getTrace());
             }
         });

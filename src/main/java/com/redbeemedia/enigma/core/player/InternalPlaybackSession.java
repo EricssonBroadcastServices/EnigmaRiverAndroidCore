@@ -16,7 +16,7 @@ import com.redbeemedia.enigma.core.epg.IProgram;
 import com.redbeemedia.enigma.core.error.AnonymousIpBlockedError;
 import com.redbeemedia.enigma.core.error.ConcurrentStreamsLimitReachedError;
 import com.redbeemedia.enigma.core.error.DeviceBlockedError;
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.error.GeoBlockedError;
 import com.redbeemedia.enigma.core.error.LicenceExpiredError;
 import com.redbeemedia.enigma.core.error.NotEnabledError;
@@ -530,7 +530,7 @@ import java.util.List;
         }
 
         @Override
-        public void onPlaybackError(Error error) {
+        public void onPlaybackError(EnigmaError error) {
             analyticsReporter.playbackError(error);
         }
 
@@ -589,7 +589,7 @@ import java.util.List;
         }
 
         @Override
-        public void onPlaybackError(Error error, boolean endStream) {
+        public void onPlaybackError(EnigmaError error, boolean endStream) {
             ifConnectionOpen(channel -> channel.onPlaybackError(error, endStream));
         }
 

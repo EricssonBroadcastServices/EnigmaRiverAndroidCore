@@ -2,14 +2,12 @@ package com.redbeemedia.enigma.core.player;
 
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.error.UnexpectedError;
 import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.http.MockHttpHandler;
 import com.redbeemedia.enigma.core.session.MockSession;
 import com.redbeemedia.enigma.core.task.TestTaskFactory;
-import com.redbeemedia.enigma.core.time.IStopWatch;
-import com.redbeemedia.enigma.core.time.StopWatch;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,7 +27,7 @@ public class ServerTimeServiceTest {
         final long[] currentTimeMillis = new long[]{977698800000L};
         ServerTimeService serverTimeService = new ServerTimeService(new MockSession(), mockTaskFactory) {
             @Override
-            protected void handleError(Error error) {
+            protected void handleError(EnigmaError error) {
                 boolean handled = false;
                 if(error instanceof UnexpectedError) {
                     Exception exception = ((UnexpectedError) error).getException();

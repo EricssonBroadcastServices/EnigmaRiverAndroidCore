@@ -10,7 +10,7 @@ import com.redbeemedia.enigma.core.epg.request.EpgRequest;
 import com.redbeemedia.enigma.core.epg.request.IEpgRequest;
 import com.redbeemedia.enigma.core.epg.response.IEpgResponse;
 import com.redbeemedia.enigma.core.epg.response.IEpgResponseHandler;
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.error.InvalidAssetError;
 import com.redbeemedia.enigma.core.error.NoSupportedMediaFormatsError;
 import com.redbeemedia.enigma.core.error.ServerTimeoutError;
@@ -59,7 +59,7 @@ import java.util.UUID;
         AuthenticatedExposureApiCall apiCall = new AuthenticatedExposureApiCall("GET", session);
         EnigmaRiverContext.getHttpHandler().doHttp(url, apiCall, new PlayResponseHandler(assetId) {
             @Override
-            protected void onError(Error error) {
+            protected void onError(EnigmaError error) {
                 playResultHandler.onError(error);
                 playerConnector.setStateIfCurrentStartAction(EnigmaPlayerState.IDLE);
             }
@@ -105,7 +105,7 @@ import java.util.UUID;
                             }
 
                             @Override
-                            public void onError(Error error) {
+                            public void onError(EnigmaError error) {
                                 Log.d("EnigmaPlayer", "Could not fetch epg-data for "+streamInfo.getChannelId());
                                 Log.d("EnigmaPlayer", error.getTrace());
                                 nextStep.continueProcess(null);

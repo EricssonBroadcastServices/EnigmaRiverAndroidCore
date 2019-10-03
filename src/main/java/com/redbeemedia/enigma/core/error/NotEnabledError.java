@@ -7,7 +7,7 @@ public class NotEnabledError extends EntitlementError {
         this(null, null);
     }
 
-    public NotEnabledError(Error cause) {
+    public NotEnabledError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -15,7 +15,7 @@ public class NotEnabledError extends EntitlementError {
         this(message, null);
     }
 
-    public NotEnabledError(String message, Error cause) {
+    public NotEnabledError(String message, EnigmaError cause) {
         super(com.redbeemedia.enigma.core.entitlement.EntitlementStatus.NOT_ENABLED, message, cause);
     }
 

@@ -7,7 +7,7 @@ public abstract class IllegalControlError extends PlaybackError {
         this(null, null);
     }
 
-    /*package-protected*/ IllegalControlError(Error cause) {
+    /*package-protected*/ IllegalControlError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -15,7 +15,7 @@ public abstract class IllegalControlError extends PlaybackError {
         this(message, null);
     }
 
-    /*package-protected*/ IllegalControlError(String message, Error cause) {
+    /*package-protected*/ IllegalControlError(String message, EnigmaError cause) {
         super(message, cause);
     }
 

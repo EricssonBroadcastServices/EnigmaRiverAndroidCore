@@ -7,7 +7,7 @@ public abstract class HttpResponseError extends ServerError {
         this(null, null);
     }
 
-    /*package-protected*/ HttpResponseError(Error cause) {
+    /*package-protected*/ HttpResponseError(EnigmaError cause) {
         this(null, cause);
     }
 
@@ -15,7 +15,7 @@ public abstract class HttpResponseError extends ServerError {
         this(message, null);
     }
 
-    /*package-protected*/ HttpResponseError(String message, Error cause) {
+    /*package-protected*/ HttpResponseError(String message, EnigmaError cause) {
         super(message, cause);
     }
 

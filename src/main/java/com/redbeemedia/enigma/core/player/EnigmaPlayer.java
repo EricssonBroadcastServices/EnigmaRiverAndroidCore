@@ -13,7 +13,7 @@ import com.redbeemedia.enigma.core.drm.IDrmInfo;
 import com.redbeemedia.enigma.core.drm.IDrmProvider;
 import com.redbeemedia.enigma.core.epg.IEpg;
 import com.redbeemedia.enigma.core.epg.IProgram;
-import com.redbeemedia.enigma.core.error.Error;
+import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.error.InternalError;
 import com.redbeemedia.enigma.core.error.UnexpectedError;
 import com.redbeemedia.enigma.core.format.EnigmaMediaFormat;
@@ -269,7 +269,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             }
 
             @Override
-            public void onError(Error error) {
+            public void onError(EnigmaError error) {
                 playResultHandler.onError(error);
             }
         }
@@ -502,7 +502,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                 if(playerImplementationListener == null) {
                     playerImplementationListener = new IPlayerImplementationListener() {
                         @Override
-                        public void onError(Error error) {
+                        public void onError(EnigmaError error) {
                             enigmaPlayerListeners.onPlaybackError(error);
                             stateMachine.setState(EnigmaPlayerState.IDLE);
                         }
@@ -1011,7 +1011,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
      */
     private class InternalEnigmaPlayerCommunicationsChannel implements IEnigmaPlayerConnection.ICommunicationsChannel {
         @Override
-        public void onPlaybackError(Error error, boolean endStream) {
+        public void onPlaybackError(EnigmaError error, boolean endStream) {
             try {
                 enigmaPlayerListeners.onPlaybackError(error);
             } finally {

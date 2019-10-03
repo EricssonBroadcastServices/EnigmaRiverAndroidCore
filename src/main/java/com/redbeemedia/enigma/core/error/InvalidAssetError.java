@@ -10,7 +10,7 @@ public class InvalidAssetError extends AssetPlayRequestError {
         this(assetId, null);
     }
 
-    public InvalidAssetError(String assetId, Error cause) {
+    public InvalidAssetError(String assetId, EnigmaError cause) {
         super(getAssetMessage(assetId), cause);
         this.assetId = assetId;
     }
