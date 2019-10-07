@@ -3,25 +3,47 @@ package com.redbeemedia.enigma.core.playrequest;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public interface IPlaybackProperties {
     PlayFrom getPlayFrom();
 
     class PlayFrom implements Parcelable {
-        private static Map<String,PlayFrom> registry = new TreeMap<>();
+        public static final PlayFrom PLAYER_DEFAULT = new PlayFrom(PlayFromPreference.LIVE_EDGE, PlayFromPreference.BEGINNING);
+        public static final PlayFrom BEGINNING = new PlayFrom(PlayFromPreference.BEGINNING);
+        public static final PlayFrom LIVE_EDGE = new PlayFrom(PlayFromPreference.LIVE_EDGE, PlayFromPreference.BEGINNING);
+        public static final PlayFrom BOOKMARK = new PlayFrom(PlayFromPreference.BOOKMARK, PlayFromPreference.LIVE_EDGE, PlayFromPreference.BEGINNING);
 
-        public static final PlayFrom PLAYER_DEFAULT = new PlayerDefault();
-        public static final PlayFrom BEGINNING = new Beginning();
-        public static final PlayFrom BOOKMARK = new Bookmark();
-//        public static final PlayFrom LIVE_EDGE = new LiveEdge();
+        private final List<PlayFromPreference> preferences;
 
-        private final String id;
+        public PlayFrom(PlayFromPreference ... preferences) {
+            this(Arrays.asList(preferences));
+        }
 
-        protected PlayFrom(String id) {
-            this.id = id;
-            registry.put(id, this);
+        public PlayFrom(List<PlayFromPreference> preferences) {
+            this.preferences = Collections.unmodifiableList(new ArrayList<>(preferences));
+            for(PlayFromPreference preference : preferences) {
+                if(preference == null) {
+                    throw new NullPointerException();
+                }
+            }
+        }
+
+        public List<PlayFromPreference> getPreferences() {
+            return preferences;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof PlayFrom && this.preferences.equals(((PlayFrom) obj).preferences);
+        }
+
+        @Override
+        public int hashCode() {
+            return preferences.hashCode();
         }
 
         @Override
@@ -31,18 +53,21 @@ public interface IPlaybackProperties {
 
         @Override
         public void writeToParcel(Parcel dest, int flags) {
-            dest.writeString(id);
+            dest.writeInt(preferences.size());
+            for(PlayFromPreference preference : preferences) {
+                dest.writeString(preference.name());
+            }
         }
 
         public static final Creator<PlayFrom> CREATOR = new Creator<PlayFrom>() {
             @Override
             public PlayFrom createFromParcel(Parcel source) {
-                String id = source.readString();
-                PlayFrom playFrom = registry.get(id);
-                if(playFrom == null) {
-                    throw new IllegalArgumentException("No PlayFrom with id '"+id+"'");
+                int numberOfPreferences = source.readInt();
+                List<PlayFromPreference> preferences = new ArrayList<>();
+                for(int i = 0; i < numberOfPreferences; ++i) {
+                    preferences.add(PlayFromPreference.valueOf(source.readString()));
                 }
-                return playFrom;
+                return new PlayFrom(preferences);
             }
 
             @Override
@@ -51,23 +76,10 @@ public interface IPlaybackProperties {
             }
         };
 
-        private static class PlayerDefault extends PlayFrom {
-            protected PlayerDefault() {
-                super("playerDefault");
-            }
-        }
-
-        private static class Beginning extends PlayFrom {
-
-            protected Beginning() {
-                super("beginning");
-            }
-        }
-        private static class Bookmark extends PlayFrom {
-
-            protected Bookmark() {
-                super("bookmark");
-            }
+        public enum PlayFromPreference {
+            BEGINNING,
+            BOOKMARK,
+            LIVE_EDGE;
         }
     }
 }

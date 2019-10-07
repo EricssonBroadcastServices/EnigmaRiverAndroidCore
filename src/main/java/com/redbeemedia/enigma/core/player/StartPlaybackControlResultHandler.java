@@ -22,7 +22,7 @@ import org.json.JSONObject;
     public StartPlaybackControlResultHandler(IPlayResultHandler playResultHandler, JSONObject jsonObject, IPlaybackProperties.PlayFrom playFrom, IPlayerImplementationControls playerImplementationControls) {
         this.playResultHandler = playResultHandler;
         this.jsonObject = jsonObject;
-        this.playFrom = playFrom;
+        this.playFrom = playFrom != null ? playFrom : IPlaybackProperties.PlayFrom.PLAYER_DEFAULT;
         this.playerImplementationControls = playerImplementationControls;
     }
 
@@ -39,31 +39,69 @@ import org.json.JSONObject;
 
     @Override
     public void onDone() {
-        if(playFrom == IPlaybackProperties.PlayFrom.BEGINNING
-                || playFrom == IPlaybackProperties.PlayFrom.BOOKMARK) {
-            IPlayerImplementationControls.ISeekPosition seekPosition = IPlayerImplementationControls.ISeekPosition.TIMELINE_START;
-            if(playFrom == IPlaybackProperties.PlayFrom.BOOKMARK) {
+        for(IPlaybackProperties.PlayFrom.PlayFromPreference preference : playFrom.getPreferences()) {
+            boolean preferenceApplicable = seekToPreference(preference);
+            if(preferenceApplicable) {
+                break; //Done
+            }
+        }
+    }
+
+    /**
+     * @param preference
+     * @return true if preference was applicable
+     */
+    private boolean seekToPreference(IPlaybackProperties.PlayFrom.PlayFromPreference preference) {
+        boolean applicable = false;
+        switch (preference) {
+            case BEGINNING: {
+                playerImplementationControls.seekTo(IPlayerImplementationControls.ISeekPosition.TIMELINE_START, new SeekToControlResultHandler());
+                applicable = true;
+            } break;
+            case BOOKMARK: {
                 JSONObject bookmarks = jsonObject.optJSONObject("bookmarks");
                 if (bookmarks != null) {
-                    StreamInfo streamInfo;
-                    try {
-                        streamInfo = new StreamInfo(jsonObject.optJSONObject("streamInfo"));
-                    } catch (JSONException e) {
-                        streamInfo = null;
-                    }
+                    StreamInfo streamInfo = getStreamInfo();
                     if (streamInfo != null) {
-                        if (streamInfo.hasStaticManifest() && bookmarks.has(LAST_VIEWED_OFFSET)) {
-                            long lastViewedOffsetMs = bookmarks.optLong(LAST_VIEWED_OFFSET);
-                            seekPosition = new IPlayerImplementationControls.TimelineRelativePosition(lastViewedOffsetMs);
+                        if (streamInfo.hasStaticManifest()) {
+                            if(bookmarks.has(LAST_VIEWED_OFFSET)) {
+                                long lastViewedOffsetMs = bookmarks.optLong(LAST_VIEWED_OFFSET);
+                                IPlayerImplementationControls.TimelineRelativePosition seekPosition = new IPlayerImplementationControls.TimelineRelativePosition(lastViewedOffsetMs);
+                                playerImplementationControls.seekTo(seekPosition, new SeekToControlResultHandler());
+                                applicable = true;
+                            } else if(bookmarks.has(LIVE_TIME) && streamInfo.hasStart()) {
+                                long liveTime = bookmarks.optLong(LIVE_TIME);
+                                long offset = liveTime - streamInfo.getStart(Duration.Unit.MILLISECONDS);
+                                IPlayerImplementationControls.TimelineRelativePosition seekPosition = new IPlayerImplementationControls.TimelineRelativePosition(offset);
+                                playerImplementationControls.seekTo(seekPosition, new SeekToControlResultHandler());
+                                applicable = true;
+                            }
                         } else if (!streamInfo.hasStaticManifest() && bookmarks.has(LIVE_TIME)) {
                             long liveTime = bookmarks.optLong(LIVE_TIME);
                             long offset = liveTime - streamInfo.getStart(Duration.Unit.MILLISECONDS);
-                            seekPosition = new IPlayerImplementationControls.TimelineRelativePosition(offset);
+                            IPlayerImplementationControls.TimelineRelativePosition seekPosition = new IPlayerImplementationControls.TimelineRelativePosition(offset);
+                            playerImplementationControls.seekTo(seekPosition, new SeekToControlResultHandler());
+                            applicable = true;
                         }
                     }
                 }
-            }
-            playerImplementationControls.seekTo(seekPosition, new SeekToControlResultHandler());
+            } break;
+            case LIVE_EDGE: {
+                StreamInfo streamInfo = getStreamInfo();
+                if(streamInfo.isLiveStream()) {
+                    playerImplementationControls.seekTo(IPlayerImplementationControls.ISeekPosition.LIVE_EDGE, new SeekToControlResultHandler());
+                    applicable = true;
+                }
+            } break;
+        }
+        return applicable;
+    }
+
+    private StreamInfo getStreamInfo() {
+        try {
+            return new StreamInfo(jsonObject.optJSONObject("streamInfo"));
+        } catch (JSONException e) {
+            return null;
         }
     }
 

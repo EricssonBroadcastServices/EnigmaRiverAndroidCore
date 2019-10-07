@@ -2,29 +2,37 @@ package com.redbeemedia.enigma.core.player;
 
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
-import com.redbeemedia.enigma.core.epg.IProgram;
-import com.redbeemedia.enigma.core.epg.MockProgram;
-import com.redbeemedia.enigma.core.epg.response.MockEpgResponse;
-import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
-import com.redbeemedia.enigma.core.playbacksession.IPlaybackSessionListener;
 import com.redbeemedia.enigma.core.entitlement.EntitlementData;
 import com.redbeemedia.enigma.core.entitlement.EntitlementStatus;
 import com.redbeemedia.enigma.core.entitlement.IEntitlementProvider;
 import com.redbeemedia.enigma.core.entitlement.IEntitlementRequest;
 import com.redbeemedia.enigma.core.entitlement.IEntitlementResponseHandler;
 import com.redbeemedia.enigma.core.entitlement.listener.BaseEntitlementListener;
+import com.redbeemedia.enigma.core.epg.IProgram;
+import com.redbeemedia.enigma.core.epg.MockProgram;
+import com.redbeemedia.enigma.core.epg.response.MockEpgResponse;
+import com.redbeemedia.enigma.core.http.HttpStatus;
+import com.redbeemedia.enigma.core.http.IHttpCall;
+import com.redbeemedia.enigma.core.http.IHttpHandler;
+import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
+import com.redbeemedia.enigma.core.playbacksession.IPlaybackSessionListener;
 import com.redbeemedia.enigma.core.session.MockSession;
 import com.redbeemedia.enigma.core.testutil.Counter;
 import com.redbeemedia.enigma.core.time.Duration;
 import com.redbeemedia.enigma.core.time.ITimeProvider;
 import com.redbeemedia.enigma.core.time.MockTimeProvider;
+import com.redbeemedia.enigma.core.util.ISO8601Util;
 
 import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TimeZone;
 
 public class ProgramServiceTest {
     @Test
@@ -247,5 +255,92 @@ public class ProgramServiceTest {
 
         checkEntitlementCalled.assertExpected();
         onEntitlementChangedCalled.assertExpected();
+    }
+
+    @Test
+    public void testFutureEntitlementIsCheckedUsingCorrectTime() throws JSONException {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+
+        MockPlaybackSessionInfo playbackSessionInfo = new MockPlaybackSessionInfo();
+        playbackSessionInfo.setCurrentPlaybackOffset(Duration.millis(45000));
+        Duration channelStart = Duration.days(365*30).add(Duration.hours(11));
+        final Duration fuzz = Duration.seconds(45);
+        final String expectedTimeCheckDate = ISO8601Util.newWriter(TimeZone.getTimeZone("UTC")).toIso8601(playbackSessionInfo.getCurrentPlaybackOffset().add(fuzz).add(Duration.millis(channelStart.inWholeUnits(Duration.Unit.MILLISECONDS))).inWholeUnits(Duration.Unit.MILLISECONDS));
+        Assert.assertEquals("1999-12-25T11:01:30Z", expectedTimeCheckDate);
+        StreamInfo streamInfo = new MockStreamInfo(MockStreamInfo.Args.liveStream().setChannelId("channelZero").setStart(channelStart));
+        List<IProgram> programs = new ArrayList<>();
+        programs.add(new MockProgram("Program 1", 1000, 50000).setAssetId("asset_1"));
+        programs.add(new MockProgram("Program 2", 50000, 100000).setAssetId("asset_2"));
+        IStreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(1000, 100000, programs));
+        final Counter httpCallMade = new Counter();
+        IEntitlementProvider entitlementProvider = new IEntitlementProvider() {
+            private final Counter callCounter = new Counter();
+            @Override
+            public void checkEntitlement(IEntitlementRequest entitlementRequest, IEntitlementResponseHandler responseHandler) {
+                try {
+                    entitlementRequest.doHttpCall(new IHttpHandler() {
+                        @Override
+                        public void doHttp(URL url, IHttpCall httpCall, IHttpResponseHandler responseHandler) {
+                            callCounter.count();
+                            if(callCounter.getCounts() == 1) {
+                                Assert.assertEquals("https://mock.unittests.example.com/v2/customer/mockCu/businessunit/mockBu/entitlement/asset_1/entitle", url.toString());
+                            } else if(callCounter.getCounts() == 2) {
+                                Assert.assertEquals("time="+expectedTimeCheckDate, url.getQuery());
+                            } else {
+                                Assert.fail(url.toString());
+                            }
+                            httpCallMade.count();
+                        }
+
+                        @Override
+                        public void doHttpBlocking(URL url, IHttpCall httpCall, IHttpResponseHandler responseHandler) throws InterruptedException {
+                            Assert.fail("unexpected usage");
+                        }
+                    }, new IHttpHandler.IHttpResponseHandler() {
+                        @Override
+                        public void onResponse(HttpStatus httpStatus) {
+                        }
+
+                        @Override
+                        public void onResponse(HttpStatus httpStatus, InputStream inputStream) {
+                        }
+
+                        @Override
+                        public void onException(Exception e) {
+                            e.printStackTrace();
+                            Assert.fail(e.getMessage());
+                        }
+                    });
+                } catch (MalformedURLException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+        IPlaybackSession playbackSession = new MockInternalPlaybackSession(true) {
+            @Override
+            public void addListener(IPlaybackSessionListener listener) {
+                listener.onPlayingFromLiveChanged(true);
+            }
+        };
+        final MockTimeProvider mockTimeProvider = new MockTimeProvider(42463683);
+        ProgramService programService = new ProgramService(new MockSession(), streamInfo, streamPrograms, playbackSessionInfo, entitlementProvider, playbackSession) {
+            @Override
+            protected ITimeProvider createTimeProviderForCache() {
+                return mockTimeProvider;
+            }
+
+            @Override
+            protected Duration generateFuzzyOffset(Duration min, Duration max) {
+                return fuzz;
+            }
+        };
+        httpCallMade.setExpectedCounts(0);
+        httpCallMade.assertExpected();
+
+
+        programService.checkEntitlement();
+        httpCallMade.setExpectedCounts(2);
+
+        httpCallMade.assertExpected();
     }
 }

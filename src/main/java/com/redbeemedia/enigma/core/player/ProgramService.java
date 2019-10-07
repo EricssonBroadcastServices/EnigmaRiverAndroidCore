@@ -1,9 +1,5 @@
 package com.redbeemedia.enigma.core.player;
 
-import com.redbeemedia.enigma.core.epg.IProgram;
-import com.redbeemedia.enigma.core.error.EnigmaError;
-import com.redbeemedia.enigma.core.playbacksession.BasePlaybackSessionListener;
-import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.entitlement.EntitlementData;
 import com.redbeemedia.enigma.core.entitlement.EntitlementRequest;
 import com.redbeemedia.enigma.core.entitlement.EntitlementStatus;
@@ -11,6 +7,10 @@ import com.redbeemedia.enigma.core.entitlement.IEntitlementProvider;
 import com.redbeemedia.enigma.core.entitlement.IEntitlementResponseHandler;
 import com.redbeemedia.enigma.core.entitlement.listener.EntitlementCollector;
 import com.redbeemedia.enigma.core.entitlement.listener.IEntitlementListener;
+import com.redbeemedia.enigma.core.epg.IProgram;
+import com.redbeemedia.enigma.core.error.EnigmaError;
+import com.redbeemedia.enigma.core.playbacksession.BasePlaybackSessionListener;
+import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.time.Duration;
 import com.redbeemedia.enigma.core.time.ITimeProvider;
@@ -152,7 +152,8 @@ import java.util.Objects;
     }
 
     private void checkFutureEntitlementAndCache(final AssetIdFallbackChain assetId, Duration offset, Duration cacheTime) {
-        EntitlementRequest entitlementRequest = new EntitlementRequest(session, assetId.getAssetId()).setTime(offset.inWholeUnits(Duration.Unit.MILLISECONDS));
+        long time = streamInfo.getStart(Duration.Unit.MILLISECONDS) + offset.inWholeUnits(Duration.Unit.MILLISECONDS);
+        EntitlementRequest entitlementRequest = new EntitlementRequest(session, assetId.getAssetId()).setTime(time);
         entitlementProvider.checkEntitlement(entitlementRequest, new IEntitlementResponseHandler() {
             @Override
             public void onResponse(EntitlementData entitlementData) {
