@@ -2,7 +2,6 @@ package com.redbeemedia.enigma.core.player;
 
 import com.redbeemedia.enigma.core.entitlement.EntitlementData;
 import com.redbeemedia.enigma.core.entitlement.EntitlementRequest;
-import com.redbeemedia.enigma.core.entitlement.EntitlementStatus;
 import com.redbeemedia.enigma.core.entitlement.IEntitlementProvider;
 import com.redbeemedia.enigma.core.entitlement.IEntitlementResponseHandler;
 import com.redbeemedia.enigma.core.entitlement.listener.EntitlementCollector;
@@ -116,11 +115,7 @@ import java.util.Objects;
         IEntitlementResponseHandler responseHandler = new IEntitlementResponseHandler() {
             @Override
             public void onResponse(EntitlementData entitlementData) {
-                if(entitlementData.getStatus() == EntitlementStatus.GAP_IN_EPG && assetIds.hasMoreFallbacks()) {
-                    checkEntitlement(assetIds.fallback());
-                } else {
-                    OpenContainerUtil.setValueSynchronized(currentEntitlementData, entitlementData, (oldValue, newValue) -> entitlementCollector.onEntitlementChanged(oldValue, newValue));
-                }
+                OpenContainerUtil.setValueSynchronized(currentEntitlementData, entitlementData, (oldValue, newValue) -> entitlementCollector.onEntitlementChanged(oldValue, newValue));
             }
 
             @Override
@@ -157,12 +152,8 @@ import java.util.Objects;
         entitlementProvider.checkEntitlement(entitlementRequest, new IEntitlementResponseHandler() {
             @Override
             public void onResponse(EntitlementData entitlementData) {
-                if(entitlementData.getStatus() == EntitlementStatus.GAP_IN_EPG && assetId.hasMoreFallbacks()) {
-                    checkFutureEntitlementAndCache(assetId.fallback(), offset, cacheTime);
-                } else {
-                    synchronized (cachedEntitlementResponses) {
-                        cachedEntitlementResponses.add(new CachedEntitlementResponse(assetId.getAssetId(), entitlementData, cacheTime, timeProviderForCache));
-                    }
+                synchronized (cachedEntitlementResponses) {
+                    cachedEntitlementResponses.add(new CachedEntitlementResponse(assetId.getAssetId(), entitlementData, cacheTime, timeProviderForCache));
                 }
             }
 

@@ -9,6 +9,10 @@ public interface ITimelinePosition {
     ITimelinePosition add(Duration duration);
     ITimelinePosition subtract(Duration duration);
     Duration subtract(ITimelinePosition other);
+    boolean after(ITimelinePosition other);
+    boolean before(ITimelinePosition other);
+    boolean afterOrEqual(ITimelinePosition other);
+    boolean beforeOrEqual(ITimelinePosition other);
 
     /**
      * Don't call this method.

@@ -6,15 +6,11 @@ package com.redbeemedia.enigma.core.entitlement;
  */
 public enum EntitlementStatus {
     SUCCESS,
-    NOT_ENTITLED,
-    GEO_BLOCKED,
-    DOWNLOAD_BLOCKED,
-    DEVICE_BLOCKED,
-    LICENSE_EXPIRED,
-    NOT_AVAILABLE_IN_FORMAT,
-    CONCURRENT_STREAMS_LIMIT_REACHED,
-    NOT_ENABLED,
-    GAP_IN_EPG,
-    EPG_PLAY_MAX_HOURS,
-    ANONYMOUS_IP_BLOCKED;
+    FORBIDDEN, //If this business unit has been configured to require server to server authentication, but it is not valid.
+    NOT_AVAILABLE, //The asset is not available (playable) even if the asset itself is known.
+    BLOCKED, //All play requests for the asset is currently blocked. (for instance blacked out or catchup blocked)
+    GEO_BLOCKED, //Play is not allowed in selected region.
+    CONCURRENT_STREAMS_LIMIT_REACHED, //Play is not allowed due to concurrent streams limitation.
+    NOT_PUBLISHED, //The asset is not published.
+    NOT_ENTITLED; //The user does not have access to play the asset.
 }

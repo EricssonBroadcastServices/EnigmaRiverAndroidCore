@@ -42,6 +42,9 @@ public class ErrorCode {
     public static final int PLAYER_IMPLEMENTATION_ERROR = 40;
     public static final int ANALYTICS_ERROR = 41;
     public static final int ILLEGAL_SEEK_POSITION = 42;
+    public static final int ASSET_BLOCKED = 43;
+    public static final int ASSET_NOT_AVAILABLE = 44;
+    public static final int ASSET_NOT_PUBLISHED = 45;
 
 
     private ErrorCode() {}

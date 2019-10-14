@@ -6,14 +6,14 @@ import com.redbeemedia.enigma.core.analytics.AnalyticsReporter;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
 import com.redbeemedia.enigma.core.entitlement.EntitlementStatus;
-import com.redbeemedia.enigma.core.error.AnonymousIpBlockedError;
+import com.redbeemedia.enigma.core.error.AssetBlockedError;
 import com.redbeemedia.enigma.core.error.ConcurrentStreamsLimitReachedError;
-import com.redbeemedia.enigma.core.error.DeviceBlockedError;
+import com.redbeemedia.enigma.core.error.CredentialsError;
 import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.error.GeoBlockedError;
-import com.redbeemedia.enigma.core.error.LicenceExpiredError;
-import com.redbeemedia.enigma.core.error.NotEnabledError;
+import com.redbeemedia.enigma.core.error.NotAvailableError;
 import com.redbeemedia.enigma.core.error.NotEntitledError;
+import com.redbeemedia.enigma.core.error.NotPublishedError;
 import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.http.MockHttpHandler;
 import com.redbeemedia.enigma.core.playbacksession.BasePlaybackSessionListener;
@@ -378,17 +378,14 @@ public class InternalPlaybackSessionTest {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
 
         Map<EntitlementStatus, Class<? extends EnigmaError>> expectedErrorType = new HashMap<>();
-        expectedErrorType.put(EntitlementStatus.NOT_ENTITLED, NotEntitledError.class);
+        expectedErrorType.put(EntitlementStatus.FORBIDDEN, NotEntitledError.class);
+        expectedErrorType.put(EntitlementStatus.NOT_AVAILABLE, NotAvailableError.class);
+        expectedErrorType.put(EntitlementStatus.BLOCKED, AssetBlockedError.class);
         expectedErrorType.put(EntitlementStatus.GEO_BLOCKED, GeoBlockedError.class);
-        expectedErrorType.put(EntitlementStatus.DOWNLOAD_BLOCKED, NotEntitledError.class);
-        expectedErrorType.put(EntitlementStatus.DEVICE_BLOCKED, DeviceBlockedError.class);
-        expectedErrorType.put(EntitlementStatus.LICENSE_EXPIRED, LicenceExpiredError.class);
-        expectedErrorType.put(EntitlementStatus.NOT_AVAILABLE_IN_FORMAT, NotEntitledError.class);
         expectedErrorType.put(EntitlementStatus.CONCURRENT_STREAMS_LIMIT_REACHED, ConcurrentStreamsLimitReachedError.class);
-        expectedErrorType.put(EntitlementStatus.NOT_ENABLED, NotEnabledError.class);
-        expectedErrorType.put(EntitlementStatus.GAP_IN_EPG, NotEntitledError.class);
-        expectedErrorType.put(EntitlementStatus.EPG_PLAY_MAX_HOURS, NotEntitledError.class);
-        expectedErrorType.put(EntitlementStatus.ANONYMOUS_IP_BLOCKED, AnonymousIpBlockedError.class);
+        expectedErrorType.put(EntitlementStatus.NOT_PUBLISHED, NotPublishedError.class);
+        expectedErrorType.put(EntitlementStatus.NOT_ENTITLED, NotEntitledError.class);
+        expectedErrorType.put(null, NotEntitledError.class);
         final Counter errorTypesChecked = new Counter();
 
         for(EntitlementStatus status : EntitlementStatus.values()) {
@@ -412,6 +409,24 @@ public class InternalPlaybackSessionTest {
             InternalPlaybackSession.handleEntitlementStatus(comChannel, status);
             onPlaybackErrorCalled.assertOnce(assertMessage);
         }
+
+        final Counter onPlaybackErrorCalledForNull = new Counter();
+        MockCommunicationsChannel comChannel = new MockCommunicationsChannel() {
+            @Override
+            public void onPlaybackError(EnigmaError error, boolean endStream) {
+                Assert.assertTrue(endStream);
+                Assert.assertNotNull(expectedErrorType.get(null));
+                Assert.assertNotNull(error);
+                Assert.assertEquals(expectedErrorType.get(null), error.getClass());
+                errorTypesChecked.count();
+                onPlaybackErrorCalledForNull.count();
+            }
+        };
+        onPlaybackErrorCalledForNull.assertNone();
+        InternalPlaybackSession.handleEntitlementStatus(comChannel, null);
+        onPlaybackErrorCalledForNull.assertOnce();
+
+        //Assert all types listed in expectedErrorType-map checked
         errorTypesChecked.assertCount(expectedErrorType.size());
     }
 

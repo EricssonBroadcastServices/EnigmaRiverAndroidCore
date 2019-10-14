@@ -83,6 +83,48 @@ import java.util.Date;
         }
 
         @Override
+        public boolean after(ITimelinePosition other) {
+            if(other == null) {
+                return false;
+            }
+            return this.offsetMillis > ((TimelinePosition) other).offsetMillis;
+        }
+
+        @Override
+        public boolean before(ITimelinePosition other) {
+            if(other == null) {
+                return false;
+            }
+            return other.after(this);
+        }
+
+        @Override
+        public boolean afterOrEqual(ITimelinePosition other) {
+            if(other == null) {
+                return false;
+            }
+            return this.equals(other) || this.after(other);
+        }
+
+        @Override
+        public boolean beforeOrEqual(ITimelinePosition other) {
+            if(other == null) {
+                return false;
+            }
+            return this.equals(other) || this.before(other);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof TimelinePosition && ((TimelinePosition) obj).offsetMillis == this.offsetMillis;
+        }
+
+        @Override
+        public int hashCode() {
+            return Long.valueOf(offsetMillis).hashCode();
+        }
+
+        @Override
         public void seek(IEnigmaPlayerControls controls, IControlResultHandler resultHandler) {
             controls.seekTo(offsetMillis, resultHandler);
         }

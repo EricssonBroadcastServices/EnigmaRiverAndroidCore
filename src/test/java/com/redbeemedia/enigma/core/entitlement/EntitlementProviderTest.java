@@ -19,17 +19,13 @@ public class EntitlementProviderTest {
     @Test
     public void testEntitlementCheck() {
         assertStatus("SUCCESS", true, EntitlementStatus.SUCCESS);
-        assertStatus("NOT_ENTITLED", false, EntitlementStatus.NOT_ENTITLED);
+        assertStatus("FORBIDDEN", false, EntitlementStatus.FORBIDDEN);
+        assertStatus("NOT_AVAILABLE", false, EntitlementStatus.NOT_AVAILABLE);
+        assertStatus("BLOCKED", false, EntitlementStatus.BLOCKED);
         assertStatus("GEO_BLOCKED", false, EntitlementStatus.GEO_BLOCKED);
-        assertStatus("DOWNLOAD_BLOCKED", false, EntitlementStatus.DOWNLOAD_BLOCKED);
-        assertStatus("DEVICE_BLOCKED", false, EntitlementStatus.DEVICE_BLOCKED);
-        assertStatus("LICENSE_EXPIRED", false, EntitlementStatus.LICENSE_EXPIRED);
-        assertStatus("NOT_AVAILABLE_IN_FORMAT", false, EntitlementStatus.NOT_AVAILABLE_IN_FORMAT);
         assertStatus("CONCURRENT_STREAMS_LIMIT_REACHED", false, EntitlementStatus.CONCURRENT_STREAMS_LIMIT_REACHED);
-        assertStatus("NOT_ENABLED", false, EntitlementStatus.NOT_ENABLED);
-        assertStatus("GAP_IN_EPG", false, EntitlementStatus.GAP_IN_EPG);
-        assertStatus("EPG_PLAY_MAX_HOURS", false, EntitlementStatus.EPG_PLAY_MAX_HOURS);
-        assertStatus("ANONYMOUS_IP_BLOCKED", false, EntitlementStatus.ANONYMOUS_IP_BLOCKED);
+        assertStatus("NOT_PUBLISHED", false, EntitlementStatus.NOT_PUBLISHED);
+        assertStatus("NOT_ENTITLED", false, EntitlementStatus.NOT_ENTITLED);
         assertStatus("undefined_value", false, null);
     }
 

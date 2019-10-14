@@ -13,14 +13,13 @@ import com.redbeemedia.enigma.core.entitlement.EntitlementStatus;
 import com.redbeemedia.enigma.core.entitlement.IEntitlementProvider;
 import com.redbeemedia.enigma.core.entitlement.listener.BaseEntitlementListener;
 import com.redbeemedia.enigma.core.epg.IProgram;
-import com.redbeemedia.enigma.core.error.AnonymousIpBlockedError;
+import com.redbeemedia.enigma.core.error.AssetBlockedError;
 import com.redbeemedia.enigma.core.error.ConcurrentStreamsLimitReachedError;
-import com.redbeemedia.enigma.core.error.DeviceBlockedError;
 import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.error.GeoBlockedError;
-import com.redbeemedia.enigma.core.error.LicenceExpiredError;
-import com.redbeemedia.enigma.core.error.NotEnabledError;
+import com.redbeemedia.enigma.core.error.NotAvailableError;
 import com.redbeemedia.enigma.core.error.NotEntitledError;
+import com.redbeemedia.enigma.core.error.NotPublishedError;
 import com.redbeemedia.enigma.core.playable.IPlayable;
 import com.redbeemedia.enigma.core.playbacksession.BasePlaybackSessionListener;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSessionListener;
@@ -193,27 +192,28 @@ import java.util.List;
         if(status == EntitlementStatus.SUCCESS) {
             return;
         }
+        if(status == null) {
+            communicationsChannel.onPlaybackError(new NotEntitledError(status), true);
+            return;
+        }
         switch (status) {
-            case NOT_ENTITLED: {
-                communicationsChannel.onPlaybackError(new NotEntitledError(EntitlementStatus.NOT_ENTITLED), true);
+            case NOT_AVAILABLE: {
+                communicationsChannel.onPlaybackError(new NotAvailableError(), true);
+            } break;
+            case BLOCKED: {
+                communicationsChannel.onPlaybackError(new AssetBlockedError(), true);
             } break;
             case GEO_BLOCKED: {
                 communicationsChannel.onPlaybackError(new GeoBlockedError(), true);
             } break;
-            case DEVICE_BLOCKED: {
-                communicationsChannel.onPlaybackError(new DeviceBlockedError(), true);
-            } break;
-            case LICENSE_EXPIRED: {
-                communicationsChannel.onPlaybackError(new LicenceExpiredError(), true);
-            } break;
             case CONCURRENT_STREAMS_LIMIT_REACHED: {
                 communicationsChannel.onPlaybackError(new ConcurrentStreamsLimitReachedError(), true);
             } break;
-            case NOT_ENABLED: {
-                communicationsChannel.onPlaybackError(new NotEnabledError(), true);
+            case NOT_PUBLISHED: {
+                communicationsChannel.onPlaybackError(new NotPublishedError(), true);
             } break;
-            case ANONYMOUS_IP_BLOCKED: {
-                communicationsChannel.onPlaybackError(new AnonymousIpBlockedError(), true);
+            case NOT_ENTITLED: {
+                communicationsChannel.onPlaybackError(new NotEntitledError(EntitlementStatus.NOT_ENTITLED), true);
             } break;
             default: {
                 communicationsChannel.onPlaybackError(new NotEntitledError(status), true);
