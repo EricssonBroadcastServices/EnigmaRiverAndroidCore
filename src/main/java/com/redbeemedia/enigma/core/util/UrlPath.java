@@ -57,4 +57,9 @@ public class UrlPath implements IStringAppendable {
     public boolean contains(String str) {
         return url.contains(str);
     }
+
+    @Override
+    public String toString() {
+        return url;
+    }
 }

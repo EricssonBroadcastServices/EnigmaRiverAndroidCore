@@ -3,6 +3,7 @@ package com.redbeemedia.enigma.core.util;
 import java.util.Objects;
 
 public class OpenContainerUtil {
+    private OpenContainerUtil() {}
 
     public static <T> void setValueSynchronized(OpenContainer<T> container, T newValue, IValueChangedListener<T> valueChangedListener) {
         T oldValue;
