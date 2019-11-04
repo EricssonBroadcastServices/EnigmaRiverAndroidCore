@@ -17,4 +17,13 @@ public class AndroidThreadUtil {
     public static boolean isOnUiThread() {
         return Looper.getMainLooper() == Looper.myLooper();
     }
+
+    /**
+     * Verifies that {@link AndroidThreadUtil#isOnUiThread} is true for the current thread. If not, an {@link IllegalStateException} is thrown.
+     */
+    public static void verifyCalledFromUiThread() throws IllegalStateException {
+        if(!isOnUiThread()) {
+            throw new IllegalStateException("Must be called from the main thread.");
+        }
+    }
 }
