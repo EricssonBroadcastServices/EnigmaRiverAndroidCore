@@ -16,9 +16,12 @@ At the end, you should be able to have a running Android application that will:
 
 ##### Custom UI controls
 
+[Getting started](custom_ui_getting_started.md) <br/>
+
 The following tutorials provide in-depth information about different areas of interest when
 implementing/integrating custom controls for EnigmaPlayer.
 
+[VirtualControls](virtual_controls.md)<br/>
 [Controls](controls.md)<br/>
 [Timeline API](timeline.md)<br/>
 [EnigmaPlayerState](enigma_player_state.md)<br/>
