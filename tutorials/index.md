@@ -17,6 +17,7 @@ At the end, you should be able to have a running Android application that will:
 ##### Custom UI controls
 
 [Getting started](custom_ui_getting_started.md) <br/>
+[Audio- and subtitle selection](audio_and_text_tracks.md) <br/>
 
 The following tutorials provide in-depth information about different areas of interest when
 implementing/integrating custom controls for EnigmaPlayer.
@@ -26,3 +27,8 @@ implementing/integrating custom controls for EnigmaPlayer.
 [Timeline API](timeline.md)<br/>
 [EnigmaPlayerState](enigma_player_state.md)<br/>
 [PlaybackSession](playback_session.md)<br/>
+
+##### Chromecast
+
+[Integrating Red Bee OTT cast support](chromecast.md)<br/>
+[Advanced usage of the cast-module](chromecast_advanced.md)<br/>

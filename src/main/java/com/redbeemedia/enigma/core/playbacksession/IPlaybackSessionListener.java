@@ -19,9 +19,31 @@ public interface IPlaybackSessionListener extends IInternalListener {
 
     void onPlayingFromLiveChanged(boolean live);
     void onEndReached();
+
+    /**
+     * <p>This event is triggered by the specific
+     * {@link com.redbeemedia.enigma.core.player.IPlayerImplementation} and may be fired at any
+     * time.</p>
+     * <p>Listeners should update their list of {@code tracks} and associated UI any time this event
+     * is fired.</p>
+     *
+     * @param tracks the current list of available {@link ISubtitleTrack}s. Never @code null}, but might be empty.
+     */
     void onSubtitleTracks(List<ISubtitleTrack> tracks);
     void onSelectedSubtitleTrackChanged(ISubtitleTrack oldSelectedTrack, ISubtitleTrack newSelectedTrack);
+
+    /**
+     * <p>This event is triggered by the specific
+     * {@link com.redbeemedia.enigma.core.player.IPlayerImplementation} and may be fired at any
+     * time.</p>
+     * <p>Listeners should update their list of {@code tracks} and associated UI any time this event
+     * is fired.</p>
+     *
+     * @param tracks the current list of available {@link IAudioTrack}s. Never {@code null}, but might be empty.
+     */
     void onAudioTracks(List<IAudioTrack> tracks);
     void onSelectedAudioTrackChanged(IAudioTrack oldSelectedTrack, IAudioTrack newSelectedTrack);
+
+
     void onContractRestrictionsChanged(IContractRestrictions oldContractRestrictions, IContractRestrictions newContractRestrictions);
 }
