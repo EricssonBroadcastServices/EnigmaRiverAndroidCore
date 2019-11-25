@@ -104,3 +104,8 @@ This is only allowed for subtitle tracks. A request to `setAudioTrack(null)` wil
 
 #### Note
 > Objects passed to `set{Audio/Subtitle}Track(...)` must originate from EnigmaPlayer. Using a custom implementation of `IAudioTrack` or `ISubtitleTrack` will result in a rejected request.
+
+## Working example
+
+Here is a working example project using what is described in this tutorial:
+[audioAndSubtitles](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r1.0.32-BETA-2/audioAndSubtitles)<br />
