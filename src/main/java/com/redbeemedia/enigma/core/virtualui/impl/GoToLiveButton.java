@@ -3,6 +3,8 @@ package com.redbeemedia.enigma.core.virtualui.impl;
 import com.redbeemedia.enigma.core.playbacksession.BasePlaybackSessionListener;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSessionListener;
+import com.redbeemedia.enigma.core.player.ControlLogic;
+import com.redbeemedia.enigma.core.player.IPlayerImplementationControls;
 import com.redbeemedia.enigma.core.player.controls.IEnigmaPlayerControls;
 import com.redbeemedia.enigma.core.player.listener.BaseEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.util.OpenContainer;
@@ -41,7 +43,8 @@ import com.redbeemedia.enigma.core.util.OpenContainerUtil;
 
     @Override
     protected boolean calculateEnabled(IVirtualButtonContainer container) {
-        return OpenContainerUtil.getValueSynchronized(atLivePoint);
+        ControlLogic.IValidationResults<IPlayerImplementationControls.ISeekPosition> validationResults = ControlLogic.validateSeek(IEnigmaPlayerControls.StreamPosition.LIVE_EDGE, container.getPlaybackSession());
+        return validationResults.isSuccess() && OpenContainerUtil.getValueSynchronized(atLivePoint);
     }
 
     @Override

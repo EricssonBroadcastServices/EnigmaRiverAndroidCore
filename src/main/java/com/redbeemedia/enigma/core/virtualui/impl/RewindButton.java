@@ -7,7 +7,7 @@ import com.redbeemedia.enigma.core.restriction.IContractRestrictions;
 /*package-protected*/ class RewindButton extends AbstractSeekButton {
 
     public RewindButton(IVirtualButtonContainer container) {
-        super(container);
+        super(container, false);
     }
 
     @Override

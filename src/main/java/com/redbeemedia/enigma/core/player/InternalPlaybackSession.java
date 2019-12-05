@@ -289,6 +289,11 @@ import java.util.List;
     }
 
     @Override
+    public IPlaybackSessionInfo getPlaybackSessionInfo() {
+        return playbackSessionInfo;
+    }
+
+    @Override
     public void setPlayingFromLive(boolean live) {
         if(!streamInfo.isLiveStream()) {
             live = false;

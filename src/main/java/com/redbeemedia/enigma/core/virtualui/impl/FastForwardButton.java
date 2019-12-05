@@ -7,9 +7,8 @@ import com.redbeemedia.enigma.core.restriction.IContractRestrictions;
 /*package-protected*/ class FastForwardButton extends AbstractSeekButton {
 
     public FastForwardButton(IVirtualButtonContainer container) {
-        super(container);
+        super(container, true);
     }
-
 
     @Override
     protected boolean calculateRelevant(IVirtualButtonContainer container) {

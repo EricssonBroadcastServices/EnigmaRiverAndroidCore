@@ -67,11 +67,13 @@ public class DirectEpgTest {
         long centerDateMillis = 11847456550000L;
         long span = 1000L*60L*60L*24L*3L;
         final Counter onSuccessCalled = new Counter();
-        directEpg.getPrograms(new EpgRequest("aMockChannel", centerDateMillis-span, centerDateMillis+span), new IEpgResponseHandler() {
+        long startUtcInRequest = centerDateMillis-span;
+        directEpg.getPrograms(new EpgRequest("aMockChannel", startUtcInRequest, centerDateMillis+span), new IEpgResponseHandler() {
             @Override
             public void onSuccess(IEpgResponse epgResponse) {
                 Assert.assertEquals(1, epgResponse.getPrograms().size());
                 Assert.assertEquals(Duration.millis(10000000L), epgResponse.getPrograms().get(0).getDuration());
+                Assert.assertEquals(startUtcInRequest, epgResponse.getStartUtcMillis());
                 onSuccessCalled.count();
             }
 

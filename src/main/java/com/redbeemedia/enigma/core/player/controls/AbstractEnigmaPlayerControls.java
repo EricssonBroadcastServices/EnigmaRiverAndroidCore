@@ -41,6 +41,16 @@ public abstract class AbstractEnigmaPlayerControls implements IEnigmaPlayerContr
     }
 
     @Override
+    public void nextProgram() {
+        nextProgram(getDefaultResultHandler());
+    }
+
+    @Override
+    public void previousProgram() {
+        previousProgram(getDefaultResultHandler());
+    }
+
+    @Override
     public void setVolume(float volume) {
         setVolume(volume, getDefaultResultHandler());
     }

@@ -8,6 +8,7 @@ import com.redbeemedia.enigma.core.player.EnigmaPlayerState;
 import com.redbeemedia.enigma.core.player.EnigmaPlayerTest;
 import com.redbeemedia.enigma.core.player.IEnigmaPlayer;
 import com.redbeemedia.enigma.core.player.MockEnigmaPlayerControls;
+import com.redbeemedia.enigma.core.player.MockInternalPlaybackSession;
 import com.redbeemedia.enigma.core.player.MockPlayerImplementation;
 import com.redbeemedia.enigma.core.player.controls.IControlResultHandler;
 import com.redbeemedia.enigma.core.player.controls.IEnigmaPlayerControls;
@@ -103,6 +104,7 @@ public class VirtualControlsTest {
             @Override
             public void makeButtonEnabled(TestVirtualButtonContainer virtualButtonContainer) {
                 virtualButtonContainer.playerState = EnigmaPlayerState.PLAYING;
+                virtualButtonContainer.playbackSession = new MockInternalPlaybackSession(true);
                 virtualButtonContainer.contractRestrictions = new MockContractRestrictions() {
                     @Override
                     public <T> T getValue(IContractRestriction<T> restriction, T fallback) {
@@ -141,6 +143,7 @@ public class VirtualControlsTest {
             @Override
             public void makeButtonEnabled(TestVirtualButtonContainer virtualButtonContainer) {
                 virtualButtonContainer.playerState = EnigmaPlayerState.PLAYING;
+                virtualButtonContainer.playbackSession = new MockInternalPlaybackSession(false);
                 virtualButtonContainer.contractRestrictions = new MockContractRestrictions() {
                     @Override
                     public <T> T getValue(IContractRestriction<T> restriction, T fallback) {
@@ -179,6 +182,7 @@ public class VirtualControlsTest {
             @Override
             public void makeButtonEnabled(TestVirtualButtonContainer virtualButtonContainer) {
                 virtualButtonContainer.playerState = EnigmaPlayerState.PLAYING;
+                virtualButtonContainer.playbackSession = new MockInternalPlaybackSession(false);
                 virtualButtonContainer.contractRestrictions = new MockContractRestrictions() {
                     @Override
                     public <T> T getValue(IContractRestriction<T> restriction, T fallback) {

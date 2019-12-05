@@ -11,10 +11,10 @@ import com.redbeemedia.enigma.core.audio.IAudioTrack;
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.drm.IDrmInfo;
 import com.redbeemedia.enigma.core.drm.IDrmProvider;
+import com.redbeemedia.enigma.core.entitlement.EntitlementProvider;
 import com.redbeemedia.enigma.core.epg.IEpg;
 import com.redbeemedia.enigma.core.epg.IProgram;
 import com.redbeemedia.enigma.core.error.EnigmaError;
-import com.redbeemedia.enigma.core.error.InternalError;
 import com.redbeemedia.enigma.core.error.UnexpectedError;
 import com.redbeemedia.enigma.core.format.EnigmaMediaFormat;
 import com.redbeemedia.enigma.core.format.EnigmaMediaFormat.DrmTechnology;
@@ -22,10 +22,10 @@ import com.redbeemedia.enigma.core.format.EnigmaMediaFormat.StreamFormat;
 import com.redbeemedia.enigma.core.format.IMediaFormatSupportSpec;
 import com.redbeemedia.enigma.core.playable.IPlayable;
 import com.redbeemedia.enigma.core.playable.IPlayableHandler;
+import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.player.controls.AbstractEnigmaPlayerControls;
 import com.redbeemedia.enigma.core.player.controls.IControlResultHandler;
 import com.redbeemedia.enigma.core.player.controls.IEnigmaPlayerControls;
-import com.redbeemedia.enigma.core.entitlement.EntitlementProvider;
 import com.redbeemedia.enigma.core.player.listener.BaseEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.timeline.BaseTimelineListener;
@@ -37,7 +37,6 @@ import com.redbeemedia.enigma.core.player.track.IPlayerImplementationTrack;
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
 import com.redbeemedia.enigma.core.playrequest.IPlayResultHandler;
 import com.redbeemedia.enigma.core.playrequest.IPlaybackProperties;
-import com.redbeemedia.enigma.core.restriction.ContractRestriction;
 import com.redbeemedia.enigma.core.restriction.IContractRestriction;
 import com.redbeemedia.enigma.core.restriction.IContractRestrictions;
 import com.redbeemedia.enigma.core.session.ISession;
@@ -370,6 +369,10 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         return EnigmaRiverContext.getTaskFactory();
     }
 
+    protected ITaskFactory getMainThreadTaskFactory() {
+        return new MainThreadTaskFactory();
+    }
+
 
     private void replacePlaybackSession(IInternalPlaybackSession playbackSession) {
         synchronized (currentPlaybackSession) {
@@ -639,70 +642,49 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             return new DefaultControlResultHandler(TAG);
         }
 
-        private boolean seekAllowed() {
-            synchronized (currentPlaybackSession) {
-                return currentPlaybackSession.value != null && currentPlaybackSession.value.isSeekAllowed();
-            }
-        }
-
-        private boolean seekToLiveAllowed() {
-            synchronized (currentPlaybackSession) {
-                return currentPlaybackSession.value != null && currentPlaybackSession.value.isSeekToLiveAllowed();
-            }
-        }
-
-        private boolean fastForwardEnabled() {
-            boolean ffEnabled = getContractRestrictionValue(currentPlaybackSession, ContractRestriction.FASTFORWARD_ENABLED,true);
-            boolean timeshiftEnabled = getContractRestrictionValue(currentPlaybackSession, ContractRestriction.TIMESHIFT_ENABLED,true);
-            return ffEnabled && timeshiftEnabled;
-        }
-
-        private boolean rewindEnabled() {
-            boolean rwEnabled = getContractRestrictionValue(currentPlaybackSession, ContractRestriction.REWIND_ENABLED,true);
-            boolean timeshiftEnabled = getContractRestrictionValue(currentPlaybackSession, ContractRestriction.TIMESHIFT_ENABLED,true);
-            return rwEnabled && timeshiftEnabled;
-        }
-
         @Override
         public void start(IControlResultHandler resultHandler) {
-            EnigmaPlayerState currentState = stateMachine.getState();
-            if(currentState == EnigmaPlayerState.IDLE) {
-                resultHandler.onRejected(RejectReason.incorrectState("Player is IDLE"));
-            } else if(currentState == EnigmaPlayerState.LOADING) {
-                resultHandler.onRejected(RejectReason.incorrectState("Player is LOADING"));
-            } else {
-                ControlResultHandlerAdapter controlResultHandler = wrapResultHandler(resultHandler);
-                environment.playerImplementationControls.start(controlResultHandler);
-                controlResultHandler.runWhenDone(() -> {
-                    stateMachine.setState(EnigmaPlayerState.PLAYING);
-                    updatePlayingFromLive();
-                });
+            ControlResultHandlerAdapter controlResultHandler = wrapResultHandler(resultHandler);
+
+            try {
+                EnigmaPlayerState currentState = stateMachine.getState();
+                ControlLogic.IValidationResults<Void> validationResults = ControlLogic.validateStart(currentState);
+                if(validationResults.isSuccess()) {
+                    environment.playerImplementationControls.start(controlResultHandler);
+                    controlResultHandler.runWhenDone(() -> {
+                        stateMachine.setState(EnigmaPlayerState.PLAYING);
+                        updatePlayingFromLive();
+                    });
+                } else {
+                    ((ControlLogic.IFailedValidationResults) validationResults).triggerCallback(controlResultHandler);
+                    return;
+                }
+            } catch (RuntimeException e) {
+                controlResultHandler.onError(new UnexpectedError(e));
+                return;
             }
         }
 
         @Override
         public void pause(IControlResultHandler resultHandler) {
-            EnigmaPlayerState currentState = stateMachine.getState();
-            IInternalPlaybackSession playbackSession = OpenContainerUtil.getValueSynchronized(currentPlaybackSession);
-            if(playbackSession == null) {
-                resultHandler.onError(new InternalError("No PlaybackSession"));
-                return;
-            } else {
-                IContractRestrictions contractRestrictions = playbackSession.getContractRestrictions();
-                if(!contractRestrictions.getValue(ContractRestriction.TIMESHIFT_ENABLED, true)) {
-                    resultHandler.onRejected(RejectReason.contractRestriction("Timeshift not enabled"));
+            ControlResultHandlerAdapter controlResultHandler = wrapResultHandler(resultHandler);
+            try {
+                EnigmaPlayerState currentState = stateMachine.getState();
+                IPlaybackSession playbackSession = OpenContainerUtil.getValueSynchronized(currentPlaybackSession);
+                ControlLogic.IValidationResults<Void> validationResults = ControlLogic.validatePause(currentState, playbackSession);
+                if(validationResults.isSuccess()) {
+                    environment.playerImplementationControls.pause(controlResultHandler);
+                    controlResultHandler.runWhenDone(() -> {
+                        stateMachine.setState(EnigmaPlayerState.PAUSED);
+                        setPlayingFromLive(false);
+                    });
+                } else {
+                    ((ControlLogic.IFailedValidationResults) validationResults).triggerCallback(controlResultHandler);
                     return;
                 }
-            }
-            if(currentState != EnigmaPlayerState.PLAYING && currentState != EnigmaPlayerState.PAUSED) {
-                resultHandler.onRejected(RejectReason.incorrectState("Player is "+currentState));
-            } else {
-                ControlResultHandlerAdapter controlResultHandler = wrapResultHandler(resultHandler);
-                environment.playerImplementationControls.pause(controlResultHandler);
-                controlResultHandler.runWhenDone(() -> {
-                    stateMachine.setState(EnigmaPlayerState.PAUSED);
-                    setPlayingFromLive(false);
-                });
+            } catch (RuntimeException e) {
+                controlResultHandler.onError(new UnexpectedError(e));
+                return;
             }
         }
 
@@ -721,23 +703,30 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             ControlResultHandlerAdapter controlResultHandler = wrapResultHandler(resultHandler);
             //We need to use  playerImplementationInternals.getCurrentPosition() so we need to run on UiThread (for exo).
             AndroidThreadUtil.runOnUiThread(() -> {
-                ITimelinePosition currentPosition = environment.playerImplementationInternals.getCurrentPosition();
-                if(currentPosition != null) {
+                try {
+                    IPlaybackSession playbackSession = OpenContainerUtil.getValueSynchronized(currentPlaybackSession);
                     ITimelinePosition seekPos = environment.timelinePositionFactory.newPosition(millis);
-                    long timeDiff = seekPos.subtract(currentPosition).inWholeUnits(Duration.Unit.MILLISECONDS);
-                    if(timeDiff > 0 && !fastForwardEnabled()) {
-                        controlResultHandler.onRejected(RejectReason.contractRestriction("Fast-forward not enabled"));
-                        return;
-                    } else if(timeDiff < 0 && !rewindEnabled()) {
-                        controlResultHandler.onRejected(RejectReason.contractRestriction("Rewind not enabled"));
+
+                    boolean seekForward = false;
+                    boolean seekBackward = false;
+                    ITimelinePosition currentPosition = environment.playerImplementationInternals.getCurrentPosition();
+                    if(currentPosition != null) {
+                        long timeDiffMillis = seekPos.subtract(currentPosition).inWholeUnits(Duration.Unit.MILLISECONDS);
+                        seekForward = timeDiffMillis > 0;
+                        seekBackward = timeDiffMillis < 0;
+                    }
+
+                    ControlLogic.IValidationResults<Void> validationResults = ControlLogic.validateSeek(seekForward, seekBackward, playbackSession);
+                    if(validationResults.isSuccess()) {
+                        environment.playerImplementationControls.seekTo(new IPlayerImplementationControls.TimelineRelativePosition(millis), controlResultHandler);
+                        controlResultHandler.runWhenDone(() -> updatePlayingFromLive());
+                    } else {
+                        ((ControlLogic.IFailedValidationResults) validationResults).triggerCallback(controlResultHandler);
                         return;
                     }
-                }
-                if(seekAllowed()) {
-                    environment.playerImplementationControls.seekTo(new IPlayerImplementationControls.TimelineRelativePosition(millis), controlResultHandler);
-                    controlResultHandler.runWhenDone(() -> updatePlayingFromLive());
-                } else {
-                    controlResultHandler.onRejected(RejectReason.contractRestriction("Seek not allowed"));
+                } catch (RuntimeException e) {
+                    controlResultHandler.onError(new UnexpectedError(e));
+                    return;
                 }
             });
         }
@@ -745,27 +734,56 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         @Override
         public void seekTo(StreamPosition streamPosition, IControlResultHandler resultHandler) {
             ControlResultHandlerAdapter controlResultHandler = wrapResultHandler(resultHandler);
-            if(streamPosition == StreamPosition.START) {
-                if(seekAllowed()) {
-                    environment.playerImplementationControls.seekTo(IPlayerImplementationControls.ISeekPosition.TIMELINE_START, controlResultHandler);
+
+            try {
+                IPlaybackSession playbackSession = OpenContainerUtil.getValueSynchronized(currentPlaybackSession);
+                ControlLogic.IValidationResults<IPlayerImplementationControls.ISeekPosition> validationResults = ControlLogic.validateSeek(streamPosition, playbackSession);
+                if(validationResults.isSuccess()) {
+                    IPlayerImplementationControls.ISeekPosition seekPosition = validationResults.getRelevantData();
+                    environment.playerImplementationControls.seekTo(seekPosition, controlResultHandler);
                     controlResultHandler.runWhenDone(() -> updatePlayingFromLive());
                 } else {
-                    controlResultHandler.onRejected(RejectReason.contractRestriction("Seek not allowed"));
+                    ((ControlLogic.IFailedValidationResults) validationResults).triggerCallback(controlResultHandler);
+                    return;
                 }
-            } else if(streamPosition == StreamPosition.LIVE_EDGE) {
-                if(seekToLiveAllowed()) {
-                    environment.playerImplementationControls.seekTo(IPlayerImplementationControls.ISeekPosition.LIVE_EDGE, controlResultHandler);
-                    controlResultHandler.runWhenDone(() -> setPlayingFromLive(true));
-                } else {
-                    if(seekAllowed()) {
-                        controlResultHandler.onRejected(RejectReason.inapplicable("Seek to live not allowed"));
-                    } else {
-                        controlResultHandler.onRejected(RejectReason.contractRestriction("Seek not allowed"));
+            } catch (RuntimeException e) {
+                controlResultHandler.onError(new UnexpectedError(e));
+                return;
+            }
+        }
+
+        private void jumpToProgram(IControlResultHandler resultHandler, boolean jumpBackwards) {
+            ControlResultHandlerAdapter controlResultHandler = wrapResultHandler(resultHandler);
+
+            AndroidThreadUtil.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        IPlaybackSession playbackSession = OpenContainerUtil.getValueSynchronized(currentPlaybackSession);
+                        ControlLogic.IValidationResults<Long> validationResults = ControlLogic.validateProgramJump(jumpBackwards, playbackSession);
+                        if(validationResults.isSuccess()) {
+                            Long seekPos = validationResults.getRelevantData();
+                            environment.playerImplementationControls.seekTo(new IPlayerImplementationControls.TimelineRelativePosition(seekPos), controlResultHandler);
+                        } else {
+                            ((ControlLogic.IFailedValidationResults) validationResults).triggerCallback(controlResultHandler);
+                            return;
+                        }
+                    } catch (RuntimeException e) {
+                        controlResultHandler.onError(new UnexpectedError(e));
+                        return;
                     }
                 }
-            } else {
-                controlResultHandler.onRejected(RejectReason.illegal("Unknown "+StreamPosition.class.getSimpleName()+" \""+streamPosition+"\""));
-            }
+            });
+        }
+
+        @Override
+        public void nextProgram(IControlResultHandler resultHandler) {
+            jumpToProgram(resultHandler, false);
+        }
+
+        @Override
+        public void previousProgram(IControlResultHandler resultHandler) {
+            jumpToProgram(resultHandler, true);
         }
 
         @Override
@@ -841,7 +859,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         });
 
         public EnigmaPlayerTimeline() {
-            ITaskFactory mainThreadTaskFactory = new MainThreadTaskFactory();
+            ITaskFactory mainThreadTaskFactory = getMainThreadTaskFactory();
             repeater = new Repeater(mainThreadTaskFactory, 1000 / 30, () -> collector.onCurrentPositionChanged(environment.playerImplementationInternals.getCurrentPosition()));
             collector.addListener(new BaseTimelineListener() {
                 @Override
@@ -1028,14 +1046,5 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
     private interface IInternalPlaybackSessionsMethod<T> {
         void call(IInternalPlaybackSession internalPlaybackSession, T arg);
-    }
-
-    private static <T> T getContractRestrictionValue(OpenContainer<IInternalPlaybackSession> internalPlaybackSession, IContractRestriction<T> contractRestriction, T fallback) {
-        IInternalPlaybackSession playbackSession = OpenContainerUtil.getValueSynchronized(internalPlaybackSession);
-        if(playbackSession != null) {
-            return playbackSession.getContractRestrictions().getValue(contractRestriction, fallback);
-        } else {
-            return fallback;
-        }
     }
 }

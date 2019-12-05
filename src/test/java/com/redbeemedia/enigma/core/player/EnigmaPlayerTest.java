@@ -5,6 +5,11 @@ import com.redbeemedia.enigma.core.audio.MockAudioTrack;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
 import com.redbeemedia.enigma.core.epg.IEpg;
+import com.redbeemedia.enigma.core.epg.IProgram;
+import com.redbeemedia.enigma.core.epg.MockEpgLocator;
+import com.redbeemedia.enigma.core.epg.MockProgram;
+import com.redbeemedia.enigma.core.epg.impl.MockEpg;
+import com.redbeemedia.enigma.core.epg.response.MockEpgResponse;
 import com.redbeemedia.enigma.core.error.EmptyResponseError;
 import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.error.NoSupportedMediaFormatsError;
@@ -21,10 +26,13 @@ import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.player.controls.AssertiveControlResultHandler;
 import com.redbeemedia.enigma.core.player.listener.BaseEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
+import com.redbeemedia.enigma.core.player.timeline.ITimelinePosition;
 import com.redbeemedia.enigma.core.player.track.IPlayerImplementationTrack;
 import com.redbeemedia.enigma.core.player.track.MockPlayerImplementationTrack;
+import com.redbeemedia.enigma.core.playrequest.BasePlayResultHandler;
 import com.redbeemedia.enigma.core.playrequest.MockPlayRequest;
 import com.redbeemedia.enigma.core.playrequest.MockPlayResultHandler;
+import com.redbeemedia.enigma.core.playrequest.PlayRequest;
 import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.session.MockSession;
 import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
@@ -46,6 +54,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -53,12 +62,7 @@ public class EnigmaPlayerTest {
     @Test
     public void testPlayer() throws JSONException {
         MockHttpHandler mockHttpHandler = new MockHttpHandler();
-        JSONObject response = new JSONObject();
-        JSONArray formatArray = new JSONArray();
-        formatArray.put(createFormatJson("https://media.example.com?format=HLS","HLS"));
-        formatArray.put(createFormatJson("https://media.example.com","DASH"));
-        response.put("formats", formatArray);
-        mockHttpHandler.queueResponse(new HttpStatus(200, "OK"), response.toString());
+        queuePlayResponse(mockHttpHandler, new MockPlayResponse());
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(mockHttpHandler));
 
         final Flag loadCalled = new Flag();
@@ -109,11 +113,11 @@ public class EnigmaPlayerTest {
         Assert.assertTrue(startCalled.isTrue());
     }
 
-    private JSONObject createFormatJson(String mediaLocator, String format) throws JSONException {
+    private static JSONObject createFormatJson(String mediaLocator, String format) throws JSONException {
         return createFormatJson(mediaLocator, format, null);
     }
 
-    private JSONObject createFormatJson(String mediaLocator, String format, String drmKey) throws JSONException {
+    private static JSONObject createFormatJson(String mediaLocator, String format, String drmKey) throws JSONException {
         JSONObject mediaFormat = new JSONObject();
         mediaFormat.put("mediaLocator", mediaLocator);
         mediaFormat.put("format", format);
@@ -161,28 +165,22 @@ public class EnigmaPlayerTest {
     public void testInstallSupportedFormats() throws JSONException {
         MockHttpHandler mockHttpHandler = new MockHttpHandler();
         {
-            JSONObject response = new JSONObject();
-            JSONArray formatArray = new JSONArray();
-            formatArray.put(createFormatJson("https://media.example.com?format=HLS", "HLS"));
-            formatArray.put(createFormatJson("https://media.example.com", "DASH"));
-            formatArray.put(createFormatJson("https://media.example.com", "DASH", EnigmaMediaFormat.DrmTechnology.WIDEVINE.getKey()));
-            response.put("formats", formatArray);
-            JSONObject streamInfo = new JSONObject();
-            streamInfo.put("live", false);
-            response.put("streamInfo", streamInfo);
-            mockHttpHandler.queueResponse(new HttpStatus(200, "OK"), response.toString());
+            MockPlayResponse mockPlayResponse = new MockPlayResponse();
+            mockPlayResponse.formats.clear();
+            mockPlayResponse.addFormat("https://media.example.com?format=HLS", "HLS");
+            mockPlayResponse.addFormat("https://media.example.com", "DASH");
+            mockPlayResponse.addFormat("https://media.example.com", "DASH", EnigmaMediaFormat.DrmTechnology.WIDEVINE.getKey());
+            mockPlayResponse.streamInfoData.live = false;
+            queuePlayResponse(mockHttpHandler, mockPlayResponse);
         }
         {
-            JSONObject response = new JSONObject();
-            JSONArray formatArray = new JSONArray();
-            formatArray.put(createFormatJson("https://media.example.com", "DASH", EnigmaMediaFormat.DrmTechnology.WIDEVINE.getKey()));
-            formatArray.put(createFormatJson("https://media.example.com?format=HLS", "HLS"));
-            response.put("formats", formatArray);
-            JSONObject streamInfo = new JSONObject();
-            streamInfo.put("live", true);
-            streamInfo.put("start", 1505574300000L);
-            response.put("streamInfo", streamInfo);
-            mockHttpHandler.queueResponse(new HttpStatus(200, "OK"), response.toString());
+            MockPlayResponse mockPlayResponse = new MockPlayResponse();
+            mockPlayResponse.formats.clear();
+            mockPlayResponse.addFormat("https://media.example.com", "DASH", EnigmaMediaFormat.DrmTechnology.WIDEVINE.getKey());
+            mockPlayResponse.addFormat("https://media.example.com?format=HLS", "HLS");
+            mockPlayResponse.streamInfoData.live = true;
+            mockPlayResponse.streamInfoData.start = 1505574300000L;
+            queuePlayResponse(mockHttpHandler, mockPlayResponse);
         }
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(mockHttpHandler));
         final Flag installed = new Flag();
@@ -325,17 +323,11 @@ public class EnigmaPlayerTest {
     @Test
     public void testStateChangeListener() throws JSONException {
         MockHttpHandler mockHttpHandler = new MockHttpHandler();
-        JSONObject response = new JSONObject();
         {
-            JSONArray formatArray = new JSONArray();
-            formatArray.put(createFormatJson("https://media.example.com", "DASH"));
-            response.put("formats", formatArray);
-            JSONObject streamInfo = new JSONObject();
-            streamInfo.put("live", true);
-            streamInfo.put("start", 1505574300000L);
-            response.put("streamInfo", streamInfo);
+            MockPlayResponse mockPlayResponse = new MockPlayResponse();
+            queuePlayResponse(mockHttpHandler, mockPlayResponse);
         }
-        mockHttpHandler.queueResponse(new HttpStatus(200, "OK"), response.toString());
+
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(mockHttpHandler));
         EnigmaPlayer enigmaPlayer = new EnigmaPlayerWithMockedTimeProvider(new MockSession(), new MockPlayerImplementation() {
             @Override
@@ -416,12 +408,8 @@ public class EnigmaPlayerTest {
     public void testPlayableReachableFromPlaybackSession() throws JSONException {
         MockHttpHandler httpHandler = new MockHttpHandler();
 
-        JSONObject response = new JSONObject();
-        JSONArray formatArray = new JSONArray();
-        formatArray.put(createFormatJson("https://media.example.com","DASH"));
-        response.put("formats", formatArray);
         for(int i = 0; i < 3; ++i) {
-            httpHandler.queueResponse(new HttpStatus(200, "OK"), response.toString());
+            queuePlayResponse(httpHandler, new MockPlayResponse());
         }
 
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(httpHandler));
@@ -453,12 +441,8 @@ public class EnigmaPlayerTest {
     private void setupForTrackTests() throws JSONException {
         MockHttpHandler httpHandler = new MockHttpHandler();
 
-        JSONObject response = new JSONObject();
-        JSONArray formatArray = new JSONArray();
-        formatArray.put(createFormatJson("https://media.example.com","DASH"));
-        response.put("formats", formatArray);
         for(int i = 0; i < 1; ++i) {
-            httpHandler.queueResponse(new HttpStatus(200, "OK"), response.toString());
+            queuePlayResponse(httpHandler, new MockPlayResponse());
         }
 
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(httpHandler));
@@ -696,6 +680,254 @@ public class EnigmaPlayerTest {
         pauseInImplementationCalled.assertCount(1);
     }
 
+    @Test
+    public void testNextProgram() throws JSONException {
+        MockHttpHandler httpHandler = new MockHttpHandler();
+        List<IProgram> programs = new ArrayList<>();
+        {
+            programs.add(new MockProgram("program1", 0, 1000));
+            programs.add(new MockProgram("program2", 1000, 2000));
+            programs.add(new MockProgram("program3", 2000, 3000));
+            //gap
+            programs.add(new MockProgram("program4", 4000, 5000));
+        }
+        MockEpgResponse epgResponse = new MockEpgResponse(123L, 5000, programs);
+        MockEpgLocator mockEpgLocator = new MockEpgLocator().setEpg(new MockEpg().setEpgResponse(epgResponse));
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(httpHandler).setEpgLocator(mockEpgLocator));
+        MockPlayResponse playResponseMessage = new MockPlayResponse();
+        playResponseMessage.streamInfoData.setToChannelLiveStream("channel0");
+        playResponseMessage.streamInfoData.start = 123L;
+
+        {
+            //Verify the mock response will actually have streamPrograms
+            StreamInfo streamInfo = new StreamInfo(playResponseMessage.streamInfoData.toJsonObject());
+            Assert.assertTrue(streamInfo.hasStreamPrograms());
+        }
+
+        queuePlayResponse(httpHandler, playResponseMessage);
+
+        final List<IPlayerImplementationControls.ISeekPosition> seekPositions = new ArrayList<>();
+
+        class testNextProgram_MockPlayerImplementation extends MockPlayerImplementation {
+            private ITimelinePositionFactory timelinePositionFactory;
+            private long position = 0;
+            private long startBound = 0;
+
+            @Override
+            public void seekTo(ISeekPosition seekPosition, IPlayerImplementationControlResultHandler resultHandler) {
+                seekPositions.add(seekPosition);
+                resultHandler.onDone();
+            }
+
+            @Override
+            public void install(IEnigmaPlayerEnvironment environment) {
+                super.install(environment);
+                this.timelinePositionFactory = environment.getTimelinePositionFactory();
+            }
+
+            @Override
+            public ITimelinePosition getCurrentStartBound() {
+                return timelinePositionFactory.newPosition(startBound);
+            }
+
+            @Override
+            public ITimelinePosition getCurrentPosition() {
+                return timelinePositionFactory.newPosition(position);
+            }
+        }
+
+        testNextProgram_MockPlayerImplementation playerImplementation = new testNextProgram_MockPlayerImplementation();
+
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayerWithMockedTimeProvider(new MockSession(), playerImplementation);
+
+        enigmaPlayer.play(new PlayRequest(new MockPlayable("program1"), new BasePlayResultHandler() {
+            @Override
+            public void onError(EnigmaError error) {
+                Assert.fail(error.getTrace());
+            }
+        }));
+        Assert.assertEquals(EnigmaPlayerState.PLAYING, enigmaPlayer.getState());
+        int expectedSeeks = 1;
+        Assert.assertEquals(expectedSeeks, seekPositions.size());
+
+        { //Seek!
+            AssertiveControlResultHandler controlResultHandler = new AssertiveControlResultHandler();
+            enigmaPlayer.getControls().nextProgram(controlResultHandler);
+            controlResultHandler.assertOnDoneCalled();
+            expectedSeeks++;
+        }
+
+        //assert we are at start of program2
+        Assert.assertEquals(expectedSeeks, seekPositions.size());
+        Assert.assertEquals(1000-123, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-1)).getMillis());
+        playerImplementation.position = 1000-123; //Update position to seeked
+
+        { //Seek!
+            AssertiveControlResultHandler controlResultHandler = new AssertiveControlResultHandler();
+            enigmaPlayer.getControls().nextProgram(controlResultHandler);
+            controlResultHandler.assertOnDoneCalled();
+            expectedSeeks++;
+        }
+
+        //assert we are at start of program3
+        Assert.assertEquals(expectedSeeks, seekPositions.size());
+        Assert.assertEquals(2000-123, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-1)).getMillis());
+        playerImplementation.position = 2000-123; //Update position to seeked
+
+        { //Seek!
+            AssertiveControlResultHandler controlResultHandler = new AssertiveControlResultHandler();
+            enigmaPlayer.getControls().nextProgram(controlResultHandler);
+            controlResultHandler.assertOnDoneCalled();
+            expectedSeeks++;
+        }
+
+        //assert we are at start of the gap
+        Assert.assertEquals(expectedSeeks, seekPositions.size());
+        Assert.assertEquals(3000-123, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-1)).getMillis());
+        playerImplementation.position = 3000-123; //Update position to seeked
+
+        { //Seek!
+            AssertiveControlResultHandler controlResultHandler = new AssertiveControlResultHandler();
+            enigmaPlayer.getControls().nextProgram(controlResultHandler);
+            controlResultHandler.assertOnDoneCalled();
+            expectedSeeks++;
+        }
+
+        //assert we are at start of program4
+        Assert.assertEquals(expectedSeeks, seekPositions.size());
+        Assert.assertEquals(4000-123, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-1)).getMillis());
+        playerImplementation.position = 4000-123; //Update position to seeked
+
+        { //Seek! But this time we are at the end of the stream so we can't!
+            AssertiveControlResultHandler controlResultHandler = new AssertiveControlResultHandler();
+            enigmaPlayer.getControls().nextProgram(controlResultHandler);
+            controlResultHandler.assertOnRejectedCalled();
+            Assert.assertEquals(expectedSeeks, seekPositions.size());
+        }
+    }
+
+    @Test
+    public void testPreviousProgram() throws JSONException {
+        MockHttpHandler httpHandler = new MockHttpHandler();
+        List<IProgram> programs = new ArrayList<>();
+        {
+            programs.add(new MockProgram("program1", 0, 1000));
+            programs.add(new MockProgram("program2", 1000, 2000));
+            programs.add(new MockProgram("program3", 2000, 3000));
+            //gap
+            programs.add(new MockProgram("program4", 4000, 5000));
+        }
+        MockEpgResponse epgResponse = new MockEpgResponse(123L, 5000, programs);
+        MockEpgLocator mockEpgLocator = new MockEpgLocator().setEpg(new MockEpg().setEpgResponse(epgResponse));
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(httpHandler).setEpgLocator(mockEpgLocator));
+        MockPlayResponse playResponseMessage = new MockPlayResponse();
+        playResponseMessage.streamInfoData.setToChannelLiveStream("channel0");
+        playResponseMessage.streamInfoData.start = 123L;
+
+        {
+            //Verify the mock response will actually have streamPrograms
+            StreamInfo streamInfo = new StreamInfo(playResponseMessage.streamInfoData.toJsonObject());
+            Assert.assertTrue(streamInfo.hasStreamPrograms());
+        }
+
+        queuePlayResponse(httpHandler, playResponseMessage);
+
+        final List<IPlayerImplementationControls.ISeekPosition> seekPositions = new ArrayList<>();
+
+        class testPreviousProgram_MockPlayerImplementation extends MockPlayerImplementation {
+            private ITimelinePositionFactory timelinePositionFactory;
+            private long position = 0;
+            private long startBound = 0;
+
+            @Override
+            public void seekTo(ISeekPosition seekPosition, IPlayerImplementationControlResultHandler resultHandler) {
+                seekPositions.add(seekPosition);
+                resultHandler.onDone();
+            }
+
+            @Override
+            public void install(IEnigmaPlayerEnvironment environment) {
+                super.install(environment);
+                this.timelinePositionFactory = environment.getTimelinePositionFactory();
+            }
+
+            @Override
+            public ITimelinePosition getCurrentStartBound() {
+                return timelinePositionFactory.newPosition(startBound);
+            }
+
+            @Override
+            public ITimelinePosition getCurrentPosition() {
+                return timelinePositionFactory.newPosition(position);
+            }
+        }
+
+        testPreviousProgram_MockPlayerImplementation playerImplementation = new testPreviousProgram_MockPlayerImplementation();
+
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayerWithMockedTimeProvider(new MockSession(), playerImplementation);
+
+        enigmaPlayer.play(new PlayRequest(new MockPlayable("program1"), new BasePlayResultHandler() {
+            @Override
+            public void onError(EnigmaError error) {
+                Assert.fail(error.getTrace());
+            }
+        }));
+        Assert.assertEquals(EnigmaPlayerState.PLAYING, enigmaPlayer.getState());
+        int expectedSeeks = 1;
+        Assert.assertEquals(expectedSeeks, seekPositions.size());
+
+        //Start at program4
+        playerImplementation.position = 4500-123;
+
+        { //Seek!
+            AssertiveControlResultHandler controlResultHandler = new AssertiveControlResultHandler();
+            enigmaPlayer.getControls().previousProgram(controlResultHandler);
+            controlResultHandler.assertOnDoneCalled();
+            expectedSeeks++;
+        }
+
+        //assert we are at start of the gap
+        Assert.assertEquals(expectedSeeks, seekPositions.size());
+        Assert.assertEquals(3000-123, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-1)).getMillis());
+        playerImplementation.position = 3000-123; //Update position to seeked
+
+        { //Seek!
+            AssertiveControlResultHandler controlResultHandler = new AssertiveControlResultHandler();
+            enigmaPlayer.getControls().previousProgram(controlResultHandler);
+            controlResultHandler.assertOnDoneCalled();
+            expectedSeeks++;
+        }
+
+        //assert we are at start of program3
+        Assert.assertEquals(expectedSeeks, seekPositions.size());
+        Assert.assertEquals(2000-123, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-1)).getMillis());
+        playerImplementation.position = 2000-123; //Update position to seeked
+
+        { //Seek!
+            AssertiveControlResultHandler controlResultHandler = new AssertiveControlResultHandler();
+            enigmaPlayer.getControls().previousProgram(controlResultHandler);
+            controlResultHandler.assertOnDoneCalled();
+            expectedSeeks++;
+        }
+
+        //assert we are at start of program2
+        Assert.assertEquals(expectedSeeks, seekPositions.size());
+        Assert.assertEquals(1000-123, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-1)).getMillis());
+        playerImplementation.position = 1000-123; //Update position to seeked
+
+        { //Seek!
+            AssertiveControlResultHandler controlResultHandler = new AssertiveControlResultHandler();
+            enigmaPlayer.getControls().previousProgram(controlResultHandler);
+            controlResultHandler.assertOnDoneCalled();
+            expectedSeeks++;
+        }
+
+        //assert we are at start of program1
+        Assert.assertEquals(expectedSeeks, seekPositions.size());
+        Assert.assertEquals(0, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-1)).getMillis());
+        playerImplementation.position = 0; //Update position to seeked
+    }
+
     public static class EnigmaPlayerWithMockedTimeProvider extends EnigmaPlayer {
         public EnigmaPlayerWithMockedTimeProvider(ISession session, IPlayerImplementation playerImplementation) {
             super(session, playerImplementation);
@@ -729,6 +961,80 @@ public class EnigmaPlayerTest {
                     };
                 }
             };
+        }
+    }
+
+    private static void queuePlayResponse(MockHttpHandler mockHttpHandler, MockPlayResponse playResponse) throws JSONException {
+        JSONObject response = new JSONObject();
+        JSONArray formatArray = new JSONArray();
+        for(MockPlayResponse.MockFormat format : playResponse.formats) {
+            formatArray.put(createFormatJson(format.mediaLocator, format.format, format.drmKey));
+        }
+        response.put("formats", formatArray);
+
+        MockPlayResponse.MockStreamInfoData streamInfoData = playResponse.streamInfoData;
+        if(streamInfoData != null) {
+            response.put("streamInfo", streamInfoData.toJsonObject());
+        }
+        mockHttpHandler.queueResponse(new HttpStatus(200, "OK"), response.toString());
+    }
+
+    private static class MockPlayResponse {
+        public List<MockFormat> formats = new ArrayList<>(Arrays.asList(new MockFormat("https://media.example.com?format=HLS","HLS"), new MockFormat("https://media.example.com","DASH")));
+        public MockStreamInfoData streamInfoData = new MockStreamInfoData();
+
+        public void addFormat(String mediaLocator, String format) {
+            formats.add(new MockFormat(mediaLocator, format));
+        }
+
+        public void addFormat(String mediaLocator, String format, String drmKey) {
+            formats.add(new MockFormat(mediaLocator, format, drmKey));
+        }
+
+        private static class MockFormat {
+            public String mediaLocator;
+            public String format;
+            public String drmKey;
+
+            public MockFormat(String format) {
+                this("https://media.example.com?format="+format, format);
+            }
+
+            public MockFormat(String mediaLocator, String format) {
+                this(mediaLocator, format, null);
+            }
+
+            public MockFormat(String mediaLocator, String format, String drmKey) {
+                this.mediaLocator = mediaLocator;
+                this.format = format;
+                this.drmKey = drmKey;
+            }
+        }
+
+        private static class MockStreamInfoData {
+            public Boolean live = null;
+            public Long start = null;
+            public String channelId = null;
+
+            public void setToChannelLiveStream(String channelId) {
+                this.live = true;
+                this.start = 16136136163L;
+                this.channelId = channelId;
+            }
+
+            public JSONObject toJsonObject() throws JSONException {
+                JSONObject streamInfo = new JSONObject();
+                if(this.live != null) {
+                    streamInfo.put("live", this.live);
+                }
+                if(this.start != null) {
+                    streamInfo.put("start", this.start);
+                }
+                if(this.channelId != null) {
+                    streamInfo.put("channelId", this.channelId);
+                }
+                return streamInfo;
+            }
         }
     }
 }

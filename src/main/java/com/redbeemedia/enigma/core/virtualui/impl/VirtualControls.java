@@ -25,6 +25,7 @@ public final class VirtualControls implements IVirtualControls {
     private final IVirtualButton pause;
     private final IVirtualButton goToLive;
     private final IVirtualButton nextProgram;
+    private final IVirtualButton previousProgram;
     private final IVirtualButton restart;
 
     private VirtualControls(IEnigmaPlayer enigmaPlayer, IVirtualControlsSettings settings) {
@@ -35,7 +36,8 @@ public final class VirtualControls implements IVirtualControls {
         this.play = new PlayButton(buttonContainer);
         this.pause = new PauseButton(buttonContainer);
         this.goToLive = new GoToLiveButton(buttonContainer);
-        this.nextProgram = new NextProgramButton(buttonContainer);
+        this.nextProgram = new JumpProgramButton(buttonContainer, false);
+        this.previousProgram = new JumpProgramButton(buttonContainer, true);
         this.restart = new RestartButton(buttonContainer);
 
         buttonContainer.refreshButtons();
@@ -69,6 +71,11 @@ public final class VirtualControls implements IVirtualControls {
     @Override
     public IVirtualButton getNextProgram() {
         return nextProgram;
+    }
+
+    @Override
+    public IVirtualButton getPreviousProgram() {
+        return previousProgram;
     }
 
     @Override

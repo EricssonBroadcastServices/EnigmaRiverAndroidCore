@@ -4,6 +4,6 @@ import com.redbeemedia.enigma.core.epg.IProgram;
 
 /*package-protected*/ interface IStreamPrograms {
     IProgram getProgramAtOffset(long offset);
-    IProgram getNext(IProgram program);
-    IProgram getPrevious(IProgram program);
+
+    Long getNeighbouringSectionStartOffset(long fromOffset, boolean searchBackwards);
 }

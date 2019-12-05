@@ -22,6 +22,7 @@ public interface IVirtualControls {
     IVirtualButton getPause();
     IVirtualButton getGoToLive();
     IVirtualButton getNextProgram();
+    IVirtualButton getPreviousProgram();
     IVirtualButton getRestart();
     etc...
 }

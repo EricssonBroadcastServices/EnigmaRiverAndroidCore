@@ -17,6 +17,10 @@ public interface IEnigmaPlayerControls {
     void seekTo(StreamPosition streamPosition, IControlResultHandler resultHandler);
     void seekTo(ITimelinePosition timelinePos);
     void seekTo(ITimelinePosition timelinePos, IControlResultHandler resultHandler);
+    void nextProgram();
+    void nextProgram(IControlResultHandler resultHandler);
+    void previousProgram();
+    void previousProgram(IControlResultHandler resultHandler);
     void setVolume(float volume);
     void setVolume(float volume, IControlResultHandler resultHandler);
     void setSubtitleTrack(ISubtitleTrack track);

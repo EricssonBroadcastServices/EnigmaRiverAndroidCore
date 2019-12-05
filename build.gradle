@@ -39,6 +39,6 @@ dependencies {
     if(findProject(':internalTestUtils') != null) {
         testImplementation project(":internalTestUtils")
     } else {
-        testImplementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:internalTestUtils:r1.0.32'
+        testImplementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:internalTestUtils:r1.0.33'
     }
 }

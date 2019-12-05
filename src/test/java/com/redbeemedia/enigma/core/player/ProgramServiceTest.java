@@ -47,7 +47,7 @@ public class ProgramServiceTest {
         Duration asset4End = asset3End.add(Duration.hours(1));
         programs.add(new MockProgram("Program 3", 9000, asset3End.inWholeUnits(Duration.Unit.MILLISECONDS)).setAssetId("asset_3"));
         programs.add(new MockProgram("Program 4", asset3End.inWholeUnits(Duration.Unit.MILLISECONDS), asset4End.inWholeUnits(Duration.Unit.MILLISECONDS)).setAssetId("asset_4"));
-        IStreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(1000, 20000, programs));
+        IStreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(1000, asset4End.inWholeUnits(Duration.Unit.MILLISECONDS), programs));
         MockPlaybackSessionInfo playbackSessionInfo = new MockPlaybackSessionInfo();
         final Counter checkEntitlementCalled = new Counter();
         IEntitlementProvider entitlementProvider = new IEntitlementProvider() {

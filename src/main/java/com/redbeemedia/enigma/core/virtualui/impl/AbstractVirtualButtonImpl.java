@@ -30,7 +30,10 @@ import com.redbeemedia.enigma.core.virtualui.AbstractVirtualButton;
         AndroidThreadUtil.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                onClick(container);
+                refresh();
+                if(isEnabled()) {
+                    onClick(container);
+                }
             }
         });
     }
@@ -38,10 +41,22 @@ import com.redbeemedia.enigma.core.virtualui.AbstractVirtualButton;
     protected void refresh() {
         StateChangedFlag stateChanged = new StateChangedFlag();
 
-        boolean newRelevant = calculateRelevant(container);
+        boolean newRelevant;
+        try {
+            newRelevant = calculateRelevant(container);
+        } catch (Exception e) {
+            e.printStackTrace(); //Log
+            newRelevant = false;
+        }
         OpenContainerUtil.setValueSynchronized(relevant, newRelevant, (oldValue, newValue) -> stateChanged.registerChange());
 
-        boolean newEnabled = newRelevant && calculateEnabled(container);
+        boolean newEnabled;
+        try {
+            newEnabled = newRelevant && calculateEnabled(container);
+        } catch (Exception e) {
+            e.printStackTrace(); //Log
+            newEnabled = false;
+        }
         OpenContainerUtil.setValueSynchronized(enabled, newEnabled, (oldValue, newValue) -> stateChanged.registerChange());
 
         if(stateChanged.hasChanged()) {
@@ -49,9 +64,9 @@ import com.redbeemedia.enigma.core.virtualui.AbstractVirtualButton;
         }
     }
 
-    protected abstract boolean calculateRelevant(IVirtualButtonContainer container);
+    protected abstract boolean calculateRelevant(IVirtualButtonContainer container) throws Exception;
 
-    protected abstract boolean calculateEnabled(IVirtualButtonContainer container);
+    protected abstract boolean calculateEnabled(IVirtualButtonContainer container) throws Exception;
 
     protected abstract void onClick(IVirtualButtonContainer container);
 
