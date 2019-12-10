@@ -3,10 +3,13 @@ package com.redbeemedia.enigma.core.playrequest;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.redbeemedia.enigma.core.time.Duration;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public interface IPlaybackProperties {
     PlayFrom getPlayFrom();
@@ -16,6 +19,9 @@ public interface IPlaybackProperties {
         public static final PlayFrom BEGINNING = new PlayFrom(PlayFromPreference.BEGINNING);
         public static final PlayFrom LIVE_EDGE = new PlayFrom(PlayFromPreference.LIVE_EDGE, PlayFromPreference.BEGINNING);
         public static final PlayFrom BOOKMARK = new PlayFrom(PlayFromPreference.BOOKMARK, PlayFromPreference.LIVE_EDGE, PlayFromPreference.BEGINNING);
+        public static final PlayFromOffset OFFSET(Duration offset) {
+            return new PlayFromOffset(offset);
+        }
 
         private final List<PlayFromPreference> preferences;
 
@@ -28,6 +34,10 @@ public interface IPlaybackProperties {
             for(PlayFromPreference preference : preferences) {
                 if(preference == null) {
                     throw new NullPointerException();
+                } else if(preference == PlayFromPreference.OFFSET) {
+                    if(!(this instanceof PlayFromOffset)) {
+                        throw new IllegalStateException("This PlayFromPreference.OFFSET is only allowed i PlayFromOffset");
+                    }
                 }
             }
         }
@@ -79,7 +89,26 @@ public interface IPlaybackProperties {
         public enum PlayFromPreference {
             BEGINNING,
             BOOKMARK,
-            LIVE_EDGE;
+            LIVE_EDGE,
+            OFFSET;
+        }
+    }
+
+    class PlayFromOffset extends PlayFrom {
+        private final Duration offset;
+
+        protected PlayFromOffset(Duration offset) {
+            super(PlayFromPreference.OFFSET);
+            this.offset = Objects.requireNonNull(offset);
+        }
+
+        public Duration getOffset() {
+            return offset;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return (obj instanceof PlayFromOffset) && ((PlayFromOffset) obj).offset.equals(this.offset) && super.equals(obj);
         }
     }
 }

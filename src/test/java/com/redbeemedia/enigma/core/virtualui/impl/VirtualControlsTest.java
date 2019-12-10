@@ -84,6 +84,7 @@ public class VirtualControlsTest {
             @Override
             public void makeButtonEnabled(TestVirtualButtonContainer virtualButtonContainer) {
                 virtualButtonContainer.playerState = EnigmaPlayerState.LOADED;
+                virtualButtonContainer.playbackSession = new MockInternalPlaybackSession(false);
             }
 
             @Override

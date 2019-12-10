@@ -17,12 +17,16 @@ public class ControlLogicTest {
     public void testValidateStart() {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
 
-        Assert.assertEquals(true, ControlLogic.validateStart(EnigmaPlayerState.PAUSED).isSuccess());
-        Assert.assertEquals(true, ControlLogic.validateStart(EnigmaPlayerState.PLAYING).isSuccess());
-        Assert.assertEquals(true, ControlLogic.validateStart(EnigmaPlayerState.LOADED).isSuccess());
+        {
+            IInternalPlaybackSession playbackSession = new MockInternalPlaybackSession(false);
+            Assert.assertEquals(true, ControlLogic.validateStart(EnigmaPlayerState.PAUSED, playbackSession, false).isSuccess());
+            Assert.assertEquals(true, ControlLogic.validateStart(EnigmaPlayerState.PLAYING, playbackSession, false).isSuccess());
+            Assert.assertEquals(true, ControlLogic.validateStart(EnigmaPlayerState.LOADED, playbackSession, false).isSuccess());
+        }
 
         {
-            ControlLogic.IValidationResults<Void> validationResults = ControlLogic.validateStart(EnigmaPlayerState.LOADING);
+            IInternalPlaybackSession playbackSession = new MockInternalPlaybackSession(false);
+            ControlLogic.IValidationResults<Void> validationResults = ControlLogic.validateStart(EnigmaPlayerState.LOADING, playbackSession, false);
             Assert.assertEquals(false,validationResults.isSuccess());
 
             final Counter callbackCalled = new Counter();
@@ -36,10 +40,36 @@ public class ControlLogicTest {
             callbackCalled.assertOnce();
         }
         {
-            ControlLogic.IValidationResults<Void> validationResults = ControlLogic.validateStart(EnigmaPlayerState.IDLE);
+            IInternalPlaybackSession playbackSession = new MockInternalPlaybackSession(false);
+            ControlLogic.IValidationResults<Void> validationResults = ControlLogic.validateStart(EnigmaPlayerState.IDLE, playbackSession, false);
             Assert.assertEquals(false,validationResults.isSuccess());
 
             assertRejectedWithType(validationResults, IControlResultHandler.RejectReasonType.INCORRECT_STATE);
+        }
+        {
+            ControlLogic.IValidationResults<Void> validationResults = ControlLogic.validateStart(EnigmaPlayerState.IDLE, null, false);
+            Assert.assertEquals(false,validationResults.isSuccess());
+
+            assertRejectedWithType(validationResults, IControlResultHandler.RejectReasonType.INAPPLICABLE_FOR_CURRENT_STREAM);
+        }
+        {
+            ControlLogic.IValidationResults<Void> validationResults = ControlLogic.validateStart(EnigmaPlayerState.IDLE, null, true);
+            Assert.assertEquals(true,validationResults.isSuccess());
+        }
+        {
+            ControlLogic.IValidationResults<Void> validationResults = ControlLogic.validateStart(EnigmaPlayerState.PAUSED, null, false);
+            Assert.assertEquals(false,validationResults.isSuccess());
+
+            assertRejectedWithType(validationResults, IControlResultHandler.RejectReasonType.INAPPLICABLE_FOR_CURRENT_STREAM);
+        }
+        {
+            ControlLogic.IValidationResults<Void> validationResults = ControlLogic.validateStart(EnigmaPlayerState.PAUSED, null, true);
+            Assert.assertEquals(true,validationResults.isSuccess());
+        }
+        {
+            IInternalPlaybackSession playbackSession = new MockInternalPlaybackSession(false);
+            ControlLogic.IValidationResults<Void> validationResults = ControlLogic.validateStart(EnigmaPlayerState.PAUSED, playbackSession, true);
+            Assert.assertEquals(true,validationResults.isSuccess());
         }
     }
 

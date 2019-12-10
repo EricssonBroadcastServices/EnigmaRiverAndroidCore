@@ -13,4 +13,11 @@ public class InternalVirtualControlsUtil {
         }
         return ((IInternalPlaybackSession) playbackSession).getStreamPrograms() != null;
     }
+
+    public static boolean hasPlaybackSessionSeed(IEnigmaPlayer enigmaPlayer) {
+        if(enigmaPlayer instanceof EnigmaPlayer) {
+            return ((EnigmaPlayer) enigmaPlayer).hasPlaybackSessionSeed();
+        }
+        return false;
+    }
 }

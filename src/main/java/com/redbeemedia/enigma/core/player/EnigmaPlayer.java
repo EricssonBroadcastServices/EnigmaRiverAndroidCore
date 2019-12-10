@@ -34,6 +34,7 @@ import com.redbeemedia.enigma.core.player.timeline.ITimelineListener;
 import com.redbeemedia.enigma.core.player.timeline.ITimelinePosition;
 import com.redbeemedia.enigma.core.player.timeline.TimelineListenerCollector;
 import com.redbeemedia.enigma.core.player.track.IPlayerImplementationTrack;
+import com.redbeemedia.enigma.core.playrequest.BasePlayResultHandler;
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
 import com.redbeemedia.enigma.core.playrequest.IPlayResultHandler;
 import com.redbeemedia.enigma.core.playrequest.IPlaybackProperties;
@@ -92,6 +93,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     private final IPlaybackSessionFactory playbackSessionFactory;
     private final InternalEnigmaPlayerCommunicationsChannel communicationsChannel = new InternalEnigmaPlayerCommunicationsChannel();
     private final OpenContainer<IInternalPlaybackSession> currentPlaybackSession = new OpenContainer<>(null);
+    private final OpenContainer<PlaybackSessionSeed> playbackSessionSeed = new OpenContainer<>(null);
     private PlaybackSessionContainerCollector playbackSessionContainerCollector = new PlaybackSessionContainerCollector();
     private final OpenContainer<IPlaybackStartAction> currentPlaybackStartAction = new OpenContainer<>(null);
 
@@ -410,6 +412,10 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         }
     }
 
+    /*package-protected*/ boolean hasPlaybackSessionSeed() {
+        return OpenContainerUtil.getValueSynchronized(playbackSessionSeed) != null;
+    }
+
     private static JSONObject getUsableMediaFormat(JSONArray formats, IMediaFormatSupportSpec formatSupportSpec) throws JSONException {
         Map<EnigmaMediaFormat, JSONObject> foundFormats = new HashMap<>();
         for(int i = 0; i < formats.length(); ++i) {
@@ -648,13 +654,42 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
             try {
                 EnigmaPlayerState currentState = stateMachine.getState();
-                ControlLogic.IValidationResults<Void> validationResults = ControlLogic.validateStart(currentState);
+                IInternalPlaybackSession playbackSession = OpenContainerUtil.getValueSynchronized(currentPlaybackSession);
+                boolean hasPlaybackSessionSeed = hasPlaybackSessionSeed();
+                ControlLogic.IValidationResults<Void> validationResults = ControlLogic.validateStart(currentState, playbackSession, hasPlaybackSessionSeed);
                 if(validationResults.isSuccess()) {
-                    environment.playerImplementationControls.start(controlResultHandler);
-                    controlResultHandler.runWhenDone(() -> {
-                        stateMachine.setState(EnigmaPlayerState.PLAYING);
-                        updatePlayingFromLive();
-                    });
+                    if(playbackSession != null) {
+                        environment.playerImplementationControls.start(controlResultHandler);
+                        controlResultHandler.runWhenDone(() -> {
+                            stateMachine.setState(EnigmaPlayerState.PLAYING);
+                            updatePlayingFromLive();
+                        });
+                        return;
+                    } else {
+                        PlaybackSessionSeed seed = null;
+                        synchronized (playbackSessionSeed) {
+                            if(playbackSessionSeed.value != null) {
+                                seed = playbackSessionSeed.value;
+                                playbackSessionSeed.value = null;
+                            }
+                        }
+                        if(seed != null) {
+                            EnigmaPlayer.this.play(seed.createPlayRequest(new BasePlayResultHandler() {
+                                @Override
+                                public void onStarted(IPlaybackSession playbackSession) {
+                                    controlResultHandler.onDone();
+                                }
+
+                                @Override
+                                public void onError(EnigmaError error) {
+                                    controlResultHandler.onError(error);
+                                }
+                            }));
+                            return;
+                        } else {
+                            throw new IllegalStateException("Can't find playback session"); //This should never happen, ControlLogic should have identified this.
+                        }
+                    }
                 } else {
                     ((ControlLogic.IFailedValidationResults) validationResults).triggerCallback(controlResultHandler);
                     return;
@@ -1037,6 +1072,12 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                     environment.playerImplementationControls.stop(new BasePlayerImplementationControlResultHandler());
                 }
             }
+        }
+
+        @Override
+        public void onExpirePlaybackSession(PlaybackSessionSeed seed) {
+            OpenContainerUtil.setValueSynchronized(playbackSessionSeed, seed, null);
+            replacePlaybackSession(null);
         }
     }
 

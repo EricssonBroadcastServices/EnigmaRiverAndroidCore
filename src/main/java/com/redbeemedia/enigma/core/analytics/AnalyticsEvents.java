@@ -12,6 +12,9 @@ package com.redbeemedia.enigma.core.analytics;
     public static final AnalyticsCompletedEvent COMPLETED = new AnalyticsCompletedEvent();
     public static final AnalyticsAbortedEvent ABORTED = new AnalyticsAbortedEvent();
     public static final AnalyticsHeartbeatEvent HEARTBEAT = new AnalyticsHeartbeatEvent();
+    public static final AnalyticsAppBackgroundedEvent APP_BACKGROUNDED = new AnalyticsAppBackgroundedEvent();
+    public static final AnalyticsAppResumedEvent APP_RESUMED = new AnalyticsAppResumedEvent();
+    public static final AnalyticsGracePeriodEndedEvent GRACE_PERIOD_ENDED = new AnalyticsGracePeriodEndedEvent();
 
     public static class AnalyticsErrorEvent implements IAnalyticsEventType {
         @Override
@@ -121,9 +124,36 @@ package com.redbeemedia.enigma.core.analytics;
         public final EventProperty<AnalyticsHeartbeatEvent, Long> OFFSET_TIME = new EventProperty<>("OffsetTime");
     }
 
+
+    public static class AnalyticsAppBackgroundedEvent implements IAnalyticsEventType {
+        @Override
+        public String getName() {
+            return "Playback.AppBackgrounded";
+        }
+        public final EventProperty<AnalyticsAppBackgroundedEvent, Long> OFFSET_TIME = new EventProperty<>("OffsetTime");
+    }
+
+    public static class AnalyticsAppResumedEvent implements IAnalyticsEventType {
+        @Override
+        public String getName() {
+            return "Playback.AppResumed";
+        }
+        public final EventProperty<AnalyticsAppResumedEvent, Long> OFFSET_TIME = new EventProperty<>("OffsetTime");
+    }
+
+    public static class AnalyticsGracePeriodEndedEvent implements IAnalyticsEventType {
+        @Override
+        public String getName() {
+            return "Playback.GracePeriodEnded";
+        }
+        public final EventProperty<AnalyticsGracePeriodEndedEvent, Long> OFFSET_TIME = new EventProperty<>("OffsetTime");
+    }
+
     public static boolean isTerminal(IAnalyticsEventType eventType) {
         return     eventType instanceof AnalyticsErrorEvent
                 || eventType instanceof  AnalyticsCompletedEvent
-                || eventType instanceof  AnalyticsAbortedEvent;
+                || eventType instanceof  AnalyticsAbortedEvent
+                || eventType instanceof  AnalyticsGracePeriodEndedEvent
+                ;
     }
 }

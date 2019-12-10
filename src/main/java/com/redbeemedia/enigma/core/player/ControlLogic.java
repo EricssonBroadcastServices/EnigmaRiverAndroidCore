@@ -85,13 +85,21 @@ public class ControlLogic {
         }
     }
 
-    public static IValidationResults<Void> validateStart(EnigmaPlayerState currentState) {
-        if(currentState == EnigmaPlayerState.IDLE) {
-            return new RejectedResult<>(RejectReason.incorrectState("Player is IDLE"));
-        } else if(currentState == EnigmaPlayerState.LOADING) {
-            return new RejectedResult<>(RejectReason.incorrectState("Player is LOADING"));
+    public static IValidationResults<Void> validateStart(EnigmaPlayerState currentState, IPlaybackSession playbackSession, boolean hasPlaybackSessionSeed) {
+        if(playbackSession != null) {
+            if(currentState == EnigmaPlayerState.IDLE) {
+                return new RejectedResult<>(RejectReason.incorrectState("Player is IDLE"));
+            } else if(currentState == EnigmaPlayerState.LOADING) {
+                return new RejectedResult<>(RejectReason.incorrectState("Player is LOADING"));
+            } else {
+                return new SuccessResult<>(null);
+            }
         } else {
-            return new SuccessResult<>(null);
+            if(hasPlaybackSessionSeed) {
+                return new SuccessResult<>(null);
+            } else {
+                return new RejectedResult<>(RejectReason.inapplicable("No active playback session"));
+            }
         }
     }
 

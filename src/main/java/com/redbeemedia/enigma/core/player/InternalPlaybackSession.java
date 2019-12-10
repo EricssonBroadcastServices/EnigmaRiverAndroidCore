@@ -7,6 +7,7 @@ import com.redbeemedia.enigma.core.analytics.AnalyticsException;
 import com.redbeemedia.enigma.core.analytics.AnalyticsHandler;
 import com.redbeemedia.enigma.core.analytics.AnalyticsReporter;
 import com.redbeemedia.enigma.core.audio.IAudioTrack;
+import com.redbeemedia.enigma.core.context.AppForegroundListener;
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.entitlement.EntitlementData;
 import com.redbeemedia.enigma.core.entitlement.EntitlementStatus;
@@ -20,6 +21,7 @@ import com.redbeemedia.enigma.core.error.GeoBlockedError;
 import com.redbeemedia.enigma.core.error.NotAvailableError;
 import com.redbeemedia.enigma.core.error.NotEntitledError;
 import com.redbeemedia.enigma.core.error.NotPublishedError;
+import com.redbeemedia.enigma.core.error.UnexpectedError;
 import com.redbeemedia.enigma.core.playable.IPlayable;
 import com.redbeemedia.enigma.core.playbacksession.BasePlaybackSessionListener;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSessionListener;
@@ -37,6 +39,7 @@ import com.redbeemedia.enigma.core.task.Repeater;
 import com.redbeemedia.enigma.core.task.TaskException;
 import com.redbeemedia.enigma.core.time.Duration;
 import com.redbeemedia.enigma.core.time.ITimeProvider;
+import com.redbeemedia.enigma.core.util.AndroidThreadUtil;
 import com.redbeemedia.enigma.core.util.Collector;
 import com.redbeemedia.enigma.core.util.HandlerWrapper;
 import com.redbeemedia.enigma.core.util.OpenContainer;
@@ -57,9 +60,11 @@ import java.util.List;
     private static final String SEND_REMAINING_DATA_TASK = "sendRemainingDataTask";
     private static final String PROGRAM_SERVICE_REPEATER = "programServiceRepeater";
     private static final String HEARTBEAT_REPEATER = "heartbeatRepeater";
+    private static final String APP_FOREGROUND_MONITOR = "appForegroundMonitor";
 
     private final AnalyticsReporter analyticsReporter;
     private final AnalyticsHandler analyticsHandler;
+    private final AppForegroundMonitor appForegroundMonitor;
     private final ITask analyticsHandlerTask;
     private final Repeater heartbeatRepeater;
     private final StreamInfo streamInfo;
@@ -153,7 +158,8 @@ import java.util.List;
         });
         this.analyticsReporter = new AnalyticsReporter(timeProvider, analyticsHandler);
         this.playerListener = new EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, streamInfo);
-        heartbeatRepeater = new Repeater(getTaskFactory(HEARTBEAT_REPEATER), HEARTBEAT_RATE_MILLIS, new HeartbeatRunnable());
+        this.heartbeatRepeater = new Repeater(getTaskFactory(HEARTBEAT_REPEATER), HEARTBEAT_RATE_MILLIS, new HeartbeatRunnable());
+        this.appForegroundMonitor = new AppForegroundMonitor(getTaskFactory(APP_FOREGROUND_MONITOR));
 
         updateSeekAllowed(contractRestrictions);
         addListener(new BasePlaybackSessionListener() {
@@ -172,6 +178,8 @@ import java.util.List;
         } else if(PROGRAM_SERVICE_REPEATER.equals(user)) {
             return new MainThreadTaskFactory();
         } else if(HEARTBEAT_REPEATER.equals(user)) {
+            return new MainThreadTaskFactory();
+        } else if(APP_FOREGROUND_MONITOR.equals(user)) {
             return new MainThreadTaskFactory();
         } else {
             throw new IllegalArgumentException(user+" not handled");
@@ -239,6 +247,7 @@ import java.util.List;
         } catch (TaskException e) {
             throw new RuntimeException("Could not start analyticsHandlerTask", e);
         }
+        appForegroundMonitor.onPlaybackSessionStart();
     }
 
     @Override
@@ -259,6 +268,7 @@ import java.util.List;
             analyticsReporter.playbackAborted(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
         }
         enigmaPlayer.removeListener(playerListener);
+        appForegroundMonitor.onPlaybackSessionStop();
         try {
             analyticsHandlerTask.cancel(500);
         } catch (TaskException e) {
@@ -598,8 +608,73 @@ import java.util.List;
             ifConnectionOpen(channel -> channel.onPlaybackError(error, endStream));
         }
 
+        @Override
+        public void onExpirePlaybackSession(PlaybackSessionSeed playbackSessionSeed) {
+            ifConnectionOpen(channel -> channel.onExpirePlaybackSession(playbackSessionSeed));
+        }
+
         private interface ICommunicationsChannelAction {
             void onCommunicationsChannel(ICommunicationsChannel channel);
+        }
+    }
+
+    private class AppForegroundMonitor extends AppForegroundListener {
+        private final Duration GRACE_PERIOD = Duration.minutes(10);
+
+        private final ITaskFactory taskFactory;
+        private final OpenContainer<Boolean> inForeground = new OpenContainer<>(true);
+        private ITask gracePeriodEndTask = null;
+
+        public AppForegroundMonitor(ITaskFactory taskFactory) {
+            this.taskFactory = taskFactory;
+        }
+
+        @Override
+        public void onForegrounded() {
+            AndroidThreadUtil.runOnUiThread(() -> OpenContainerUtil.setValueSynchronized(inForeground, true, (oldValue, newValue) -> {
+                cancelOngoingGracePeriod(200L);
+                analyticsReporter.playbackAppResumed(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
+            }));
+        }
+
+        @Override
+        public void onBackgrounded() {
+            AndroidThreadUtil.runOnUiThread(() -> OpenContainerUtil.setValueSynchronized(inForeground, false, (oldValue, newValue) -> {
+                try {
+                    analyticsReporter.playbackAppBackgrounded(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
+                    cancelOngoingGracePeriod(1);
+                    gracePeriodEndTask = taskFactory.newTask(new Runnable() {
+                        @Override
+                        public void run() {
+                            analyticsReporter.playbackGracePeriodEnded(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
+                            communicationChannel.onExpirePlaybackSession(new PlaybackSessionSeed(playbackSessionInfo));
+                        }
+                    });
+                    gracePeriodEndTask.startDelayed(GRACE_PERIOD.inWholeUnits(Duration.Unit.MILLISECONDS));
+                } catch (Exception e) {
+                    analyticsReporter.playbackError(new UnexpectedError(e));
+                }
+            }));
+        }
+
+        private void cancelOngoingGracePeriod(long waitForJoin) {
+            if(gracePeriodEndTask != null) {
+                try {
+                    gracePeriodEndTask.cancel(waitForJoin);
+                } catch (TaskException e) {
+                    e.printStackTrace(); //Best effort
+                }
+                gracePeriodEndTask = null;
+            }
+        }
+
+        public void onPlaybackSessionStart() {
+            this.startListening();
+        }
+
+        public void onPlaybackSessionStop() {
+            this.stopListening();
+            cancelOngoingGracePeriod(500);
         }
     }
 }

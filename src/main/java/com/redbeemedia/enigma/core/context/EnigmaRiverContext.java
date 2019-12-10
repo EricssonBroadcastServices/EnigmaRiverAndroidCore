@@ -21,6 +21,9 @@ public final class EnigmaRiverContext {
     }
 
     public static synchronized void initialize(Application application, EnigmaRiverContextInitialization initialization) {
+        if(application == null) {
+            throw new NullPointerException("application was null");
+        }
         if(initializedContext == null) {
             initializedContext = new EnigmaRiverInitializedContext(application, initialization);
         } else {
@@ -68,7 +71,7 @@ public final class EnigmaRiverContext {
 
     //Version if the core library
     public static String getVersion() {
-        String version = "r1.0.34";
+        String version = "r1.0.35-BETA-1";
         if(version.contains("REPLACE_WITH_RELEASE_VERSION")) {
             return "dev-snapshot-"+BuildConfig.VERSION_NAME;
         } else {
@@ -178,6 +181,7 @@ public final class EnigmaRiverContext {
                 this.activityLifecycleManager = initialization.getActivityLifecycleManager(application);
                 this.taskFactory = initialization.getTaskFactory();
                 this.epgLocator = initialization.getEpgLocator();
+                ProcessLifecycleHandler.get().initialize(application);
             } catch (Exception e) {
                 //TODO throw ContextInitializationException
                 throw new RuntimeException(e);

@@ -8,7 +8,6 @@ import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
 import com.redbeemedia.enigma.core.entitlement.EntitlementStatus;
 import com.redbeemedia.enigma.core.error.AssetBlockedError;
 import com.redbeemedia.enigma.core.error.ConcurrentStreamsLimitReachedError;
-import com.redbeemedia.enigma.core.error.CredentialsError;
 import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.error.GeoBlockedError;
 import com.redbeemedia.enigma.core.error.NotAvailableError;
@@ -26,7 +25,11 @@ import com.redbeemedia.enigma.core.task.ITask;
 import com.redbeemedia.enigma.core.task.ITaskFactory;
 import com.redbeemedia.enigma.core.task.TaskException;
 import com.redbeemedia.enigma.core.testutil.Counter;
+import com.redbeemedia.enigma.core.time.Duration;
+import com.redbeemedia.enigma.core.time.IStopWatch;
+import com.redbeemedia.enigma.core.time.ITimeProvider;
 import com.redbeemedia.enigma.core.time.MockTimeProvider;
+import com.redbeemedia.enigma.core.time.StopWatch;
 import com.redbeemedia.enigma.core.util.IHandler;
 import com.redbeemedia.enigma.core.util.IStateMachine;
 
@@ -149,7 +152,22 @@ public class InternalPlaybackSessionTest {
         mockHttpHandler.queueResponse(new HttpStatus(200, "OK"));
         playbackSession.onStop(mockPlayer);
 
+        IStopWatch stopWatch = new StopWatch(new ITimeProvider() {
+            @Override
+            public long getTime() {
+                return System.currentTimeMillis();
+            }
+
+            @Override
+            public boolean isReady(Duration maxBlocktime) {
+                return true;
+            }
+        });
+        stopWatch.start();
+
         taskFactory.joinAllThreads();
+
+        Assert.assertTrue("Took longer than 5 seconds to join threads...",stopWatch.stop().inUnits(Duration.Unit.SECONDS) < 5f);
     }
 
     @Test

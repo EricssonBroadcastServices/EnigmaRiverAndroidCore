@@ -112,6 +112,24 @@ public class AnalyticsReporter {
         });
     }
 
+    public void playbackAppBackgrounded(long offsetTime) {
+        event(AnalyticsEvents.APP_BACKGROUNDED, (builder, eventType) -> {
+            builder.addData(eventType.OFFSET_TIME, offsetTime);
+        });
+    }
+
+    public void playbackAppResumed(long offsetTime) {
+        event(AnalyticsEvents.APP_RESUMED, (builder, eventType) -> {
+            builder.addData(eventType.OFFSET_TIME, offsetTime);
+        });
+    }
+
+    public void playbackGracePeriodEnded(long offsetTime) {
+        event(AnalyticsEvents.GRACE_PERIOD_ENDED, (builder, eventType) -> {
+            builder.addData(eventType.OFFSET_TIME, offsetTime);
+        });
+    }
+
     private interface IEventConstruction<T extends IAnalyticsEventType> {
         void construct(IAnalyticsEventBuilder<T> builder, T eventType) throws Exception;
     }

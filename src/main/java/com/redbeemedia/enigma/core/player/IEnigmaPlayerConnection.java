@@ -11,5 +11,6 @@ import com.redbeemedia.enigma.core.error.EnigmaError;
 
     interface ICommunicationsChannel {
         void onPlaybackError(EnigmaError error, boolean endStream);
+        void onExpirePlaybackSession(PlaybackSessionSeed playbackSessionSeed);
     }
 }

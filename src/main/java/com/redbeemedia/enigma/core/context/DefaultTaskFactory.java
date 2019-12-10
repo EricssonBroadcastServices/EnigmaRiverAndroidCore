@@ -2,7 +2,6 @@ package com.redbeemedia.enigma.core.context;
 
 import com.redbeemedia.enigma.core.task.ITask;
 import com.redbeemedia.enigma.core.task.ITaskFactory;
-import com.redbeemedia.enigma.core.task.TaskException;
 
 /*package-protected*/ class DefaultTaskFactory implements ITaskFactory {
     @Override
@@ -49,6 +48,9 @@ import com.redbeemedia.enigma.core.task.TaskException;
 
         @Override
         public synchronized void cancel(long joinMillis) throws IllegalStateException {
+            if(thread == Thread.currentThread()) { //If a task tries to cancel itself then we ignore it.
+                return;
+            }
             this.cancelRequested = true;
             if(started && !canceled) {
                 thread.interrupt();
