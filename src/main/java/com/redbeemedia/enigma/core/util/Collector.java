@@ -81,9 +81,18 @@ public class Collector<T extends IInternalListener> {
     }
 
     protected void forEach(IListenerAction<T> listenerAction) {
+        RuntimeException exception = null;
         synchronized (listeners) {
             for(ListenerLink<T> listenerLink : listeners.value) {
-                listenerLink.execute(listenerAction);
+                try {
+                    listenerLink.execute(listenerAction);
+                } catch (RuntimeException e) {
+                    if(exception == null) {
+                        exception = e;
+                    } else {
+                        exception.addSuppressed(e);
+                    }
+                }
             }
             //Clear stale links
             Iterator<ListenerLink<T>> iterator = listeners.value.iterator();
@@ -93,6 +102,9 @@ public class Collector<T extends IInternalListener> {
                     iterator.remove();
                 }
             }
+        }
+        if(exception != null) {
+            throw exception;
         }
     }
 

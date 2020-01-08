@@ -33,6 +33,7 @@ import java.util.Objects;
     private boolean playingFromLive;
     private final EntitlementCollector entitlementCollector = new EntitlementCollector();
     private final List<ICachedEntitlementResponse> cachedEntitlementResponses = new ArrayList<>();
+    private Duration lastCheckedOffset;
 
     private final OpenContainer<EntitlementData> currentEntitlementData = new OpenContainer<>(null);
 
@@ -59,6 +60,11 @@ import java.util.Objects;
     public void checkEntitlement() {
         if(streamPrograms != null) {
             Duration offset = playbackSessionInfo.getCurrentPlaybackOffset();
+            if(lastCheckedOffset != null && lastCheckedOffset.equals(offset)) {
+                return;
+            } else {
+                lastCheckedOffset = offset;
+            }
             AssetIdFallbackChain assetId = getAssetIdsToCheckForAt(offset);
             if(assetId != null) {
                 checkEntitlement(assetId);

@@ -39,6 +39,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -488,6 +490,58 @@ public class InternalPlaybackSessionTest {
 
     private static class TestTaskFactory implements ITaskFactory {
         private ExecutorService executorService = Executors.newCachedThreadPool();
+        private final Collection<JobInfo> jobs = Collections.synchronizedCollection(new ArrayList<>());
+
+        private static class JobInfo {
+            private final StackTraceElement[] creationStackTrace;
+            private volatile boolean started = false;
+            private volatile Thread jobThread;
+
+            public JobInfo(StackTraceElement[] creationStackTrace) {
+                this.creationStackTrace = creationStackTrace;
+            }
+
+            public void start() {
+                if(started) {
+                    throw new RuntimeException("Already started!");
+                }
+                started = true;
+                jobThread = Thread.currentThread();
+            }
+
+            @Override
+            public String toString() {
+                StringBuilder stringBuilder = new StringBuilder();
+                stringBuilder.append("Started: "+started+"\n");
+                for(int i = 3; i < creationStackTrace.length; ++i) {
+                    stringBuilder.append("Creation>> "+creationStackTrace[i]+"\n");
+                }
+                if(started && jobThread != null) {
+                    stringBuilder.append("\tCurrent thread pos: \n");
+                    for(StackTraceElement element : jobThread.getStackTrace()) {
+                        stringBuilder.append("JobThread>> "+element+"\n");
+                    }
+                }
+                return stringBuilder.toString();
+            }
+        }
+
+        private Future submitToExecutorService(Runnable runnable) {
+            final JobInfo jobInfo = new JobInfo(Thread.currentThread().getStackTrace());
+            jobs.add(jobInfo);
+
+            return executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    jobInfo.start();
+                    try {
+                        runnable.run();
+                    } finally {
+                        jobs.remove(jobInfo);
+                    }
+                }
+            });
+        }
 
         @Override
         public ITask newTask(final Runnable runnable) {
@@ -497,7 +551,7 @@ public class InternalPlaybackSessionTest {
                 @Override
                 public void start() throws IllegalStateException {
                     onTaskStart(this);
-                    this.future = executorService.submit(runnable);
+                    this.future = submitToExecutorService(runnable);
                 }
 
                 @Override
@@ -511,7 +565,7 @@ public class InternalPlaybackSessionTest {
                 @Override
                 public void startDelayed(long delayMillis) {
                     onTaskStartDelayed(this);
-                    future = executorService.submit(new Runnable() {
+                    future = submitToExecutorService(new Runnable() {
                         @Override
                         public void run() {
                             try {
@@ -519,7 +573,7 @@ public class InternalPlaybackSessionTest {
                             } catch (InterruptedException e) {
                                 throw new RuntimeException(e);
                             }
-                            future = executorService.submit(runnable);
+                            future = submitToExecutorService(runnable);
                         }
                     });
                 }
@@ -538,7 +592,16 @@ public class InternalPlaybackSessionTest {
         public void joinAllThreads() {
             executorService.shutdown();
             try {
-                Assert.assertTrue("Failed to join threads." ,executorService.awaitTermination(10000, TimeUnit.MILLISECONDS));
+                if(!executorService.awaitTermination(10000, TimeUnit.MILLISECONDS)) {
+                    StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.append("Failed to join "+jobs.size()+" treads: \n");
+                    synchronized (jobs) {
+                        for(JobInfo jobInfo : jobs) {
+                            stringBuilder.append(jobInfo.toString()+"\n");
+                        }
+                    }
+                    Assert.fail(stringBuilder.toString());
+                }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

@@ -37,6 +37,65 @@ public class CollectorTest {
     }
 
     @Test
+    public void testForEachWithExceptions() {
+        StringBuilder log = new StringBuilder();
+        Collector<ILoggingMockListener> stringCollector = new Collector<>(ILoggingMockListener.class);
+        LoggingMockListener str1 = new LoggingMockListener("One");
+        LoggingMockListener str2 = new LoggingMockListener("Two") {
+            @Override
+            public void writeToLog(StringBuilder log, IStringTransform stringTransform) {
+                throw new RuntimeException("Fail in listener!");
+            }
+        };
+        final boolean[] exceptionInThree = new boolean[]{false};
+        LoggingMockListener str3 = new LoggingMockListener("Three") {
+            @Override
+            public void writeToLog(StringBuilder log, IStringTransform stringTransform) {
+                if(exceptionInThree[0]) {
+                    throw new RuntimeException("Fail from three");
+                }
+                super.writeToLog(log, stringTransform);
+            }
+        };
+        Assert.assertTrue(stringCollector.addListener(str1));
+        stringCollector.forEach(listener -> listener.writeToLog(log, (String s) -> s));
+        Assert.assertEquals("One", log.toString());
+        Assert.assertTrue(stringCollector.addListener(str2));
+        Assert.assertTrue(stringCollector.addListener(str3));
+        try {
+            stringCollector.forEach(listener -> listener.writeToLog(log, (String s) -> s.toUpperCase(Locale.ENGLISH)));
+            Assert.fail("Expected runtime exception");
+        } catch (AssertionError e) {
+            throw e;
+        } catch (RuntimeException e) {
+            Assert.assertEquals("Fail in listener!", e.getMessage());
+        }
+        Assert.assertEquals("OneONETHREE", log.toString());
+        exceptionInThree[0] = true;
+        try {
+            stringCollector.forEach(listener -> listener.writeToLog(log, (String s) -> s.toUpperCase(Locale.ENGLISH)));
+            Assert.fail("Expected runtime exception");
+        } catch (AssertionError e) {
+            throw e;
+        } catch (RuntimeException e) {
+            Assert.assertEquals("Fail in listener!", e.getMessage());
+            Throwable[] supressed = e.getSuppressed();
+            Assert.assertEquals(1, supressed.length);
+            Assert.assertEquals("Fail from three", supressed[0].getMessage());
+        }
+        exceptionInThree[0] = false;
+        Assert.assertEquals("OneONETHREEONE", log.toString());
+        Assert.assertTrue(stringCollector.removeListener(str2));
+        Assert.assertFalse(stringCollector.removeListener(str2));
+        stringCollector.forEach(listener -> listener.writeToLog(log, (String s) -> s.toLowerCase(Locale.ENGLISH)));
+        Assert.assertEquals("OneONETHREEONEonethree", log.toString());
+        Assert.assertTrue(stringCollector.removeListener(str3));
+        Assert.assertTrue(stringCollector.removeListener(str1));
+        stringCollector.forEach(listener -> log.setLength(0));
+        Assert.assertEquals("OneONETHREEONEonethree", log.toString());
+    }
+
+    @Test
     public void testCollectorWithHandlers() {
         StringBuilder log = new StringBuilder();
         Collector<ILoggingMockListener> stringCollector = new Collector<>(ILoggingMockListener.class);

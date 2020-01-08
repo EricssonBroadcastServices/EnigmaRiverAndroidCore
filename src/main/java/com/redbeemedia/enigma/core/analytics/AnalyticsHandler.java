@@ -66,6 +66,9 @@ public class AnalyticsHandler implements IAnalyticsHandler {
         Response response = new Response();
         long initRequestTime = timeProvider.getTime();
         EnigmaRiverContext.getHttpHandler().doHttpBlocking(getInitUrl(), new AuthenticatedExposureApiCall("POST", session, envelope), response);
+        if(Thread.interrupted()) {
+            throw new InterruptedException();
+        }
         assertOK(response);
         if(response.data == null) {
             throw new AnalyticsException("Server returned empty response.");
@@ -114,6 +117,9 @@ public class AnalyticsHandler implements IAnalyticsHandler {
             //Here we actually want to do a synchronous http call since we are on a separate thread already.
             Response response = new Response();
             EnigmaRiverContext.getHttpHandler().doHttpBlocking(getSendUrl(), new AuthenticatedExposureApiCall("POST", session, envelope), response);
+            if(Thread.interrupted()) {
+                throw new InterruptedException();
+            }
             assertOK(response);
         } catch (AnalyticsException e) {
             retryEvents(currentEvents, e);
@@ -125,7 +131,9 @@ public class AnalyticsHandler implements IAnalyticsHandler {
         if(response.exception != null) {
             throw new AnalyticsException(response.exception);
         } else {
-            if(response.httpStatus.getResponseCode() != 200) {
+            if(response.httpStatus == null) {
+                throw new AnalyticsException("Got null http status");
+            } else if(response.httpStatus.getResponseCode() != 200) {
                 ExposureHttpError exposureHttpError = getExposureHttpError(response.data);
                 throw new AnalyticsException("Server responded with "+response.httpStatus+ (exposureHttpError != null ? (" and "+exposureHttpError.toString()) : ""));
             }
