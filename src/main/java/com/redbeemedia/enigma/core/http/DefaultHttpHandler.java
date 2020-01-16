@@ -54,16 +54,27 @@ public class DefaultHttpHandler implements IHttpHandler {
                 connection.setConnectTimeout(getDefaultConnectTimeout());
                 connection.setReadTimeout(getDefaultReadTimeout());
                 connection.setDoInput(true);
+                connection.setRequestMethod(httpCall.getRequestMethod());
+                final String connectionRequestMethod = connection.getRequestMethod();
+                if("POST".equalsIgnoreCase(connectionRequestMethod) || "PUT".equalsIgnoreCase(connectionRequestMethod)) {
+                    connection.setDoOutput(true); //This value is overridden if supplied by httpCall
+                }
                 httpCall.prepare(new IHttpConnection() {
                     @Override
                     public void setHeader(String name, String value) {
                         connection.setRequestProperty(name, value);
                     }
+
+                    @Override
+                    public void setDoOutput(boolean value) {
+                        connection.setDoOutput(value);
+                    }
+
+                    @Override
+                    public void setDoInput(boolean value) {
+                        connection.setDoInput(value);
+                    }
                 });
-                connection.setRequestMethod(httpCall.getRequestMethod());
-                if("POST".equalsIgnoreCase(connection.getRequestMethod())) {
-                    connection.setDoOutput(true); //Maybe the request-method should do this? TODO add Tests for these
-                }
 
                 //Do the call
                 connection.connect();

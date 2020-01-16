@@ -104,7 +104,10 @@ public class KeepAliveHttpHandler implements IHttpHandler {
                 urlConnection.setRequestMethod(method);
                 urlConnection.setConnectTimeout(getDefaultConnectTimeout());
                 urlConnection.setReadTimeout(getDefaultReadTimeout());
-                // Perhaps we should just pass down the HttpURLConnection and remove the setRequestMethod?
+
+                final boolean doOutput = "POST".equals(method) || "PUT".equals(method);
+                urlConnection.setDoOutput(doOutput);
+
                 mCall.prepare(new IHttpConnection() {
                     @Override
                     public void setHeader(final String name,
@@ -112,11 +115,17 @@ public class KeepAliveHttpHandler implements IHttpHandler {
                     {
                         urlConnection.setRequestProperty(name, value);
                     }
+
+                    @Override
+                    public void setDoOutput(boolean value) {
+                        urlConnection.setDoOutput(value);
+                    }
+
+                    @Override
+                    public void setDoInput(boolean value) {
+                        urlConnection.setDoInput(value);
+                    }
                 });
-
-                final boolean doOutput = "POST".equals(method) || "PUT".equals(method);
-
-                urlConnection.setDoOutput(doOutput);
 
                 try {
                     if (currentThread.isInterrupted()) {
