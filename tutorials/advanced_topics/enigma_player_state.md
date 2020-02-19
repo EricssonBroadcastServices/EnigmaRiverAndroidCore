@@ -1,6 +1,6 @@
 # EnigmaPlayerState
-
-![stateDiagram](images/EnigmaPlayerState_diagram.png "EnigmaPlayer state diagram")
+![stateDiagram](../images/EnigmaPlayerState_diagram.png "EnigmaPlayer
+state diagram")
 
 EnigmaPlayer keeps an internal state (starting at `IDLE`). The current state of the EnigmaPlayer can be accessed using:
 ```java
@@ -40,3 +40,8 @@ player.addListener(new BaseEnigmaPlayerListener() {
 }, handler);
 
 ```
+
+
+
+___
+[Table of Contents](../index.md)<br/>

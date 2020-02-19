@@ -1,8 +1,6 @@
+### Chromecast integration series (work in progress)
 # Advanced usage of the cast-module
-
-For basic chromecast support, see [Integrating Red Bee OTT cast support](chromecast.md).
-
-## Listening to events from the chromecast receiver
+#### Listening to events from the chromecast receiver
 
 Custom events sent from the chromecast receiver app can be listened to by extending `BaseEnigmaCastListener` and adding the listener to the `EnigmaCastManager`.
 ```java
@@ -53,7 +51,7 @@ enigmaCastManager.addListener(new BaseEnigmaCastManagerListener() {
 ```
 
 
-## Sending requests to the receiver app
+#### Sending requests to the receiver app
 
 To send a request to an active `IEnigmaCastSession` use the factory methods in `EnigmaCastMessage` to create a `ICastControlRequest` and send it using `IEnigmaCastSession#sendMessage(...)`.
 
@@ -68,3 +66,10 @@ if(currentCastSession != null) {
     //Currently not connected...
 }
 ```
+
+
+___
+[Table of Contents](../index.md)<br/>
+[Prerequisites](prerequisites.md)<br/>
+[Integrating Red Bee OTT cast support](chromecast.md)<br/>
+Advanced usage of the cast-module (current)<br/>

@@ -2,7 +2,7 @@
 
 This tutorial will teach you how to integrate your custom UI buttons to EnigmaPlayer.
 
-This tutorial assumes that you have completed [the introduction](your_first_app.md) and/or have a working video-app using the Enigma River Android SDK and the Red Bee OTT backend.
+This tutorial assumes that you have completed [the introduction](../basics/your_first_app.md) and/or have a working video-app using the Enigma River Android SDK and the Red Bee OTT backend.
 It also assumes that you have some prior experience with creating an Android UI.
 
 Using the EnigmaPlayer with a custom UI is simple!
@@ -27,7 +27,7 @@ If you start your app now you will still see the video, but no buttons (for exam
 
 ## Hooking up custom UI to EnigmaPlayer
 
-The SDK provides an API called [virtual controls](virtual_controls.md). The virtual controls provide an interface for a custom UI to integrate with.
+The SDK provides an API called [virtual controls](../advanced_topics/virtual_controls.md). The virtual controls provide an interface for a custom UI to integrate with.
 
 ### IVirtualButton
 

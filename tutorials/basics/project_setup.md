@@ -1,12 +1,5 @@
+### Basics series
 # Project setup
-
-## Prerequisites
-* Customer account and business unit created in customer portal
-* End user account
-* Android Studio 3.2 or higher
-* Simple android app that manages to build and run on a device
-* Internet connection
-
 ## Permissions required by the SDK
 The following permissions are required for the SDK to function. Remember to add them to your `AndroidManifest.xml`.
 * `<uses-permission android:name="android.permission.INTERNET" />` - Needed to access the Red Bee Media OTT backend.
@@ -47,17 +40,21 @@ repositories {
 ...
 dependencies {
     ...
-    implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:core:r1.0.36-BETA-2"
-    implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exoplayerintegration:r1.0.36-BETA-2"
-    implementation 'com.google.android.exoplayer:exoplayer:2.9.6'
+    implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:core:r1.0.36-BETA-3"
+    implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exoplayerintegration:r1.0.36-BETA-3"
 }
 ...
 ```
 
 There is also an optional utility module that provides native (Java) objects for accessing additional endpoints of the exposure REST-api. You can add include it by also adding the following dependency:
 ```gradle
-implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exposureUtils:r1.0.36-BETA-2"
+implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exposureUtils:r1.0.36-BETA-3"
 ```
 
-### Next
--> [Your first app](your_first_app.md)
+
+___
+[Table of Contents](../index.md)<br/>
+[Prerequisites](prerequisites.md)<br/>
+[Introduction](introduction.md)<br/>
+Project setup (current)<br/>
+[Your first app](your_first_app.md)<br/>

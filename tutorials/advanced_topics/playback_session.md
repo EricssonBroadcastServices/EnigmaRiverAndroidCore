@@ -1,5 +1,4 @@
 # Playback Session
-
 While playing a stream the EnigmaPlayer has a "PlaybackSession". Each EnigmaPlayer only has at most
 one PlaybackSession at a time.
 
@@ -8,7 +7,8 @@ The start of a PlaybackSession is when an asset has been successfully loaded and
 played. The PlaybackSession of an EnigmaPlayer is considered to be alive/active until it is replaced,
 either by a new PlaybackSession or by `null`.
 
-![stateDiagram](images/PlaybackSession_lifecycles.png "PlaybackSession lifecycle")
+![stateDiagram](../images/PlaybackSession_lifecycles.png
+"PlaybackSession lifecycle")
 
 To acquire a `IPlaybackSession` one needs to listen for the 'onPlaybackSessionChanged'-event from EnigmaPlayer.
 ```java
@@ -56,3 +56,7 @@ player.addListener(new BaseEnigmaPlayerListener() {
     }
 }, handler);
 ```
+
+
+___
+[Table of Contents](../index.md)<br/>

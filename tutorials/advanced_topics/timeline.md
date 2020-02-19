@@ -1,5 +1,4 @@
 # Timeline API
-
 The timeline API is used for implementing/integrating a custom timeline UI element.
 It can be accessed using `IEnigmaPlayer#getTimeline`.
 
@@ -142,3 +141,8 @@ private TimelinePositionFormat timelinePositionFormat =
 ...
 ```
 
+
+
+
+___
+[Table of Contents](../index.md)<br/>

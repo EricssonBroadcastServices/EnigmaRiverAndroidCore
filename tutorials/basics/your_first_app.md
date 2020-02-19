@@ -1,5 +1,5 @@
+### Basics series
 # Your first app
-
 In this tutorial we will create a very simple app using the SDK.
 
 We will cover:
@@ -27,10 +27,18 @@ public class MyApplication extends Application {
 }
 ```
 
-Also make sure that your app is actually using this subclass of Application. This is done by setting the <code>android:name</code>-attribute of the <code>&lt;application /&gt;</code> tag in your `AndroidManifest.xml`. See [Android tutorials](https://developer.android.com/guide/topics/manifest/application-element) for further information.
+Also make sure that your app is actually using this subclass of
+Application. This is done by setting the
+<code>android:name</code>-attribute of the <code>&lt;application
+/&gt;</code> tag in your `AndroidManifest.xml`. See
+[Android tutorials](https://developer.android.com/guide/topics/manifest/application-element)
+for further information.
 
 ## Retrieving a `Session`
-Next, our end user needs a `Session` to be able to access content from the Red Bee backend. If you are using Red Bee Medias default authentification the `Session` object can be obtained using the `EnigmaLogin` utility class.
+Next, our end user needs a `Session` to be able to access content from
+the Red Bee backend. If you are using Red Bee Medias default
+authentication the `Session` object can be obtained using the
+`EnigmaLogin` utility class.
 
 `EnigmaLogin` will process a login request. Our intention is to launch a second activity after success completion of that request. Therefore we create a `android.os.Handler` and set it as the "callback handler" of `EnigmaLogin`. This ensures that any callback code originating from `EnigmaLogin` will be run on on the main thread.
 
@@ -61,7 +69,8 @@ public class LoginActivity extends Activity {
 
 ```
 
-If you don't have any end user accounts for your Red Bee OTT plattform, create one now. This can be done using the customer portal. 
+If you don't have any end user accounts for your Red Bee OTT platform,
+create one now. This can be done using the customer portal.
 
 ## Logging in
 There are different types of login requests (`UserLoginRequest`,`AnonymousLoginRequest`, `ResumeLoginRequest`, etc.), but for this tutorial we will be using the `UserLoginRequest` wich represents a request to log in using end user credentials.
@@ -325,4 +334,12 @@ import com.redbeemedia.enigma.core.error.NoSupportedMediaFormatsError;
 # And that's all there is to it!
 
 This is what our finished app looks like:
-[yourFirstApp](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r1.0.36-BETA-2/yourFirstApp)<br />
+[yourFirstApp](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r1.0.36-BETA-3/yourFirstApp)<br />
+
+
+___
+[Table of Contents](../index.md)<br/>
+[Prerequisites](prerequisites.md)<br/>
+[Introduction](introduction.md)<br/>
+[Project setup](project_setup.md)<br/>
+Your first app (current)<br/>

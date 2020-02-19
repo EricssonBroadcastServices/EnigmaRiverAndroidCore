@@ -1,5 +1,4 @@
 # Controlling EnigmaPlayer programmatically
-
 There are two main ways one usually interacts with a video player. One is by starting up a stream
 (which in our case is done using `IEnigmaPlayer#play(IPlayRequest)`). The other way is
 by controlling the playback of an already started/loaded stream by sending 'control requests' such as 'start','pause', 'seekTo', etc. This tutorial covers the latter.
@@ -50,8 +49,10 @@ Exactly one of these methods will be called depending on the fate of the request
 * `onCancelled()` is called if the request was valid and queued for execution but cancelled before or
 during it was processed.
 * `onError(Error error)` is called if something went wrong while processing the request.
-* `onDone()` is called when the request has been successfully processed. This signals that command was carried out.
+* `onDone()` is called when the request has been successfully processed.
+  This signals that command was carried out.
 
 
 
-
+___
+[Table of Contents](../index.md)<br/>

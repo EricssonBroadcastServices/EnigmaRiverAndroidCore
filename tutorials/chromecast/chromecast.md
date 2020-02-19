@@ -1,18 +1,15 @@
+### Chromecast integration series (work in progress)
 # Integrating Red Bee OTT cast support
-
-## Prerequisites
-* Working video app using Enigma River Android SDK and Red Bee OTT backend
-* Completed the [introduction tutorials](introduction.md)
-* Google Chromecast mediaplayer device
-* Android device with access to the same wifi as the chromecast
-
-Before integrating the Enigma River Android cast-module please make sure you are familiar with the basics of implementing a chromecast sender application in Android.
-We recommend completing the ['Cast-enable an Android app'](https://codelabs.developers.google.com/codelabs/cast-videos-android/) tutorial in Google Developers Codelabs.
+Before integrating the Enigma River Android cast-module please make sure
+you are familiar with the basics of implementing a chromecast sender
+application in Android. We recommend completing the
+['Cast-enable an Android app'](https://codelabs.developers.google.com/codelabs/cast-videos-android/)
+tutorial in Google Developers Codelabs.
 
 <br/>
 Tip: Before trying to cast using your app, make sure you can cast with a widely used app such as YouTube.
 
-## Cast-module
+#### Cast-module
 
 The first thing needed in order to add cast functionality to your app is to add a dependency to the cast-module of the SDK.
 ```gradle
@@ -20,17 +17,19 @@ The first thing needed in order to add cast functionality to your app is to add 
 ...
 dependencies {
     ...
-    implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:cast:r1.0.36-BETA-2"
+    implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:cast:r1.0.36-BETA-3"
     ...
 }
 ...
 ```
 
-The cast-module includes a transparent dependency to Google's [Cast framework](https://developers.google.com/cast/docs/android_sender/integrate), so you do not need to explicitly add that dependency.
+The cast-module includes a transparent dependency to Google's
+[Cast framework](https://developers.google.com/cast/docs/android_sender/integrate),
+so you do not need to explicitly add that dependency.
 
-## Setting up cast
+#### Setting up cast
 
-### OptionsProvider
+###### OptionsProvider
 
 To integrate cast into our app we need to provide an `OptionsProvider` for the Google Cast framework. This is done by adding a `<meta-data>`-tag in your `AndroidManifest.xml`:
 ```
@@ -45,7 +44,7 @@ To integrate cast into our app we need to provide an `OptionsProvider` for the G
 
 The Enigma River Android SDK provides this `OptionsProvider` out-of-the-box. If you need to customize any part of the CastOptions, `EnigmaCastOptionsProvider` is suitable for extension.
 
-### MediaRouter
+###### MediaRouter
 
 When a connection to a chromecast receiver has been established the `EnigmaCastManager` will be notified. How the connection is managed is up to you, but we recommend using the
 standard button provided in the MediaRouter library.
@@ -73,9 +72,11 @@ dependencies {
 ...
 ```
 
-Then add the MediaRouterButton to all of your activities. See [Google's tutorial section](https://developers.google.com/cast/docs/android_sender/integrate#add_a_cast_button) on adding the cast button.
+Then add the MediaRouterButton to all of your activities. See
+[Google's tutorial section](https://developers.google.com/cast/docs/android_sender/integrate#add_a_cast_button)
+on adding the cast button.
 
-### EnigmaCastManager
+###### EnigmaCastManager
 
 To initialize Google's Cast framework you need to call `CastContext.getSharedInstance(applicationContext)` or `EnigmaCastManager.getSharedInstance(applicationContext)` in `onCreate` of every activity or your app.
 ```java
@@ -89,7 +90,7 @@ protected void onCreate(@Nullable Bundle savedInstanceState) {
 
 Your setup is now done.
 
-## Sending a PlayRequest to the chromecast receiver
+#### Sending a PlayRequest to the chromecast receiver
 
 To start playing an asset on the chromecast receiver, create an `EnigmaCastRequest`. You'll need to supply the assetID of the asset to be cast as well as a `ISession` object. This is done using a builder pattern:
 ```java
@@ -116,7 +117,11 @@ enigmaCastManager.play(castRequest, new BaseEnigmaCastResultHandler() {
 });
 ```
 
-Congratulations, you should now be able to cast Red Bee OTT assets!
+Congratulations, you should now be able to cast Red Bee OTT media assets!
 
-### Next
--> [Advanced usage of the cast-module](chromecast_advanced.md)
+
+___
+[Table of Contents](../index.md)<br/>
+[Prerequisites](prerequisites.md)<br/>
+Integrating Red Bee OTT cast support (current)<br/>
+[Advanced usage of the cast-module](chromecast_advanced.md)<br/>

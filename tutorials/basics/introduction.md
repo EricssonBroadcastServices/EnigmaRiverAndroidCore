@@ -1,5 +1,5 @@
+### Basics series
 # Introduction
-
 The Enigma River Android SDK provides a simple framework for app developers that facilitates communication with the Red Bee Media OTT backend. It takes away the burden of writing a lot of boilerplate code from the app developer. For example: making http calls, parsing the response and creating native objects. It simplifies the integration of a video player that plays streams from the backend, so that the app developer can focus on making awesome apps!
 
 ## Concepts
@@ -30,5 +30,10 @@ Handler (android.os.Handler) can be specified as the callback handler of a reque
 ### Playable
 A Playable represents a type on object that an EnigmaPlayer can play. This is typically an "AssetPlayable" containing an asset id.
 
-### Next
--> [Project setup](project_setup.md)
+
+___
+[Table of Contents](../index.md)<br/>
+[Prerequisites](prerequisites.md)<br/>
+Introduction (current)<br/>
+[Project setup](project_setup.md)<br/>
+[Your first app](your_first_app.md)<br/>

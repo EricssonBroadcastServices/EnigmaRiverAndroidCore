@@ -1,5 +1,5 @@
-# Audio- and subtitle selection
-
+### Audio and subtitles series (work in progress)
+# Audio and subtitle selection
 ## Keeping track of tracks
 
 The current `PlaybackSession` manages available and selected audio/subtitle tracks.
@@ -105,7 +105,12 @@ This is only allowed for subtitle tracks. A request to `setAudioTrack(null)` wil
 #### Note
 > Objects passed to `set{Audio/Subtitle}Track(...)` must originate from EnigmaPlayer. Using a custom implementation of `IAudioTrack` or `ISubtitleTrack` will result in a rejected request.
 
-## Working example
-
+### Working example
 Here is a working example project using what is described in this tutorial:
-[audioAndSubtitles](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r1.0.36-BETA-2/audioAndSubtitles)<br />
+[audioAndSubtitles](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r1.0.36-BETA-3/audioAndSubtitles)<br />
+
+
+___
+[Table of Contents](../index.md)<br/>
+[Prerequisites](prerequisites.md)<br/>
+Audio and subtitle selection (current)<br/>

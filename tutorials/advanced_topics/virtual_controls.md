@@ -1,5 +1,4 @@
 # Virtual controls
-
 When implementing a custom UI the app developer need to know when to show/hide a button and when to display the button as 'enabled'.
 These properties might depend on many things such as:
 * the current player state
@@ -43,4 +42,7 @@ By listening to the `onStateChanged` event an app developer can track the state 
 
 Virtual controls should be favored over directly controlling the EnigmaPlayer using `IEnigmaPlayer#getControls()`.
 
-For more usage information about virtual controls see the [Getting started with custom controls](custom_ui_getting_started.md)-tutorial.
+
+
+___
+[Table of Contents](../index.md)<br/>

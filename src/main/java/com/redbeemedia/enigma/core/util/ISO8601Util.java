@@ -8,6 +8,15 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * <p><code>ISO8601Util</code> provides conversion between the ISO8601 time format to unix time
+ * (milliseconds since the Unix epoch).</p>
+ *
+ * <p>The methods <code>ISO8601Util.newParser()</code> (iso8601->utcMillis) and
+ * <code>ISO8601Util.newWriter(TimeZone timeZone)</code> (utcMillis->iso8601) provide parsers and
+ * writers respectively. Neither parsers nor writers are guaranteed to be thread-safe and should
+ * therefore not be shared across threads.</p>
+ */
 public class ISO8601Util {
     private static final IISO8601Parser PARSER = new IISO8601Parser() {
         @Override
@@ -16,19 +25,50 @@ public class ISO8601Util {
         }
     };
 
+    /**
+     * Returns a {@link IISO8601Parser} that converts ISO8601 strings to unix time (UTC milliseconds).
+     *
+     * @return
+     */
     public static IISO8601Parser newParser() {
         return PARSER;
     }
 
+    /**
+     * Returns a {@link IISO8601Writer} that converts unix time (UTC milliseconds) to ISO8601 strings
+     * with supplied timezone.
+     *
+     * @param timeZone Timezone to use in generated ISO8601 string
+     * @return
+     */
     public static IISO8601Writer newWriter(TimeZone timeZone) {
         return new Writer(timeZone);
     }
 
+    /**
+     * Parser that converts ISO8601 strings to unix time (UTC milliseconds).
+     */
     public interface IISO8601Parser {
+        /**
+         * Converts ISO8601 strings to unix time (UTC milliseconds).
+         *
+         * @param iso8601String String in ISO8601 format
+         * @return milliseconds since the unix epoch (unix time)
+         * @throws ParseException If the <ocde>iso8601String</ocde> was not in a correct ISO8601 format, or otherwise not parsable.
+         */
         long parse(String iso8601String) throws ParseException;
     }
 
+    /**
+     * Writer that converts unix time (UTC milliseconds) to ISO8601 strings.
+     */
     public interface IISO8601Writer {
+        /**
+         * Converts unix time (UTC milliseconds) to ISO8601 string.
+         *
+         * @param utcMillis milliseconds since the unix epoch (unix time)
+         * @return String in ISO8601 format
+         */
         String toIso8601(long utcMillis);
     }
 
