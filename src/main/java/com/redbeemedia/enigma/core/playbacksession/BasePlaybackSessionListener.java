@@ -1,5 +1,7 @@
 package com.redbeemedia.enigma.core.playbacksession;
 
+import androidx.annotation.NonNull;
+
 import com.redbeemedia.enigma.core.audio.IAudioTrack;
 import com.redbeemedia.enigma.core.restriction.IContractRestrictions;
 import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
@@ -21,7 +23,7 @@ public class BasePlaybackSessionListener implements IPlaybackSessionListener {
     }
 
     @Override
-    public void onSubtitleTracks(List<ISubtitleTrack> tracks) {
+    public void onSubtitleTracks(@NonNull List<ISubtitleTrack> tracks) {
     }
 
     @Override
@@ -29,7 +31,7 @@ public class BasePlaybackSessionListener implements IPlaybackSessionListener {
     }
 
     @Override
-    public void onAudioTracks(List<IAudioTrack> tracks) {
+    public void onAudioTracks(@NonNull List<IAudioTrack> tracks) {
     }
 
     @Override

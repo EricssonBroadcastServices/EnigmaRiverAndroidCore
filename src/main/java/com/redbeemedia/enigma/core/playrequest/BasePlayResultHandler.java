@@ -1,5 +1,7 @@
 package com.redbeemedia.enigma.core.playrequest;
 
+import androidx.annotation.NonNull;
+
 import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 
@@ -10,10 +12,10 @@ public class BasePlayResultHandler implements IPlayResultHandler {
     }
 
     @Override
-    public void onStarted(IPlaybackSession playbackSession) {
+    public void onStarted(@NonNull IPlaybackSession playbackSession) {
     }
 
     @Override
-    public void onError(EnigmaError error) {
+    public void onError(@NonNull EnigmaError error) {
     }
 }

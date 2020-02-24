@@ -1,5 +1,7 @@
 package com.redbeemedia.enigma.core.http;
 
+import androidx.annotation.NonNull;
+
 import java.io.InputStream;
 import java.net.URL;
 
@@ -8,8 +10,8 @@ public interface IHttpHandler {
     void doHttpBlocking(URL url, IHttpCall httpCall, IHttpResponseHandler responseHandler) throws InterruptedException;
 
     interface IHttpResponseHandler {
-        void onResponse(HttpStatus httpStatus);
-        void onResponse(HttpStatus httpStatus, InputStream inputStream);
-        void onException(Exception e);
+        void onResponse(@NonNull HttpStatus httpStatus);
+        void onResponse(@NonNull HttpStatus httpStatus, @NonNull InputStream inputStream);
+        void onException(@NonNull Exception e);
     }
 }

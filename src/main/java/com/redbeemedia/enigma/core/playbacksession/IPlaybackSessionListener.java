@@ -1,5 +1,7 @@
 package com.redbeemedia.enigma.core.playbacksession;
 
+import androidx.annotation.NonNull;
+
 import com.redbeemedia.enigma.core.audio.IAudioTrack;
 import com.redbeemedia.enigma.core.restriction.IContractRestrictions;
 import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
@@ -29,7 +31,7 @@ public interface IPlaybackSessionListener extends IInternalListener {
      *
      * @param tracks the current list of available {@link ISubtitleTrack}s. Never @code null}, but might be empty.
      */
-    void onSubtitleTracks(List<ISubtitleTrack> tracks);
+    void onSubtitleTracks(@NonNull List<ISubtitleTrack> tracks);
     void onSelectedSubtitleTrackChanged(ISubtitleTrack oldSelectedTrack, ISubtitleTrack newSelectedTrack);
 
     /**
@@ -41,7 +43,7 @@ public interface IPlaybackSessionListener extends IInternalListener {
      *
      * @param tracks the current list of available {@link IAudioTrack}s. Never {@code null}, but might be empty.
      */
-    void onAudioTracks(List<IAudioTrack> tracks);
+    void onAudioTracks(@NonNull List<IAudioTrack> tracks);
     void onSelectedAudioTrackChanged(IAudioTrack oldSelectedTrack, IAudioTrack newSelectedTrack);
 
 

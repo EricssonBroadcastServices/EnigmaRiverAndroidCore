@@ -1,5 +1,7 @@
 package com.redbeemedia.enigma.core.player.listener;
 
+import androidx.annotation.NonNull;
+
 import com.redbeemedia.enigma.core.epg.IProgram;
 import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
@@ -16,7 +18,7 @@ public interface IEnigmaPlayerListener extends IInternalListener {
     @Deprecated
     void _dont_implement_IEnigmaPlayerListener___instead_extend_BaseEnigmaPlayerListener_();
 
-    void onPlaybackError(EnigmaError error); //An error occurred during playback
+    void onPlaybackError(@NonNull EnigmaError error); //An error occurred during playback
 
     void onStateChanged(EnigmaPlayerState from, EnigmaPlayerState to);
 

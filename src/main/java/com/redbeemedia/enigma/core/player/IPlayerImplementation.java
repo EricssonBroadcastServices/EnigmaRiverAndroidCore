@@ -1,6 +1,8 @@
 package com.redbeemedia.enigma.core.player;
 
+import androidx.annotation.NonNull;
+
 public interface IPlayerImplementation {
-    void install(IEnigmaPlayerEnvironment environment);
+    void install(@NonNull IEnigmaPlayerEnvironment environment);
     void release();
 }

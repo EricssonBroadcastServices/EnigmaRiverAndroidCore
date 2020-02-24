@@ -2,6 +2,8 @@ package com.redbeemedia.enigma.core.player;
 
 import android.os.Handler;
 
+import androidx.annotation.NonNull;
+
 import com.redbeemedia.enigma.core.player.controls.IEnigmaPlayerControls;
 import com.redbeemedia.enigma.core.player.timeline.ITimeline;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
@@ -14,8 +16,8 @@ public interface IEnigmaPlayer {
     boolean addListener(IEnigmaPlayerListener playerListener);
     boolean addListener(IEnigmaPlayerListener playerListener, Handler handler);
     boolean removeListener(IEnigmaPlayerListener playerListener);
-    IEnigmaPlayerControls getControls();
-    ITimeline getTimeline();
+    @NonNull IEnigmaPlayerControls getControls();
+    @NonNull ITimeline getTimeline();
     EnigmaPlayerState getState();
     IEnigmaPlayer setCallbackHandler(IHandler handler);
     IEnigmaPlayer setCallbackHandler(Handler handler);

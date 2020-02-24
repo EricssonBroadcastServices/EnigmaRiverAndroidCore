@@ -36,9 +36,12 @@ android {
 dependencies {
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.json:json:20080701'
+
+    implementation 'com.android.support:support-annotations:28.0.0'
+
     if(findProject(':internalTestUtils') != null) {
         testImplementation project(":internalTestUtils")
     } else {
-        testImplementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:internalTestUtils:r1.0.37'
+        testImplementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:internalTestUtils:r3.0.0-BETA-1'
     }
 }

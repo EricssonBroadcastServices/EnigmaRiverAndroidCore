@@ -1,12 +1,14 @@
 package com.redbeemedia.enigma.core.player.controls;
 
+import androidx.annotation.NonNull;
+
 import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.util.IInternalCallbackObject;
 
 public interface IControlResultHandler extends IInternalCallbackObject {
-    void onRejected(IRejectReason reason);
+    void onRejected(@NonNull IRejectReason reason);
     void onCancelled();
-    void onError(EnigmaError error);
+    void onError(@NonNull EnigmaError error);
     void onDone();
 
     interface IRejectReason {
