@@ -1,7 +1,5 @@
 package com.redbeemedia.enigma.core.player.timeline;
 
-import androidx.annotation.NonNull;
-
 import com.redbeemedia.enigma.core.util.IInternalListener;
 
 public interface ITimelineListener extends IInternalListener {
@@ -15,6 +13,6 @@ public interface ITimelineListener extends IInternalListener {
     void _dont_implement_ITimelineListener___instead_extend_BaseTimelineListener_();
 
     void onVisibilityChanged(boolean visible);
-    void onCurrentPositionChanged(@NonNull ITimelinePosition timelinePosition);
-    void onBoundsChanged(@NonNull ITimelinePosition start, @NonNull ITimelinePosition end);
+    void onCurrentPositionChanged(ITimelinePosition timelinePosition);
+    void onBoundsChanged(ITimelinePosition start, ITimelinePosition end);
 }

@@ -1,7 +1,5 @@
 package com.redbeemedia.enigma.core.virtualui;
 
-import androidx.annotation.NonNull;
-
 import com.redbeemedia.enigma.core.time.Duration;
 
 /**
@@ -10,6 +8,6 @@ import com.redbeemedia.enigma.core.time.Duration;
  * <p>Instead extends {@link VirtualControlsSettings} to ensure future compatibility.</p>
  */
 public interface IVirtualControlsSettings {
-    @NonNull Duration getSeekForwardStep();
-    @NonNull Duration getSeekBackwardStep();
+    Duration getSeekForwardStep();
+    Duration getSeekBackwardStep();
 }

@@ -1,7 +1,5 @@
 package com.redbeemedia.enigma.core.player.timeline;
 
-import androidx.annotation.NonNull;
-
 public class BaseTimelineListener implements ITimelineListener {
     @Deprecated
     @Override
@@ -13,10 +11,10 @@ public class BaseTimelineListener implements ITimelineListener {
     }
 
     @Override
-    public void onCurrentPositionChanged(@NonNull ITimelinePosition timelinePosition) {
+    public void onCurrentPositionChanged(ITimelinePosition timelinePosition) {
     }
 
     @Override
-    public void onBoundsChanged(@NonNull ITimelinePosition start, @NonNull ITimelinePosition end) {
+    public void onBoundsChanged(ITimelinePosition start, ITimelinePosition end) {
     }
 }

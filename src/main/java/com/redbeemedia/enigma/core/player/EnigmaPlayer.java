@@ -4,8 +4,6 @@ import android.app.Activity;
 import android.os.Handler;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-
 import com.redbeemedia.enigma.core.activity.AbstractActivityLifecycleListener;
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleListener;
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleManager;
@@ -195,13 +193,11 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     }
 
     @Override
-    @NonNull
     public IEnigmaPlayerControls getControls() {
         return controls;
     }
 
     @Override
-    @NonNull
     public ITimeline getTimeline() {
         return timeline;
     }

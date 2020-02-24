@@ -1,7 +1,5 @@
 package com.redbeemedia.enigma.core.playrequest;
 
-import androidx.annotation.NonNull;
-
 import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.util.IInternalCallbackObject;
@@ -16,6 +14,6 @@ public interface IPlayResultHandler extends IInternalCallbackObject {
     @Deprecated
     void _dont_implement_IPlayResultHandler___instead_extend_BasePlayResultHandler_();
 
-    void onStarted(@NonNull IPlaybackSession playbackSession);
-    void onError(@NonNull EnigmaError error);
+    void onStarted(IPlaybackSession playbackSession);
+    void onError(EnigmaError error);
 }
