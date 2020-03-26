@@ -123,7 +123,7 @@ private void updateIsLive(boolean isLive){
 **And that's all there is to it**!
 
 This is what our finished app looks like:
-[customUiApp](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.0.0/customcontrols)<br
+[customUiApp](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/__REPLACE_WITH_RELEASE_VERSION__/customcontrols)<br
 />
 
 
