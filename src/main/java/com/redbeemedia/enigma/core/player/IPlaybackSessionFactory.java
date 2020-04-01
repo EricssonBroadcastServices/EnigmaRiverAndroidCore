@@ -4,6 +4,7 @@ import com.redbeemedia.enigma.core.drm.IDrmInfo;
 import com.redbeemedia.enigma.core.playrequest.IPlayResultHandler;
 import com.redbeemedia.enigma.core.playrequest.IPlaybackProperties;
 import com.redbeemedia.enigma.core.session.ISession;
+import com.redbeemedia.enigma.core.time.Duration;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -18,7 +19,7 @@ import org.json.JSONObject;
         JSONObject getUsableMediaFormat(JSONArray formats) throws JSONException;
         void setDrmInfo(IDrmInfo drmInfo);
         IPlaybackSessionInfo getPlaybackSessionInfo(String manifestUrl);
-        void loadIntoPlayerImplementation(String manifestUrl, IPlayResultHandler playResultHandler, JSONObject jsonObject, IPlaybackProperties playbackProperties);
+        void loadIntoPlayerImplementation(String manifestUrl, IPlayResultHandler playResultHandler, JSONObject jsonObject, IPlaybackProperties playbackProperties, Duration liveDelay);
         void setStateIfCurrentStartAction(EnigmaPlayerState state);
     }
 }

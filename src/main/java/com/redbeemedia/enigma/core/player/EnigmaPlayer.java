@@ -333,11 +333,14 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                 }
 
                 @Override
-                public void loadIntoPlayerImplementation(String manifestUrl, IPlayResultHandler playResultHandler, JSONObject jsonObject, IPlaybackProperties playbackProperties) {
+                public void loadIntoPlayerImplementation(String manifestUrl, IPlayResultHandler playResultHandler, JSONObject jsonObject, IPlaybackProperties playbackProperties, Duration liveDelay) {
                     stateMachine.setState(EnigmaPlayerState.LOADING);
 
                     IContractRestrictions contractRestrictions = OpenContainerUtil.getValueSynchronized(currentPlaybackSession).getContractRestrictions();
-                    IPlayerImplementationControls.ILoadRequest loadRequest = new PlayerImplementationLoadRequest(manifestUrl, contractRestrictions);
+                    PlayerImplementationLoadRequest loadRequest = new PlayerImplementationLoadRequest(manifestUrl, contractRestrictions);
+                    if(liveDelay != null) {
+                        loadRequest.setLiveDelay(liveDelay);
+                    }
                     environment.playerImplementationControls.load(loadRequest, new StartPlaybackControlResultHandler(playResultHandler, jsonObject, playbackProperties.getPlayFrom(), environment.playerImplementationControls) {
                         @Override
                         protected void onLogDebug(String message) {

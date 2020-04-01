@@ -80,6 +80,8 @@ import java.util.UUID;
                     }
                     String manifestUrl = usableMediaFormat.getString("mediaLocator");
 
+                    final Duration liveDelay = usableMediaFormat.has("liveDelay") ? Duration.millis(usableMediaFormat.getLong("liveDelay")) : null;
+
                     String playbackSessionId = jsonObject.optString("playSessionId", UUID.randomUUID().toString());
                     StreamInfo streamInfo = new StreamInfo(jsonObject.optJSONObject("streamInfo"));
                     EnigmaContractRestrictions contractRestrictions = EnigmaContractRestrictions.createWithDefaults(jsonObject.optJSONObject("contractRestrictions"));
@@ -91,7 +93,7 @@ import java.util.UUID;
                             IInternalPlaybackSession playbackSession = new InternalPlaybackSession(new InternalPlaybackSession.ConstructorArgs(session, playbackSessionId, timeProvider, streamInfo, streamPrograms, playbackSessionInfo, contractRestrictions, entitlementProvider));
                             playerConnector.deliverPlaybackSession(playbackSession);
 
-                            playerConnector.loadIntoPlayerImplementation(manifestUrl, playResultHandler, jsonObject, playbackProperties);
+                            playerConnector.loadIntoPlayerImplementation(manifestUrl, playResultHandler, jsonObject, playbackProperties, liveDelay);
                         }
                     };
 

@@ -2,6 +2,7 @@ package com.redbeemedia.enigma.core.player;
 
 import com.redbeemedia.enigma.core.audio.IAudioTrack;
 import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
+import com.redbeemedia.enigma.core.time.Duration;
 
 /**
  * <h3>NOTE</h3>
@@ -42,5 +43,8 @@ public interface IPlayerImplementationControls {
         Integer getMaxBitrate();
         /** <code>null</code> indicates no restriction. */
         Integer getMaxResoultionHeight();
+
+        /** <code>null</code> indicates no special request. **/
+        Duration getLiveDelay();
     }
 }

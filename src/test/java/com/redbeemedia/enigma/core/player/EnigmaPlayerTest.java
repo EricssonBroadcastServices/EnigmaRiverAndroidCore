@@ -43,6 +43,7 @@ import com.redbeemedia.enigma.core.task.TaskException;
 import com.redbeemedia.enigma.core.testutil.Counter;
 import com.redbeemedia.enigma.core.testutil.Flag;
 import com.redbeemedia.enigma.core.testutil.InstanceOfMatcher;
+import com.redbeemedia.enigma.core.time.Duration;
 import com.redbeemedia.enigma.core.time.ITimeProvider;
 import com.redbeemedia.enigma.core.time.MockTimeProvider;
 import com.redbeemedia.enigma.core.util.MockHandler;
@@ -113,13 +114,12 @@ public class EnigmaPlayerTest {
         Assert.assertTrue(startCalled.isTrue());
     }
 
-    private static JSONObject createFormatJson(String mediaLocator, String format) throws JSONException {
-        return createFormatJson(mediaLocator, format, null);
-    }
-
-    private static JSONObject createFormatJson(String mediaLocator, String format, String drmKey) throws JSONException {
+    private static JSONObject createFormatJson(String mediaLocator, String format, String drmKey, Long liveDelay) throws JSONException {
         JSONObject mediaFormat = new JSONObject();
         mediaFormat.put("mediaLocator", mediaLocator);
+        if(liveDelay != null) {
+            mediaFormat.put("liveDelay", liveDelay.longValue());
+        }
         mediaFormat.put("format", format);
         if(drmKey != null) {
             JSONObject drm = new JSONObject();
@@ -928,6 +928,50 @@ public class EnigmaPlayerTest {
         playerImplementation.position = 0; //Update position to seeked
     }
 
+    @Test
+    public void testLiveDelay() throws JSONException {
+        MockHttpHandler httpHandler = new MockHttpHandler();
+        MockPlayResponse mockPlayResponse = new MockPlayResponse();
+        mockPlayResponse.formats.clear();
+        mockPlayResponse.addFormat("https://media.example.com", "DASH", EnigmaMediaFormat.DrmTechnology.WIDEVINE.getKey(), 9483);
+        mockPlayResponse.streamInfoData.live = true;
+        queuePlayResponse(httpHandler, mockPlayResponse);
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(httpHandler));
+
+        final Counter loadCalled = new Counter();
+        IPlayerImplementation playerImplementation = new MockPlayerImplementation() {
+            @Override
+            public void install(IEnigmaPlayerEnvironment environment) {
+                super.install(environment);
+                environment.setMediaFormatSupportSpec(new IMediaFormatSupportSpec() {
+                    @Override
+                    public boolean supports(EnigmaMediaFormat enigmaMediaFormat) {
+                        return true;
+                    }
+                });
+            }
+
+            @Override
+            public void load(ILoadRequest loadRequest, IPlayerImplementationControlResultHandler resultHandler) {
+                Duration liveDelay = loadRequest.getLiveDelay();
+                Assert.assertNotNull(liveDelay);
+                Assert.assertEquals(9483, liveDelay.inWholeUnits(Duration.Unit.MILLISECONDS));
+                loadCalled.count();
+            }
+        };
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayerWithMockedTimeProvider(new MockSession(), playerImplementation);
+
+        loadCalled.assertNone();
+        enigmaPlayer.play(new PlayRequest(new MockPlayable("program1"), new BasePlayResultHandler() {
+            @Override
+            public void onError(EnigmaError error) {
+                Assert.fail(error.getTrace());
+            }
+        }));
+
+        loadCalled.assertOnce();
+    }
+
     public static class EnigmaPlayerWithMockedTimeProvider extends EnigmaPlayer {
         public EnigmaPlayerWithMockedTimeProvider(ISession session, IPlayerImplementation playerImplementation) {
             super(session, playerImplementation);
@@ -968,7 +1012,7 @@ public class EnigmaPlayerTest {
         JSONObject response = new JSONObject();
         JSONArray formatArray = new JSONArray();
         for(MockPlayResponse.MockFormat format : playResponse.formats) {
-            formatArray.put(createFormatJson(format.mediaLocator, format.format, format.drmKey));
+            formatArray.put(createFormatJson(format.mediaLocator, format.format, format.drmKey, format.liveDelay));
         }
         response.put("formats", formatArray);
 
@@ -991,10 +1035,15 @@ public class EnigmaPlayerTest {
             formats.add(new MockFormat(mediaLocator, format, drmKey));
         }
 
+        public void addFormat(String mediaLocator, String format, String drmKey, long liveDelay) {
+            formats.add(new MockFormat(mediaLocator, format, drmKey).setLiveDelay(liveDelay));
+        }
+
         private static class MockFormat {
             public String mediaLocator;
             public String format;
             public String drmKey;
+            public Long liveDelay = null;
 
             public MockFormat(String format) {
                 this("https://media.example.com?format="+format, format);
@@ -1008,6 +1057,11 @@ public class EnigmaPlayerTest {
                 this.mediaLocator = mediaLocator;
                 this.format = format;
                 this.drmKey = drmKey;
+            }
+
+            public MockFormat setLiveDelay(long liveDelay) {
+                this.liveDelay = liveDelay;
+                return this;
             }
         }
 
