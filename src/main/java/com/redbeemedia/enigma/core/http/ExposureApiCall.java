@@ -1,8 +1,5 @@
 package com.redbeemedia.enigma.core.http;
 
-import com.redbeemedia.enigma.core.businessunit.IBusinessUnit;
-import com.redbeemedia.enigma.core.session.ISession;
-
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -26,6 +23,7 @@ public class ExposureApiCall implements IHttpCall {
     public void prepare(IHttpConnection connection) {
         connection.setHeader("Content-Type", "application/json");
         connection.setHeader("Accept", "application/json");
+        connection.setDoOutput(jsonBody != null);
     }
 
     @Override

@@ -247,7 +247,9 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                         environment.playerImplementationControls.start(new PlayResultControlResultHandler(playResultHandler) {
                             @Override
                             public void onDone() {
-                                playResultHandler.onStarted(null); //TODO provide PlaybackSession
+                                IInternalPlaybackSession playbackSession = new MinimalPlaceholderPlaybackSession();
+                                replacePlaybackSession(playbackSession);
+                                playResultHandler.onStarted(playbackSession);
                             }
                         });
                     } catch (RuntimeException e) {
