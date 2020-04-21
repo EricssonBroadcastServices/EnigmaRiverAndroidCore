@@ -73,6 +73,8 @@ import javax.net.ssl.HttpsURLConnection;
                     }
                 } else if (httpError.getHttpCode() == HttpsURLConnection.HTTP_NOT_FOUND) {
                     resultHandler.onError(new UnknownBusinessUnitError());
+                } else if (httpError.getHttpCode() == 422) {
+                    resultHandler.onError(new InvalidJsonToServerError("Server responded "+httpError));
                 } else {
                     resultHandler.onError(new UnexpectedHttpStatusError(new HttpStatus(httpError.getHttpCode(), httpError.getMessage())));
                 }

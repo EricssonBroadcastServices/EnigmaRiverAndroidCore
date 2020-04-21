@@ -37,7 +37,7 @@ public class EnigmaLogin {
     public void login(final ILoginRequest loginRequest) {
         URL loginUrl;
         try {
-            loginUrl = loginRequest.getTargetUrl(businessUnit.getApiBaseUrl()).toURL();
+            loginUrl = loginRequest.getTargetUrl(businessUnit).toURL();
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }

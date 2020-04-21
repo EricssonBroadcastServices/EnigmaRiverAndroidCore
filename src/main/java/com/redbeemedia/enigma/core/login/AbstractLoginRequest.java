@@ -1,5 +1,6 @@
 package com.redbeemedia.enigma.core.login;
 
+import com.redbeemedia.enigma.core.businessunit.IBusinessUnit;
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.http.IHttpConnection;
 import com.redbeemedia.enigma.core.util.UrlPath;
@@ -25,6 +26,11 @@ import java.net.MalformedURLException;
     @Override
     public UrlPath getTargetUrl(UrlPath authenticationBaseUrl) throws MalformedURLException {
         return authenticationBaseUrl.append(path);
+    }
+
+    @Override
+    public UrlPath getTargetUrl(IBusinessUnit businessUnit) throws MalformedURLException {
+        return getTargetUrl(businessUnit.getApiBaseUrl());
     }
 
     @Override
