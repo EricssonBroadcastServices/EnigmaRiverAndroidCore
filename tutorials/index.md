@@ -78,3 +78,4 @@ The following tutorials provide in-depth information about different areas of in
 [Timeline API](advanced_topics/timeline.md)<br/>
 [EnigmaPlayerState](advanced_topics/enigma_player_state.md)<br/>
 [Playback Session](advanced_topics/playback_session.md)<br/>
+[Live drift correction (ExoPlayer)](advanced_topics/drift_correction.md)<br/>
