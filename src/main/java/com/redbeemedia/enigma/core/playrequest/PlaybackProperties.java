@@ -48,7 +48,7 @@ public final class PlaybackProperties implements IPlaybackProperties, Parcelable
         @Override
         public PlaybackProperties createFromParcel(Parcel source) {
             PlaybackProperties playbackProperties = new PlaybackProperties();
-            playbackProperties.playFrom = source.readParcelable(null);
+            playbackProperties.playFrom = source.readParcelable(getClass().getClassLoader());
             return playbackProperties;
         }
 
