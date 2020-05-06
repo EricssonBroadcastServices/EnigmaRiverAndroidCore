@@ -5,6 +5,7 @@ import android.app.Application;
 import com.redbeemedia.enigma.core.BuildConfig;
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleManager;
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleManagerFactory;
+import com.redbeemedia.enigma.core.context.exception.ContextInitializationException;
 import com.redbeemedia.enigma.core.epg.IEpgLocator;
 import com.redbeemedia.enigma.core.http.DefaultHttpHandler;
 import com.redbeemedia.enigma.core.http.IHttpHandler;
@@ -16,18 +17,25 @@ import com.redbeemedia.enigma.core.util.device.IDeviceInfo;
 public final class EnigmaRiverContext {
     private static volatile EnigmaRiverInitializedContext initializedContext = null;
 
-    public static synchronized void initialize(Application application, String exposureBaseUrl) {
+    public static synchronized void initialize(Application application, String exposureBaseUrl) throws ContextInitializationException {
         EnigmaRiverContext.initialize(application, new EnigmaRiverContextInitialization(exposureBaseUrl));
     }
 
-    public static synchronized void initialize(Application application, EnigmaRiverContextInitialization initialization) {
-        if(application == null) {
-            throw new NullPointerException("application was null");
-        }
-        if(initializedContext == null) {
-            initializedContext = new EnigmaRiverInitializedContext(application, initialization);
-        } else {
-            throw new IllegalStateException("EnigmaRiverContext already initialized.");
+    public static synchronized void initialize(Application application, EnigmaRiverContextInitialization initialization) throws ContextInitializationException {
+        try {
+            if(application == null) {
+                throw new NullPointerException("application was null");
+            }
+            if(initializedContext == null) {
+                initializedContext = new EnigmaRiverInitializedContext(application, initialization);
+                EnigmaModuleInitializer.initializeModules();
+            } else {
+                throw new IllegalStateException("EnigmaRiverContext already initialized.");
+            }
+        } catch (ContextInitializationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ContextInitializationException(e);
         }
     }
 
@@ -71,7 +79,7 @@ public final class EnigmaRiverContext {
 
     //Version if the core library
     public static String getVersion() {
-        String version = "r3.0.4-BETA-3";
+        String version = "r3.0.4-BETA-4";
         if(version.contains("REPLACE_WITH_RELEASE_VERSION")) {
             return "dev-snapshot-"+BuildConfig.VERSION_NAME;
         } else {
@@ -183,8 +191,7 @@ public final class EnigmaRiverContext {
                 this.epgLocator = initialization.getEpgLocator();
                 ProcessLifecycleHandler.get().initialize(application);
             } catch (Exception e) {
-                //TODO throw ContextInitializationException
-                throw new RuntimeException(e);
+                throw new ContextInitializationException(e);
             }
         }
     }

@@ -23,7 +23,7 @@ public class ApiKeyLoginRequestTest {
 
         ApiKeyLoginRequest apiKeyLoginRequest = new ApiKeyLoginRequest("testUser_dh5d","secretApiKey",new MockLoginResultHandler());
         UrlPath targetUrl = apiKeyLoginRequest.getTargetUrl(new BusinessUnit("Mocky", "McMockface"));
-        Assert.assertEquals(new URL("http://exposure-mock-login/api/v2/customer/Mocky/businessunit/McMockface/auth/session"), targetUrl.toURL());
+        Assert.assertEquals("http://exposure-mock-login/api/v2/customer/Mocky/businessunit/McMockface/auth/session", targetUrl.toURL().toExternalForm());
     }
 
     @Test
