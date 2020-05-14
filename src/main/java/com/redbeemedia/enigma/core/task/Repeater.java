@@ -12,77 +12,28 @@ package com.redbeemedia.enigma.core.task;
  * </p>
  */
 public class Repeater {
-    private final Runnable runnable;
+    private static volatile IRepeaterImplementation.Factory implementationFactory = new IRepeaterImplementation.Factory() {
+        @Override
+        public IRepeaterImplementation create(ITaskFactory taskFactory, long delayMillis, Runnable runnable) {
+            return new RepeaterImplementation(taskFactory, delayMillis, runnable);
+        }
+    };
 
-    private ITaskFactory taskFactory;
-    private ITask queuedTask;
-    private long delayMillis;
-    private boolean enabled = false;
+    public static void setImplementation(IRepeaterImplementation.Factory factory) {
+        implementationFactory = factory;
+    }
+
+    private final IRepeaterImplementation implementation;
 
     public Repeater(ITaskFactory taskFactory, long delayMillis, Runnable runnable) {
-        this.taskFactory = taskFactory;
-        this.delayMillis = delayMillis;
-        this.runnable = runnable;
+        this.implementation = implementationFactory.create(taskFactory, delayMillis, runnable);
     }
 
-    public synchronized void setEnabled(boolean enabled) {
-        boolean changed = (this.enabled != enabled);
-        this.enabled = enabled;
-        if(changed) {
-            if(!enabled) {
-                stop();
-            } else {
-                try {
-                    taskFactory.newTask(() -> executeNow()).start();
-                } catch (TaskException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
+    public void setEnabled(boolean enabled) {
+        implementation.setEnabled(enabled);
     }
 
-    public synchronized void executeNow() {
-        if(queuedTask != null) {
-            try {
-                queuedTask.cancel(0);
-            } catch (TaskException e) {
-                e.printStackTrace();
-            }
-        }
-
-        runnable.run();
-
-        if(enabled) {
-            final ITask[] me = new ITask[1];
-            me[0] = taskFactory.newTask(new Runnable() {
-                @Override
-                public void run() {
-                    synchronized (Repeater.this) {
-                        if (me[0] == queuedTask && enabled) {
-                            queuedTask = null;
-                            executeNow();
-                        }
-                    }
-                }
-            });
-            queuedTask = me[0];
-            try {
-                queuedTask.startDelayed(delayMillis);
-
-            } catch (TaskException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private synchronized void stop() {
-        if(queuedTask != null) {
-            try {
-                queuedTask.cancel(0);
-                queuedTask = null;
-            } catch (TaskException e) {
-                e.printStackTrace();
-            }
-        }
+    public void executeNow() {
+        implementation.executeNow();
     }
 }
