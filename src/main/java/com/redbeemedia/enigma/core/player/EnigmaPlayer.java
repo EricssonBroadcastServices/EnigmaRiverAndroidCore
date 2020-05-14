@@ -116,6 +116,8 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                 }
                 playerImplementation.release();
                 ((ServerTimeService) timeProvider).stop();
+                timeline.repeater.setEnabled(false); //TODO 1. Add release on enigmaPlayer so user can do that manually
+                                                     //TODO 2. Delegate taskManager through EnigmaPlayer so eveything can be routed through EnigmaPlayer
             }
         };
         this.timeProvider = newTimeProvider(session);
