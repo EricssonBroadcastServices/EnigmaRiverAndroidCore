@@ -75,7 +75,8 @@ import java.util.Map;
 public class EnigmaPlayer implements IEnigmaPlayer {
     private static final String TAG = "EnigmaPlayer";
     private static final EnigmaMediaFormat[] FORMAT_PREFERENCE_ORDER = new EnigmaMediaFormat[]{new EnigmaMediaFormat(StreamFormat.DASH, DrmTechnology.WIDEVINE),
-                                                                                               new EnigmaMediaFormat(StreamFormat.DASH, DrmTechnology.NONE)};
+                                                                                               new EnigmaMediaFormat(StreamFormat.DASH, DrmTechnology.NONE),
+                                                                                               new EnigmaMediaFormat(StreamFormat.HLS, DrmTechnology.NONE)};
 
     private ISession session;
     private IPlayerImplementation playerImplementation;
