@@ -1,7 +1,6 @@
 package com.redbeemedia.enigma.core.virtualui.impl;
 
 import com.redbeemedia.enigma.core.player.ControlLogic;
-import com.redbeemedia.enigma.core.player.EnigmaPlayerState;
 import com.redbeemedia.enigma.core.restriction.ContractRestriction;
 import com.redbeemedia.enigma.core.restriction.IContractRestrictions;
 
@@ -18,7 +17,7 @@ import com.redbeemedia.enigma.core.restriction.IContractRestrictions;
     @Override
     protected boolean calculateEnabled(IVirtualButtonContainer container) {
         ControlLogic.IValidationResults<Void> validationResults = ControlLogic.validatePause(container.getPlayerState(), container.getPlaybackSession());
-        return validationResults.isSuccess() && container.getPlayerState() == EnigmaPlayerState.PLAYING;
+        return validationResults.isSuccess() && aimsToBePlayingAlready(container.getPlayerState());
     }
 
     @Override

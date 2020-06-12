@@ -9,4 +9,5 @@ public interface IProgram {
     long getEndUtcMillis();
     IPlayable getPlayable();
     String getAssetId();
+    String getProgramId();
 }

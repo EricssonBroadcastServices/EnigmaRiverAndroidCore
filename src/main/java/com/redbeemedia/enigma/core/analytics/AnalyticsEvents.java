@@ -15,6 +15,19 @@ package com.redbeemedia.enigma.core.analytics;
     public static final AnalyticsAppBackgroundedEvent APP_BACKGROUNDED = new AnalyticsAppBackgroundedEvent();
     public static final AnalyticsAppResumedEvent APP_RESUMED = new AnalyticsAppResumedEvent();
     public static final AnalyticsGracePeriodEndedEvent GRACE_PERIOD_ENDED = new AnalyticsGracePeriodEndedEvent();
+    public static final AnalyticsBitrateChangedEvent BITRATE_CHANGED = new AnalyticsBitrateChangedEvent();
+    public static final AnalyticsBufferingStartedEvent BUFFERING_STARTED = new AnalyticsBufferingStartedEvent();
+    public static final AnalyticsBufferingStoppedEvent BUFFERING_STOPPED = new AnalyticsBufferingStoppedEvent();
+    public static final AnalyticsScrubbedToEvent SCRUBBED_TO = new AnalyticsScrubbedToEvent();
+    public static final AnalyticsProgramChangedEvent PROGRAM_CHANGED = new AnalyticsProgramChangedEvent();
+
+    private static <E extends IAnalyticsEventType,T> IEventProperty<E,T> mandatory(String name) {
+        return EventProperty.newMandatoryProperty(name);
+    }
+
+    private static <E extends IAnalyticsEventType,T> IEventProperty<E,T> optional(String name) {
+        return EventProperty.newProperty(name, true);
+    }
 
     public static class AnalyticsErrorEvent implements IAnalyticsEventType {
         @Override
@@ -22,9 +35,9 @@ package com.redbeemedia.enigma.core.analytics;
             return "Playback.Error";
         }
 
-        public final EventProperty<AnalyticsErrorEvent, Integer> CODE = new EventProperty<>("Code");
-        public final EventProperty<AnalyticsErrorEvent, String> MESSAGE = new EventProperty<>("Message");
-        public final EventProperty<AnalyticsErrorEvent, String> DETAILS = new EventProperty<>("Details");
+        public final IEventProperty<AnalyticsErrorEvent, Integer> CODE = mandatory("Code");
+        public final IEventProperty<AnalyticsErrorEvent, String> MESSAGE = mandatory("Message");
+        public final IEventProperty<AnalyticsErrorEvent, String> DETAILS = mandatory("Details");
     }
 
 
@@ -34,13 +47,13 @@ package com.redbeemedia.enigma.core.analytics;
             return "Device.Info";
         }
 
-        public final EventProperty<AnalyticsDeviceInfoEvent, String> DEVICE_ID = new EventProperty<>("DeviceId");
-        public final EventProperty<AnalyticsDeviceInfoEvent, String> DEVICE_MODEL = new EventProperty<>("DeviceModel");
-        public final EventProperty<AnalyticsDeviceInfoEvent, String> OS = new EventProperty<>("OS");
-        public final EventProperty<AnalyticsDeviceInfoEvent, String> OS_VERSION = new EventProperty<>("OSVersion");
-        public final EventProperty<AnalyticsDeviceInfoEvent, String> MANUFACTURER = new EventProperty<>("Manufacturer");
-        public final EventProperty<AnalyticsDeviceInfoEvent, Boolean> IS_ROOTED = new EventProperty<>("IsRooted");
-        public final EventProperty<AnalyticsDeviceInfoEvent, String> WIDEVINE_SECURITY_LEVEL = new EventProperty<>("WidevineSecurityLevel");
+        public final IEventProperty<AnalyticsDeviceInfoEvent, String> DEVICE_ID = mandatory("DeviceId");
+        public final IEventProperty<AnalyticsDeviceInfoEvent, String> DEVICE_MODEL = mandatory("DeviceModel");
+        public final IEventProperty<AnalyticsDeviceInfoEvent, String> OS = mandatory("OS");
+        public final IEventProperty<AnalyticsDeviceInfoEvent, String> OS_VERSION = mandatory("OSVersion");
+        public final IEventProperty<AnalyticsDeviceInfoEvent, String> MANUFACTURER = mandatory("Manufacturer");
+        public final IEventProperty<AnalyticsDeviceInfoEvent, Boolean> IS_ROOTED = mandatory("IsRooted");
+        public final IEventProperty<AnalyticsDeviceInfoEvent, String> WIDEVINE_SECURITY_LEVEL = mandatory("WidevineSecurityLevel");
     }
 
 
@@ -50,9 +63,9 @@ package com.redbeemedia.enigma.core.analytics;
             return "Playback.Created";
         }
 
-        public final EventProperty<AnalyticsCreatedEvent, String> PLAYER = new EventProperty<>("Player");
-        public final EventProperty<AnalyticsCreatedEvent, String> VERSION = new EventProperty<>("Version");
-        public final EventProperty<AnalyticsCreatedEvent, String> ASSET_ID = new EventProperty<>("AssetId", true);
+        public final IEventProperty<AnalyticsCreatedEvent, String> PLAYER = mandatory("Player");
+        public final IEventProperty<AnalyticsCreatedEvent, String> VERSION = mandatory("Version");
+        public final IEventProperty<AnalyticsCreatedEvent, String> ASSET_ID = optional("AssetId");
     }
 
     public static class AnalyticsHandshakeStartedEvent implements IAnalyticsEventType {
@@ -60,7 +73,7 @@ package com.redbeemedia.enigma.core.analytics;
         public String getName() {
             return "Playback.HandshakeStarted";
         }
-        public final EventProperty<AnalyticsHandshakeStartedEvent, String> ASSET_ID = new EventProperty<>("AssetId");
+        public final IEventProperty<AnalyticsHandshakeStartedEvent, String> ASSET_ID = mandatory("AssetId");
     }
 
     public static class AnalyticsPlayerReadyEvent implements IAnalyticsEventType {
@@ -68,9 +81,9 @@ package com.redbeemedia.enigma.core.analytics;
         public String getName() {
             return "Playback.PlayerReady";
         }
-        public final EventProperty<AnalyticsPlayerReadyEvent, Long> OFFSET_TIME = new EventProperty<>("OffsetTime");
-        public final EventProperty<AnalyticsPlayerReadyEvent, String> TECHNOLOGY = new EventProperty<>("Technology");
-        public final EventProperty<AnalyticsPlayerReadyEvent, String> TECH_VERSION = new EventProperty<>("TechVersion");
+        public final IEventProperty<AnalyticsPlayerReadyEvent, Long> OFFSET_TIME = mandatory("OffsetTime");
+        public final IEventProperty<AnalyticsPlayerReadyEvent, String> TECHNOLOGY = mandatory("Technology");
+        public final IEventProperty<AnalyticsPlayerReadyEvent, String> TECH_VERSION = mandatory("TechVersion");
     }
 
     public static class AnalyticsStartedEvent implements IAnalyticsEventType {
@@ -78,10 +91,12 @@ package com.redbeemedia.enigma.core.analytics;
         public String getName() {
             return "Playback.Started";
         }
-        public final EventProperty<AnalyticsStartedEvent, Long> OFFSET_TIME = new EventProperty<>("OffsetTime");
-        public final EventProperty<AnalyticsStartedEvent, String> PLAY_MODE = new EventProperty<>("PlayMode");
-        public final EventProperty<AnalyticsStartedEvent, String> MEDIA_LOCATOR = new EventProperty<>("MediaLocator");
-        public final EventProperty<AnalyticsStartedEvent, Long> REFERENCE_TIME = new EventProperty<>("ReferenceTime", true);
+        public final IEventProperty<AnalyticsStartedEvent, Long> OFFSET_TIME = mandatory("OffsetTime");
+        public final IEventProperty<AnalyticsStartedEvent, String> PLAY_MODE = mandatory("PlayMode");
+        public final IEventProperty<AnalyticsStartedEvent, String> MEDIA_LOCATOR = mandatory("MediaLocator");
+        public final IEventProperty<AnalyticsStartedEvent, Long> REFERENCE_TIME = optional("ReferenceTime");
+        public final IEventProperty<AnalyticsStartedEvent, Integer> BITRATE = optional("Bitrate");
+        public final IEventProperty<AnalyticsStartedEvent, String> PROGRAM_ID = optional("ProgramId");
     }
 
     public static class AnalyticsPausedEvent implements IAnalyticsEventType {
@@ -89,7 +104,7 @@ package com.redbeemedia.enigma.core.analytics;
         public String getName() {
             return "Playback.Paused";
         }
-        public final EventProperty<AnalyticsPausedEvent, Long> OFFSET_TIME = new EventProperty<>("OffsetTime");
+        public final IEventProperty<AnalyticsPausedEvent, Long> OFFSET_TIME = mandatory("OffsetTime");
     }
 
     public static class AnalyticsResumedEvent implements IAnalyticsEventType {
@@ -97,7 +112,7 @@ package com.redbeemedia.enigma.core.analytics;
         public String getName() {
             return "Playback.Resumed";
         }
-        public final EventProperty<AnalyticsResumedEvent, Long> OFFSET_TIME = new EventProperty<>("OffsetTime");
+        public final IEventProperty<AnalyticsResumedEvent, Long> OFFSET_TIME = mandatory("OffsetTime");
     }
 
     public static class AnalyticsCompletedEvent implements IAnalyticsEventType {
@@ -105,7 +120,7 @@ package com.redbeemedia.enigma.core.analytics;
         public String getName() {
             return "Playback.Completed";
         }
-        public final EventProperty<AnalyticsCompletedEvent, Long> OFFSET_TIME = new EventProperty<>("OffsetTime");
+        public final IEventProperty<AnalyticsCompletedEvent, Long> OFFSET_TIME = mandatory("OffsetTime");
     }
 
     public static class AnalyticsAbortedEvent implements IAnalyticsEventType {
@@ -113,7 +128,7 @@ package com.redbeemedia.enigma.core.analytics;
         public String getName() {
             return "Playback.Aborted";
         }
-        public final EventProperty<AnalyticsAbortedEvent, Long> OFFSET_TIME = new EventProperty<>("OffsetTime");
+        public final IEventProperty<AnalyticsAbortedEvent, Long> OFFSET_TIME = mandatory("OffsetTime");
     }
 
     public static class AnalyticsHeartbeatEvent implements IAnalyticsEventType {
@@ -121,7 +136,7 @@ package com.redbeemedia.enigma.core.analytics;
         public String getName() {
             return "Playback.Heartbeat";
         }
-        public final EventProperty<AnalyticsHeartbeatEvent, Long> OFFSET_TIME = new EventProperty<>("OffsetTime");
+        public final IEventProperty<AnalyticsHeartbeatEvent, Long> OFFSET_TIME = mandatory("OffsetTime");
     }
 
 
@@ -130,7 +145,7 @@ package com.redbeemedia.enigma.core.analytics;
         public String getName() {
             return "Playback.AppBackgrounded";
         }
-        public final EventProperty<AnalyticsAppBackgroundedEvent, Long> OFFSET_TIME = new EventProperty<>("OffsetTime");
+        public final IEventProperty<AnalyticsAppBackgroundedEvent, Long> OFFSET_TIME = mandatory("OffsetTime");
     }
 
     public static class AnalyticsAppResumedEvent implements IAnalyticsEventType {
@@ -138,7 +153,7 @@ package com.redbeemedia.enigma.core.analytics;
         public String getName() {
             return "Playback.AppResumed";
         }
-        public final EventProperty<AnalyticsAppResumedEvent, Long> OFFSET_TIME = new EventProperty<>("OffsetTime");
+        public final IEventProperty<AnalyticsAppResumedEvent, Long> OFFSET_TIME = mandatory("OffsetTime");
     }
 
     public static class AnalyticsGracePeriodEndedEvent implements IAnalyticsEventType {
@@ -146,7 +161,7 @@ package com.redbeemedia.enigma.core.analytics;
         public String getName() {
             return "Playback.GracePeriodEnded";
         }
-        public final EventProperty<AnalyticsGracePeriodEndedEvent, Long> OFFSET_TIME = new EventProperty<>("OffsetTime");
+        public final IEventProperty<AnalyticsGracePeriodEndedEvent, Long> OFFSET_TIME = mandatory("OffsetTime");
     }
 
     public static boolean isTerminal(IAnalyticsEventType eventType) {
@@ -155,5 +170,47 @@ package com.redbeemedia.enigma.core.analytics;
                 || eventType instanceof  AnalyticsAbortedEvent
                 || eventType instanceof  AnalyticsGracePeriodEndedEvent
                 ;
+    }
+
+    /*package-protected*/ static abstract class AbstractOffsetTimeAnalyticsEvent implements IAnalyticsEventType {
+        public final IEventProperty<AbstractOffsetTimeAnalyticsEvent, Long> OFFSET_TIME = mandatory("OffsetTime");
+    }
+
+    public static class AnalyticsBitrateChangedEvent extends AbstractOffsetTimeAnalyticsEvent {
+        public final IEventProperty<AnalyticsBitrateChangedEvent, Integer> BITRATE = mandatory("Bitrate");
+        @Override
+        public String getName() {
+            return "Playback.BitrateChanged";
+        }
+    }
+
+    public static class AnalyticsBufferingStartedEvent extends AbstractOffsetTimeAnalyticsEvent {
+        @Override
+        public String getName() {
+            return "Playback.BufferingStarted";
+        }
+    }
+
+    public static class AnalyticsBufferingStoppedEvent extends AbstractOffsetTimeAnalyticsEvent {
+        @Override
+        public String getName() {
+            return "Playback.BufferingStopped";
+        }
+    }
+
+    public static class AnalyticsScrubbedToEvent extends AbstractOffsetTimeAnalyticsEvent {
+        @Override
+        public String getName() {
+            return "Playback.ScrubbedTo";
+        }
+    }
+
+    public static class AnalyticsProgramChangedEvent extends AbstractOffsetTimeAnalyticsEvent {
+        public final IEventProperty<AnalyticsProgramChangedEvent, String> PROGRAM_ID = mandatory("ProgramId");
+
+        @Override
+        public String getName() {
+            return "Playback.ProgramChanged";
+        }
     }
 }

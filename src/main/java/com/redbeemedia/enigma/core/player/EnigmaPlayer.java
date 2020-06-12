@@ -58,6 +58,7 @@ import com.redbeemedia.enigma.core.util.OpenContainer;
 import com.redbeemedia.enigma.core.util.OpenContainerUtil;
 import com.redbeemedia.enigma.core.util.ProxyCallback;
 import com.redbeemedia.enigma.core.util.RuntimeExceptionHandler;
+import com.redbeemedia.enigma.core.video.IVideoTrack;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -538,7 +539,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                         public void onPlaybackStarted() {
                             synchronized (currentPlaybackStartAction) {
                                 if(currentPlaybackStartAction.value != null) {
-                                    currentPlaybackStartAction.value.onStarted(currentPlaybackSession.value);
+                                    currentPlaybackStartAction.value.onStarted(OpenContainerUtil.getValueSynchronized(currentPlaybackSession));
                                     currentPlaybackStartAction.value = null;
                                 }
                             }
@@ -549,6 +550,13 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                         public void onPlaybackPaused() {
                             if(stateMachine.getState() == EnigmaPlayerState.PLAYING) {
                                 stateMachine.setState(EnigmaPlayerState.PAUSED);
+                            }
+                        }
+
+                        @Override
+                        public void onPlaybackBuffering() {
+                            if(stateMachine.getState() == EnigmaPlayerState.PLAYING) {
+                                stateMachine.setState(EnigmaPlayerState.BUFFERING);
                             }
                         }
 
@@ -594,6 +602,11 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                         @Override
                         public void onSubtitleTrackSelectionChanged(ISubtitleTrack track) {
                             propagateToCurrentPlaybackSession(track, IInternalPlaybackSession::setSelectedSubtitleTrack);
+                        }
+
+                        @Override
+                        public void onVideoTrackSelectionChanged(IVideoTrack track) {
+                            propagateToCurrentPlaybackSession(track, IInternalPlaybackSession::setSelectedVideoTrack);
                         }
                     };
                 }
@@ -741,13 +754,18 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             });
         }
 
+        private void afterSeekToSuccess(IInternalPlaybackSession playbackSession) {
+            sendSeekEvent(playbackSession);
+            updatePlayingFromLive();
+        }
+
         @Override
         public void seekTo(long millis, IControlResultHandler resultHandler) {
             ControlResultHandlerAdapter controlResultHandler = wrapResultHandler(resultHandler);
             //We need to use  playerImplementationInternals.getCurrentPosition() so we need to run on UiThread (for exo).
             AndroidThreadUtil.runOnUiThread(() -> {
                 try {
-                    IPlaybackSession playbackSession = OpenContainerUtil.getValueSynchronized(currentPlaybackSession);
+                    IInternalPlaybackSession playbackSession = OpenContainerUtil.getValueSynchronized(currentPlaybackSession);
                     ITimelinePosition seekPos = environment.timelinePositionFactory.newPosition(millis);
 
                     boolean seekForward = false;
@@ -762,7 +780,9 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                     ControlLogic.IValidationResults<Void> validationResults = ControlLogic.validateSeek(seekForward, seekBackward, playbackSession);
                     if(validationResults.isSuccess()) {
                         environment.playerImplementationControls.seekTo(new IPlayerImplementationControls.TimelineRelativePosition(millis), controlResultHandler);
-                        controlResultHandler.runWhenDone(() -> updatePlayingFromLive());
+                        controlResultHandler.runWhenDone(() -> {
+                            afterSeekToSuccess(playbackSession);
+                        });
                     } else {
                         ((ControlLogic.IFailedValidationResults) validationResults).triggerCallback(controlResultHandler);
                         return;
@@ -774,17 +794,27 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             });
         }
 
+        private void sendSeekEvent(IInternalPlaybackSession playbackSession) {
+            synchronized (currentPlaybackSession) {
+                if(currentPlaybackSession.value != playbackSession) {
+                    return; //Stale event
+                } else {
+                    currentPlaybackSession.value.fireSeekCompleted();
+                }
+            }
+        }
+
         @Override
         public void seekTo(StreamPosition streamPosition, IControlResultHandler resultHandler) {
             ControlResultHandlerAdapter controlResultHandler = wrapResultHandler(resultHandler);
 
             try {
-                IPlaybackSession playbackSession = OpenContainerUtil.getValueSynchronized(currentPlaybackSession);
+                IInternalPlaybackSession playbackSession = OpenContainerUtil.getValueSynchronized(currentPlaybackSession);
                 ControlLogic.IValidationResults<IPlayerImplementationControls.ISeekPosition> validationResults = ControlLogic.validateSeek(streamPosition, playbackSession);
                 if(validationResults.isSuccess()) {
                     IPlayerImplementationControls.ISeekPosition seekPosition = validationResults.getRelevantData();
                     environment.playerImplementationControls.seekTo(seekPosition, controlResultHandler);
-                    controlResultHandler.runWhenDone(() -> updatePlayingFromLive());
+                    controlResultHandler.runWhenDone(() -> afterSeekToSuccess(playbackSession));
                 } else {
                     ((ControlLogic.IFailedValidationResults) validationResults).triggerCallback(controlResultHandler);
                     return;
@@ -1064,6 +1094,12 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         @Override
         public String getMediaLocator() {
             return mediaLocator;
+        }
+
+        @Override
+        public String getCurrentProgramId() {
+            IProgram currentProgram = timeline.programTracker.getCurrentProgram();
+            return currentProgram != null ? currentProgram.getProgramId() : null;
         }
     }
 

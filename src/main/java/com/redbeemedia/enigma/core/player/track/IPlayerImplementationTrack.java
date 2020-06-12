@@ -2,6 +2,7 @@ package com.redbeemedia.enigma.core.player.track;
 
 import com.redbeemedia.enigma.core.audio.IAudioTrack;
 import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
+import com.redbeemedia.enigma.core.video.IVideoTrack;
 
 /**
  * <h3>NOTE</h3>
@@ -15,4 +16,5 @@ import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
 public interface IPlayerImplementationTrack {
     ISubtitleTrack asSubtitleTrack();
     IAudioTrack asAudioTrack();
+    IVideoTrack asVideoTrack();
 }

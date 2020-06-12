@@ -14,6 +14,7 @@ import com.redbeemedia.enigma.core.util.Collector;
 import com.redbeemedia.enigma.core.util.HandlerWrapper;
 import com.redbeemedia.enigma.core.util.OpenContainer;
 import com.redbeemedia.enigma.core.util.OpenContainerUtil;
+import com.redbeemedia.enigma.core.video.IVideoTrack;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,8 +39,9 @@ import java.util.List;
     private final ListenerCollector listeners = new ListenerCollector();
     private final OpenContainer<List<ISubtitleTrack>> subtitleTracks = new OpenContainer<>(new ArrayList<>());
     private final OpenContainer<List<IAudioTrack>> audioTracks = new OpenContainer<>(new ArrayList<>());
-    private final OpenContainer<IAudioTrack> selectedAudioTrack = new OpenContainer<IAudioTrack>(null);
-    private final OpenContainer<ISubtitleTrack> selectedSubtitleTrack = new OpenContainer<ISubtitleTrack>(null);
+    private final OpenContainer<IAudioTrack> selectedAudioTrack = new OpenContainer<>(null);
+    private final OpenContainer<ISubtitleTrack> selectedSubtitleTrack = new OpenContainer<>(null);
+    private final OpenContainer<IVideoTrack> selectedVideoTrack = new OpenContainer<>(null);
     private final IContractRestrictions contractRestrictions = new IContractRestrictions() {
         @Override
         public <T> T getValue(IContractRestriction<T> restriction, T fallback) {
@@ -92,6 +94,11 @@ import java.util.List;
     }
 
     @Override
+    public void fireSeekCompleted() {
+        // REMEMBER Remember to send to listeners when such an event is exposed to app developers.
+    }
+
+    @Override
     public void setTracks(Collection<? extends IPlayerImplementationTrack> tracks) {
         List<IAudioTrack> newAudioTracks = new ArrayList<>();
         List<ISubtitleTrack> newSubtitleTracks = new ArrayList<>();
@@ -117,6 +124,11 @@ import java.util.List;
     @Override
     public void setSelectedAudioTrack(IAudioTrack track) {
         OpenContainerUtil.setValueSynchronized(selectedAudioTrack, track, listeners::onSelectedAudioTrackChanged);
+    }
+
+    @Override
+    public void setSelectedVideoTrack(IVideoTrack track) {
+        OpenContainerUtil.setValueSynchronized(selectedVideoTrack, track, null);
     }
 
     @Override

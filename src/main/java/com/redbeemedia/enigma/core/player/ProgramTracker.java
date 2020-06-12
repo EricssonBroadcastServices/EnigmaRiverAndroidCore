@@ -4,6 +4,7 @@ import com.redbeemedia.enigma.core.epg.IProgram;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.player.listener.BaseEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.util.OpenContainer;
+import com.redbeemedia.enigma.core.util.OpenContainerUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,6 +60,10 @@ import java.util.List;
         if(programChanged) {
             changeProgram(newCurrentProgram);
         }
+    }
+
+    public IProgram getCurrentProgram() {
+        return OpenContainerUtil.getValueSynchronized(currentProgram);
     }
 
     private void onProgramChanged(IProgram oldProgram, IProgram newProgram) {

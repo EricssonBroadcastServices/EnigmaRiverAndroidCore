@@ -31,9 +31,9 @@ IEnigmaPlayer player = ...;
 player.addListener(new BaseEnigmaPlayerListener() {
     @Override
     public void onStateChanged(EnigmaPlayerState from, EnigmaPlayerState to) {
-        if(to == EnigmaPlayerState.LOADING) {
+        if(to == EnigmaPlayerState.LOADING || to == EnigmaPlayerState.BUFFERING) {
             progressSpinner.show();
-        } else if(from == EnigmaPlayerState.LOADING) {
+        } else if(from == EnigmaPlayerState.LOADING || from == EnigmaPlayerState.BUFFERING) {
             progressSpinner.hide();
         }
     }

@@ -6,6 +6,7 @@ import com.redbeemedia.enigma.core.BuildConfig;
 import com.redbeemedia.enigma.core.analytics.AnalyticsException;
 import com.redbeemedia.enigma.core.analytics.AnalyticsHandler;
 import com.redbeemedia.enigma.core.analytics.AnalyticsReporter;
+import com.redbeemedia.enigma.core.analytics.IBufferingAnalyticsHandler;
 import com.redbeemedia.enigma.core.audio.IAudioTrack;
 import com.redbeemedia.enigma.core.context.AppForegroundListener;
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
@@ -44,6 +45,7 @@ import com.redbeemedia.enigma.core.util.Collector;
 import com.redbeemedia.enigma.core.util.HandlerWrapper;
 import com.redbeemedia.enigma.core.util.OpenContainer;
 import com.redbeemedia.enigma.core.util.OpenContainerUtil;
+import com.redbeemedia.enigma.core.video.IVideoTrack;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -63,7 +65,7 @@ import java.util.List;
     private static final String APP_FOREGROUND_MONITOR = "appForegroundMonitor";
 
     private final AnalyticsReporter analyticsReporter;
-    private final AnalyticsHandler analyticsHandler;
+    private final IBufferingAnalyticsHandler analyticsHandler;
     private final AppForegroundMonitor appForegroundMonitor;
     private final ITask analyticsHandlerTask;
     private final Repeater heartbeatRepeater;
@@ -79,6 +81,7 @@ import java.util.List;
     private final OpenContainer<ISubtitleTrack> selectedSubtitleTrack = new OpenContainer<>(null);
     private final OpenContainer<List<IAudioTrack>> audioTracks = new OpenContainer<>(new ArrayList<>());
     private final OpenContainer<IAudioTrack> selectedAudioTrack = new OpenContainer<>(null);
+    private final OpenContainer<IVideoTrack> selectedVideoTrack = new OpenContainer<>(null);
     private final OpenContainer<IContractRestrictions> contractRestrictions;
     private final OpenContainer<Boolean> seekAllowed = new OpenContainer<>(true);
 
@@ -110,7 +113,7 @@ import java.util.List;
             }
         });
         this.contractRestrictions = new OpenContainer<>(contractRestrictions);
-        this.analyticsHandler = new AnalyticsHandler(session, id, timeProvider);
+        this.analyticsHandler = newAnalyticsHandler(session, id, timeProvider);
         this.programServiceRepeater = new Repeater(getTaskFactory(PROGRAM_SERVICE_REPEATER), PROGRAM_SERVICE_ENTITLEMENT_CHECK_INTERVAL_MILLIS, programService::checkEntitlement);
         this.programServicePlayerListener = new BaseEnigmaPlayerListener() {
             @Override
@@ -157,7 +160,7 @@ import java.util.List;
             }
         });
         this.analyticsReporter = new AnalyticsReporter(timeProvider, analyticsHandler);
-        this.playerListener = new EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, streamInfo);
+        this.playerListener = new EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, streamInfo, selectedVideoTrack);
         this.heartbeatRepeater = new Repeater(getTaskFactory(HEARTBEAT_REPEATER), HEARTBEAT_RATE_MILLIS, new HeartbeatRunnable());
         this.appForegroundMonitor = new AppForegroundMonitor(getTaskFactory(APP_FOREGROUND_MONITOR));
 
@@ -184,6 +187,10 @@ import java.util.List;
         } else {
             throw new IllegalArgumentException(user+" not handled");
         }
+    }
+
+    protected IBufferingAnalyticsHandler newAnalyticsHandler(ISession session, String playbackSessionId, ITimeProvider timeProvider) {
+        return new AnalyticsHandler(session, playbackSessionId, timeProvider);
     }
 
     private void changeState(int newState) {
@@ -385,6 +392,16 @@ import java.util.List;
     }
 
     @Override
+    public void setSelectedVideoTrack(IVideoTrack track) {
+        OpenContainerUtil.setValueSynchronized(selectedVideoTrack, track, (oldValue, newValue) -> {
+            if(oldValue != null  // If oldValue was null this was the initial value and thus not a change
+               && newValue != null) {
+                analyticsReporter.playbackBitrateChanged(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo), newValue.getBitrate());
+            }
+        });
+    }
+
+    @Override
     public IPlayable getPlayable() {
         return playbackSessionInfo.getPlayable();
     }
@@ -398,6 +415,11 @@ import java.util.List;
         }
         analyticsReporter.playbackCompleted(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
         collector.onEndReached();
+    }
+
+    @Override
+    public void fireSeekCompleted() {
+        analyticsReporter.playbackScrubbedTo(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
     }
 
     @Override
@@ -537,11 +559,14 @@ import java.util.List;
         private final IPlaybackSessionInfo playbackSessionInfo;
         private final StreamInfo streamInfo;
         private boolean hasStartedAtLeastOnce = false;
+        private final OpenContainer<IVideoTrack> selectedVideoTrack;
+        private boolean programTrackingLost = false;
 
-        public EnigmaPlayerListenerForAnalytics(AnalyticsReporter analyticsReporter, IPlaybackSessionInfo playbackSessionInfo, StreamInfo streamInfo) {
+        public EnigmaPlayerListenerForAnalytics(AnalyticsReporter analyticsReporter, IPlaybackSessionInfo playbackSessionInfo, StreamInfo streamInfo, OpenContainer<IVideoTrack> selectedVideoTrack) {
             this.analyticsReporter = analyticsReporter;
             this.playbackSessionInfo = playbackSessionInfo;
             this.streamInfo = streamInfo;
+            this.selectedVideoTrack = selectedVideoTrack;
         }
 
         @Override
@@ -559,19 +584,48 @@ import java.util.List;
                         playbackSessionInfo.getPlayerTechnologyVersion());
             } else if(to == EnigmaPlayerState.PLAYING) {
                 if(hasStartedAtLeastOnce) {
-                    analyticsReporter.playbackResumed(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
+                    if(from != EnigmaPlayerState.BUFFERING) {
+                        analyticsReporter.playbackResumed(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
+                    }
                 } else {
                     hasStartedAtLeastOnce = true;
                     long playbackOffset = getCurrentPlaybackOffset(playbackSessionInfo, streamInfo);
                     String playMode = streamInfo.getPlayMode();
                     String mediaLocator = playbackSessionInfo.getMediaLocator();
                     Long referenceTime = streamInfo.isLiveStream() ? streamInfo.getStart(Duration.Unit.MILLISECONDS) : null;
-                    analyticsReporter.playbackStarted(playbackOffset, playMode, mediaLocator, referenceTime);
+                    IVideoTrack videoTrack = OpenContainerUtil.getValueSynchronized(selectedVideoTrack);
+                    Integer bitrate = null;
+                    if(videoTrack != null) {
+                        int videoTrackBitrate = videoTrack.getBitrate();
+                        if(videoTrackBitrate != -1) {
+                            bitrate = videoTrackBitrate;
+                        }
+                    }
+                    String programId = playbackSessionInfo.getCurrentProgramId();
+                    analyticsReporter.playbackStarted(playbackOffset, playMode, mediaLocator, referenceTime, bitrate, programId);
                 }
             } else if(to == EnigmaPlayerState.PAUSED) {
                 if(hasStartedAtLeastOnce) {
                     analyticsReporter.playbackPaused(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
                 }
+            } else if(to == EnigmaPlayerState.BUFFERING) {
+                analyticsReporter.playbackBufferingStarted(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
+            }
+
+            if(from == EnigmaPlayerState.BUFFERING) {
+                analyticsReporter.playbackBufferingStopped(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
+            }
+        }
+
+        @Override
+        public void onProgramChanged(IProgram from, IProgram to) {
+            if(from != null || programTrackingLost) {
+                programTrackingLost = (to == null);
+                String programId = null;
+                if(to != null) {
+                    programId = to.getProgramId();
+                }
+                analyticsReporter.playbackProgramChanged(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo), programId);
             }
         }
     }

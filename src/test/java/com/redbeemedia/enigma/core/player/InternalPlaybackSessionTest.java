@@ -3,6 +3,8 @@ package com.redbeemedia.enigma.core.player;
 import android.os.Handler;
 
 import com.redbeemedia.enigma.core.analytics.AnalyticsReporter;
+import com.redbeemedia.enigma.core.analytics.IBufferingAnalyticsHandler;
+import com.redbeemedia.enigma.core.analytics.MockAnalyticsHandler;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
 import com.redbeemedia.enigma.core.entitlement.EntitlementStatus;
@@ -21,6 +23,7 @@ import com.redbeemedia.enigma.core.player.controls.IEnigmaPlayerControls;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.timeline.ITimeline;
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
+import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.task.ITask;
 import com.redbeemedia.enigma.core.task.ITaskFactory;
 import com.redbeemedia.enigma.core.task.TaskException;
@@ -32,6 +35,10 @@ import com.redbeemedia.enigma.core.time.MockTimeProvider;
 import com.redbeemedia.enigma.core.time.StopWatch;
 import com.redbeemedia.enigma.core.util.IHandler;
 import com.redbeemedia.enigma.core.util.IStateMachine;
+import com.redbeemedia.enigma.core.util.OpenContainer;
+import com.redbeemedia.enigma.core.util.OpenContainerUtil;
+import com.redbeemedia.enigma.core.video.IVideoTrack;
+import com.redbeemedia.enigma.core.video.MockVideoTrack;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,6 +46,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -90,13 +98,13 @@ public class InternalPlaybackSessionTest {
             @Override
             public boolean addListener(IEnigmaPlayerListener playerListener) {
                 addListenerCalled.count();
-                return true;
+                return super.addListener(playerListener);
             }
 
             @Override
             public boolean removeListener(IEnigmaPlayerListener playerListener) {
                 removeListenerCalled.count();
-                return true;
+                return super.removeListener(playerListener);
             }
         };
         int expectedNewTaskCalled = 1;
@@ -138,17 +146,7 @@ public class InternalPlaybackSessionTest {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setTaskFactory(taskFactory).setHttpHandler(mockHttpHandler));
         InternalPlaybackSession playbackSession = new InternalPlaybackSession(new MockInternalPlaybackSessionConstructorArgs().create());
 
-        MockEnigmaPlayer mockPlayer = new MockEnigmaPlayer() {
-            @Override
-            public boolean addListener(IEnigmaPlayerListener playerListener) {
-                return true;
-            }
-
-            @Override
-            public boolean removeListener(IEnigmaPlayerListener playerListener) {
-                return true;
-            }
-        };
+        MockEnigmaPlayer mockPlayer = new MockEnigmaPlayer();
         playbackSession.onStart(mockPlayer);
         Thread.sleep(100);
         mockHttpHandler.queueResponse(new HttpStatus(200, "OK"));
@@ -258,7 +256,8 @@ public class InternalPlaybackSessionTest {
         final List<JSONObject> analyticsEvents = new ArrayList<>();
         AnalyticsReporter analyticsReporter = new AnalyticsReporter(timeProvider, jsonObject -> analyticsEvents.add(jsonObject));
         MockPlaybackSessionInfo playbackSessionInfo = new MockPlaybackSessionInfo();
-        InternalPlaybackSession.EnigmaPlayerListenerForAnalytics analytics = new InternalPlaybackSession.EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, StreamInfo.createForNull());
+        OpenContainer<IVideoTrack> selectedVideoTrack = new OpenContainer<>(null);
+        InternalPlaybackSession.EnigmaPlayerListenerForAnalytics analytics = new InternalPlaybackSession.EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, StreamInfo.createForNull(), selectedVideoTrack);
 
         IStateMachine<EnigmaPlayerState> stateMachine = EnigmaStateMachineFactory.create();
         stateMachine.addListener((from, to) -> analytics.onStateChanged(from, to));
@@ -316,7 +315,7 @@ public class InternalPlaybackSessionTest {
         AnalyticsReporter analyticsReporter = new AnalyticsReporter(timeProvider, jsonObject -> analyticsEvents.add(jsonObject));
         MockPlaybackSessionInfo playbackSessionInfo = new MockPlaybackSessionInfo();
         StreamInfo streamInfo = new StreamInfo(new JSONObject("{\"live\" : true, \"static\" : false, \"start\" : 8765432}"));
-        InternalPlaybackSession.EnigmaPlayerListenerForAnalytics analytics = new InternalPlaybackSession.EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, streamInfo);
+        InternalPlaybackSession.EnigmaPlayerListenerForAnalytics analytics = new InternalPlaybackSession.EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, streamInfo, new OpenContainer<>(null));
 
         analytics.onStateChanged(EnigmaPlayerState.LOADED, EnigmaPlayerState.PLAYING);
         Assert.assertEquals(1,analyticsEvents.size());
@@ -335,7 +334,7 @@ public class InternalPlaybackSessionTest {
         AnalyticsReporter analyticsReporter = new AnalyticsReporter(timeProvider, jsonObject -> analyticsEvents.add(jsonObject));
         MockPlaybackSessionInfo playbackSessionInfo = new MockPlaybackSessionInfo();
         StreamInfo streamInfo = new StreamInfo(new JSONObject("{\"live\" : false, \"start\" : 8765432}"));
-        InternalPlaybackSession.EnigmaPlayerListenerForAnalytics analytics = new InternalPlaybackSession.EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, streamInfo);
+        InternalPlaybackSession.EnigmaPlayerListenerForAnalytics analytics = new InternalPlaybackSession.EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, streamInfo, new OpenContainer<>(null));
 
         analytics.onStateChanged(EnigmaPlayerState.LOADED, EnigmaPlayerState.PLAYING);
         Assert.assertEquals(1,analyticsEvents.size());
@@ -450,7 +449,74 @@ public class InternalPlaybackSessionTest {
         errorTypesChecked.assertCount(expectedErrorType.size());
     }
 
-    private abstract static class MockEnigmaPlayer implements IEnigmaPlayer {
+    @Test
+    public void testBitrateChangedAnalyticsEvent() {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+
+        final StringBuilder eventLog = new StringBuilder();
+
+        MockInternalPlaybackSessionConstructorArgs args = new MockInternalPlaybackSessionConstructorArgs();
+        InternalPlaybackSession internalPlaybackSession = new InternalPlaybackSession(args.create()) {
+            @Override
+            protected IBufferingAnalyticsHandler newAnalyticsHandler(ISession session, String playbackSessionId, ITimeProvider timeProvider) {
+                return new MockAnalyticsHandler() {
+                    private final List<String> monitoredEvents = Arrays.asList("Playback.Created",
+                                                                               "Playback.Started",
+                                                                               "Playback.BitrateChanged");
+                    @Override
+                    public void onAnalytics(JSONObject jsonObject) {
+                        String eventType = jsonObject.optString("EventType", null);
+                        if(monitoredEvents.contains(eventType)) {
+                            eventLog.append("["+eventType);
+                            if(jsonObject.has("Bitrate")) {
+                                eventLog.append(", "+jsonObject.opt("Bitrate"));
+                            }
+                            eventLog.append("]");
+                        }
+                    }
+                };
+            }
+        };
+
+        Assert.assertEquals(0, eventLog.length());
+
+        List<IEnigmaPlayerListener> playerListeners = new ArrayList<>();
+        IEnigmaPlayer enigmaPlayer = new MockEnigmaPlayer() {
+            @Override
+            public boolean addListener(IEnigmaPlayerListener playerListener) {
+                return playerListeners.add(playerListener);
+            }
+
+            @Override
+            public boolean removeListener(IEnigmaPlayerListener playerListener) {
+                return playerListeners.remove(playerListener);
+            }
+        };
+        internalPlaybackSession.onStart(enigmaPlayer);
+
+        Assert.assertEquals("[Playback.Created]", eventLog.toString());
+
+        internalPlaybackSession.setSelectedVideoTrack(new MockVideoTrack(72634));
+
+        Assert.assertEquals("[Playback.Created]", eventLog.toString());
+
+        for(IEnigmaPlayerListener playerListener : playerListeners) {
+            playerListener.onStateChanged(EnigmaPlayerState.LOADED, EnigmaPlayerState.PLAYING);
+        }
+
+        Assert.assertEquals("[Playback.Created][Playback.Started, 72634]", eventLog.toString());
+
+        internalPlaybackSession.setSelectedVideoTrack(new MockVideoTrack(99352));
+        Assert.assertEquals("[Playback.Created][Playback.Started, 72634][Playback.BitrateChanged, 99352]", eventLog.toString());
+
+        internalPlaybackSession.setSelectedVideoTrack(new MockVideoTrack(99352));
+        Assert.assertEquals("[Playback.Created][Playback.Started, 72634][Playback.BitrateChanged, 99352]", eventLog.toString());
+
+        internalPlaybackSession.setSelectedVideoTrack(new MockVideoTrack(123));
+        Assert.assertEquals("[Playback.Created][Playback.Started, 72634][Playback.BitrateChanged, 99352][Playback.BitrateChanged, 123]", eventLog.toString());
+    }
+
+    private static class MockEnigmaPlayer implements IEnigmaPlayer {
         @Override
         public void play(IPlayRequest playerRequest) {
             throw new UnsupportedOperationException();
@@ -470,6 +536,16 @@ public class InternalPlaybackSessionTest {
         @Override
         public boolean addListener(IEnigmaPlayerListener playerListener, Handler handler) {
             throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean addListener(IEnigmaPlayerListener playerListener) {
+            return false;
+        }
+
+        @Override
+        public boolean removeListener(IEnigmaPlayerListener playerListener) {
+            return false;
         }
 
         @Override

@@ -24,11 +24,17 @@ import com.redbeemedia.enigma.core.util.StateMachineBuilder;
 
         builder.addDirectTransition(EnigmaPlayerState.PLAYING, EnigmaPlayerState.LOADED);
         builder.addDirectTransition(EnigmaPlayerState.PLAYING, EnigmaPlayerState.PAUSED);
+        builder.addDirectTransition(EnigmaPlayerState.PLAYING, EnigmaPlayerState.BUFFERING);
         builder.addDirectTransition(EnigmaPlayerState.PLAYING, EnigmaPlayerState.IDLE);
 
         builder.addDirectTransition(EnigmaPlayerState.PAUSED, EnigmaPlayerState.PLAYING);
         builder.addDirectTransition(EnigmaPlayerState.PAUSED, EnigmaPlayerState.IDLE);
         builder.addDirectTransition(EnigmaPlayerState.PAUSED, EnigmaPlayerState.LOADED);
+
+        builder.addDirectTransition(EnigmaPlayerState.BUFFERING, EnigmaPlayerState.PLAYING);
+        builder.addDirectTransition(EnigmaPlayerState.BUFFERING, EnigmaPlayerState.PAUSED);
+        builder.addDirectTransition(EnigmaPlayerState.BUFFERING, EnigmaPlayerState.LOADED);
+        builder.addDirectTransition(EnigmaPlayerState.BUFFERING, EnigmaPlayerState.IDLE);
 
         return builder.build();
     }

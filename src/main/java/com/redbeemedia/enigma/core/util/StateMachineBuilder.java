@@ -1,5 +1,7 @@
 package com.redbeemedia.enigma.core.util;
 
+import android.util.Pair;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,7 +56,7 @@ public class StateMachineBuilder<S> implements IStateMachineBuilder<S> {
         return new StateMachineTopology<>(calculateShortestPaths());
     }
 
-    private Map<S,Map<S,IPath<S>>> calculateShortestPaths() throws ValidationException {
+    private Map<S,Map<S, IPath<S>>> calculateShortestPaths() throws ValidationException {
         Map<S,Map<S, IPath<S>>> distanceMap = new HashMap<>();
         for(S state : states) {
             Map<S,IPath<S>> distances = new HashMap<>();
@@ -144,10 +146,21 @@ public class StateMachineBuilder<S> implements IStateMachineBuilder<S> {
     }
 
     private static class StateMachineTopology<S> {
-        private Map<S, Map<S,IPath<S>>> shortestPaths;
+        private Map<Pair<S,S>,IPath<S>> shortestPaths;
 
-        public StateMachineTopology(Map<S, Map<S, IPath<S>>> shortestPaths) {
-            this.shortestPaths = shortestPaths;
+        public StateMachineTopology(Map<S,Map<S,IPath<S>>> shortestPathsMap) {
+            this.shortestPaths = new HashMap<>();
+            for(Map.Entry<S, Map<S, IPath<S>>> entry : shortestPathsMap.entrySet()) {
+                S fromState = entry.getKey();
+                for(Map.Entry<S, IPath<S>> entry2 : entry.getValue().entrySet()) {
+                    S toState = entry2.getKey();
+                    this.shortestPaths.put(Pair.create(fromState, toState), entry2.getValue());
+                }
+            }
+        }
+
+        public IPath<S> getShortestPath(S from, S to) {
+            return shortestPaths.get(Pair.create(from, to));
         }
     }
 
@@ -178,7 +191,7 @@ public class StateMachineBuilder<S> implements IStateMachineBuilder<S> {
 
         @Override
         public void setState(S newState) {
-            Iterable<S> shortestPath = topology.shortestPaths.get(state).get(newState);
+            Iterable<S> shortestPath = topology.getShortestPath(state, newState);
             if(shortestPath == null) {
                 throw new IllegalArgumentException("Illegal state transition: "+state+" -> "+newState);
             }

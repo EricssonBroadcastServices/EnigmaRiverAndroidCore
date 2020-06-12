@@ -58,6 +58,9 @@ public class ControlLogic {
     }
 
     public static IValidationResults<Void> validateSeek(boolean seekForward, boolean seekBackward, IPlaybackSession playbackSession) {
+        if(playbackSession == null) {
+            return new RejectedResult<>(RejectReason.incorrectState("No playback session"));
+        }
         if(seekForward && !fastForwardEnabled(playbackSession)) {
             return new RejectedResult<>(RejectReason.contractRestriction("Fast-forward not enabled"));
         } else if(seekBackward && !rewindEnabled(playbackSession)) {
@@ -78,7 +81,7 @@ public class ControlLogic {
                 return new RejectedResult<>(RejectReason.contractRestriction("Timeshift not enabled"));
             }
         }
-        if(currentState != EnigmaPlayerState.PLAYING && currentState != EnigmaPlayerState.PAUSED) {
+        if(currentState != EnigmaPlayerState.PLAYING && currentState != EnigmaPlayerState.PAUSED && currentState != EnigmaPlayerState.BUFFERING) {
             return new RejectedResult<>(RejectReason.incorrectState("Player is "+currentState));
         } else {
             return new SuccessResult<>(null);
@@ -91,6 +94,8 @@ public class ControlLogic {
                 return new RejectedResult<>(RejectReason.incorrectState("Player is IDLE"));
             } else if(currentState == EnigmaPlayerState.LOADING) {
                 return new RejectedResult<>(RejectReason.incorrectState("Player is LOADING"));
+            } else if(currentState == EnigmaPlayerState.BUFFERING) {
+                return new RejectedResult<>(RejectReason.incorrectState("Player is BUFFERING"));
             } else {
                 return new SuccessResult<>(null);
             }

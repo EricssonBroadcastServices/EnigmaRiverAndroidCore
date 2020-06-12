@@ -4,6 +4,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /*package-protected*/ interface IAnalyticsEventBuilder<E extends IAnalyticsEventType> {
-    <T> void addData(IEventProperty<E,T> property, T value) throws JSONException;
+    <T> void addData(IEventProperty<? super E,T> property, T value) throws JSONException;
     JSONObject build();
 }

@@ -3,20 +3,28 @@ package com.redbeemedia.enigma.core.context;
 import com.redbeemedia.enigma.core.task.ITask;
 import com.redbeemedia.enigma.core.task.ITaskFactory;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+
 /*package-protected*/ class DefaultTaskFactory implements ITaskFactory {
+    private final ThreadFactory threadFactory = Executors.defaultThreadFactory();
+
     @Override
     public ITask newTask(Runnable runnable) {
-        return new ThreadTask(runnable);
+        return new Task(runnable, threadFactory);
     }
 
-    private static class ThreadTask implements ITask {
+    private class Task implements ITask {
+        private final ThreadFactory threadFactory;
         private Thread thread;
+        private volatile Thread delayThread = null;
         private volatile boolean started = false;
         private volatile boolean cancelRequested = false;
         private volatile boolean canceled = false;
 
-        public ThreadTask(Runnable runnable) {
-            this.thread = new Thread(runnable);
+        public Task(Runnable runnable, ThreadFactory threadFactory) {
+            this.threadFactory = threadFactory;
+            this.thread = threadFactory.newThread(runnable);
         }
 
         @Override
@@ -33,17 +41,21 @@ import com.redbeemedia.enigma.core.task.ITaskFactory;
 
         @Override
         public void startDelayed(long delayMillis) {
-            new Thread(new Runnable() {
+            delayThread = threadFactory.newThread(new Runnable() {
                 @Override
                 public void run() {
                     try {
                         Thread.sleep(delayMillis);
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        //Task was cancelled
+                        return;
                     }
-                    ThreadTask.this.start();
+                    if(!cancelRequested) {
+                        Task.this.start();
+                    }
                 }
-            }).start();
+            });
+            delayThread.start();
         }
 
         @Override
@@ -52,6 +64,17 @@ import com.redbeemedia.enigma.core.task.ITaskFactory;
                 return;
             }
             this.cancelRequested = true;
+
+            //Cancel delayThread
+            if(delayThread != null) {
+                delayThread.interrupt();
+                try {
+                    delayThread.join(joinMillis);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
             if(started && !canceled) {
                 thread.interrupt();
                 try {

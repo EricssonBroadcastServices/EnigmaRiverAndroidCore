@@ -22,7 +22,7 @@ import java.nio.charset.StandardCharsets;
 /**
  * Buffers analytics events for a session and sends them in an envelope to the backend.
  */
-public class AnalyticsHandler implements IAnalyticsHandler {
+public class AnalyticsHandler implements IBufferingAnalyticsHandler {
     private static final String CUSTOMER = "Customer";
     private static final String BUSINESS_UNIT = "BusinessUnit";
     private static final String SESSION_ID = "SessionId";
@@ -51,6 +51,7 @@ public class AnalyticsHandler implements IAnalyticsHandler {
         }
     }
 
+    @Override
     public void init() throws AnalyticsException, InterruptedException {
         JSONObject envelope = new JSONObject();
         try {
@@ -89,6 +90,7 @@ public class AnalyticsHandler implements IAnalyticsHandler {
         return clockOffset;
     }
 
+    @Override
     public synchronized void sendData() throws AnalyticsException, InterruptedException {
         final JSONArray currentEvents;
         synchronized (eventsLock) {

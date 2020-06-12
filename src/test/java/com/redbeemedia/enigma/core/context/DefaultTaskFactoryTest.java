@@ -66,7 +66,7 @@ public class DefaultTaskFactoryTest {
                 runCalled.assertNone();
                 task.startDelayed(100);
                 runCalled.assertNone();
-                Thread.sleep(110);
+                Thread.sleep(150);
                 runCalled.assertOnce();
             }
         });

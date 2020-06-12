@@ -93,10 +93,11 @@ public class DirectEpg extends AbstractEpg {
                             results.put(channelId, programs);
                         }
                         for(ApiProgramResponse program : partialResult.getPrograms()) {
+                            String programId = program.getProgramId();
                             String assetId = program.getAssetId();
                             long startUtcMillis = iso8601Parser.parse(program.getStartTime());
                             long endUtcMillis = iso8601Parser.parse(program.getEndTime());
-                            programs.add(new Program(assetId, startUtcMillis, endUtcMillis));
+                            programs.add(new Program(programId, assetId, startUtcMillis, endUtcMillis));
                         }
                     }
 
@@ -178,13 +179,15 @@ public class DirectEpg extends AbstractEpg {
     }
 
     private static class Program implements IProgram {
+        private final String programId;
         private final String assetId;
         private final long startUtcMillis;
         private final long endUtcMillis;
         private final Duration duration;
         private final IPlayable playable;
 
-        public Program(String assetId, long startUtcMillis, long endUtcMillis) {
+        public Program(String programId, String assetId, long startUtcMillis, long endUtcMillis) {
+            this.programId = programId;
             this.assetId = assetId;
             this.startUtcMillis = startUtcMillis;
             this.endUtcMillis = endUtcMillis;
@@ -214,12 +217,17 @@ public class DirectEpg extends AbstractEpg {
 
         @Override
         public String toString() {
-            return assetId;
+            return "{programId="+programId+", assetId="+assetId+"}";
         }
 
         @Override
         public String getAssetId() {
             return assetId;
+        }
+
+        @Override
+        public String getProgramId() {
+            return programId;
         }
     }
 

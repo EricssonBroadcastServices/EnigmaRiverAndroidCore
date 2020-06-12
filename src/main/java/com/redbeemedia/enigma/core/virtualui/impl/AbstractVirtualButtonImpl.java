@@ -1,5 +1,6 @@
 package com.redbeemedia.enigma.core.virtualui.impl;
 
+import com.redbeemedia.enigma.core.player.EnigmaPlayerState;
 import com.redbeemedia.enigma.core.util.AndroidThreadUtil;
 import com.redbeemedia.enigma.core.util.OpenContainer;
 import com.redbeemedia.enigma.core.util.OpenContainerUtil;
@@ -23,6 +24,10 @@ import com.redbeemedia.enigma.core.virtualui.AbstractVirtualButton;
     @Override
     public final boolean isRelevant() {
         return OpenContainerUtil.getValueSynchronized(relevant);
+    }
+
+    protected static boolean aimsToBePlayingAlready(EnigmaPlayerState state) {
+        return state == EnigmaPlayerState.PLAYING || state == EnigmaPlayerState.BUFFERING;
     }
 
     @Override

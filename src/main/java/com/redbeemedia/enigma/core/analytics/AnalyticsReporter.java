@@ -73,12 +73,14 @@ public class AnalyticsReporter {
         });
     }
 
-    public void playbackStarted(long offsetTime, String playMode, String mediaLocator, Long referenceTime) {
+    public void playbackStarted(long offsetTime, String playMode, String mediaLocator, Long referenceTime, Integer bitrate, String programId) {
         event(AnalyticsEvents.STARTED, (builder, eventType) -> {
             builder.addData(eventType.OFFSET_TIME, offsetTime);
             builder.addData(eventType.PLAY_MODE, playMode);
             builder.addData(eventType.MEDIA_LOCATOR, mediaLocator);
             builder.addData(eventType.REFERENCE_TIME, referenceTime);
+            builder.addData(eventType.BITRATE, bitrate);
+            builder.addData(eventType.PROGRAM_ID, programId);
         });
     }
 
@@ -130,6 +132,38 @@ public class AnalyticsReporter {
         });
     }
 
+    public void playbackBitrateChanged(long offsetTime, int kilobitsPerSecond) {
+        event(AnalyticsEvents.BITRATE_CHANGED, (builder, eventType) -> {
+            builder.addData(eventType.OFFSET_TIME, offsetTime);
+            builder.addData(eventType.BITRATE, kilobitsPerSecond);
+        });
+    }
+
+    public void playbackBufferingStarted(long offsetTime) {
+        event(AnalyticsEvents.BUFFERING_STARTED, (builder, eventType) -> {
+            builder.addData(eventType.OFFSET_TIME, offsetTime);
+        });
+    }
+
+    public void playbackBufferingStopped(long offsetTime) {
+        event(AnalyticsEvents.BUFFERING_STOPPED, (builder, eventType) -> {
+            builder.addData(eventType.OFFSET_TIME, offsetTime);
+        });
+    }
+
+    public void playbackScrubbedTo(long offsetTime) {
+        event(AnalyticsEvents.SCRUBBED_TO, (builder, eventType) -> {
+            builder.addData(eventType.OFFSET_TIME, offsetTime);
+        });
+    }
+
+    public void playbackProgramChanged(long offsetTime, String programId) {
+        event(AnalyticsEvents.PROGRAM_CHANGED, (builder, eventType) -> {
+            builder.addData(eventType.OFFSET_TIME, offsetTime);
+            builder.addData(eventType.PROGRAM_ID, programId);
+        });
+    }
+
     private interface IEventConstruction<T extends IAnalyticsEventType> {
         void construct(IAnalyticsEventBuilder<T> builder, T eventType) throws Exception;
     }
@@ -159,7 +193,7 @@ public class AnalyticsReporter {
         }
     }
 
-    private <E extends IAnalyticsEventType> IAnalyticsEventBuilder<E> newEventBuilder(E eventType) throws JSONException {
+    protected <E extends IAnalyticsEventType> IAnalyticsEventBuilder<E> newEventBuilder(E eventType) throws JSONException {
         return new JsonAnalyticsEventBuilder(eventType.getName(), timeProvider.getTime());
     }
 
@@ -172,6 +206,11 @@ public class AnalyticsReporter {
 
         @Override
         public boolean skipIfNull() {
+            return false;
+        }
+
+        @Override
+        public boolean isMandatory() {
             return false;
         }
 

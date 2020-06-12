@@ -2,8 +2,10 @@ package com.redbeemedia.enigma.core.player;
 
 import com.redbeemedia.enigma.core.audio.IAudioTrack;
 import com.redbeemedia.enigma.core.audio.MockAudioTrack;
+import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
+import com.redbeemedia.enigma.core.entitlement.EntitlementProvider;
 import com.redbeemedia.enigma.core.epg.IEpg;
 import com.redbeemedia.enigma.core.epg.IProgram;
 import com.redbeemedia.enigma.core.epg.MockEpgLocator;
@@ -30,6 +32,8 @@ import com.redbeemedia.enigma.core.player.timeline.ITimelinePosition;
 import com.redbeemedia.enigma.core.player.track.IPlayerImplementationTrack;
 import com.redbeemedia.enigma.core.player.track.MockPlayerImplementationTrack;
 import com.redbeemedia.enigma.core.playrequest.BasePlayResultHandler;
+import com.redbeemedia.enigma.core.playrequest.IPlayResultHandler;
+import com.redbeemedia.enigma.core.playrequest.IPlaybackProperties;
 import com.redbeemedia.enigma.core.playrequest.MockPlayRequest;
 import com.redbeemedia.enigma.core.playrequest.MockPlayResultHandler;
 import com.redbeemedia.enigma.core.playrequest.PlayRequest;
@@ -47,6 +51,8 @@ import com.redbeemedia.enigma.core.time.Duration;
 import com.redbeemedia.enigma.core.time.ITimeProvider;
 import com.redbeemedia.enigma.core.time.MockTimeProvider;
 import com.redbeemedia.enigma.core.util.MockHandler;
+import com.redbeemedia.enigma.core.video.IVideoTrack;
+import com.redbeemedia.enigma.core.video.MockVideoTrack;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -970,6 +976,53 @@ public class EnigmaPlayerTest {
         }));
 
         loadCalled.assertOnce();
+    }
+
+
+    @Test
+    public void testBitrateChangedPropagated() {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+
+        final Counter newInternalPlaybackSessionCalled = new Counter();
+        final Counter setSelectedVideoTrackCalls = new Counter();
+        MockPlayerImplementation playerImplementation = new MockPlayerImplementation();
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayerWithMockedTimeProvider(new MockSession(), playerImplementation) {
+            @Override
+            protected IPlaybackSessionFactory newPlaybackSessionFactory(ITimeProvider timeProvider, IEpg epg) {
+                return new MockPlaybackSessionFactory() {
+                    @Override
+                    public IInternalPlaybackSession newInternalPlaybackSession() {
+                        newInternalPlaybackSessionCalled.count();
+                        return new MockInternalPlaybackSession(true) {
+                            @Override
+                            public void setSelectedVideoTrack(IVideoTrack track) {
+                                int counts = setSelectedVideoTrackCalls.getCounts();
+                                if(counts == 0) {
+                                    Assert.assertEquals(1524, track.getBitrate());
+                                } else if(counts == 1) {
+                                    Assert.assertEquals(8833800, track.getBitrate());
+                                } else if(counts == 2) {
+                                    Assert.assertEquals(100000, track.getBitrate());
+                                }
+                                setSelectedVideoTrackCalls.count();
+                            }
+                        };
+                    }
+                };
+            }
+        };
+
+        newInternalPlaybackSessionCalled.assertExpected();
+        enigmaPlayer.play(new MockPlayRequest());
+        newInternalPlaybackSessionCalled.addToExpected(1);
+        newInternalPlaybackSessionCalled.assertExpected();
+
+        IPlayerImplementationListener playerImplementationListener = playerImplementation.getPlayerImplementationListener();
+        playerImplementationListener.onVideoTrackSelectionChanged(new MockVideoTrack(1524));
+        playerImplementationListener.onVideoTrackSelectionChanged(new MockVideoTrack(8833800));
+        playerImplementationListener.onVideoTrackSelectionChanged(new MockVideoTrack(100000));
+
+        setSelectedVideoTrackCalls.assertCount(3);
     }
 
     public static class EnigmaPlayerWithMockedTimeProvider extends EnigmaPlayer {
