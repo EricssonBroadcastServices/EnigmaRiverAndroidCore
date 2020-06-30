@@ -1,5 +1,6 @@
 package com.redbeemedia.enigma.core.util;
 
+import com.redbeemedia.enigma.core.testutil.Flag;
 import com.redbeemedia.enigma.core.testutil.ReflectionUtil;
 import com.redbeemedia.enigma.core.testutil.thread.Interruptor;
 import com.redbeemedia.enigma.core.testutil.thread.ThreadHalter;
@@ -275,6 +276,43 @@ public class CollectorTest {
 
         Map<?,?> linkForListenerField = ReflectionUtil.getDeclaredField(collector, Map.class, "linkForListener");
         Assert.assertEquals(0, linkForListenerField.size());
+    }
+
+    @Test
+    public void testNoDeadLockInForEach() {
+        final Flag onEventCompletedSucessfully = new Flag();
+        final IMockListener toBeRemovedListener = new MockListener();
+
+        Collector<IMockListener> collector = new Collector<>(IMockListener.class);
+
+        collector.addListener(new IMockListener() {
+            @Override
+            public void onEvent(String event) {
+                final Flag listenerAdded = new Flag();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        collector.addListener(new MockListener());
+                        collector.removeListener(toBeRemovedListener);
+                        listenerAdded.setFlag();
+                    }
+                }).start();
+                Interruptor interruptor = new Interruptor(Thread.currentThread(), 2000);
+                interruptor.start();
+                while (!listenerAdded.isTrue()) {
+                    //Wait
+                    if(Thread.interrupted()) {
+                        Assert.fail("Dead lock");
+                    }
+                }
+                interruptor.cancel();
+                onEventCompletedSucessfully.setFlag();
+            }
+        });
+
+        onEventCompletedSucessfully.assertNotSet();
+        collector.forEach(listener -> listener.onEvent("Test"));
+        onEventCompletedSucessfully.assertSet();
     }
 
     private interface IStringTransform {
