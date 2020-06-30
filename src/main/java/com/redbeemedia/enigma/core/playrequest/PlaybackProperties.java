@@ -3,9 +3,12 @@ package com.redbeemedia.enigma.core.playrequest;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.redbeemedia.enigma.core.format.IMediaFormatPreferenceSpec;
+
 
 public final class PlaybackProperties implements IPlaybackProperties, Parcelable {
     private PlayFrom playFrom;
+    private IMediaFormatPreferenceSpec mediaFormatPreferenceSpec = null;
 
     public PlaybackProperties() {
         this.playFrom = PlayFrom.PLAYER_DEFAULT;
@@ -21,6 +24,16 @@ public final class PlaybackProperties implements IPlaybackProperties, Parcelable
             throw new NullPointerException();
         }
         this.playFrom = playFrom;
+        return this;
+    }
+
+    @Override
+    public IMediaFormatPreferenceSpec getMediaFormatPreferences() {
+        return mediaFormatPreferenceSpec;
+    }
+
+    public PlaybackProperties setMediaFormatPreferences(IMediaFormatPreferenceSpec mediaFormatPreferenceSpec) {
+        this.mediaFormatPreferenceSpec = mediaFormatPreferenceSpec;
         return this;
     }
 

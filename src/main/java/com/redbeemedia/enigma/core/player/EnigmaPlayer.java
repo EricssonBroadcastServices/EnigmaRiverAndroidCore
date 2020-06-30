@@ -19,7 +19,10 @@ import com.redbeemedia.enigma.core.error.UnexpectedError;
 import com.redbeemedia.enigma.core.format.EnigmaMediaFormat;
 import com.redbeemedia.enigma.core.format.EnigmaMediaFormat.DrmTechnology;
 import com.redbeemedia.enigma.core.format.EnigmaMediaFormat.StreamFormat;
+import com.redbeemedia.enigma.core.format.IMediaFormatPreferenceSpec;
 import com.redbeemedia.enigma.core.format.IMediaFormatSupportSpec;
+import com.redbeemedia.enigma.core.format.MediaFormatPreferenceList;
+import com.redbeemedia.enigma.core.format.MediaFormatPreferenceSpec;
 import com.redbeemedia.enigma.core.playable.IPlayable;
 import com.redbeemedia.enigma.core.playable.IPlayableHandler;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
@@ -75,9 +78,10 @@ import java.util.Map;
 
 public class EnigmaPlayer implements IEnigmaPlayer {
     private static final String TAG = "EnigmaPlayer";
-    private static final EnigmaMediaFormat[] FORMAT_PREFERENCE_ORDER = new EnigmaMediaFormat[]{new EnigmaMediaFormat(StreamFormat.DASH, DrmTechnology.WIDEVINE),
-                                                                                               new EnigmaMediaFormat(StreamFormat.DASH, DrmTechnology.NONE),
-                                                                                               new EnigmaMediaFormat(StreamFormat.HLS, DrmTechnology.NONE)};
+    private IMediaFormatPreferenceSpec formatPreferenceSpec = new MediaFormatPreferenceSpec(new EnigmaMediaFormat(StreamFormat.DASH, DrmTechnology.WIDEVINE),
+                                                                                        new EnigmaMediaFormat(StreamFormat.DASH, DrmTechnology.NONE),
+                                                                                        new EnigmaMediaFormat(StreamFormat.HLS, DrmTechnology.FAIRPLAY),
+                                                                                        new EnigmaMediaFormat(StreamFormat.HLS, DrmTechnology.NONE));
 
     private ISession session;
     private IPlayerImplementation playerImplementation;
@@ -186,6 +190,18 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     public EnigmaPlayer setCallbackHandler(IHandler handler) {
         this.callbackHandler = handler;
         return this;
+    }
+
+    public EnigmaPlayer setMediaFormatPreferenceSpec(IMediaFormatPreferenceSpec formatPreferenceSpec) {
+        if(formatPreferenceSpec == null) {
+            throw new IllegalArgumentException("argument must not be null");
+        }
+        this.formatPreferenceSpec = formatPreferenceSpec;
+        return this;
+    }
+
+    public EnigmaPlayer setMediaFormatPreference(EnigmaMediaFormat ... mediaFormatPreference) {
+        return setMediaFormatPreferenceSpec(new MediaFormatPreferenceSpec(mediaFormatPreference));
     }
 
     private <T extends IInternalCallbackObject> T useCallbackHandlerIfPresent(Class<T> callbackInterface, T callback) {
@@ -329,7 +345,13 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
                 @Override
                 public JSONObject getUsableMediaFormat(JSONArray formats) throws JSONException {
-                    return EnigmaPlayer.getUsableMediaFormat(formats, environment.formatSupportSpec);
+                    MediaFormatPreferenceList preferenceList = new MediaFormatPreferenceList();
+                    preferenceList = formatPreferenceSpec.applyPreference(preferenceList);
+                    IMediaFormatPreferenceSpec playbackPreferences = playbackProperties.getMediaFormatPreferences();
+                    if(playbackPreferences != null) {
+                        preferenceList = playbackPreferences.applyPreference(preferenceList);
+                    }
+                    return EnigmaPlayer.getUsableMediaFormat(formats, environment.formatSupportSpec, preferenceList);
                 }
 
                 @Override
@@ -425,7 +447,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         return OpenContainerUtil.getValueSynchronized(playbackSessionSeed) != null;
     }
 
-    private static JSONObject getUsableMediaFormat(JSONArray formats, IMediaFormatSupportSpec formatSupportSpec) throws JSONException {
+    private static JSONObject getUsableMediaFormat(JSONArray formats, IMediaFormatSupportSpec formatSupportSpec, MediaFormatPreferenceList preferenceList) throws JSONException {
         Map<EnigmaMediaFormat, JSONObject> foundFormats = new HashMap<>();
         for(int i = 0; i < formats.length(); ++i) {
             JSONObject mediaFormat = formats.getJSONObject(i);
@@ -436,13 +458,14 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                 }
             }
         }
-        for(EnigmaMediaFormat format : FORMAT_PREFERENCE_ORDER) {
+        for(EnigmaMediaFormat format : preferenceList.getList()) {
             JSONObject object = foundFormats.get(format);
             if(object != null) {
                 return object;
             }
         }
-        return null;//If the format is not in FORMAT_PREFERENCE_ORDER we don't support it.
+
+        return null;//If the format is not in our preferenceList we don't support it.
     }
 
     /*package-protected*/ static EnigmaMediaFormat parseMediaFormat(JSONObject mediaFormat) throws JSONException {

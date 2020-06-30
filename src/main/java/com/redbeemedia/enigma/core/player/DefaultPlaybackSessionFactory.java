@@ -72,7 +72,7 @@ import java.util.UUID;
                 JSONObject usableMediaFormat = playerConnector.getUsableMediaFormat(formats);
                 if (usableMediaFormat != null) {
                     JSONObject drms = usableMediaFormat.optJSONObject("drm");
-                    if (drms != null) {
+                    if ("DASH".equals(usableMediaFormat.optString("format")) && drms != null) {
                         JSONObject drmTypeInfo = drms.optJSONObject(EnigmaMediaFormat.DrmTechnology.WIDEVINE.getKey());
                         String licenseUrl = drmTypeInfo.getString("licenseServerUrl");
                         IDrmInfo drmInfo = DrmInfoFactory.createWidevineDrmInfo(licenseUrl, playToken, requestId);

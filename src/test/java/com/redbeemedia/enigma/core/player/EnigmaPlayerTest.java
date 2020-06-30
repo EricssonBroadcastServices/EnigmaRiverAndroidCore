@@ -2,10 +2,8 @@ package com.redbeemedia.enigma.core.player;
 
 import com.redbeemedia.enigma.core.audio.IAudioTrack;
 import com.redbeemedia.enigma.core.audio.MockAudioTrack;
-import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
-import com.redbeemedia.enigma.core.entitlement.EntitlementProvider;
 import com.redbeemedia.enigma.core.epg.IEpg;
 import com.redbeemedia.enigma.core.epg.IProgram;
 import com.redbeemedia.enigma.core.epg.MockEpgLocator;
@@ -18,7 +16,9 @@ import com.redbeemedia.enigma.core.error.NoSupportedMediaFormatsError;
 import com.redbeemedia.enigma.core.error.UnexpectedError;
 import com.redbeemedia.enigma.core.format.EnigmaMediaFormat;
 import com.redbeemedia.enigma.core.format.IMediaFormatSupportSpec;
+import com.redbeemedia.enigma.core.format.MediaFormatPreferenceSpec;
 import com.redbeemedia.enigma.core.http.HttpStatus;
+import com.redbeemedia.enigma.core.http.IHttpCall;
 import com.redbeemedia.enigma.core.http.MockHttpHandler;
 import com.redbeemedia.enigma.core.playable.IPlayable;
 import com.redbeemedia.enigma.core.playable.IPlayableHandler;
@@ -32,11 +32,11 @@ import com.redbeemedia.enigma.core.player.timeline.ITimelinePosition;
 import com.redbeemedia.enigma.core.player.track.IPlayerImplementationTrack;
 import com.redbeemedia.enigma.core.player.track.MockPlayerImplementationTrack;
 import com.redbeemedia.enigma.core.playrequest.BasePlayResultHandler;
-import com.redbeemedia.enigma.core.playrequest.IPlayResultHandler;
 import com.redbeemedia.enigma.core.playrequest.IPlaybackProperties;
 import com.redbeemedia.enigma.core.playrequest.MockPlayRequest;
 import com.redbeemedia.enigma.core.playrequest.MockPlayResultHandler;
 import com.redbeemedia.enigma.core.playrequest.PlayRequest;
+import com.redbeemedia.enigma.core.playrequest.PlaybackProperties;
 import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.session.MockSession;
 import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
@@ -60,10 +60,12 @@ import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class EnigmaPlayerTest {
     @Test
@@ -1023,6 +1025,78 @@ public class EnigmaPlayerTest {
         playerImplementationListener.onVideoTrackSelectionChanged(new MockVideoTrack(100000));
 
         setSelectedVideoTrackCalls.assertCount(3);
+    }
+
+    @Test
+    public void testMediaFormatPreferences() throws JSONException {
+        JSONObject playResponse = new JSONObject();
+        playResponse.put("requestId", "mockRequest");
+        playResponse.put("playToken", "mockToken");
+        playResponse.put("formats", new JSONArray(Arrays.asList(
+                createFormatJson("http://example.com/dash-unenc-manifest", "DASH", null, null),
+                createFormatJson("http://example.com/dash-widewine-manifest", "DASH", EnigmaMediaFormat.DrmTechnology.WIDEVINE.getKey(), null),
+                createFormatJson("http://example.com/hls-unenc-manifest", "HLS", null, null),
+                createFormatJson("http://example.com/hls-fairplay-manifest", "HLS", EnigmaMediaFormat.DrmTechnology.FAIRPLAY.getKey(), null),
+                createFormatJson("http://example.com/unknown-manifest", "UNKNOWN", EnigmaMediaFormat.DrmTechnology.PLAYREADY.getKey(), null)
+        )));
+
+        MockHttpHandler httpHandler = new MockHttpHandler();
+        Pattern urlPattern = Pattern.compile(".*entitlement/.*/play.*");
+        httpHandler.queueResponse(urlPattern, new HttpStatus(200, "OK"), playResponse.toString());
+        httpHandler.queueResponse(urlPattern, new HttpStatus(200, "OK"), playResponse.toString());
+        httpHandler.queueResponse(urlPattern, new HttpStatus(200, "OK"), playResponse.toString());
+
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(httpHandler));
+
+        final Counter loadCalled = new Counter();
+        final String[] lastLoadedUrl = new String[]{null};
+
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayerWithMockedTimeProvider(new MockSession(), new MockPlayerImplementation() {
+            @Override
+            public void install(IEnigmaPlayerEnvironment environment) {
+                super.install(environment);
+                environment.setMediaFormatSupportSpec(enigmaMediaFormat -> true); //Support all formats
+            }
+
+            @Override
+            public void load(ILoadRequest loadRequest, IPlayerImplementationControlResultHandler resultHandler) {
+                lastLoadedUrl[0] = loadRequest.getUrl();
+                loadCalled.count();
+                super.load(loadRequest, resultHandler);
+            }
+        });
+
+        loadCalled.assertExpected();
+
+        enigmaPlayer.play(new MockPlayRequest("mockAsset"));
+        loadCalled.addToExpected(1);
+
+        loadCalled.assertExpected();
+        Assert.assertEquals(lastLoadedUrl[0], "http://example.com/dash-widewine-manifest"); //Default
+
+        enigmaPlayer.setMediaFormatPreference(
+                new EnigmaMediaFormat(EnigmaMediaFormat.StreamFormat.HLS, EnigmaMediaFormat.DrmTechnology.WIDEVINE),
+                new EnigmaMediaFormat(EnigmaMediaFormat.StreamFormat.HLS, EnigmaMediaFormat.DrmTechnology.NONE));
+
+        enigmaPlayer.play(new MockPlayRequest("mockMock"));
+        loadCalled.addToExpected(1);
+
+        loadCalled.assertExpected();
+        Assert.assertEquals(lastLoadedUrl[0], "http://example.com/hls-unenc-manifest");
+
+        IPlaybackProperties playbackProperties = new PlaybackProperties()
+                .setMediaFormatPreferences(new MediaFormatPreferenceSpec(
+                        new EnigmaMediaFormat(EnigmaMediaFormat.StreamFormat.DASH, EnigmaMediaFormat.DrmTechnology.PLAYREADY),
+                        new EnigmaMediaFormat(EnigmaMediaFormat.StreamFormat.DASH, EnigmaMediaFormat.DrmTechnology.FAIRPLAY),
+                        new EnigmaMediaFormat(EnigmaMediaFormat.StreamFormat.HLS, EnigmaMediaFormat.DrmTechnology.FAIRPLAY),
+                        new EnigmaMediaFormat(EnigmaMediaFormat.StreamFormat.DASH, EnigmaMediaFormat.DrmTechnology.WIDEVINE),
+                        new EnigmaMediaFormat(EnigmaMediaFormat.StreamFormat.DASH, EnigmaMediaFormat.DrmTechnology.NONE)
+                ));
+        enigmaPlayer.play(new MockPlayRequest("fakeAsset").setPlaybackProperties(playbackProperties));
+        loadCalled.addToExpected(1);
+
+        loadCalled.assertExpected();
+        Assert.assertEquals(lastLoadedUrl[0], "http://example.com/hls-fairplay-manifest");
     }
 
     public static class EnigmaPlayerWithMockedTimeProvider extends EnigmaPlayer {

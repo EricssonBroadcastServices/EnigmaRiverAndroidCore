@@ -36,7 +36,6 @@ import com.redbeemedia.enigma.core.time.StopWatch;
 import com.redbeemedia.enigma.core.util.IHandler;
 import com.redbeemedia.enigma.core.util.IStateMachine;
 import com.redbeemedia.enigma.core.util.OpenContainer;
-import com.redbeemedia.enigma.core.util.OpenContainerUtil;
 import com.redbeemedia.enigma.core.video.IVideoTrack;
 import com.redbeemedia.enigma.core.video.MockVideoTrack;
 
