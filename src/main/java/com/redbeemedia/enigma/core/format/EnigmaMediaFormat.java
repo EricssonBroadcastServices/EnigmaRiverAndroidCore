@@ -48,6 +48,82 @@ public final class EnigmaMediaFormat {
         return stringBuilder.toString();
     }
 
+    /**
+     * <p>Convenience method for creating an EnigmaMediaFormat.</p>
+     *
+     * <p>Usage example:</p>
+     * <pre>
+     * EnigmaMediaFormat unencryptedDash = EnigmaMediaFormat.DASH().unenc();
+     * EnigmaMediaFormat dashWidevine = EnigmaMediaFormat.DASH().widevine();
+     * </pre>
+     *
+     * @see #HLS()
+     * @see #SMOOTHSTREAMING()
+     * @return Construction continuation interface
+     */
+    public static EnigmaMediaFormatBuilder_DrmTechnologySelector DASH() {
+        return new EnigmaMediaFormatBuilder_DrmTechnologySelector(StreamFormat.DASH);
+    }
+
+    /**
+     * <p>Convenience method for creating an EnigmaMediaFormat.</p>
+     *
+     * <p>Usage example:</p>
+     * <pre>
+     * EnigmaMediaFormat unencryptedHls = EnigmaMediaFormat.HLS().unenc();
+     * EnigmaMediaFormat hlsFairplay = EnigmaMediaFormat.HLS().fairplay();
+     * </pre>
+     *
+     * @see #DASH()
+     * @see #SMOOTHSTREAMING()
+     * @return Construction continuation interface
+     */
+    public static EnigmaMediaFormatBuilder_DrmTechnologySelector HLS() {
+        return new EnigmaMediaFormatBuilder_DrmTechnologySelector(StreamFormat.HLS);
+    }
+
+    /**
+     * <p>Convenience method for creating an EnigmaMediaFormat.</p>
+     *
+     * <p>Usage example:</p>
+     * <pre>
+     * EnigmaMediaFormat unencryptedSmoothstreaming = EnigmaMediaFormat.SMOOTHSTREAMING().unenc();
+     * EnigmaMediaFormat smoothstreamingPlayready = EnigmaMediaFormat.SMOOTHSTREAMING().playready();
+     * </pre>
+     *
+     * @see #DASH()
+     * @see #HLS()
+     * @return Construction continuation interface
+     */
+    public static EnigmaMediaFormatBuilder_DrmTechnologySelector SMOOTHSTREAMING() {
+        return new EnigmaMediaFormatBuilder_DrmTechnologySelector(StreamFormat.SMOOTHSTREAMING);
+    }
+
+    public static class EnigmaMediaFormatBuilder_DrmTechnologySelector {
+        private final StreamFormat streamFormat;
+
+        private EnigmaMediaFormatBuilder_DrmTechnologySelector(StreamFormat streamFormat) {
+            this.streamFormat = streamFormat;
+        }
+
+        public EnigmaMediaFormat unenc() {
+            return new EnigmaMediaFormat(streamFormat, DrmTechnology.NONE);
+        }
+
+        public EnigmaMediaFormat widevine() {
+            return new EnigmaMediaFormat(streamFormat, DrmTechnology.WIDEVINE);
+        }
+
+        public EnigmaMediaFormat fairplay() {
+            return new EnigmaMediaFormat(streamFormat, DrmTechnology.FAIRPLAY);
+        }
+
+        public EnigmaMediaFormat playready() {
+            return new EnigmaMediaFormat(streamFormat, DrmTechnology.PLAYREADY);
+        }
+    }
+
+
     public static class StreamFormat {
         private StreamFormat() {}
         public static final StreamFormat DASH = new StreamFormat();

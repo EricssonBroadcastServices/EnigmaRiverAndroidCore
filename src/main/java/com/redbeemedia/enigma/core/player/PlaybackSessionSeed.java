@@ -1,5 +1,6 @@
 package com.redbeemedia.enigma.core.player;
 
+import com.redbeemedia.enigma.core.format.IMediaFormatSelector;
 import com.redbeemedia.enigma.core.playable.IPlayable;
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
 import com.redbeemedia.enigma.core.playrequest.IPlayResultHandler;
@@ -18,9 +19,11 @@ import java.util.concurrent.TimeoutException;
 /*package-protected*/ class PlaybackSessionSeed {
     private final IPlayable playable;
     private final Duration playbackOffset;
+    private final IPlaybackProperties originalPlaybackProperties;
 
     public PlaybackSessionSeed(final IPlaybackSessionInfo playbackSessionInfo) {
         this.playable = playbackSessionInfo.getPlayable();
+        this.originalPlaybackProperties = playbackSessionInfo.getPlaybackProperties();
         try {
             this.playbackOffset = AndroidThreadUtil.getBlockingOnUiThread(3000, () -> playbackSessionInfo.getCurrentPlaybackOffset());
         } catch (InterruptedException e) {
@@ -31,7 +34,42 @@ import java.util.concurrent.TimeoutException;
     }
 
     public IPlayRequest createPlayRequest(IPlayResultHandler playResultHandler) {
-        PlaybackProperties playbackProperties = new PlaybackProperties().setPlayFrom(IPlaybackProperties.PlayFrom.OFFSET(playbackOffset));
+        IPlaybackProperties playbackProperties = withPlayFrom(originalPlaybackProperties, IPlaybackProperties.PlayFrom.OFFSET(playbackOffset));
         return new PlayRequest(playable, playbackProperties, playResultHandler);
+    }
+
+    private static IPlaybackProperties withPlayFrom(IPlaybackProperties playbackProperties, IPlaybackProperties.PlayFrom playFrom) {
+        if(playbackProperties instanceof PlaybackProperties) {
+            return ((PlaybackProperties) playbackProperties).setPlayFrom(playFrom);
+        } else if(playbackProperties instanceof WrappedPlaybackProperties) {
+            return ((WrappedPlaybackProperties) playbackProperties).setPlayFrom(playFrom);
+        } else {
+            return new WrappedPlaybackProperties(playbackProperties, playFrom);
+        }
+    }
+
+    private static class WrappedPlaybackProperties implements IPlaybackProperties {
+        private final IPlaybackProperties wrapped;
+        private PlayFrom playFromOverride;
+
+        public WrappedPlaybackProperties(IPlaybackProperties wrapped, PlayFrom playFromOverride) {
+            this.wrapped = wrapped;
+            this.playFromOverride = playFromOverride;
+        }
+
+        @Override
+        public PlayFrom getPlayFrom() {
+            return playFromOverride;
+        }
+
+        public WrappedPlaybackProperties setPlayFrom(PlayFrom playFromOverride) {
+            this.playFromOverride = playFromOverride;
+            return this;
+        }
+
+        @Override
+        public IMediaFormatSelector getMediaFormatSelector() {
+            return wrapped.getMediaFormatSelector();
+        }
     }
 }

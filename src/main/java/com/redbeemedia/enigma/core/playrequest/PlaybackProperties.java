@@ -1,14 +1,13 @@
 package com.redbeemedia.enigma.core.playrequest;
 
-import android.os.Parcel;
-import android.os.Parcelable;
+import com.redbeemedia.enigma.core.format.EnigmaMediaFormat;
+import com.redbeemedia.enigma.core.format.IMediaFormatSelector;
+import com.redbeemedia.enigma.core.format.SimpleMediaFormatSelector;
 
-import com.redbeemedia.enigma.core.format.IMediaFormatPreferenceSpec;
 
-
-public final class PlaybackProperties implements IPlaybackProperties, Parcelable {
+public final class PlaybackProperties implements IPlaybackProperties {
     private PlayFrom playFrom;
-    private IMediaFormatPreferenceSpec mediaFormatPreferenceSpec = null;
+    private IMediaFormatSelector mediaFormatSelector = null;
 
     public PlaybackProperties() {
         this.playFrom = PlayFrom.PLAYER_DEFAULT;
@@ -28,13 +27,17 @@ public final class PlaybackProperties implements IPlaybackProperties, Parcelable
     }
 
     @Override
-    public IMediaFormatPreferenceSpec getMediaFormatPreferences() {
-        return mediaFormatPreferenceSpec;
+    public IMediaFormatSelector getMediaFormatSelector() {
+        return mediaFormatSelector;
     }
 
-    public PlaybackProperties setMediaFormatPreferences(IMediaFormatPreferenceSpec mediaFormatPreferenceSpec) {
-        this.mediaFormatPreferenceSpec = mediaFormatPreferenceSpec;
+    public PlaybackProperties setMediaFormatSelector(IMediaFormatSelector mediaFormatSelector) {
+        this.mediaFormatSelector = mediaFormatSelector;
         return this;
+    }
+
+    public PlaybackProperties setMediaFormatPreference(EnigmaMediaFormat ... enigmaMediaFormats) {
+        return setMediaFormatSelector(new SimpleMediaFormatSelector(enigmaMediaFormats));
     }
 
     @Override
@@ -49,30 +52,5 @@ public final class PlaybackProperties implements IPlaybackProperties, Parcelable
 
     private boolean equals(PlaybackProperties obj) {
         return obj.playFrom == this.playFrom;
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-
-    public static final Creator<PlaybackProperties> CREATOR = new Creator<PlaybackProperties>() {
-        @Override
-        public PlaybackProperties createFromParcel(Parcel source) {
-            PlaybackProperties playbackProperties = new PlaybackProperties();
-            playbackProperties.playFrom = source.readParcelable(getClass().getClassLoader());
-            return playbackProperties;
-        }
-
-        @Override
-        public PlaybackProperties[] newArray(int size) {
-            return new PlaybackProperties[size];
-        }
-    };
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeParcelable(playFrom, flags);
     }
 }

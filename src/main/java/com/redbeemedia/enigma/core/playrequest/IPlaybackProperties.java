@@ -3,7 +3,7 @@ package com.redbeemedia.enigma.core.playrequest;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.redbeemedia.enigma.core.format.IMediaFormatPreferenceSpec;
+import com.redbeemedia.enigma.core.format.IMediaFormatSelector;
 import com.redbeemedia.enigma.core.time.Duration;
 
 import java.util.ArrayList;
@@ -14,7 +14,7 @@ import java.util.Objects;
 
 public interface IPlaybackProperties {
     PlayFrom getPlayFrom();
-    IMediaFormatPreferenceSpec getMediaFormatPreferences();
+    IMediaFormatSelector getMediaFormatSelector();
 
     class PlayFrom implements Parcelable {
         public static final PlayFrom PLAYER_DEFAULT = new PlayFrom(PlayFromPreference.LIVE_EDGE, PlayFromPreference.BEGINNING);

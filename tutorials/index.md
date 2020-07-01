@@ -79,3 +79,4 @@ The following tutorials provide in-depth information about different areas of in
 [EnigmaPlayerState](advanced_topics/enigma_player_state.md)<br/>
 [Playback Session](advanced_topics/playback_session.md)<br/>
 [Live drift correction (ExoPlayer)](advanced_topics/drift_correction.md)<br/>
+[Overriding media format selection logic](advanced_topics/media_format_preference.md)<br/>

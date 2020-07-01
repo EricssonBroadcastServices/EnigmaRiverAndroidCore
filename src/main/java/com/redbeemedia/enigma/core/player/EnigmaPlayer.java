@@ -19,10 +19,9 @@ import com.redbeemedia.enigma.core.error.UnexpectedError;
 import com.redbeemedia.enigma.core.format.EnigmaMediaFormat;
 import com.redbeemedia.enigma.core.format.EnigmaMediaFormat.DrmTechnology;
 import com.redbeemedia.enigma.core.format.EnigmaMediaFormat.StreamFormat;
-import com.redbeemedia.enigma.core.format.IMediaFormatPreferenceSpec;
+import com.redbeemedia.enigma.core.format.IMediaFormatSelector;
 import com.redbeemedia.enigma.core.format.IMediaFormatSupportSpec;
-import com.redbeemedia.enigma.core.format.MediaFormatPreferenceList;
-import com.redbeemedia.enigma.core.format.MediaFormatPreferenceSpec;
+import com.redbeemedia.enigma.core.format.SimpleMediaFormatSelector;
 import com.redbeemedia.enigma.core.playable.IPlayable;
 import com.redbeemedia.enigma.core.playable.IPlayableHandler;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
@@ -78,10 +77,13 @@ import java.util.Map;
 
 public class EnigmaPlayer implements IEnigmaPlayer {
     private static final String TAG = "EnigmaPlayer";
-    private IMediaFormatPreferenceSpec formatPreferenceSpec = new MediaFormatPreferenceSpec(new EnigmaMediaFormat(StreamFormat.DASH, DrmTechnology.WIDEVINE),
-                                                                                        new EnigmaMediaFormat(StreamFormat.DASH, DrmTechnology.NONE),
-                                                                                        new EnigmaMediaFormat(StreamFormat.HLS, DrmTechnology.FAIRPLAY),
-                                                                                        new EnigmaMediaFormat(StreamFormat.HLS, DrmTechnology.NONE));
+
+    private static final IMediaFormatSelector DEFAULT_MEDIA_FORMAT_SELECTOR = new SimpleMediaFormatSelector(EnigmaMediaFormat.DASH().widevine(),
+                                                                                                            EnigmaMediaFormat.DASH().unenc(),
+                                                                                                            EnigmaMediaFormat.HLS().fairplay(),
+                                                                                                            EnigmaMediaFormat.HLS().unenc(),
+                                                                                                            EnigmaMediaFormat.SMOOTHSTREAMING().unenc());
+    private IMediaFormatSelector mediaFormatSelector = null;
 
     private ISession session;
     private IPlayerImplementation playerImplementation;
@@ -192,16 +194,13 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         return this;
     }
 
-    public EnigmaPlayer setMediaFormatPreferenceSpec(IMediaFormatPreferenceSpec formatPreferenceSpec) {
-        if(formatPreferenceSpec == null) {
-            throw new IllegalArgumentException("argument must not be null");
-        }
-        this.formatPreferenceSpec = formatPreferenceSpec;
+    public EnigmaPlayer setMediaFormatSelector(IMediaFormatSelector mediaFormatSelector) {
+        this.mediaFormatSelector = mediaFormatSelector;
         return this;
     }
 
-    public EnigmaPlayer setMediaFormatPreference(EnigmaMediaFormat ... mediaFormatPreference) {
-        return setMediaFormatPreferenceSpec(new MediaFormatPreferenceSpec(mediaFormatPreference));
+    public EnigmaPlayer setMediaFormatPreference(EnigmaMediaFormat... mediaFormatPreference) {
+        return setMediaFormatSelector(new SimpleMediaFormatSelector(mediaFormatPreference));
     }
 
     private <T extends IInternalCallbackObject> T useCallbackHandlerIfPresent(Class<T> callbackInterface, T callback) {
@@ -345,19 +344,17 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
                 @Override
                 public JSONObject getUsableMediaFormat(JSONArray formats) throws JSONException {
-                    MediaFormatPreferenceList preferenceList = new MediaFormatPreferenceList();
-                    preferenceList = formatPreferenceSpec.applyPreference(preferenceList);
-                    IMediaFormatPreferenceSpec playbackPreferences = playbackProperties.getMediaFormatPreferences();
-                    if(playbackPreferences != null) {
-                        preferenceList = playbackPreferences.applyPreference(preferenceList);
-                    }
-                    return EnigmaPlayer.getUsableMediaFormat(formats, environment.formatSupportSpec, preferenceList);
+                    IMediaFormatSelector selector = new ChainedMediaFormatSelector(
+                            DEFAULT_MEDIA_FORMAT_SELECTOR,
+                            mediaFormatSelector,
+                            playbackProperties.getMediaFormatSelector());
+                    return EnigmaPlayer.getUsableMediaFormat(formats, environment.formatSupportSpec, selector);
                 }
 
                 @Override
                 public IPlaybackSessionInfo getPlaybackSessionInfo(String manifestUrl) {
                     IPlaybackTechnologyIdentifier technologyIdentifier = environment.playerImplementationInternals.getTechnologyIdentifier();
-                    return new EnigmaPlayer.PlaybackSessionInfo(playable, assetId, manifestUrl, technologyIdentifier);
+                    return new EnigmaPlayer.PlaybackSessionInfo(playable, assetId, manifestUrl, technologyIdentifier, playbackProperties);
                 }
 
                 @Override
@@ -447,7 +444,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         return OpenContainerUtil.getValueSynchronized(playbackSessionSeed) != null;
     }
 
-    private static JSONObject getUsableMediaFormat(JSONArray formats, IMediaFormatSupportSpec formatSupportSpec, MediaFormatPreferenceList preferenceList) throws JSONException {
+    private static JSONObject getUsableMediaFormat(JSONArray formats, IMediaFormatSupportSpec formatSupportSpec, IMediaFormatSelector mediaFormatSelector) throws JSONException {
         Map<EnigmaMediaFormat, JSONObject> foundFormats = new HashMap<>();
         for(int i = 0; i < formats.length(); ++i) {
             JSONObject mediaFormat = formats.getJSONObject(i);
@@ -458,14 +455,16 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                 }
             }
         }
-        for(EnigmaMediaFormat format : preferenceList.getList()) {
-            JSONObject object = foundFormats.get(format);
+
+        EnigmaMediaFormat selection = mediaFormatSelector.select(null, foundFormats.keySet());
+        if(selection != null) {
+            JSONObject object = foundFormats.get(selection);
             if(object != null) {
                 return object;
             }
         }
 
-        return null;//If the format is not in our preferenceList we don't support it.
+        return null;//If no format was picked we can't decide.
     }
 
     /*package-protected*/ static EnigmaMediaFormat parseMediaFormat(JSONObject mediaFormat) throws JSONException {
@@ -1076,12 +1075,14 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         private final String assetId;
         private final String mediaLocator;
         private final IPlaybackTechnologyIdentifier tech;
+        private final IPlaybackProperties playbackProperties;
 
-        public PlaybackSessionInfo(IPlayable playable, String assetId, String mediaLocator, IPlaybackTechnologyIdentifier tech) {
+        public PlaybackSessionInfo(IPlayable playable, String assetId, String mediaLocator, IPlaybackTechnologyIdentifier tech, IPlaybackProperties playbackProperties) {
             this.playable = playable;
             this.assetId = assetId;
             this.mediaLocator = mediaLocator;
             this.tech = tech;
+            this.playbackProperties = playbackProperties;
         }
 
         @Override
@@ -1123,6 +1124,11 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         public String getCurrentProgramId() {
             IProgram currentProgram = timeline.programTracker.getCurrentProgram();
             return currentProgram != null ? currentProgram.getProgramId() : null;
+        }
+
+        @Override
+        public IPlaybackProperties getPlaybackProperties() {
+            return playbackProperties;
         }
     }
 

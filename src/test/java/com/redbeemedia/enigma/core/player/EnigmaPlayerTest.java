@@ -16,9 +16,7 @@ import com.redbeemedia.enigma.core.error.NoSupportedMediaFormatsError;
 import com.redbeemedia.enigma.core.error.UnexpectedError;
 import com.redbeemedia.enigma.core.format.EnigmaMediaFormat;
 import com.redbeemedia.enigma.core.format.IMediaFormatSupportSpec;
-import com.redbeemedia.enigma.core.format.MediaFormatPreferenceSpec;
 import com.redbeemedia.enigma.core.http.HttpStatus;
-import com.redbeemedia.enigma.core.http.IHttpCall;
 import com.redbeemedia.enigma.core.http.MockHttpHandler;
 import com.redbeemedia.enigma.core.playable.IPlayable;
 import com.redbeemedia.enigma.core.playable.IPlayableHandler;
@@ -60,7 +58,6 @@ import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -142,9 +139,9 @@ public class EnigmaPlayerTest {
 
     @Test
     public void testParseMediaFormat() throws JSONException {
-        EnigmaMediaFormat DASH_UNENC = new EnigmaMediaFormat(EnigmaMediaFormat.StreamFormat.DASH, EnigmaMediaFormat.DrmTechnology.NONE);
-        EnigmaMediaFormat DASH_WIDEVINE = new EnigmaMediaFormat(EnigmaMediaFormat.StreamFormat.DASH, EnigmaMediaFormat.DrmTechnology.WIDEVINE);
-        EnigmaMediaFormat HLS_FAIRPLAY = new EnigmaMediaFormat(EnigmaMediaFormat.StreamFormat.HLS, EnigmaMediaFormat.DrmTechnology.FAIRPLAY);
+        EnigmaMediaFormat DASH_UNENC = EnigmaMediaFormat.DASH().unenc();
+        EnigmaMediaFormat DASH_WIDEVINE = EnigmaMediaFormat.DASH().widevine();
+        EnigmaMediaFormat HLS_FAIRPLAY = EnigmaMediaFormat.HLS().fairplay();
 
         JSONObject dashUnencMediaFormat = new JSONObject();
         dashUnencMediaFormat.put("format", "DASH");
@@ -198,7 +195,7 @@ public class EnigmaPlayerTest {
             public void install(IEnigmaPlayerEnvironment environment) {
                 super.install(environment);
                 environment.setMediaFormatSupportSpec(new IMediaFormatSupportSpec() {
-                    private final EnigmaMediaFormat DASH_UNENC = new EnigmaMediaFormat(EnigmaMediaFormat.StreamFormat.DASH, EnigmaMediaFormat.DrmTechnology.NONE);
+                    private final EnigmaMediaFormat DASH_UNENC = EnigmaMediaFormat.DASH().unenc();
                     @Override
                     public boolean supports(EnigmaMediaFormat enigmaMediaFormat) {
                         return enigmaMediaFormat.equals(DASH_UNENC);
@@ -1075,8 +1072,8 @@ public class EnigmaPlayerTest {
         Assert.assertEquals(lastLoadedUrl[0], "http://example.com/dash-widewine-manifest"); //Default
 
         enigmaPlayer.setMediaFormatPreference(
-                new EnigmaMediaFormat(EnigmaMediaFormat.StreamFormat.HLS, EnigmaMediaFormat.DrmTechnology.WIDEVINE),
-                new EnigmaMediaFormat(EnigmaMediaFormat.StreamFormat.HLS, EnigmaMediaFormat.DrmTechnology.NONE));
+                EnigmaMediaFormat.HLS().widevine(),
+                EnigmaMediaFormat.HLS().unenc());
 
         enigmaPlayer.play(new MockPlayRequest("mockMock"));
         loadCalled.addToExpected(1);
@@ -1085,13 +1082,13 @@ public class EnigmaPlayerTest {
         Assert.assertEquals(lastLoadedUrl[0], "http://example.com/hls-unenc-manifest");
 
         IPlaybackProperties playbackProperties = new PlaybackProperties()
-                .setMediaFormatPreferences(new MediaFormatPreferenceSpec(
-                        new EnigmaMediaFormat(EnigmaMediaFormat.StreamFormat.DASH, EnigmaMediaFormat.DrmTechnology.PLAYREADY),
-                        new EnigmaMediaFormat(EnigmaMediaFormat.StreamFormat.DASH, EnigmaMediaFormat.DrmTechnology.FAIRPLAY),
-                        new EnigmaMediaFormat(EnigmaMediaFormat.StreamFormat.HLS, EnigmaMediaFormat.DrmTechnology.FAIRPLAY),
-                        new EnigmaMediaFormat(EnigmaMediaFormat.StreamFormat.DASH, EnigmaMediaFormat.DrmTechnology.WIDEVINE),
-                        new EnigmaMediaFormat(EnigmaMediaFormat.StreamFormat.DASH, EnigmaMediaFormat.DrmTechnology.NONE)
-                ));
+                .setMediaFormatPreference(
+                        EnigmaMediaFormat.DASH().playready(),
+                        EnigmaMediaFormat.DASH().fairplay(),
+                        EnigmaMediaFormat.HLS().fairplay(),
+                        EnigmaMediaFormat.DASH().widevine(),
+                        EnigmaMediaFormat.DASH().unenc()
+                );
         enigmaPlayer.play(new MockPlayRequest("fakeAsset").setPlaybackProperties(playbackProperties));
         loadCalled.addToExpected(1);
 
