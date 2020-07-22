@@ -1,7 +1,7 @@
 ### Downloads and offline playback series
 # Downloads app
 For a complete demonstration on how to use the download API you can check out the source code
-for the tutorial app call [downloads](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.1.0-BETA-1/downloads).
+for the tutorial app call [downloads](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.1.0-BETA-2/downloads).
 
 
 ___
