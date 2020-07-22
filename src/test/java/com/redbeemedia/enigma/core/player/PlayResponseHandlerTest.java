@@ -12,6 +12,7 @@ import com.redbeemedia.enigma.core.error.InvalidJsonToServerError;
 import com.redbeemedia.enigma.core.error.InvalidSessionTokenError;
 import com.redbeemedia.enigma.core.error.LicenceExpiredError;
 import com.redbeemedia.enigma.core.error.NotEntitledToAssetError;
+import com.redbeemedia.enigma.core.error.ServerError;
 import com.redbeemedia.enigma.core.error.ServerTimeoutError;
 import com.redbeemedia.enigma.core.error.TooManyConcurrentStreamsError;
 import com.redbeemedia.enigma.core.error.TooManyConcurrentSvodStreamsError;
@@ -58,7 +59,7 @@ public class PlayResponseHandlerTest {
             registry.registerExpectedType(404,  "UNKNOWN_ASSET",InvalidAssetError.class);
             registry.registerExpectedType(404,  "Other message",UnexpectedHttpStatusError.class);
             registry.registerExpectedType(422,  "Any message",InvalidJsonToServerError.class);
-            registry.registerExpectedType(500,  "Any message",ServerTimeoutError.class);
+            registry.registerExpectedType(500,  "Any message", ServerError.class);
         }
     };
 
