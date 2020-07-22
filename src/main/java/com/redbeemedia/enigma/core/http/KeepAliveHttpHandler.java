@@ -2,6 +2,9 @@ package com.redbeemedia.enigma.core.http;
 
 import android.os.Process;
 
+import com.redbeemedia.enigma.core.util.OpenContainer;
+import com.redbeemedia.enigma.core.util.OpenContainerUtil;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,6 +12,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -56,12 +60,33 @@ public class KeepAliveHttpHandler implements IHttpHandler {
     }
 
     @Override // Maybe this should return a Future? https://developer.android.com/reference/java/util/concurrent/Future
-    public void doHttp(final URL url,
+    public IHttpTask doHttp(final URL url,
                        final IHttpCall httpCall,
                        final IHttpResponseHandler responseHandler)
     {
         final URLConnectionRunnable runnable = new URLConnectionRunnable(url, httpCall, responseHandler);
-        mService.execute(runnable);
+        Future<?> future = mService.submit(runnable);
+        return new IHttpTask() {
+            @Override
+            public boolean isDone() {
+                return future.isDone();
+            }
+
+            @Override
+            public void cancel(long joinMillis) {
+                long start = getCurrentTimeMillis();
+
+                future.cancel(true);
+
+                while (!OpenContainerUtil.getValueSynchronized(runnable.done) && (joinMillis == 0 || (getCurrentTimeMillis()-start) <= joinMillis)) {
+                    try {
+                        Thread.sleep(1);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            }
+        };
     }
 
     protected int getDefaultConnectTimeout() {
@@ -70,6 +95,10 @@ public class KeepAliveHttpHandler implements IHttpHandler {
 
     protected int getDefaultReadTimeout() {
         return 0;
+    }
+
+    protected long getCurrentTimeMillis() {
+        return System.currentTimeMillis();
     }
 
     @Override
@@ -82,6 +111,8 @@ public class KeepAliveHttpHandler implements IHttpHandler {
         private final URL mURL;
         private final IHttpCall mCall;
         private final IHttpResponseHandler mHandler;
+
+        private final OpenContainer<Boolean> done = new OpenContainer<>(false);
 
         public URLConnectionRunnable(final URL url,
                                      final IHttpCall call,
@@ -186,6 +217,8 @@ public class KeepAliveHttpHandler implements IHttpHandler {
 
             } catch (final IOException e) {
                 mHandler.onException(e);
+            } finally {
+                OpenContainerUtil.setValueSynchronized(done, true, null);
             }
         }
     }

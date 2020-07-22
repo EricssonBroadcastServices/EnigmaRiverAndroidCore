@@ -9,7 +9,10 @@ import com.redbeemedia.enigma.core.context.exception.ContextInitializationExcept
 import com.redbeemedia.enigma.core.epg.IEpgLocator;
 import com.redbeemedia.enigma.core.http.DefaultHttpHandler;
 import com.redbeemedia.enigma.core.http.IHttpHandler;
+import com.redbeemedia.enigma.core.network.IDefaultNetworkMonitor;
+import com.redbeemedia.enigma.core.network.INetworkMonitor;
 import com.redbeemedia.enigma.core.task.ITaskFactory;
+import com.redbeemedia.enigma.core.task.ITaskFactoryProvider;
 import com.redbeemedia.enigma.core.util.UrlPath;
 import com.redbeemedia.enigma.core.util.device.DeviceInfo;
 import com.redbeemedia.enigma.core.util.device.IDeviceInfo;
@@ -28,7 +31,7 @@ public final class EnigmaRiverContext {
             }
             if(initializedContext == null) {
                 initializedContext = new EnigmaRiverInitializedContext(application, initialization);
-                EnigmaModuleInitializer.initializeModules();
+                EnigmaModuleInitializer.initializeModules(new ModuleContextInitialization(application));
             } else {
                 throw new IllegalStateException("EnigmaRiverContext already initialized.");
             }
@@ -67,9 +70,19 @@ public final class EnigmaRiverContext {
         return initializedContext.activityLifecycleManager;
     }
 
+    /**
+     *
+     * @deprecated Use {@link #getTaskFactoryProvider()} <br> Ex: {@code getTaskFactoryProvider().getTaskFactory()}
+     */
+    @Deprecated
     public static ITaskFactory getTaskFactory() {
         assertInitialized();
-        return initializedContext.taskFactory;
+        return initializedContext.taskFactoryProvider.getTaskFactory();
+    }
+
+    public static ITaskFactoryProvider getTaskFactoryProvider() {
+        assertInitialized();
+        return initializedContext.taskFactoryProvider;
     }
 
     public static IEpgLocator getEpgLocator() {
@@ -77,9 +90,14 @@ public final class EnigmaRiverContext {
         return initializedContext.epgLocator;
     }
 
+    public static INetworkMonitor getNetworkMonitor() {
+        assertInitialized();
+        return initializedContext.networkMonitor;
+    }
+
     //Version if the core library
     public static String getVersion() {
-        String version = "r3.0.5";
+        String version = "r3.1.0-BETA-1";
         if(version.contains("REPLACE_WITH_RELEASE_VERSION")) {
             return "dev-snapshot-"+BuildConfig.VERSION_NAME;
         } else {
@@ -98,8 +116,9 @@ public final class EnigmaRiverContext {
         private String exposureBaseUrl = null;
         private IDeviceInfo deviceInfo = null;
         private IActivityLifecycleManagerFactory activityLifecycleManagerFactory = new DefaultActivityLifecycleManagerFactory();
-        private ITaskFactory taskFactory = new DefaultTaskFactory();
+        private ITaskFactoryProvider taskFactoryProvider = new DefaultTaskFactoryProvider(new DefaultTaskFactory());
         private IEpgLocator epgLocator = new DefaultEpgLocator();
+        private INetworkMonitor networkMonitor = new DefaultNetworkMonitor();
 
         public EnigmaRiverContextInitialization(String exposureBaseUrl) {
             this.exposureBaseUrl = exposureBaseUrl;
@@ -151,11 +170,15 @@ public final class EnigmaRiverContext {
         }
 
         public ITaskFactory getTaskFactory() {
-            return taskFactory;
+            return taskFactoryProvider.getTaskFactory();
         }
 
         protected EnigmaRiverContextInitialization setTaskFactory(ITaskFactory taskFactory) {
-            this.taskFactory = taskFactory;
+            if(taskFactoryProvider instanceof DefaultTaskFactoryProvider) {
+                ((DefaultTaskFactoryProvider) taskFactoryProvider).setTaskFactory(taskFactory);
+            } else {
+                throw new IllegalStateException("Custom ITaskFactoryProvider has been set. Use this to set the TaskFactory");
+            }
             return this;
         }
 
@@ -167,6 +190,24 @@ public final class EnigmaRiverContext {
             this.epgLocator = epgLocator;
             return this;
         }
+
+        public ITaskFactoryProvider getTaskFactoryProvider() {
+            return taskFactoryProvider;
+        }
+
+        public EnigmaRiverContextInitialization setTaskFactoryProvider(ITaskFactoryProvider taskFactoryProvider) {
+            this.taskFactoryProvider = taskFactoryProvider;
+            return this;
+        }
+
+        public INetworkMonitor getNetworkMonitor() {
+            return networkMonitor;
+        }
+
+        public EnigmaRiverContextInitialization setNetworkMonitor(INetworkMonitor networkMonitor) {
+            this.networkMonitor = networkMonitor;
+            return this;
+        }
     }
 
     private static class EnigmaRiverInitializedContext {
@@ -174,8 +215,9 @@ public final class EnigmaRiverContext {
         private final IHttpHandler httpHandler;
         private final IDeviceInfo deviceInfo;
         private final IActivityLifecycleManager activityLifecycleManager;
-        private final ITaskFactory taskFactory;
+        private final ITaskFactoryProvider taskFactoryProvider;
         private final IEpgLocator epgLocator;
+        private final INetworkMonitor networkMonitor;
 
         public EnigmaRiverInitializedContext(Application application, EnigmaRiverContextInitialization initialization) {
             try {
@@ -187,8 +229,12 @@ public final class EnigmaRiverContext {
                 this.httpHandler = initialization.getHttpHandler();
                 this.deviceInfo = initialization.getDeviceInfo(application);
                 this.activityLifecycleManager = initialization.getActivityLifecycleManager(application);
-                this.taskFactory = initialization.getTaskFactory();
+                this.taskFactoryProvider = initialization.getTaskFactoryProvider();
                 this.epgLocator = initialization.getEpgLocator();
+                this.networkMonitor = initialization.getNetworkMonitor();
+                if(networkMonitor instanceof IDefaultNetworkMonitor) {
+                    ((IDefaultNetworkMonitor) networkMonitor).start(application.getApplicationContext(), taskFactoryProvider);
+                }
                 ProcessLifecycleHandler.get().initialize(application);
             } catch (Exception e) {
                 throw new ContextInitializationException(e);

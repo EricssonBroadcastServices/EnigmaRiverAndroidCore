@@ -4,7 +4,7 @@ import java.io.InputStream;
 import java.net.URL;
 
 public interface IHttpHandler {
-    void doHttp(URL url, IHttpCall httpCall, IHttpResponseHandler responseHandler);
+    IHttpTask doHttp(URL url, IHttpCall httpCall, IHttpResponseHandler responseHandler);
     void doHttpBlocking(URL url, IHttpCall httpCall, IHttpResponseHandler responseHandler) throws InterruptedException;
 
     interface IHttpResponseHandler {

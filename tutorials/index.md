@@ -32,7 +32,7 @@ At the end, you should have a running Android application that will:
 [Spinner and Live Indicator](custom_ui/spinner_and_live.md)<br/>
 [Custom UI app](custom_ui/custom_ui_app.md)<br/>
 
-### Audio and subtitles series (work in progress)
+### Audio and subtitles series
 ###### Purpose
 The purpose of this series is to teach you to build a custom UI that will keep track and change audio and subtitle tracks with Enigma Android Player.
 ###### What will you learn
@@ -44,7 +44,7 @@ At the end, you should have a running Android application that will:
 [Prerequisites](audio_subs/prerequisites.md)<br/>
 [Audio and subtitle selection](audio_subs/audio_and_text_tracks.md)<br/>
 
-### Chromecast integration series (work in progress)
+### Chromecast integration series
 ###### Purpose
 The purpose of this series is to teach you how to integrate Chromecast support to Enigma Android Player.
 ###### What will you learn
@@ -56,6 +56,26 @@ At the end, you should have a running Android application that will:
 [Prerequisites](chromecast/prerequisites.md)<br/>
 [Integrating Red Bee OTT cast support](chromecast/chromecast.md)<br/>
 [Advanced usage of the cast-module](chromecast/chromecast_advanced.md)<br/>
+
+### Downloads and offline playback series
+###### Purpose
+The purpose of this series is to how to add support for offline playback in your Enigma Android Player application.
+###### What will you learn
+At the end, you should have a running Android application that will:
+* Check if an asset is downloadable.
+* Download an asset.
+* Show a list of downloaded asset.
+* Remove a downloaded asset.
+
+[Prerequisites](downloads/prerequisites.md)<br/>
+[Gradle dependencies](downloads/dependencies.md)<br/>
+[Check if an asset is downloadable](downloads/check_downloadability.md)<br/>
+[Using the download API](downloads/enigma_download.md)<br/>
+[Start asset download](downloads/start_download.md)<br/>
+[Listing downloaded assets](downloads/list_downloads.md)<br/>
+[Start playback of a downloaded asset](downloads/play_download.md)<br/>
+[Remove downloaded assets](downloads/remove_download.md)<br/>
+[Downloads app](downloads/example_app.md)<br/>
 
 ### Migration guide (Android SDK 2.0 -> Enigma River Android SDK)
 ###### Purpose

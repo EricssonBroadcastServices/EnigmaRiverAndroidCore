@@ -1,4 +1,4 @@
-### Chromecast integration series (work in progress)
+### Chromecast integration series
 # Prerequisites
 This tutorial assumes that you have:
 * completed the [basics series](../index.md#basics-series) tutorial.

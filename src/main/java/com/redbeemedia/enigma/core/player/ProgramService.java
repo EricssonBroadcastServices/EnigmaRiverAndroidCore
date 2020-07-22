@@ -2,15 +2,27 @@ package com.redbeemedia.enigma.core.player;
 
 import com.redbeemedia.enigma.core.entitlement.EntitlementData;
 import com.redbeemedia.enigma.core.entitlement.EntitlementRequest;
+import com.redbeemedia.enigma.core.entitlement.EntitlementStatus;
 import com.redbeemedia.enigma.core.entitlement.IEntitlementProvider;
 import com.redbeemedia.enigma.core.entitlement.IEntitlementResponseHandler;
+import com.redbeemedia.enigma.core.entitlement.listener.BaseEntitlementListener;
 import com.redbeemedia.enigma.core.entitlement.listener.EntitlementCollector;
 import com.redbeemedia.enigma.core.entitlement.listener.IEntitlementListener;
 import com.redbeemedia.enigma.core.epg.IProgram;
+import com.redbeemedia.enigma.core.error.AssetBlockedError;
+import com.redbeemedia.enigma.core.error.ConcurrentStreamsLimitReachedError;
 import com.redbeemedia.enigma.core.error.EnigmaError;
+import com.redbeemedia.enigma.core.error.GeoBlockedError;
+import com.redbeemedia.enigma.core.error.NotAvailableError;
+import com.redbeemedia.enigma.core.error.NotEntitledError;
+import com.redbeemedia.enigma.core.error.NotPublishedError;
 import com.redbeemedia.enigma.core.playbacksession.BasePlaybackSessionListener;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
+import com.redbeemedia.enigma.core.player.listener.BaseEnigmaPlayerListener;
+import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.session.ISession;
+import com.redbeemedia.enigma.core.task.ITaskFactoryProvider;
+import com.redbeemedia.enigma.core.task.Repeater;
 import com.redbeemedia.enigma.core.time.Duration;
 import com.redbeemedia.enigma.core.time.ITimeProvider;
 import com.redbeemedia.enigma.core.time.SystemBootTimeProvider;
@@ -23,13 +35,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
-/*package-protected*/ class ProgramService {
+/*package-protected*/ class ProgramService implements IInternalPlaybackSessionListener {
+    private static final long PROGRAM_SERVICE_ENTITLEMENT_CHECK_INTERVAL_MILLIS = 4000L;
+
     private final ISession session;
-    private final StreamInfo streamInfo;
+    private final IStreamInfo streamInfo;
     private final IPlaybackSessionInfo playbackSessionInfo;
     private final IStreamPrograms streamPrograms;
     private final IEntitlementProvider entitlementProvider;
     private final ITimeProvider timeProviderForCache;
+    private final Repeater checkEntitlementRepeater;
+    private final IEnigmaPlayerListener playerListener;
     private boolean playingFromLive;
     private final EntitlementCollector entitlementCollector = new EntitlementCollector();
     private final List<ICachedEntitlementResponse> cachedEntitlementResponses = new ArrayList<>();
@@ -37,7 +53,7 @@ import java.util.Objects;
 
     private final OpenContainer<EntitlementData> currentEntitlementData = new OpenContainer<>(null);
 
-    public ProgramService(ISession session, StreamInfo streamInfo, IStreamPrograms streamPrograms, IPlaybackSessionInfo playbackSessionInfo, IEntitlementProvider entitlementProvider, IPlaybackSession playbackSession) {
+    public ProgramService(ISession session, IStreamInfo streamInfo, IStreamPrograms streamPrograms, IPlaybackSessionInfo playbackSessionInfo, IEntitlementProvider entitlementProvider, IPlaybackSession playbackSession, ITaskFactoryProvider taskFactoryProvider) {
         this.session = session;
         this.streamInfo = streamInfo;
         this.streamPrograms = streamPrograms;
@@ -51,13 +67,73 @@ import java.util.Objects;
                 playingFromLive = live;
             }
         });
+        this.checkEntitlementRepeater = new Repeater(taskFactoryProvider.getMainThreadTaskFactory(), PROGRAM_SERVICE_ENTITLEMENT_CHECK_INTERVAL_MILLIS, this::checkEntitlement);
+        this.playerListener = new BaseEnigmaPlayerListener() {
+            @Override
+            public void onProgramChanged(IProgram from, IProgram to) {
+                checkEntitlementRepeater.executeNow();
+            }
+        };
+    }
+
+    @Override
+    public void onStart(OnStartArgs args) {
+        entitlementCollector.addListener(new BaseEntitlementListener() {
+            @Override
+            public void onEntitlementChanged(EntitlementData oldData, EntitlementData newData) {
+                if (newData != null && !newData.isSuccess()) {
+                    handleEntitlementStatus(args.communicationsChannel, newData.getStatus());
+                }
+            }
+        });
+        checkEntitlementRepeater.setEnabled(true);
+        args.enigmaPlayer.addListener(playerListener);
+    }
+
+    @Override
+    public void onStop(OnStopArgs args) {
+        checkEntitlementRepeater.setEnabled(false);
+        args.enigmaPlayer.removeListener(playerListener);
+    }
+
+    protected static void handleEntitlementStatus(IEnigmaPlayerConnection.ICommunicationsChannel communicationsChannel, EntitlementStatus status) {
+        if(status == EntitlementStatus.SUCCESS) {
+            return;
+        }
+        if(status == null) {
+            communicationsChannel.onPlaybackError(new NotEntitledError(status), true);
+            return;
+        }
+        switch (status) {
+            case NOT_AVAILABLE: {
+                communicationsChannel.onPlaybackError(new NotAvailableError(), true);
+            } break;
+            case BLOCKED: {
+                communicationsChannel.onPlaybackError(new AssetBlockedError(), true);
+            } break;
+            case GEO_BLOCKED: {
+                communicationsChannel.onPlaybackError(new GeoBlockedError(), true);
+            } break;
+            case CONCURRENT_STREAMS_LIMIT_REACHED: {
+                communicationsChannel.onPlaybackError(new ConcurrentStreamsLimitReachedError(), true);
+            } break;
+            case NOT_PUBLISHED: {
+                communicationsChannel.onPlaybackError(new NotPublishedError(), true);
+            } break;
+            case NOT_ENTITLED: {
+                communicationsChannel.onPlaybackError(new NotEntitledError(EntitlementStatus.NOT_ENTITLED), true);
+            } break;
+            default: {
+                communicationsChannel.onPlaybackError(new NotEntitledError(status), true);
+            } break;
+        }
     }
 
     protected ITimeProvider createTimeProviderForCache() {
         return new SystemBootTimeProvider();
     }
 
-    public void checkEntitlement() {
+    protected void checkEntitlement() {
         if(streamPrograms != null) {
             Duration offset = playbackSessionInfo.getCurrentPlaybackOffset();
             if(lastCheckedOffset != null && lastCheckedOffset.equals(offset)) {
@@ -171,7 +247,7 @@ import java.util.Objects;
         });
     }
 
-    public void addEntitlementListener(IEntitlementListener listener) {
+    protected void addEntitlementListener(IEntitlementListener listener) {
         entitlementCollector.addListener(listener);
     }
 

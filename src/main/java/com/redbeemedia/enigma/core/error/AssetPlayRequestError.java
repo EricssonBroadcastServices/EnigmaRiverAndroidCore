@@ -2,7 +2,7 @@ package com.redbeemedia.enigma.core.error;
 
 
 
-public abstract class AssetPlayRequestError extends EnigmaError {
+public abstract class AssetPlayRequestError extends PlayRequestError {
     /*package-protected*/ AssetPlayRequestError() {
         this(null, null);
     }

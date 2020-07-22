@@ -1,28 +1,39 @@
 package com.redbeemedia.enigma.core.player;
 
+import com.redbeemedia.enigma.core.businessunit.IBusinessUnit;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
-import com.redbeemedia.enigma.core.epg.IEpg;
+import com.redbeemedia.enigma.core.entitlement.IEntitlementProvider;
+import com.redbeemedia.enigma.core.entitlement.MockEntitlementProvider;
+import com.redbeemedia.enigma.core.http.MockHttpHandler;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.player.controls.AssertiveControlResultHandler;
 import com.redbeemedia.enigma.core.player.listener.BaseEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.timeline.ITimelinePosition;
+import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
 import com.redbeemedia.enigma.core.playrequest.MockPlayRequest;
 import com.redbeemedia.enigma.core.restriction.ContractRestriction;
 import com.redbeemedia.enigma.core.restriction.IContractRestriction;
 import com.redbeemedia.enigma.core.restriction.IContractRestrictions;
+import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.session.MockSession;
 import com.redbeemedia.enigma.core.task.ITask;
 import com.redbeemedia.enigma.core.task.ITaskFactory;
-import com.redbeemedia.enigma.core.task.MockTaskFactory;
+import com.redbeemedia.enigma.core.task.ITaskFactoryProvider;
 import com.redbeemedia.enigma.core.task.TaskException;
 import com.redbeemedia.enigma.core.testutil.Counter;
+import com.redbeemedia.enigma.core.testutil.json.JsonArrayBuilder;
+import com.redbeemedia.enigma.core.testutil.json.JsonObjectBuilder;
 import com.redbeemedia.enigma.core.time.ITimeProvider;
+import com.redbeemedia.enigma.core.time.MockTimeProvider;
+import com.redbeemedia.enigma.core.util.IHandler;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.regex.Pattern;
 
 public class ContractRestrictionTest {
 
@@ -202,12 +213,15 @@ public class ContractRestrictionTest {
 
     @Test
     public void testMaxBitrate() throws JSONException {
-        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+        MockHttpHandler httpHandler = new MockHttpHandler();
+        httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play"), "{\"formats\": [{\"format\": \"DASH\", \"mediaLocator\": \"http://example.com/mock.mpd\"}]}");
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(httpHandler).setTaskFactoryProvider(new ExecuteImmediatelyTaskFactoryProvider()));
+
 
         final Counter loadCalled = new Counter();
 
         JSONObject mock = new JSONObject();
-        EnigmaPlayer enigmaPlayer = newPlayerWithMockRestrictions(mock, new MockPlayerImplementation() {
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayerWithMockedPlaybackSession(new MockSession(), new MockPlayerImplementation() {
             @Override
             public void load(ILoadRequest loadRequest, IPlayerImplementationControlResultHandler resultHandler) {
                 Integer maxBitrate = loadRequest.getMaxBitrate();
@@ -220,12 +234,22 @@ public class ContractRestrictionTest {
         enigmaPlayer.play(new MockPlayRequest());
         loadCalled.assertCount(1);
 
-        mock.put("maxBitrate", 10000);
-        enigmaPlayer = newPlayerWithMockRestrictions(mock, new MockPlayerImplementation() {
+
+        JsonObjectBuilder playResponse = new JsonObjectBuilder();
+        {
+            JsonArrayBuilder formats = playResponse.putArray("formats");
+            formats.addObject()
+                    .put("format", "DASH")
+                    .put("mediaLocator", "http://example.com/mock.mpd");
+            JsonObjectBuilder contractRestrictions = playResponse.putObject("contractRestrictions");
+            contractRestrictions.put("maxBitrate", 10000);
+        }
+        httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play"), playResponse.toString());
+        enigmaPlayer = new EnigmaPlayerWithMockedPlaybackSession(new MockSession(), new MockPlayerImplementation() {
             @Override
             public void load(ILoadRequest loadRequest, IPlayerImplementationControlResultHandler resultHandler) {
                 Integer maxBitrate = loadRequest.getMaxBitrate();
-                Assert.assertEquals(10000, maxBitrate.intValue());
+                Assert.assertEquals(Integer.valueOf(10000), maxBitrate);
                 loadCalled.count();
                 super.load(loadRequest, resultHandler);
             }
@@ -237,12 +261,13 @@ public class ContractRestrictionTest {
 
     @Test
     public void testMaxResolutionHeight() throws JSONException {
-        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+        MockHttpHandler httpHandler = new MockHttpHandler();
+        httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play"), "{\"formats\": [{\"format\": \"DASH\", \"mediaLocator\": \"http://example.com/mock.mpd\"}]}");
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(httpHandler).setTaskFactoryProvider(new ExecuteImmediatelyTaskFactoryProvider()));
 
         final Counter loadCalled = new Counter();
 
-        JSONObject mock = new JSONObject();
-        EnigmaPlayer enigmaPlayer = newPlayerWithMockRestrictions(mock, new MockPlayerImplementation() {
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayerWithMockedPlaybackSession(new MockSession(), new MockPlayerImplementation() {
             @Override
             public void load(ILoadRequest loadRequest, IPlayerImplementationControlResultHandler resultHandler) {
                 Integer maxResoultionHeight = loadRequest.getMaxResoultionHeight();
@@ -255,12 +280,21 @@ public class ContractRestrictionTest {
         enigmaPlayer.play(new MockPlayRequest());
         loadCalled.assertCount(1);
 
-        mock.put("maxResHeight", 720);
-        enigmaPlayer = newPlayerWithMockRestrictions(mock, new MockPlayerImplementation() {
+        JsonObjectBuilder playResponse = new JsonObjectBuilder();
+        {
+            JsonArrayBuilder formats = playResponse.putArray("formats");
+            formats.addObject()
+                    .put("format", "DASH")
+                    .put("mediaLocator", "http://example.com/mock.mpd");
+            JsonObjectBuilder contractRestrictions = playResponse.putObject("contractRestrictions");
+            contractRestrictions.put("maxResHeight", 720);
+        }
+        httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play"), playResponse.toString());
+        enigmaPlayer = new EnigmaPlayerWithMockedPlaybackSession(new MockSession(), new MockPlayerImplementation() {
             @Override
             public void load(ILoadRequest loadRequest, IPlayerImplementationControlResultHandler resultHandler) {
                 Integer maxResoultionHeight = loadRequest.getMaxResoultionHeight();
-                Assert.assertEquals(720, maxResoultionHeight.intValue());
+                Assert.assertEquals(Integer.valueOf(720), maxResoultionHeight);
                 loadCalled.count();
                 super.load(loadRequest, resultHandler);
             }
@@ -273,10 +307,10 @@ public class ContractRestrictionTest {
     private static EnigmaPlayer newPlayerWithMockRestrictions(final JSONObject contractRestrictions, IPlayerImplementation playerImplementation) {
         return new EnigmaPlayerTest.EnigmaPlayerWithMockedTimeProvider(new MockSession(), playerImplementation) {
             @Override
-            protected IPlaybackSessionFactory newPlaybackSessionFactory(ITimeProvider timeProvider, IEpg epg) {
-                return new MockPlaybackSessionFactory() {
+            protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler, ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection) {
+                return new MockPlaybackStartAction(playRequest, playerConnection) {
                     @Override
-                    public IInternalPlaybackSession newInternalPlaybackSession() {
+                    protected IInternalPlaybackSession newInternalPlaybackSession() {
                         MockInternalPlaybackSession internalPlaybackSession = new MockInternalPlaybackSession(false);
                         internalPlaybackSession.setContractRestrictions(EnigmaContractRestrictions.createWithDefaults(contractRestrictions));
                         return internalPlaybackSession;
@@ -285,7 +319,21 @@ public class ContractRestrictionTest {
             }
 
             @Override
-            protected ITaskFactory getPlayTaskFactory() {
+            protected ITaskFactoryProvider getTaskFactoryProvider() {
+                return new ITaskFactoryProvider() {
+                    @Override
+                    public ITaskFactory getTaskFactory() {
+                        return getMockTaskFactory();
+                    }
+
+                    @Override
+                    public ITaskFactory getMainThreadTaskFactory() {
+                        return getMockTaskFactory();
+                    }
+                };
+            }
+
+            private ITaskFactory getMockTaskFactory() {
                 return new ITaskFactory() {
                     @Override
                     public ITask newTask(final Runnable runnable) {
@@ -297,7 +345,7 @@ public class ContractRestrictionTest {
 
                             @Override
                             public void startDelayed(long delayMillis) throws TaskException {
-                                throw new UnsupportedOperationException();
+                                // Ignore
                             }
 
                             @Override
@@ -309,5 +357,64 @@ public class ContractRestrictionTest {
                 };
             }
         };
+    }
+
+    private static class ExecuteImmediatelyTaskFactoryProvider implements ITaskFactoryProvider {
+
+        @Override
+        public ITaskFactory getTaskFactory() {
+            return new ITaskFactory() {
+                @Override
+                public ITask newTask(Runnable runnable) {
+                    return new ITask() {
+                        @Override
+                        public void start() throws TaskException {
+                            runnable.run();
+                        }
+
+                        @Override
+                        public void startDelayed(long delayMillis) throws TaskException {
+                            //Ignore
+                        }
+
+                        @Override
+                        public void cancel(long joinMillis) throws TaskException {
+                            //Ignore
+                        }
+                    };
+                }
+            };
+        }
+
+        @Override
+        public ITaskFactory getMainThreadTaskFactory() {
+            return getTaskFactory();
+        }
+    }
+
+    private static class EnigmaPlayerWithMockedPlaybackSession extends EnigmaPlayer {
+        public EnigmaPlayerWithMockedPlaybackSession(ISession session, IPlayerImplementation playerImplementation) {
+            super(session, playerImplementation);
+        }
+
+        @Override
+        protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler, ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection) {
+            return new DefaultPlaybackStartAction(session, businessUnit,timeProvider, playRequest, callbackHandler, taskFactoryProvider, playerImplementationControls, playerConnection) {
+                @Override
+                protected IInternalPlaybackSession newPlaybackSession(InternalPlaybackSession.ConstructorArgs constructorArgs) {
+                    return new MockInternalPlaybackSession(false);
+                }
+
+                @Override
+                protected IEntitlementProvider newEntitlementProvider() {
+                    return new MockEntitlementProvider();
+                }
+            };
+        }
+
+        @Override
+        protected ITimeProvider newTimeProvider(IBusinessUnit businessUnit, EnigmaPlayer.EnigmaPlayerLifecycle lifecycle) {
+            return new MockTimeProvider();
+        }
     }
 }

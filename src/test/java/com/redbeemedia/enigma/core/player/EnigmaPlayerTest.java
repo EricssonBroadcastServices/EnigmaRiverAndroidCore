@@ -1,10 +1,12 @@
 package com.redbeemedia.enigma.core.player;
 
+import com.redbeemedia.enigma.core.analytics.MockAnalyticsReporter;
 import com.redbeemedia.enigma.core.audio.IAudioTrack;
 import com.redbeemedia.enigma.core.audio.MockAudioTrack;
+import com.redbeemedia.enigma.core.businessunit.BusinessUnit;
+import com.redbeemedia.enigma.core.businessunit.IBusinessUnit;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
-import com.redbeemedia.enigma.core.epg.IEpg;
 import com.redbeemedia.enigma.core.epg.IProgram;
 import com.redbeemedia.enigma.core.epg.MockEpgLocator;
 import com.redbeemedia.enigma.core.epg.MockProgram;
@@ -18,6 +20,7 @@ import com.redbeemedia.enigma.core.format.EnigmaMediaFormat;
 import com.redbeemedia.enigma.core.format.IMediaFormatSupportSpec;
 import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.http.MockHttpHandler;
+import com.redbeemedia.enigma.core.lifecycle.BaseLifecycleListener;
 import com.redbeemedia.enigma.core.playable.IPlayable;
 import com.redbeemedia.enigma.core.playable.IPlayableHandler;
 import com.redbeemedia.enigma.core.playable.MockPlayable;
@@ -30,6 +33,7 @@ import com.redbeemedia.enigma.core.player.timeline.ITimelinePosition;
 import com.redbeemedia.enigma.core.player.track.IPlayerImplementationTrack;
 import com.redbeemedia.enigma.core.player.track.MockPlayerImplementationTrack;
 import com.redbeemedia.enigma.core.playrequest.BasePlayResultHandler;
+import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
 import com.redbeemedia.enigma.core.playrequest.IPlaybackProperties;
 import com.redbeemedia.enigma.core.playrequest.MockPlayRequest;
 import com.redbeemedia.enigma.core.playrequest.MockPlayResultHandler;
@@ -37,17 +41,23 @@ import com.redbeemedia.enigma.core.playrequest.PlayRequest;
 import com.redbeemedia.enigma.core.playrequest.PlaybackProperties;
 import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.session.MockSession;
+import com.redbeemedia.enigma.core.session.Session;
 import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
 import com.redbeemedia.enigma.core.subtitle.MockSubtitleTrack;
 import com.redbeemedia.enigma.core.task.ITask;
 import com.redbeemedia.enigma.core.task.ITaskFactory;
+import com.redbeemedia.enigma.core.task.ITaskFactoryProvider;
+import com.redbeemedia.enigma.core.task.MainThreadTaskFactory;
+import com.redbeemedia.enigma.core.task.MockTaskFactoryProvider;
 import com.redbeemedia.enigma.core.task.TaskException;
+import com.redbeemedia.enigma.core.task.TestTaskFactory;
 import com.redbeemedia.enigma.core.testutil.Counter;
 import com.redbeemedia.enigma.core.testutil.Flag;
 import com.redbeemedia.enigma.core.testutil.InstanceOfMatcher;
 import com.redbeemedia.enigma.core.time.Duration;
 import com.redbeemedia.enigma.core.time.ITimeProvider;
 import com.redbeemedia.enigma.core.time.MockTimeProvider;
+import com.redbeemedia.enigma.core.util.IHandler;
 import com.redbeemedia.enigma.core.util.MockHandler;
 import com.redbeemedia.enigma.core.video.IVideoTrack;
 import com.redbeemedia.enigma.core.video.MockVideoTrack;
@@ -145,7 +155,7 @@ public class EnigmaPlayerTest {
 
         JSONObject dashUnencMediaFormat = new JSONObject();
         dashUnencMediaFormat.put("format", "DASH");
-        Assert.assertEquals(DASH_UNENC, EnigmaPlayer.parseMediaFormat(dashUnencMediaFormat));
+        Assert.assertEquals(DASH_UNENC, EnigmaMediaFormat.parseMediaFormat(dashUnencMediaFormat));
 
         JSONObject dashEncMediaFormat = new JSONObject();
         dashEncMediaFormat.put("format", "DASH");
@@ -154,7 +164,7 @@ public class EnigmaPlayerTest {
             drm.put("com.widevine.alpha", new JSONObject());
             dashEncMediaFormat.put("drm", drm);
         }
-        Assert.assertEquals(DASH_WIDEVINE, EnigmaPlayer.parseMediaFormat(dashEncMediaFormat));
+        Assert.assertEquals(DASH_WIDEVINE, EnigmaMediaFormat.parseMediaFormat(dashEncMediaFormat));
 
         JSONObject hlsEncMediaFormat = new JSONObject();
         hlsEncMediaFormat.put("format", "HLS");
@@ -163,7 +173,7 @@ public class EnigmaPlayerTest {
             drm.put("com.apple.fairplay", new JSONObject());
             hlsEncMediaFormat.put("drm", drm);
         }
-        Assert.assertEquals(HLS_FAIRPLAY, EnigmaPlayer.parseMediaFormat(hlsEncMediaFormat));
+        Assert.assertEquals(HLS_FAIRPLAY, EnigmaMediaFormat.parseMediaFormat(hlsEncMediaFormat));
     }
 
     @Test
@@ -248,7 +258,7 @@ public class EnigmaPlayerTest {
         };
         EnigmaPlayer enigmaPlayer = new EnigmaPlayer(new MockSession(), impl) {
             @Override
-            protected ITimeProvider newTimeProvider(ISession session) {
+            protected ITimeProvider newTimeProvider(IBusinessUnit businessUnit, EnigmaPlayer.EnigmaPlayerLifecycle lifecycle) {
                 return new MockTimeProvider();
             }
         };
@@ -291,7 +301,7 @@ public class EnigmaPlayerTest {
         };
         EnigmaPlayer enigmaPlayer = new EnigmaPlayer(new MockSession(), impl) {
             @Override
-            protected ITimeProvider newTimeProvider(ISession session) {
+            protected ITimeProvider newTimeProvider(IBusinessUnit businessUnit, EnigmaPlayer.EnigmaPlayerLifecycle lifecycle) {
                 return new MockTimeProvider();
             }
         };
@@ -380,7 +390,7 @@ public class EnigmaPlayerTest {
                 }
             }) {
                 @Override
-                protected ITimeProvider newTimeProvider(ISession session) {
+                protected ITimeProvider newTimeProvider(IBusinessUnit businessUnit, EnigmaPlayer.EnigmaPlayerLifecycle lifecycle) {
                     return new MockTimeProvider();
                 }
             };
@@ -648,10 +658,10 @@ public class EnigmaPlayerTest {
             }
         }) {
             @Override
-            protected IPlaybackSessionFactory newPlaybackSessionFactory(ITimeProvider timeProvider, IEpg epg) {
-                return new MockPlaybackSessionFactory() {
+            protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler,ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection) {
+                return new MockPlaybackStartAction(playRequest, playerConnection) {
                     @Override
-                    public IInternalPlaybackSession newInternalPlaybackSession() {
+                    protected IInternalPlaybackSession newInternalPlaybackSession() {
                         MockInternalPlaybackSession internalPlaybackSession = new MockInternalPlaybackSession(true);
                         internalPlaybackSession.setContractRestrictions(EnigmaContractRestrictions.createWithDefaults(mock));
                         return internalPlaybackSession;
@@ -705,7 +715,7 @@ public class EnigmaPlayerTest {
 
         {
             //Verify the mock response will actually have streamPrograms
-            StreamInfo streamInfo = new StreamInfo(playResponseMessage.streamInfoData.toJsonObject());
+            JsonStreamInfo streamInfo = new JsonStreamInfo(playResponseMessage.streamInfoData.toJsonObject());
             Assert.assertTrue(streamInfo.hasStreamPrograms());
         }
 
@@ -831,7 +841,7 @@ public class EnigmaPlayerTest {
 
         {
             //Verify the mock response will actually have streamPrograms
-            StreamInfo streamInfo = new StreamInfo(playResponseMessage.streamInfoData.toJsonObject());
+            JsonStreamInfo streamInfo = new JsonStreamInfo(playResponseMessage.streamInfoData.toJsonObject());
             Assert.assertTrue(streamInfo.hasStreamPrograms());
         }
 
@@ -987,10 +997,10 @@ public class EnigmaPlayerTest {
         MockPlayerImplementation playerImplementation = new MockPlayerImplementation();
         EnigmaPlayer enigmaPlayer = new EnigmaPlayerWithMockedTimeProvider(new MockSession(), playerImplementation) {
             @Override
-            protected IPlaybackSessionFactory newPlaybackSessionFactory(ITimeProvider timeProvider, IEpg epg) {
-                return new MockPlaybackSessionFactory() {
+            protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler, ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection) {
+                return new MockPlaybackStartAction(playRequest, playerConnection) {
                     @Override
-                    public IInternalPlaybackSession newInternalPlaybackSession() {
+                    protected IInternalPlaybackSession newInternalPlaybackSession() {
                         newInternalPlaybackSessionCalled.count();
                         return new MockInternalPlaybackSession(true) {
                             @Override
@@ -1057,7 +1067,7 @@ public class EnigmaPlayerTest {
 
             @Override
             public void load(ILoadRequest loadRequest, IPlayerImplementationControlResultHandler resultHandler) {
-                lastLoadedUrl[0] = loadRequest.getUrl();
+                lastLoadedUrl[0] = ((IStreamLoadRequest) loadRequest).getUrl();
                 loadCalled.count();
                 super.load(loadRequest, resultHandler);
             }
@@ -1096,18 +1106,443 @@ public class EnigmaPlayerTest {
         Assert.assertEquals(lastLoadedUrl[0], "http://example.com/hls-fairplay-manifest");
     }
 
+    @Test
+    public void testDefaultSession() {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+
+        class TestSession extends Session {
+            private final IBusinessUnit businessUnit;
+            public TestSession(String sessionToken, IBusinessUnit businessUnit) {
+                super(sessionToken, businessUnit.getCustomerName(), businessUnit.getName());
+                this.businessUnit = businessUnit;
+            }
+
+            @Override
+            public IBusinessUnit getBusinessUnit() {
+                return businessUnit;
+            }
+
+            @Override
+            public String toString() {
+                return getSessionToken()+" "+businessUnit.getCustomerName()+"/"+businessUnit.getName();
+            }
+        }
+
+        final Counter newPlaybackStartActionCalled = new Counter();
+
+        IBusinessUnit businessUnit = new BusinessUnit("JUnit", "EnigmaPlayerTest");
+        IBusinessUnit updatedBusinessUnit = new BusinessUnit("New", "AndImproved");
+        TestSession initialSession = new TestSession("initial", businessUnit);
+        TestSession playRequestSession = new TestSession("forPlay", new BusinessUnit("X","Y"));
+        TestSession updatedSession = new TestSession("updated", updatedBusinessUnit);
+
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayer(initialSession, new MockPlayerImplementation()) {
+            @Override
+            protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler ,ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection) {
+                if(newPlaybackStartActionCalled.getCounts() == 0) {
+                    Assert.assertEquals(initialSession, session);
+                    Assert.assertEquals(initialSession.getBusinessUnit(), businessUnit);
+                    Assert.assertNull(playRequest.getSession());
+                } else if(newPlaybackStartActionCalled.getCounts() == 1) {
+                    Assert.assertEquals(initialSession, session);
+                    Assert.assertEquals(initialSession.getBusinessUnit(), businessUnit);
+                    Assert.assertEquals(playRequestSession, playRequest.getSession());
+                } else if(newPlaybackStartActionCalled.getCounts() == 2) {
+                    Assert.assertEquals(initialSession, session);
+                    Assert.assertEquals(initialSession.getBusinessUnit(), businessUnit);
+                    Assert.assertNull(playRequest.getSession());
+                } else if(newPlaybackStartActionCalled.getCounts() == 3) {
+                    Assert.assertEquals(updatedSession, session);
+                    Assert.assertEquals(updatedSession.getBusinessUnit(), businessUnit);
+                    Assert.assertNull(playRequest.getSession());
+                } else if(newPlaybackStartActionCalled.getCounts() == 4) {
+                    Assert.assertNull(session);
+                    Assert.assertEquals(updatedSession.getBusinessUnit(), businessUnit);
+                    Assert.assertNull(playRequest.getSession());
+                } else if(newPlaybackStartActionCalled.getCounts() == 5) {
+                    Assert.assertNull(session);
+                    Assert.assertEquals(updatedSession.getBusinessUnit(), businessUnit);
+                    Assert.assertEquals(playRequestSession, playRequest.getSession());
+                }
+
+                newPlaybackStartActionCalled.count();
+                return new MockPlaybackStartAction(playRequest, playerConnection);
+            }
+        };
+
+        newPlaybackStartActionCalled.assertNone();
+
+        enigmaPlayer.play(new MockPlayRequest()); //Call 0
+
+        newPlaybackStartActionCalled.assertOnce();
+
+        enigmaPlayer.play(new MockPlayRequest().setSession(playRequestSession)); //Call 1
+
+        newPlaybackStartActionCalled.assertCount(2);
+
+        enigmaPlayer.play(new MockPlayRequest()); //Call 2
+
+        newPlaybackStartActionCalled.assertCount(3);
+
+        enigmaPlayer.setDefaultSession(updatedSession);
+        enigmaPlayer.play(new MockPlayRequest()); //Call 3
+
+        newPlaybackStartActionCalled.assertCount(4);
+
+        enigmaPlayer.setDefaultSession(null);
+        enigmaPlayer.play(new MockPlayRequest()); //Call 4
+
+        newPlaybackStartActionCalled.assertCount(5);
+
+        enigmaPlayer.play(new MockPlayRequest().setSession(playRequestSession)); //Call 5
+
+        newPlaybackStartActionCalled.assertCount(6);
+    }
+
+    @Test
+    public void testReleaseIdempotent() {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+
+        final Counter onStartCalled = new Counter();
+        final Counter onStopCalled = new Counter();
+
+        IBusinessUnit businessUnit = new BusinessUnit("Test", "ReleaseTest");
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayer(businessUnit, new MockPlayerImplementation()) {
+            @Override
+            protected ITimeProvider newTimeProvider(IBusinessUnit businessUnit, EnigmaPlayerLifecycle lifecycle) {
+                lifecycle.addListener(new BaseLifecycleListener<Void, Void>() {
+                    @Override
+                    public void onStart(Void aVoid) {
+                        onStartCalled.count();
+                    }
+
+                    @Override
+                    public void onStop(Void aVoid) {
+                        onStopCalled.count();
+                    }
+                });
+                return super.newTimeProvider(businessUnit, lifecycle);
+            }
+        };
+
+        onStartCalled.assertOnce();
+        onStopCalled.assertNone();
+
+        enigmaPlayer.release();
+
+        onStartCalled.assertOnce();
+        onStopCalled.assertOnce();
+
+        enigmaPlayer.release();
+
+        onStartCalled.assertOnce();
+        onStopCalled.assertOnce();
+    }
+
+    @Test
+    public void testReleaseStepsExceptionInPlayerImplementation() {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+
+        final Counter onStopCalled = new Counter();
+
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayer(
+                new BusinessUnit("DHD", "UA4"),
+                new MockPlayerImplementation() {
+                    @Override
+                    public void release() {
+                        throw new RuntimeException("PlayerImplementation");
+                    }
+                }
+        ) {
+            @Override
+            protected ITimeProvider newTimeProvider(IBusinessUnit businessUnit, EnigmaPlayerLifecycle lifecycle) {
+                lifecycle.addListener(new BaseLifecycleListener<Void, Void>() {
+                    @Override
+                    public void onStart(Void aVoid) {
+                    }
+
+                    @Override
+                    public void onStop(Void aVoid) {
+                        onStopCalled.count();
+                    }
+                });
+                return super.newTimeProvider(businessUnit, lifecycle);
+            }
+        };
+
+        onStopCalled.assertNone();
+
+        try {
+            enigmaPlayer.release();
+            Assert.fail("Expected exception");
+        } catch (Exception e) {
+            Assert.assertEquals(RuntimeException.class, e.getClass());
+            Assert.assertEquals(0, e.getSuppressed() != null ? e.getSuppressed().length : 0);
+            Assert.assertEquals("PlayerImplementation", e.getMessage());
+        }
+
+        onStopCalled.assertOnce();
+    }
+
+    @Test
+    public void testReleaseStepsExceptionInLifecycleListener() {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+
+        final Counter onStopCalled = new Counter();
+
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayer(
+                new BusinessUnit("DHD", "UA4"),
+                new MockPlayerImplementation()
+        ) {
+            @Override
+            protected ITimeProvider newTimeProvider(IBusinessUnit businessUnit, EnigmaPlayerLifecycle lifecycle) {
+                lifecycle.addListener(new BaseLifecycleListener<Void, Void>() {
+                    @Override
+                    public void onStart(Void aVoid) {
+                    }
+
+                    @Override
+                    public void onStop(Void aVoid) {
+                        onStopCalled.count();
+                    }
+                });
+                lifecycle.addListener(new BaseLifecycleListener<Void, Void>() {
+                    @Override
+                    public void onStart(Void aVoid) {
+                    }
+
+                    @Override
+                    public void onStop(Void aVoid) {
+                        throw new RuntimeException("Listener");
+                    }
+                });
+                lifecycle.addListener(new BaseLifecycleListener<Void, Void>() {
+                    @Override
+                    public void onStart(Void aVoid) {
+                    }
+
+                    @Override
+                    public void onStop(Void aVoid) {
+                        onStopCalled.count();
+                    }
+                });
+                return super.newTimeProvider(businessUnit, lifecycle);
+            }
+        };
+
+        onStopCalled.assertNone();
+
+        try {
+            enigmaPlayer.release();
+            Assert.fail("Expected exception");
+        } catch (Exception e) {
+            Assert.assertEquals(RuntimeException.class, e.getClass());
+            Assert.assertEquals(0, e.getSuppressed() != null ? e.getSuppressed().length : 0);
+            Assert.assertEquals("Listener", e.getMessage());
+        }
+
+        onStopCalled.assertCount(2);
+    }
+
+    @Test
+    public void testReleaseStepsMultipleExceptions() {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+
+        final Counter onStopCalled = new Counter();
+
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayer(
+                new BusinessUnit("DHD", "UA4"),
+                new MockPlayerImplementation() {
+                    @Override
+                    public void release() {
+                        throw new RuntimeException("PlayerImplementation");
+                    }
+                }
+        ) {
+            @Override
+            protected ITimeProvider newTimeProvider(IBusinessUnit businessUnit, EnigmaPlayerLifecycle lifecycle) {
+                lifecycle.addListener(new BaseLifecycleListener<Void, Void>() {
+                    @Override
+                    public void onStart(Void aVoid) {
+                    }
+
+                    @Override
+                    public void onStop(Void aVoid) {
+                        onStopCalled.count();
+                        throw new RuntimeException("Listener");
+                    }
+                });
+                lifecycle.addListener(new BaseLifecycleListener<Void, Void>() {
+                    @Override
+                    public void onStart(Void aVoid) {
+                    }
+
+                    @Override
+                    public void onStop(Void aVoid) {
+                        onStopCalled.count();
+                        throw new RuntimeException("ListenerTwo");
+                    }
+                });
+                lifecycle.addListener(new BaseLifecycleListener<Void, Void>() {
+                    @Override
+                    public void onStart(Void aVoid) {
+                    }
+
+                    @Override
+                    public void onStop(Void aVoid) {
+                        onStopCalled.count();
+                    }
+                });
+                return super.newTimeProvider(businessUnit, lifecycle);
+            }
+        };
+
+        onStopCalled.assertNone();
+
+        try {
+            enigmaPlayer.release();
+            Assert.fail("Expected exception");
+        } catch (Exception e) {
+            Collection<Throwable> allExceptions = getAllExceptions(e, new ArrayList<>());
+            Counter playerImplementationException = new Counter();
+            Counter listenerException = new Counter();
+            Counter listenerTwoException = new Counter();
+            for(Throwable throwable : allExceptions) {
+                if("PlayerImplementation".equals(throwable.getMessage())) {
+                    playerImplementationException.count();
+                }
+                if("Listener".equals(throwable.getMessage())) {
+                    listenerException.count();
+                }
+                if("ListenerTwo".equals(throwable.getMessage())) {
+                    listenerTwoException.count();
+                }
+            }
+
+            playerImplementationException.assertOnce();
+            listenerException.assertOnce();
+            listenerTwoException.assertOnce();
+        }
+
+        onStopCalled.assertCount(3);
+
+        enigmaPlayer.release(); //Should have no effect
+
+        onStopCalled.assertCount(3);
+    }
+
+    @Test
+    public void testTimelineRepeaterShutOff() {
+        TestTaskFactory testTaskFactory = new TestTaskFactory(33);
+        ITaskFactoryProvider taskFactoryProvider = new MockTaskFactoryProvider() {
+            @Override
+            public ITaskFactory getMainThreadTaskFactory() {
+                return testTaskFactory;
+            }
+
+            @Override
+            public ITaskFactory getTaskFactory() {
+                return testTaskFactory;
+            }
+        };;
+
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setTaskFactoryProvider(taskFactoryProvider));
+
+        final Counter getCurrentPositionCalled = new Counter();
+
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayer(new BusinessUnit("x6x", "sy4dhH"), new MockPlayerImplementation() {
+            @Override
+            public ITimelinePosition getCurrentPosition() {
+                getCurrentPositionCalled.count();
+                return super.getCurrentPosition();
+            }
+        });
+
+        getCurrentPositionCalled.assertNone();
+
+        enigmaPlayer.play(new MockPlayRequest().setPlayable(new MockPlayable().useDownloadData(new Object())));
+        testTaskFactory.letTimePass(100);
+        int count = getCurrentPositionCalled.getCounts();
+        Assert.assertTrue(count > 0);
+
+        testTaskFactory.letTimePass(1000);
+
+        Assert.assertTrue(getCurrentPositionCalled.getCounts() > count);
+
+
+        enigmaPlayer.release();
+
+        count = getCurrentPositionCalled.getCounts();
+
+        testTaskFactory.letTimePass(2000);
+
+        getCurrentPositionCalled.assertCount(count);
+    }
+
+    @Test
+    public void testCallbackHandlerUsedForPlayCall() {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayerWithMockedTimeProvider(new MockSession(), new MockPlayerImplementation());
+
+        final Flag callbackHandlerPostCalled = new Flag();
+        enigmaPlayer.setCallbackHandler(new MockHandler() {
+            @Override
+            public boolean post(Runnable runnable) {
+                callbackHandlerPostCalled.setFlag();
+                runnable.run();
+                return true;
+            }
+        });
+
+        callbackHandlerPostCalled.assertNotSet();
+
+        enigmaPlayer.play(new MockPlayRequest().setPlayable(new MockPlayable().useUrl("http://example.com/fakey.mpdz")));
+
+        callbackHandlerPostCalled.assertSet("Callback handler not used!");
+    }
+
+    private static Collection<Throwable> getAllExceptions(Throwable e, Collection<Throwable> result) {
+        result.add(e);
+        Throwable cause = e.getCause();
+        if(cause != null) {
+            getAllExceptions(cause, result);
+        }
+        Throwable[] suppressed = e.getSuppressed();
+        if(suppressed != null) {
+            for(Throwable supr : suppressed) {
+                getAllExceptions(supr, result);
+            }
+        }
+        return result;
+    }
+
     public static class EnigmaPlayerWithMockedTimeProvider extends EnigmaPlayer {
         public EnigmaPlayerWithMockedTimeProvider(ISession session, IPlayerImplementation playerImplementation) {
             super(session, playerImplementation);
         }
 
         @Override
-        protected ITimeProvider newTimeProvider(ISession session) {
+        protected ITimeProvider newTimeProvider(IBusinessUnit businessUnit, EnigmaPlayer.EnigmaPlayerLifecycle lifecycle) {
             return new MockTimeProvider();
         }
 
         @Override
-        protected ITaskFactory getPlayTaskFactory() {
+        protected ITaskFactoryProvider getTaskFactoryProvider() {
+            return new ITaskFactoryProvider() {
+                @Override
+                public ITaskFactory getTaskFactory() {
+                    return getMockTaskFactory();
+                }
+
+                @Override
+                public ITaskFactory getMainThreadTaskFactory() {
+                    return new MainThreadTaskFactory();
+                }
+            };
+        }
+
+        private ITaskFactory getMockTaskFactory() {
             return new ITaskFactory() {
                 @Override
                 public ITask newTask(Runnable runnable) {
@@ -1127,6 +1562,16 @@ public class EnigmaPlayerTest {
 
                         }
                     };
+                }
+            };
+        }
+
+        @Override
+        protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler, ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection) {
+            return new DefaultPlaybackStartAction(session, businessUnit, timeProvider, playRequest, callbackHandler, taskFactoryProvider, playerImplementationControls, playerConnection) {
+                @Override
+                protected Analytics createAnalytics(ISession session, String playbackSessionId, ITimeProvider timeProvider, ITaskFactory taskFactory) {
+                    return new Analytics(new MockAnalyticsReporter(), new MockInternalPlaybackSessionListener());
                 }
             };
         }

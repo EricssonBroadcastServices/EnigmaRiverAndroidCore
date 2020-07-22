@@ -1,6 +1,7 @@
 package com.redbeemedia.enigma.core.player;
 
 import com.redbeemedia.enigma.core.audio.IAudioTrack;
+import com.redbeemedia.enigma.core.drm.IDrmInfo;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.player.track.IPlayerImplementationTrack;
 import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
@@ -12,9 +13,10 @@ import java.util.Collection;
     void onStart(IEnigmaPlayer enigmaPlayer);
     void onStop(IEnigmaPlayer enigmaPlayer);
 
-    StreamInfo getStreamInfo();
+    IStreamInfo getStreamInfo();
     IStreamPrograms getStreamPrograms();
     IPlaybackSessionInfo getPlaybackSessionInfo();
+    IDrmInfo getDrmInfo();
     IEnigmaPlayerConnection getPlayerConnection();
     void setPlayingFromLive(boolean live);
     void setTracks(Collection<? extends IPlayerImplementationTrack> tracks);
@@ -24,4 +26,6 @@ import java.util.Collection;
 
     void fireEndReached();
     void fireSeekCompleted();
+
+    void addInternalListener(IInternalPlaybackSessionListener listener);
 }

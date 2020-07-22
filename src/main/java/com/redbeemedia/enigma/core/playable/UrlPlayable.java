@@ -5,7 +5,7 @@ import android.os.Parcel;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class UrlPlayable implements IPlayable {
+public final class UrlPlayable implements IPlayable {
     private final URL url;
 
     public UrlPlayable(String url) throws MalformedURLException {

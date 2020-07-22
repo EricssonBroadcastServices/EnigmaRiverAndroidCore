@@ -5,7 +5,7 @@ import com.redbeemedia.enigma.core.time.Duration;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/*package-protected*/ class StreamInfo {
+/*package-protected*/ class JsonStreamInfo implements IStreamInfo {
     private boolean live;
     private boolean staticManifest;
     private boolean event;
@@ -14,7 +14,7 @@ import org.json.JSONObject;
     private String channelId;
     private String programId;
 
-    public StreamInfo(JSONObject streamInfo) throws JSONException {
+    public JsonStreamInfo(JSONObject streamInfo) throws JSONException {
 		/*"streamInfo" : {
 			"live" : ${bool},
             "static" : ${bool},
@@ -41,14 +41,17 @@ import org.json.JSONObject;
         }
     }
 
+    @Override
     public boolean isLiveStream() {
         return live && !staticManifest;
     }
 
+    @Override
     public boolean hasStart() {
         return startSinceEpoch != null;
     }
 
+    @Override
     public long getStart(Duration.Unit units) {
         if(startSinceEpoch == null) {
             throw new IllegalArgumentException("startSinceEpoch never set");
@@ -67,6 +70,12 @@ import org.json.JSONObject;
         return endSinceEpoch.inWholeUnits(units);
     }
 
+    @Override
+    public boolean hasChannelId() {
+        return channelId != null;
+    }
+
+    @Override
     public String getChannelId() {
         return channelId;
     }
@@ -79,14 +88,15 @@ import org.json.JSONObject;
         return staticManifest;
     }
 
-    public static StreamInfo createForNull() {
+    public static JsonStreamInfo createForNull() {
         try {
-            return new StreamInfo(null);
+            return new JsonStreamInfo(null);
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
     }
 
+    @Override
     public String getPlayMode() {
         if(hasStreamPrograms()) {
             return "CATCHUP";

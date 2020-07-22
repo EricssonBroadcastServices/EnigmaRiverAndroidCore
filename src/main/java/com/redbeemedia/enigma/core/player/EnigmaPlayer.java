@@ -2,17 +2,15 @@ package com.redbeemedia.enigma.core.player;
 
 import android.app.Activity;
 import android.os.Handler;
-import android.util.Log;
 
 import com.redbeemedia.enigma.core.activity.AbstractActivityLifecycleListener;
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleListener;
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleManager;
 import com.redbeemedia.enigma.core.audio.IAudioTrack;
+import com.redbeemedia.enigma.core.businessunit.IBusinessUnit;
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.drm.IDrmInfo;
 import com.redbeemedia.enigma.core.drm.IDrmProvider;
-import com.redbeemedia.enigma.core.entitlement.EntitlementProvider;
-import com.redbeemedia.enigma.core.epg.IEpg;
 import com.redbeemedia.enigma.core.epg.IProgram;
 import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.error.UnexpectedError;
@@ -22,8 +20,10 @@ import com.redbeemedia.enigma.core.format.EnigmaMediaFormat.StreamFormat;
 import com.redbeemedia.enigma.core.format.IMediaFormatSelector;
 import com.redbeemedia.enigma.core.format.IMediaFormatSupportSpec;
 import com.redbeemedia.enigma.core.format.SimpleMediaFormatSelector;
+import com.redbeemedia.enigma.core.lifecycle.BaseLifecycleListener;
+import com.redbeemedia.enigma.core.lifecycle.Lifecycle;
+import com.redbeemedia.enigma.core.playable.IAssetPlayable;
 import com.redbeemedia.enigma.core.playable.IPlayable;
-import com.redbeemedia.enigma.core.playable.IPlayableHandler;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.player.controls.AbstractEnigmaPlayerControls;
 import com.redbeemedia.enigma.core.player.controls.IControlResultHandler;
@@ -34,21 +34,16 @@ import com.redbeemedia.enigma.core.player.timeline.BaseTimelineListener;
 import com.redbeemedia.enigma.core.player.timeline.ITimeline;
 import com.redbeemedia.enigma.core.player.timeline.ITimelineListener;
 import com.redbeemedia.enigma.core.player.timeline.ITimelinePosition;
-import com.redbeemedia.enigma.core.player.timeline.TimelineListenerCollector;
+import com.redbeemedia.enigma.core.player.timeline.SimpleTimeline;
 import com.redbeemedia.enigma.core.player.track.IPlayerImplementationTrack;
 import com.redbeemedia.enigma.core.playrequest.BasePlayResultHandler;
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
-import com.redbeemedia.enigma.core.playrequest.IPlayResultHandler;
 import com.redbeemedia.enigma.core.playrequest.IPlaybackProperties;
-import com.redbeemedia.enigma.core.restriction.IContractRestriction;
-import com.redbeemedia.enigma.core.restriction.IContractRestrictions;
 import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
-import com.redbeemedia.enigma.core.task.ITask;
 import com.redbeemedia.enigma.core.task.ITaskFactory;
-import com.redbeemedia.enigma.core.task.MainThreadTaskFactory;
+import com.redbeemedia.enigma.core.task.ITaskFactoryProvider;
 import com.redbeemedia.enigma.core.task.Repeater;
-import com.redbeemedia.enigma.core.task.TaskException;
 import com.redbeemedia.enigma.core.time.Duration;
 import com.redbeemedia.enigma.core.time.ITimeProvider;
 import com.redbeemedia.enigma.core.util.AndroidThreadUtil;
@@ -67,7 +62,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -85,10 +79,12 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                                                                                                             EnigmaMediaFormat.SMOOTHSTREAMING().unenc());
     private IMediaFormatSelector mediaFormatSelector = null;
 
-    private ISession session;
+    private final EnigmaPlayerLifecycle lifecycle = new EnigmaPlayerLifecycle();
+    private final OpenContainer<ISession> defaultSession;
+    private final OpenContainer<IBusinessUnit> businessUnit;
     private IPlayerImplementation playerImplementation;
     private final EnigmaPlayerControls controls = new EnigmaPlayerControls();
-    private final EnigmaPlayerTimeline timeline = new EnigmaPlayerTimeline();
+    private final EnigmaPlayerTimeline timeline = new EnigmaPlayerTimeline(lifecycle);
     private EnigmaPlayerEnvironment environment = new EnigmaPlayerEnvironment();
     private IStateMachine<EnigmaPlayerState> stateMachine = EnigmaStateMachineFactory.create();
     private WeakReference<Activity> weakActivity = new WeakReference<>(null);
@@ -98,51 +94,60 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
     private EnigmaPlayerCollector enigmaPlayerListeners = new EnigmaPlayerCollector();
 
-    private final IPlaybackSessionFactory playbackSessionFactory;
     private final InternalEnigmaPlayerCommunicationsChannel communicationsChannel = new InternalEnigmaPlayerCommunicationsChannel();
     private final OpenContainer<IInternalPlaybackSession> currentPlaybackSession = new OpenContainer<>(null);
     private final OpenContainer<PlaybackSessionSeed> playbackSessionSeed = new OpenContainer<>(null);
     private PlaybackSessionContainerCollector playbackSessionContainerCollector = new PlaybackSessionContainerCollector();
     private final OpenContainer<IPlaybackStartAction> currentPlaybackStartAction = new OpenContainer<>(null);
 
+    private volatile boolean released = false;
+
+    /**
+     * @deprecated Use {@link #EnigmaPlayer(IBusinessUnit, IPlayerImplementation)} instead
+     * and supply the session in the
+     * {@link com.redbeemedia.enigma.core.playrequest.PlayRequest PlayRequest} constructor.
+     *
+     * @param session the default session to use for PlayRequest
+     * @param playerImplementation
+     */
+    @Deprecated
     public EnigmaPlayer(ISession session, IPlayerImplementation playerImplementation) {
-        this.session = session;
+        this(session, session != null ? session.getBusinessUnit() : null, playerImplementation);
+    }
+
+    public EnigmaPlayer(IBusinessUnit businessUnit, IPlayerImplementation playerImplementation) {
+        this(null, businessUnit, playerImplementation);
+    }
+
+    private EnigmaPlayer(ISession session, IBusinessUnit initialBusinessUnit, IPlayerImplementation playerImplementation) {
+        if(initialBusinessUnit == null) {
+            throw new IllegalArgumentException("No business unit provided");
+        }
+        this.defaultSession = new OpenContainer<>(session);
+        this.businessUnit = new OpenContainer<>(initialBusinessUnit);
         this.playerImplementation = playerImplementation;
         this.playerImplementation.install(environment);
-        timeline.init();
         playbackSessionContainerCollector.addListener(environment.timelinePositionFactory);
         stateMachine.addListener((from, to) -> enigmaPlayerListeners.onStateChanged(from, to));
         environment.validateInstallation();
         this.activityLifecycleListener = new AbstractActivityLifecycleListener() {
             @Override
             public void onDestroy() {
-                synchronized (currentPlaybackSession) {
-                    if(currentPlaybackSession.value != null) {
-                        currentPlaybackSession.value.onStop(EnigmaPlayer.this);
-                    }
-                    currentPlaybackSession.value = null;
-                }
-                playerImplementation.release();
-                ((ServerTimeService) timeProvider).stop();
-                timeline.repeater.setEnabled(false); //TODO 1. Add release on enigmaPlayer so user can do that manually
-                                                     //TODO 2. Delegate taskManager through EnigmaPlayer so eveything can be routed through EnigmaPlayer
+                EnigmaPlayer.this.release();
             }
         };
-        this.timeProvider = newTimeProvider(session);
-        this.playbackSessionFactory = newPlaybackSessionFactory(timeProvider, EnigmaRiverContext.getEpgLocator().getEpg(session.getBusinessUnit()));
 
+        //It would be nice to store ServerTimeService in an EnigmaPlayerContext instead..! Somewhere down the line...
+        this.timeProvider = newTimeProvider(OpenContainerUtil.getValueSynchronized(businessUnit), lifecycle);
+
+        lifecycle.fireOnStart(null);
         environment.fireEnigmaPlayerReady(this);
     }
 
-    protected ITimeProvider newTimeProvider(ISession session) {
-        ServerTimeService serverTimeService = new ServerTimeService(session, EnigmaRiverContext.getTaskFactory());
-        serverTimeService.start(false);
-        return serverTimeService;
+    protected ITimeProvider newTimeProvider(IBusinessUnit businessUnit, EnigmaPlayerLifecycle lifecycle) {
+        return new ServerTimeService(businessUnit, EnigmaRiverContext.getTaskFactoryProvider().getTaskFactory(), lifecycle);
     }
 
-    protected IPlaybackSessionFactory newPlaybackSessionFactory(ITimeProvider timeProvider, IEpg epg) {
-        return new DefaultPlaybackSessionFactory(timeProvider, epg, new EntitlementProvider(EnigmaRiverContext.getHttpHandler()));
-    }
 
     public EnigmaPlayer setActivity(Activity activity) {
         IActivityLifecycleManager lifecycleManager = EnigmaRiverContext.getActivityLifecycleManager();
@@ -158,10 +163,26 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
     @Override
     public void play(IPlayRequest playRequest) {
-        IPlayable playable = playRequest.getPlayable();
-        IPlaybackProperties playbackProperties = playRequest.getPlaybackProperties();
-        IPlayResultHandler resultHandler = playRequest.getResultHandler();
-        playable.useWith(new PlayableHandler(playbackProperties, playable, resultHandler));
+        IPlaybackStartAction playbackStartAction;
+        synchronized (currentPlaybackStartAction) {
+            if(currentPlaybackStartAction.value != null) {
+                // Idea: Here we could use a policy to decide if startActions should be cancelled or
+                //       if we should reject the new PlayRequest or maybe queue it.
+                currentPlaybackStartAction.value.cancel();
+            }
+
+            currentPlaybackStartAction.value = newPlaybackStartAction(
+                    OpenContainerUtil.getValueSynchronized(defaultSession),
+                    OpenContainerUtil.getValueSynchronized(businessUnit),
+                    timeProvider,
+                    playRequest,
+                    callbackHandler,
+                    getTaskFactoryProvider(),
+                    environment.playerImplementationControls,
+                    newStartActionPlayerConnection(playRequest));
+            playbackStartAction = currentPlaybackStartAction.value;
+        }
+        playbackStartAction.start();
     }
 
     @Override
@@ -194,6 +215,33 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         return this;
     }
 
+    @Override
+    public void setDefaultSession(ISession session) {
+        OpenContainerUtil.setValueSynchronized(defaultSession, session, (oldValue, newValue) -> {
+            if(newValue != null) {
+                OpenContainerUtil.setValueSynchronized(businessUnit, newValue.getBusinessUnit(), null);
+            }
+        });
+    }
+
+    @Override
+    public void release() {
+        if(released) {
+            return;
+        }
+
+        RuntimeExceptionHandler exceptionHandler = new RuntimeExceptionHandler();
+        exceptionHandler.catchExceptions(() -> {
+            replacePlaybackSession(null);
+        });
+        exceptionHandler.catchExceptions(() -> playerImplementation.release());
+        exceptionHandler.catchExceptions(() -> lifecycle.fireOnStop(null));
+
+        released = true;
+
+        exceptionHandler.rethrowIfAnyExceptions();
+    }
+
     public EnigmaPlayer setMediaFormatSelector(IMediaFormatSelector mediaFormatSelector) {
         this.mediaFormatSelector = mediaFormatSelector;
         return this;
@@ -201,14 +249,6 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
     public EnigmaPlayer setMediaFormatPreference(EnigmaMediaFormat... mediaFormatPreference) {
         return setMediaFormatSelector(new SimpleMediaFormatSelector(mediaFormatPreference));
-    }
-
-    private <T extends IInternalCallbackObject> T useCallbackHandlerIfPresent(Class<T> callbackInterface, T callback) {
-        if(callbackHandler != null) {
-            return ProxyCallback.createCallbackOnThread(callbackHandler, callbackInterface, callback);
-        } else {
-            return callback;
-        }
     }
 
     @Override
@@ -226,183 +266,51 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         return stateMachine.getState();
     }
 
-    private class PlayableHandler implements IPlayableHandler {
-        private IPlaybackProperties playbackProperties;
-        private final IPlayable playable;
-        private IPlayResultHandler playResultHandler;
-
-        public PlayableHandler(IPlaybackProperties playbackProperties, IPlayable playable,IPlayResultHandler playResultHandler) {
-            this.playbackProperties = playbackProperties;
-            this.playable = playable;
-            this.playResultHandler = useCallbackHandlerIfPresent(IPlayResultHandler.class, playResultHandler);
-        }
-
-        @Override
-        public void startUsingAssetId(String assetId) {
-            IPlaybackStartAction playbackStartAction;
-            synchronized (currentPlaybackStartAction) {
-                if(currentPlaybackStartAction.value != null) {
-                    currentPlaybackStartAction.value.cancel();
-                }
-                currentPlaybackStartAction.value = new PlaybackStartAction(playable, playResultHandler);
-                playbackStartAction = currentPlaybackStartAction.value;
-            }
-            playbackStartAction.startUsingAssetId(playbackProperties, playResultHandler, assetId);
-        }
-
-
-        @Override
-        public void startUsingUrl(URL url) {
-            IPlayerImplementationControls.ILoadRequest loadRequest = new PlayerImplementationLoadRequest(url.toString(), new IContractRestrictions() {
-                @Override
-                public <T> T getValue(IContractRestriction<T> restriction, T fallback) {
-                    return fallback;
-                }
-            });
-            environment.playerImplementationControls.load(loadRequest, new PlayResultControlResultHandler(playResultHandler) {
-                @Override
-                public void onDone() {
-                    try {
-                        environment.playerImplementationControls.start(new PlayResultControlResultHandler(playResultHandler) {
-                            @Override
-                            public void onDone() {
-                                IInternalPlaybackSession playbackSession = new MinimalPlaceholderPlaybackSession();
-                                replacePlaybackSession(playbackSession);
-                                playResultHandler.onStarted(playbackSession);
-                            }
-                        });
-                    } catch (RuntimeException e) {
-                        playResultHandler.onError(new UnexpectedError(e));
-                    }
-                }
-            });
-        }
-
-        private class PlayResultControlResultHandler extends BasePlayerImplementationControlResultHandler {
-            private IPlayResultHandler playResultHandler;
-
-            public PlayResultControlResultHandler(IPlayResultHandler playResultHandler) {
-                this.playResultHandler = playResultHandler;
+    private IPlaybackStartAction.IEnigmaPlayerCallbacks newStartActionPlayerConnection(final IPlayRequest playRequest) {
+        return new IPlaybackStartAction.IEnigmaPlayerCallbacks() {
+            @Override
+            public void deliverPlaybackSession(IInternalPlaybackSession internalPlaybackSession) {
+                replacePlaybackSession(internalPlaybackSession);
             }
 
             @Override
-            public void onRejected(IControlResultHandler.IRejectReason rejectReason) {
-                this.playResultHandler.onError(new UnexpectedError("Rejected"));
+            public void setStateIfCurrentStartAction(IPlaybackStartAction action, EnigmaPlayerState newState) {
+                synchronized (currentPlaybackStartAction) {
+                    if(currentPlaybackStartAction.value == action) {
+                        stateMachine.setState(newState);
+                    }
+                }
             }
 
             @Override
-            public void onError(EnigmaError error) {
-                playResultHandler.onError(error);
+            public JSONObject getUsableMediaFormat(JSONArray formats) throws JSONException {
+                IMediaFormatSelector selector = new ChainedMediaFormatSelector(
+                        DEFAULT_MEDIA_FORMAT_SELECTOR,
+                        mediaFormatSelector,
+                        playRequest.getPlaybackProperties().getMediaFormatSelector());
+                return EnigmaPlayer.getUsableMediaFormat(formats, environment.formatSupportSpec, selector);
             }
-        }
-    }
 
-    private interface IPlaybackStartAction {
-        void startUsingAssetId(IPlaybackProperties playbackProperties, IPlayResultHandler playResultHandler, String assetId);
-
-        void onStarted(IInternalPlaybackSession playbackSession);
-
-        void cancel();
-    }
-
-    private class PlaybackStartAction implements IPlaybackStartAction {
-        private final IPlayable playable;
-        private final IPlayResultHandler playResultHandler;
-
-        public PlaybackStartAction(IPlayable playable, IPlayResultHandler playResultHandler) {
-            this.playable = playable;
-            this.playResultHandler = playResultHandler;
-        }
-
-        @Override
-        public void startUsingAssetId(IPlaybackProperties playbackProperties, IPlayResultHandler playResultHandler, final String assetId) {
-            ITask task = getPlayTaskFactory().newTask(() -> startUsingAssetIdBlocking(playbackProperties, playResultHandler, assetId));
-            try {
-                task.start();
-            } catch (TaskException e) {
-                playResultHandler.onError(new UnexpectedError(e));
-                return;
+            @Override
+            public IPlaybackSessionInfo getPlaybackSessionInfo(String manifestUrl) {
+                IPlaybackTechnologyIdentifier technologyIdentifier = environment.playerImplementationInternals.getTechnologyIdentifier();
+                String assetId = "N/A";
+                IPlayable playable = playRequest.getPlayable();
+                if(playable instanceof IAssetPlayable) {
+                    assetId = ((IAssetPlayable) playable).getAssetId();
+                }
+                return new EnigmaPlayer.PlaybackSessionInfo(playRequest.getPlayable(), assetId, manifestUrl, technologyIdentifier, playRequest.getPlaybackProperties());
             }
-        }
-
-        private void startUsingAssetIdBlocking(IPlaybackProperties playbackProperties, IPlayResultHandler playResultHandler, final String assetId) {
-            playbackSessionFactory.startAsset(session, playbackProperties, playResultHandler, assetId, new IPlaybackSessionFactory.IEnigmaPlayerCallbacks() {
-                @Override
-                public void deliverPlaybackSession(IInternalPlaybackSession internalPlaybackSession) {
-                    replacePlaybackSession(internalPlaybackSession);
-                }
-
-                @Override
-                public void setStateIfCurrentStartAction(EnigmaPlayerState state) {
-                    PlaybackStartAction.this.setStateIfCurrentStartAction(state);
-                }
-
-                @Override
-                public void setDrmInfo(IDrmInfo drmInfo) {
-                    environment.setDrmInfo(drmInfo);
-                }
-
-                @Override
-                public JSONObject getUsableMediaFormat(JSONArray formats) throws JSONException {
-                    IMediaFormatSelector selector = new ChainedMediaFormatSelector(
-                            DEFAULT_MEDIA_FORMAT_SELECTOR,
-                            mediaFormatSelector,
-                            playbackProperties.getMediaFormatSelector());
-                    return EnigmaPlayer.getUsableMediaFormat(formats, environment.formatSupportSpec, selector);
-                }
-
-                @Override
-                public IPlaybackSessionInfo getPlaybackSessionInfo(String manifestUrl) {
-                    IPlaybackTechnologyIdentifier technologyIdentifier = environment.playerImplementationInternals.getTechnologyIdentifier();
-                    return new EnigmaPlayer.PlaybackSessionInfo(playable, assetId, manifestUrl, technologyIdentifier, playbackProperties);
-                }
-
-                @Override
-                public void loadIntoPlayerImplementation(String manifestUrl, IPlayResultHandler playResultHandler, JSONObject jsonObject, IPlaybackProperties playbackProperties, Duration liveDelay) {
-                    stateMachine.setState(EnigmaPlayerState.LOADING);
-
-                    IContractRestrictions contractRestrictions = OpenContainerUtil.getValueSynchronized(currentPlaybackSession).getContractRestrictions();
-                    PlayerImplementationLoadRequest loadRequest = new PlayerImplementationLoadRequest(manifestUrl, contractRestrictions);
-                    if(liveDelay != null) {
-                        loadRequest.setLiveDelay(liveDelay);
-                    }
-                    environment.playerImplementationControls.load(loadRequest, new StartPlaybackControlResultHandler(playResultHandler, jsonObject, playbackProperties.getPlayFrom(), environment.playerImplementationControls) {
-                        @Override
-                        protected void onLogDebug(String message) {
-                            Log.d(TAG, message);
-                        }
-                    });
-                }
-            });
-        }
-
-        @Override
-        public void onStarted(IInternalPlaybackSession playbackSession) {
-            updatePlayingFromLive();
-            playResultHandler.onStarted(playbackSession);
-        }
-
-        @Override
-        public void cancel() {
-        }
-
-        private void setStateIfCurrentStartAction(EnigmaPlayerState newState) {
-            synchronized (currentPlaybackStartAction) {
-                if(currentPlaybackSession.value == this) {
-                    stateMachine.setState(newState);
-                }
-            }
-        }
+        };
     }
 
-    protected ITaskFactory getPlayTaskFactory() {
-        return EnigmaRiverContext.getTaskFactory();
+    protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler,ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection) {
+        return new DefaultPlaybackStartAction(session, businessUnit, timeProvider, playRequest, callbackHandler,taskFactoryProvider, playerImplementationControls, playerConnection);
     }
 
-    protected ITaskFactory getMainThreadTaskFactory() {
-        return new MainThreadTaskFactory();
+    protected ITaskFactoryProvider getTaskFactoryProvider() {
+        return EnigmaRiverContext.getTaskFactoryProvider();
     }
-
 
     private void replacePlaybackSession(IInternalPlaybackSession playbackSession) {
         synchronized (currentPlaybackSession) {
@@ -448,7 +356,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         Map<EnigmaMediaFormat, JSONObject> foundFormats = new HashMap<>();
         for(int i = 0; i < formats.length(); ++i) {
             JSONObject mediaFormat = formats.getJSONObject(i);
-            EnigmaMediaFormat enigmaMediaFormat = parseMediaFormat(mediaFormat);
+            EnigmaMediaFormat enigmaMediaFormat = EnigmaMediaFormat.parseMediaFormat(mediaFormat);
             if(enigmaMediaFormat != null) {
                 if(formatSupportSpec.supports(enigmaMediaFormat)) {
                     foundFormats.put(enigmaMediaFormat, mediaFormat);
@@ -467,44 +375,8 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         return null;//If no format was picked we can't decide.
     }
 
-    /*package-protected*/ static EnigmaMediaFormat parseMediaFormat(JSONObject mediaFormat) throws JSONException {
-        String streamFormatName = mediaFormat.getString("format");
-        StreamFormat streamFormat = null;
-        DrmTechnology drmTechnology = null;
-
-        if("DASH".equals(streamFormatName)) {
-            streamFormat = StreamFormat.DASH;
-        } else if("HLS".equals(streamFormatName)) {
-            streamFormat = StreamFormat.HLS;
-        } else if("SMOOTHSTREAMING".equals(streamFormatName)) {
-            streamFormat = StreamFormat.SMOOTHSTREAMING;
-        }
-
-        JSONObject drm = mediaFormat.optJSONObject("drm");
-        if(drm != null) {
-            for(DrmTechnology drmTech : DrmTechnology.values()) {
-                if(drmTech == DrmTechnology.NONE) {
-                    continue;
-                }
-                if(drm.has(drmTech.getKey())) {
-                    drmTechnology = drmTech;
-                    break;
-                }
-            }
-        } else {
-            drmTechnology = DrmTechnology.NONE;
-        }
-
-        if(streamFormat != null && drmTechnology != null) {
-            return new EnigmaMediaFormat(streamFormat, drmTechnology);
-        } else {
-            return null;
-        }
-    }
-
     private class EnigmaPlayerEnvironment implements IEnigmaPlayerEnvironment, IDrmProvider {
         private IMediaFormatSupportSpec formatSupportSpec = new DefaultFormatSupportSpec();
-        private IDrmInfo drmInfo;
         private DefaultTimelinePositionFactory timelinePositionFactory = new DefaultTimelinePositionFactory();
         private IPlayerImplementationControls playerImplementationControls;
         private IPlayerImplementationInternals playerImplementationInternals;
@@ -636,13 +508,14 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             }
         }
 
-        public void setDrmInfo(IDrmInfo drmInfo) {
-            this.drmInfo = drmInfo;
-        }
-
         @Override
         public IDrmInfo getDrmInfo() {
-            return drmInfo;
+            IInternalPlaybackSession playbackSession = OpenContainerUtil.getValueSynchronized(currentPlaybackSession);
+            if(playbackSession != null) {
+                return playbackSession.getDrmInfo();
+            } else {
+                return null;
+            }
         }
 
         public void validateInstallation() {
@@ -683,7 +556,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
     private class EnigmaPlayerControls extends AbstractEnigmaPlayerControls {
         private ControlResultHandlerAdapter wrapResultHandler(IControlResultHandler resultHandler) {
-            return new ControlResultHandlerAdapter(useCallbackHandlerIfPresent(IControlResultHandler.class, resultHandler));
+            return new ControlResultHandlerAdapter(ProxyCallback.useCallbackHandlerIfPresent(callbackHandler, IControlResultHandler.class, resultHandler));
         }
 
         @Override
@@ -915,16 +788,13 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     }
 
     private class EnigmaPlayerTimeline implements ITimeline {
-        private TimelineListenerCollector collector = new TimelineListenerCollector();
-        private boolean lastVisibleValue = false;
+        private final SimpleTimeline timeline = new SimpleTimeline();
         private Repeater repeater;
         private ITimelinePosition streamTimelineStart = null;
         private ITimelinePosition streamTimelineEnd = null;
         private ITimelinePosition streamTimelinePosition = null;
         private long currentStreamOffset = 0;
         private boolean hasProgram = false;
-        private ITimelinePosition lastReturnedStartBound = null;
-        private ITimelinePosition lastReturnedEndBound = null;
         private final ProgramTracker programTracker = new ProgramTracker().addListener(new ProgramTracker.IProgramChangedListener() {
             @Override
             public void onProgramChanged(IProgram oldProgram, IProgram newProgram) {
@@ -934,7 +804,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                         playbackSession = currentPlaybackSession.value;
                     }
                     if(playbackSession != null) {
-                        StreamInfo streamInfo = playbackSession.getStreamInfo();
+                        IStreamInfo streamInfo = playbackSession.getStreamInfo();
                         if(streamInfo.hasStart()) {
                             long streamStartUtcMillis = streamInfo.getStart(Duration.Unit.MILLISECONDS);
                             ITimelinePositionFactory positionFactory = environment.timelinePositionFactory;
@@ -953,22 +823,28 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             }
         });
 
-        public EnigmaPlayerTimeline() {
-            ITaskFactory mainThreadTaskFactory = getMainThreadTaskFactory();
-            repeater = new Repeater(mainThreadTaskFactory, 1000 / 30, () -> collector.onCurrentPositionChanged(environment.playerImplementationInternals.getCurrentPosition()));
-            collector.addListener(new BaseTimelineListener() {
+        private EnigmaPlayerTimeline(EnigmaPlayerLifecycle lifecycle) {
+            ITaskFactory mainThreadTaskFactory = getTaskFactoryProvider().getMainThreadTaskFactory();
+            repeater = new Repeater(mainThreadTaskFactory, 1000 / 30, () -> timeline.setCurrentPosition(environment.playerImplementationInternals.getCurrentPosition()));
+            lifecycle.addListener(new BaseLifecycleListener<Void, Void>() {
                 @Override
-                public void onVisibilityChanged(boolean visible) {
-                    lastVisibleValue = visible;
+                public void onStart(Void aVoid) {
+                    EnigmaPlayerTimeline.this.init();
+                }
+
+                @Override
+                public void onStop(Void aVoid) {
+                    EnigmaPlayerTimeline.this.repeater.setEnabled(false);
                 }
             });
         }
+
 
         public void init() {
             programTracker.addListener(environment.timelinePositionFactory);
             programTracker.addListener((oldProgram, newProgram) -> enigmaPlayerListeners.onProgramChanged(oldProgram, newProgram));
             programTracker.init(EnigmaPlayer.this);
-            collector.addListener(new BaseTimelineListener() {
+            timeline.addListener(new BaseTimelineListener() {
                 @Override
                 public void onCurrentPositionChanged(ITimelinePosition timelinePosition) {
                     streamTimelinePosition = timelinePosition;
@@ -984,9 +860,9 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                         repeater.setEnabled(false);
                     }
                     if(to == EnigmaPlayerState.LOADED) {
-                        collector.onVisibilityChanged(true);
+                        timeline.setVisibility(true);
                     } else if(to == EnigmaPlayerState.IDLE || to == EnigmaPlayerState.LOADING) {
-                        collector.onVisibilityChanged(false);
+                        timeline.setVisibility(false);
                     }
                 }
             });
@@ -999,38 +875,40 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
         @Override
         public ITimelinePosition getCurrentEndBound() {
-            if(lastReturnedEndBound == null) {
-                lastReturnedEndBound = environment.playerImplementationInternals.getCurrentEndBound();
+            ITimelinePosition currentEnd = timeline.getCurrentEndBound();
+            if(currentEnd == null) {
+                currentEnd = environment.playerImplementationInternals.getCurrentEndBound();
             }
-            return lastReturnedEndBound;
+            return currentEnd;
         }
 
         @Override
         public ITimelinePosition getCurrentStartBound() {
-            if(lastReturnedStartBound == null) {
-                lastReturnedStartBound = environment.playerImplementationInternals.getCurrentStartBound();
+            ITimelinePosition currentStart = timeline.getCurrentStartBound();
+            if(currentStart == null) {
+                currentStart = environment.playerImplementationInternals.getCurrentStartBound();
             }
-            return lastReturnedStartBound;
+            return currentStart;
         }
 
         @Override
         public boolean getVisibility() {
-            return lastVisibleValue;
+            return timeline.getVisibility();
         }
 
         @Override
         public void addListener(ITimelineListener listener) {
-            collector.addListener(listener);
+            timeline.addListener(listener);
         }
 
         @Override
         public void addListener(ITimelineListener listener, Handler handler) {
-            collector.addListener(listener, new HandlerWrapper(handler));
+            timeline.addListener(listener, handler);
         }
 
         @Override
         public void removeListener(ITimelineListener listener) {
-            collector.removeListener(listener);
+            timeline.removeListener(listener);
         }
 
         public void onStreamTimelineBoundsChanged(ITimelinePosition start, ITimelinePosition end) {
@@ -1054,12 +932,10 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         }
 
         public void onExposedTimelineBoundsChanged(ITimelinePosition start, ITimelinePosition end) {
-            this.lastReturnedStartBound = start;
-            this.lastReturnedEndBound = end;
             AndroidThreadUtil.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    collector.onBoundsChanged(start, end);
+                    timeline.setBounds(start, end);
                     repeater.executeNow();
                 }
             });
@@ -1160,5 +1036,8 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
     private interface IInternalPlaybackSessionsMethod<T> {
         void call(IInternalPlaybackSession internalPlaybackSession, T arg);
+    }
+
+    /*package-protected*/ static class EnigmaPlayerLifecycle extends Lifecycle<Void, Void> {
     }
 }

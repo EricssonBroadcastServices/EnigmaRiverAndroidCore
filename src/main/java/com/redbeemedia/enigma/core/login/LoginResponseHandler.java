@@ -2,7 +2,7 @@ package com.redbeemedia.enigma.core.login;
 
 import com.redbeemedia.enigma.core.error.DeviceLimitReachedError;
 import com.redbeemedia.enigma.core.error.EmptyResponseError;
-import com.redbeemedia.enigma.core.error.ExposureHttpError;
+import com.redbeemedia.enigma.core.http.ExposureHttpError;
 import com.redbeemedia.enigma.core.error.HttpResourceNotFoundError;
 import com.redbeemedia.enigma.core.error.InvalidCredentialsError;
 import com.redbeemedia.enigma.core.error.InvalidJsonToServerError;

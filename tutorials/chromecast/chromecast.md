@@ -1,4 +1,4 @@
-### Chromecast integration series (work in progress)
+### Chromecast integration series
 # Integrating Red Bee OTT cast support
 Before integrating the Enigma River Android cast-module please make sure
 you are familiar with the basics of implementing a chromecast sender
@@ -17,7 +17,7 @@ The first thing needed in order to add cast functionality to your app is to add 
 ...
 dependencies {
     ...
-    implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:cast:r3.0.5"
+    implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:cast:r3.1.0-BETA-1"
     ...
 }
 ...

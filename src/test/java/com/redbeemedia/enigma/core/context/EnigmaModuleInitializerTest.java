@@ -17,10 +17,10 @@ public class EnigmaModuleInitializerTest {
             List<String> modules = Arrays.asList(
                     MockModuleMissingMethod.class.getName()
             );
-            EnigmaModuleInitializer.maybeInitializeModules(modules);
+            EnigmaModuleInitializer.maybeInitializeModules(modules, new MockModuleContextInitialization());
             Assert.fail("Expected ModuleInitializationException");
         } catch (ModuleInitializationException e) {
-            Assert.assertEquals("No static method called initialize in",e.getMessage().substring(0, 37));
+            Assert.assertEquals("No static method initialize(IModuleContextInitialization)",e.getMessage().substring(0, 57));
         }
     }
 
@@ -33,7 +33,7 @@ public class EnigmaModuleInitializerTest {
         );
         int initializeCallsBefore = PackageProtectedMockModule.initializeCalls;
         try {
-            EnigmaModuleInitializer.maybeInitializeModules(modules);
+            EnigmaModuleInitializer.maybeInitializeModules(modules, new MockModuleContextInitialization());
         } catch (ModuleInitializationException e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
@@ -53,7 +53,7 @@ public class EnigmaModuleInitializerTest {
         int ppmmInitCalls = PackageProtectedMockModule.initializeCalls;
         int mmInitCalls = MockModule.initializeCalls;
         try {
-            EnigmaModuleInitializer.maybeInitializeModules(modules);
+            EnigmaModuleInitializer.maybeInitializeModules(modules, new MockModuleContextInitialization());
         } catch (ModuleInitializationException e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
@@ -70,7 +70,7 @@ public class EnigmaModuleInitializerTest {
     /*package-protected*/ static class PackageProtectedMockModule {
         public static volatile int initializeCalls = 0;
 
-        private static void initialize() {
+        private static void initialize(IModuleContextInitialization initialization) {
             initializeCalls++;
         }
     }
@@ -78,7 +78,7 @@ public class EnigmaModuleInitializerTest {
     public static class MockModule {
         public static volatile int initializeCalls = 0;
 
-        public static void initialize() {
+        public static void initialize(IModuleContextInitialization initialization) {
             initializeCalls++;
         }
     }

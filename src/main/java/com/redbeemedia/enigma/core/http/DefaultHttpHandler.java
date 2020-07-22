@@ -2,6 +2,9 @@ package com.redbeemedia.enigma.core.http;
 
 import android.os.AsyncTask;
 
+import com.redbeemedia.enigma.core.util.OpenContainer;
+import com.redbeemedia.enigma.core.util.OpenContainerUtil;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -10,9 +13,9 @@ import java.net.URL;
 
 public class DefaultHttpHandler implements IHttpHandler {
     @Override
-    public void doHttp(URL url, IHttpCall httpCall, IHttpResponseHandler responseHandler) {
+    public IHttpTask doHttp(URL url, IHttpCall httpCall, IHttpResponseHandler responseHandler) {
 
-        Runnable job = new HttpJob(url, httpCall, responseHandler);
+        HttpJob job = new HttpJob(url, httpCall, responseHandler);
         new AsyncTask<Runnable, Void, Void>() {
             @Override
             protected Void doInBackground(Runnable... runnables) {
@@ -20,6 +23,7 @@ public class DefaultHttpHandler implements IHttpHandler {
                 return null;
             }
         }.execute(job);
+        return job;
     }
 
     protected int getDefaultConnectTimeout() {
@@ -30,16 +34,23 @@ public class DefaultHttpHandler implements IHttpHandler {
         return 0;
     }
 
+    protected long getCurrentTimeMillis() {
+        return System.currentTimeMillis();
+    }
+
     @Override
     public void doHttpBlocking(URL url, IHttpCall httpCall, IHttpResponseHandler responseHandler) {
         Runnable runnable = new HttpJob(url, httpCall, responseHandler);
         runnable.run();
     }
 
-    private class HttpJob implements Runnable {
+    private class HttpJob implements Runnable, IHttpTask {
         private URL url;
         private IHttpCall httpCall;
         private IHttpResponseHandler responseHandler;
+
+        private final OpenContainer<Boolean> done = new OpenContainer<>(false);
+        private final OpenContainer<Thread> executingThread = new OpenContainer<>(null);
 
         public HttpJob(URL url, IHttpCall httpCall, IHttpResponseHandler responseHandler) {
             this.url = url;
@@ -48,7 +59,30 @@ public class DefaultHttpHandler implements IHttpHandler {
         }
 
         @Override
+        public boolean isDone() {
+            return OpenContainerUtil.getValueSynchronized(done);
+        }
+
+        @Override
+        public void cancel(long joinMillis) {
+            if(!isDone()) {
+                OpenContainerUtil.setValueSynchronized(executingThread, null, (oldValue, newValue) -> {
+                    oldValue.interrupt();
+                    try {
+                        long now = getCurrentTimeMillis();
+                        while(!isDone() && (joinMillis == 0 || getCurrentTimeMillis()-now < joinMillis)) {
+                            Thread.sleep(1);
+                        }
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+        }
+
+        @Override
         public void run() {
+            OpenContainerUtil.setValueSynchronized(executingThread, Thread.currentThread(), null);
             try {
                 final HttpURLConnection connection = ((HttpURLConnection) url.openConnection());
                 connection.setConnectTimeout(getDefaultConnectTimeout());
@@ -78,6 +112,11 @@ public class DefaultHttpHandler implements IHttpHandler {
 
                 //Do the call
                 connection.connect();
+
+                if(Thread.currentThread().isInterrupted()) {
+                    return;
+                }
+
                 //Send data
                 if (connection.getDoOutput()) {
                     OutputStream outputStream = connection.getOutputStream();
@@ -89,8 +128,17 @@ public class DefaultHttpHandler implements IHttpHandler {
                     }
                 }
 
+                if(Thread.currentThread().isInterrupted()) {
+                    return;
+                }
+
                 //Recieve data
                 HttpStatus responseHttpStatus = new HttpStatus(connection.getResponseCode(), connection.getResponseMessage());
+
+                if(Thread.currentThread().isInterrupted()) {
+                    return;
+                }
+
                 if(connection.getDoInput()) {
                     InputStream inputStream = responseHttpStatus.getResponseCode() == 200 ? connection.getInputStream() : connection.getErrorStream();
                     try {
@@ -104,6 +152,8 @@ public class DefaultHttpHandler implements IHttpHandler {
                 }
             } catch (IOException e) {
                 responseHandler.onException(e);
+            } finally {
+                OpenContainerUtil.setValueSynchronized(done, true, null);
             }
         }
     }

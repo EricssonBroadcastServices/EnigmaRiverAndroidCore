@@ -7,6 +7,7 @@ import com.redbeemedia.enigma.core.player.timeline.ITimelinePosition;
 import com.redbeemedia.enigma.core.player.timeline.TimelinePositionFormat;
 import com.redbeemedia.enigma.core.time.Duration;
 import com.redbeemedia.enigma.core.util.OpenContainer;
+import com.redbeemedia.enigma.core.util.OpenContainerUtil;
 
 import java.util.Date;
 
@@ -20,17 +21,14 @@ import java.util.Date;
     }
 
     private String formatPosition(long offsetMillis, TimelinePositionFormat positionFormat) {
-        StreamInfo streamInfo = null;
+        IStreamInfo streamInfo = null;
         synchronized (currentPlaybackSession) {
             if(currentPlaybackSession.value != null) {
                 streamInfo = currentPlaybackSession.value.getStreamInfo();
             }
         }
         if(streamInfo != null) {
-            IProgram program;
-            synchronized (currentProgram) {
-                program = currentProgram.value;
-            }
+            IProgram program = OpenContainerUtil.getValueSynchronized(currentProgram);
             if(streamInfo.isLiveStream() && streamInfo.hasStart()) {
                 return positionFormat.formatDate(new Date(streamInfo.getStart(Duration.Unit.MILLISECONDS)+offsetMillis));
             } else if(streamInfo.hasStart() && program != null) {

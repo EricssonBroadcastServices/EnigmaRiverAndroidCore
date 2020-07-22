@@ -11,7 +11,7 @@ import com.redbeemedia.enigma.core.util.device.IDeviceInfo;
 
 import org.json.JSONException;
 
-public class AnalyticsReporter {
+public class AnalyticsReporter implements IAnalyticsReporter {
     private static final String TAG = "AnalyticsReporter";
 
     private final IAnalyticsHandler analyticsHandler;
@@ -23,6 +23,7 @@ public class AnalyticsReporter {
         this.analyticsHandler = analyticsHandler;
     }
 
+    @Override
     public void playbackError(EnigmaError error) {
         event(AnalyticsEvents.ERROR, (builder, eventType) -> {
             builder.addData(eventType.CODE, error.getErrorCode());
@@ -37,6 +38,7 @@ public class AnalyticsReporter {
         });
     }
 
+    @Override
     public void deviceInfo() {
         event(AnalyticsEvents.DEVICE_INFO, (builder, eventType) -> {
             IDeviceInfo deviceInfo = EnigmaRiverContext.getDeviceInfo();
@@ -51,6 +53,7 @@ public class AnalyticsReporter {
         });
     }
 
+    @Override
     public void playbackCreated(String assetId) {
         event(AnalyticsEvents.CREATED, (builder, eventType) -> {
             builder.addData(eventType.PLAYER, "EnigmaRiver.Android");
@@ -59,12 +62,14 @@ public class AnalyticsReporter {
         });
     }
 
+    @Override
     public void playbackHandshakeStarted(String assetId) {
         event(AnalyticsEvents.HANDSHAKE_STARTED, (builder, eventType) -> {
             builder.addData(eventType.ASSET_ID, assetId);
         });
     }
 
+    @Override
     public void playbackPlayerReady(long offsetTime, String playerImplementationTechnology, String playerImplementationTechnologyVersion) {
         event(AnalyticsEvents.PLAYER_READY, (builder, eventType) -> {
             builder.addData(eventType.OFFSET_TIME, offsetTime);
@@ -73,6 +78,7 @@ public class AnalyticsReporter {
         });
     }
 
+    @Override
     public void playbackStarted(long offsetTime, String playMode, String mediaLocator, Long referenceTime, Integer bitrate, String programId) {
         event(AnalyticsEvents.STARTED, (builder, eventType) -> {
             builder.addData(eventType.OFFSET_TIME, offsetTime);
@@ -84,54 +90,63 @@ public class AnalyticsReporter {
         });
     }
 
+    @Override
     public void playbackPaused(long offsetTime) {
         event(AnalyticsEvents.PAUSED, (builder, eventType) -> {
             builder.addData(eventType.OFFSET_TIME, offsetTime);
         });
     }
 
+    @Override
     public void playbackResumed(long offsetTime) {
         event(AnalyticsEvents.RESUMED, (builder, eventType) -> {
             builder.addData(eventType.OFFSET_TIME, offsetTime);
         });
     }
 
+    @Override
     public void playbackCompleted(long offsetTime) {
         event(AnalyticsEvents.COMPLETED, (builder, eventType) -> {
             builder.addData(eventType.OFFSET_TIME, offsetTime);
         });
     }
 
+    @Override
     public void playbackAborted(long offsetTime) {
         event(AnalyticsEvents.ABORTED, (builder, eventType) -> {
             builder.addData(eventType.OFFSET_TIME, offsetTime);
         });
     }
 
+    @Override
     public void playbackHeartbeat(long offsetTime) {
         event(AnalyticsEvents.HEARTBEAT, (builder, eventType) -> {
             builder.addData(eventType.OFFSET_TIME, offsetTime);
         });
     }
 
+    @Override
     public void playbackAppBackgrounded(long offsetTime) {
         event(AnalyticsEvents.APP_BACKGROUNDED, (builder, eventType) -> {
             builder.addData(eventType.OFFSET_TIME, offsetTime);
         });
     }
 
+    @Override
     public void playbackAppResumed(long offsetTime) {
         event(AnalyticsEvents.APP_RESUMED, (builder, eventType) -> {
             builder.addData(eventType.OFFSET_TIME, offsetTime);
         });
     }
 
+    @Override
     public void playbackGracePeriodEnded(long offsetTime) {
         event(AnalyticsEvents.GRACE_PERIOD_ENDED, (builder, eventType) -> {
             builder.addData(eventType.OFFSET_TIME, offsetTime);
         });
     }
 
+    @Override
     public void playbackBitrateChanged(long offsetTime, int kilobitsPerSecond) {
         event(AnalyticsEvents.BITRATE_CHANGED, (builder, eventType) -> {
             builder.addData(eventType.OFFSET_TIME, offsetTime);
@@ -139,24 +154,28 @@ public class AnalyticsReporter {
         });
     }
 
+    @Override
     public void playbackBufferingStarted(long offsetTime) {
         event(AnalyticsEvents.BUFFERING_STARTED, (builder, eventType) -> {
             builder.addData(eventType.OFFSET_TIME, offsetTime);
         });
     }
 
+    @Override
     public void playbackBufferingStopped(long offsetTime) {
         event(AnalyticsEvents.BUFFERING_STOPPED, (builder, eventType) -> {
             builder.addData(eventType.OFFSET_TIME, offsetTime);
         });
     }
 
+    @Override
     public void playbackScrubbedTo(long offsetTime) {
         event(AnalyticsEvents.SCRUBBED_TO, (builder, eventType) -> {
             builder.addData(eventType.OFFSET_TIME, offsetTime);
         });
     }
 
+    @Override
     public void playbackProgramChanged(long offsetTime, String programId) {
         event(AnalyticsEvents.PROGRAM_CHANGED, (builder, eventType) -> {
             builder.addData(eventType.OFFSET_TIME, offsetTime);

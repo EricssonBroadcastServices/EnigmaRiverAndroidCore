@@ -37,8 +37,6 @@ public interface IPlayerImplementationControls {
     }
 
     interface ILoadRequest {
-        String getUrl();
-
         /** <code>null</code> indicates no restriction. */
         Integer getMaxBitrate();
         /** <code>null</code> indicates no restriction. */
@@ -46,5 +44,13 @@ public interface IPlayerImplementationControls {
 
         /** <code>null</code> indicates no special request. **/
         Duration getLiveDelay();
+    }
+
+    interface IStreamLoadRequest extends ILoadRequest {
+        String getUrl();
+    }
+
+    interface IDownloadedLoadRequest extends ILoadRequest {
+        Object getDownloadData();
     }
 }

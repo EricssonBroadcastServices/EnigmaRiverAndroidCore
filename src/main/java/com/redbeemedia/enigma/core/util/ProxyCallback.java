@@ -23,6 +23,14 @@ public class ProxyCallback {
         return (T) Proxy.newProxyInstance(proxyInterface.getClassLoader(), new Class[]{proxyInterface}, new HandlerInvocationHandler(handler, wrapped));
     }
 
+    public static <T extends IInternalCallbackObject> T useCallbackHandlerIfPresent(IHandler callbackHandler, Class<T> callbackInterface, T callback) {
+        if(callbackHandler != null) {
+            return ProxyCallback.createCallbackOnThread(callbackHandler, callbackInterface, callback);
+        } else {
+            return callback;
+        }
+    }
+
     private static class HandlerInvocationHandler implements InvocationHandler {
         private IHandler handler;
         private Object originalObject;

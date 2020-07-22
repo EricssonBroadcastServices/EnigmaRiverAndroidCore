@@ -1,4 +1,4 @@
-### Audio and subtitles series (work in progress)
+### Audio and subtitles series
 # Prerequisites
 This tutorial assumes that you have:
 * Completed the [basics series](../index.md#basics-series) tutorial.

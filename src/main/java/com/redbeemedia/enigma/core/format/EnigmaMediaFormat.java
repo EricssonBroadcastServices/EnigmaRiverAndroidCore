@@ -1,5 +1,8 @@
 package com.redbeemedia.enigma.core.format;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -187,5 +190,40 @@ public final class EnigmaMediaFormat {
             }
         }
         return value.getClass().getName() + "@" + Integer.toHexString(value.hashCode());
+    }
+
+    public static EnigmaMediaFormat parseMediaFormat(JSONObject mediaFormat) throws JSONException {
+        String streamFormatName = mediaFormat.getString("format");
+        StreamFormat streamFormat = null;
+        DrmTechnology drmTechnology = null;
+
+        if("DASH".equals(streamFormatName)) {
+            streamFormat = StreamFormat.DASH;
+        } else if("HLS".equals(streamFormatName)) {
+            streamFormat = StreamFormat.HLS;
+        } else if("SMOOTHSTREAMING".equals(streamFormatName)) {
+            streamFormat = StreamFormat.SMOOTHSTREAMING;
+        }
+
+        JSONObject drm = mediaFormat.optJSONObject("drm");
+        if(drm != null) {
+            for(DrmTechnology drmTech : DrmTechnology.values()) {
+                if(drmTech == DrmTechnology.NONE) {
+                    continue;
+                }
+                if(drm.has(drmTech.getKey())) {
+                    drmTechnology = drmTech;
+                    break;
+                }
+            }
+        } else {
+            drmTechnology = DrmTechnology.NONE;
+        }
+
+        if(streamFormat != null && drmTechnology != null) {
+            return new EnigmaMediaFormat(streamFormat, drmTechnology);
+        } else {
+            return null;
+        }
     }
 }

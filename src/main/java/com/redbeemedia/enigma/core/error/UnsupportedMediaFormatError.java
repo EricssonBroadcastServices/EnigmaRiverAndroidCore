@@ -4,7 +4,7 @@ package com.redbeemedia.enigma.core.error;
 
 /**
  * If a specific stream format has been requested but is not
- * supported by the player implementationor not available for the
+ * supported by the player implementation or not available for the
  * asset.
  */
 public class UnsupportedMediaFormatError extends AssetFormatError {

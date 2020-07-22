@@ -1,4 +1,4 @@
-package com.redbeemedia.enigma.core.error;
+package com.redbeemedia.enigma.core.http;
 
 import org.json.JSONException;
 import org.json.JSONObject;

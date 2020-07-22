@@ -10,6 +10,8 @@ import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.http.IHttpCall;
 import com.redbeemedia.enigma.core.http.IHttpHandler;
+import com.redbeemedia.enigma.core.http.IHttpTask;
+import com.redbeemedia.enigma.core.http.MockHttpTask;
 import com.redbeemedia.enigma.core.testutil.Counter;
 import com.redbeemedia.enigma.core.time.Duration;
 import com.redbeemedia.enigma.core.util.ISO8601Util;
@@ -32,7 +34,7 @@ public class DirectEpgTest {
         final Counter doHttpCalled = new Counter();
         IHttpHandler httpHandler = new IHttpHandler() {
             @Override
-            public void doHttp(URL url, IHttpCall httpCall, IHttpResponseHandler responseHandler) {
+            public IHttpTask doHttp(URL url, IHttpCall httpCall, IHttpResponseHandler responseHandler) {
                 Assert.assertEquals("https://testBackendCall.DirectEpgTest/baseurl/v2/customer/mocker/businessunit/McMockface/epg/aMockChannel/date/2345-06-07?daysBackward=3&daysForward=3&pageSize=10000&pageNumber=1", url.toString());
                 JSONArray results = new JSONArray();
                 try {
@@ -54,6 +56,7 @@ public class DirectEpgTest {
                 byte[] data = results.toString().getBytes(StandardCharsets.UTF_8);
                 responseHandler.onResponse(new HttpStatus(200, "OK"), new ByteArrayInputStream(data));
                 doHttpCalled.count();
+                return new MockHttpTask();
             }
 
             @Override

@@ -61,7 +61,7 @@ import org.json.JSONObject;
             case BOOKMARK: {
                 JSONObject bookmarks = jsonObject.optJSONObject("bookmarks");
                 if (bookmarks != null) {
-                    StreamInfo streamInfo = getStreamInfo();
+                    JsonStreamInfo streamInfo = getStreamInfo();
                     if (streamInfo != null) {
                         if (streamInfo.hasStaticManifest()) {
                             if(bookmarks.has(LAST_VIEWED_OFFSET)) {
@@ -87,7 +87,7 @@ import org.json.JSONObject;
                 }
             } break;
             case LIVE_EDGE: {
-                StreamInfo streamInfo = getStreamInfo();
+                JsonStreamInfo streamInfo = getStreamInfo();
                 if(streamInfo.isLiveStream()) {
                     playerImplementationControls.seekTo(IPlayerImplementationControls.ISeekPosition.LIVE_EDGE, new SeekToControlResultHandler());
                     applicable = true;
@@ -97,9 +97,9 @@ import org.json.JSONObject;
         return applicable;
     }
 
-    private StreamInfo getStreamInfo() {
+    private JsonStreamInfo getStreamInfo() {
         try {
-            return new StreamInfo(jsonObject.optJSONObject("streamInfo"));
+            return new JsonStreamInfo(jsonObject.optJSONObject("streamInfo"));
         } catch (JSONException e) {
             return null;
         }

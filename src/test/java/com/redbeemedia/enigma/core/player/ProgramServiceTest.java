@@ -11,12 +11,22 @@ import com.redbeemedia.enigma.core.entitlement.listener.BaseEntitlementListener;
 import com.redbeemedia.enigma.core.epg.IProgram;
 import com.redbeemedia.enigma.core.epg.MockProgram;
 import com.redbeemedia.enigma.core.epg.response.MockEpgResponse;
+import com.redbeemedia.enigma.core.error.AssetBlockedError;
+import com.redbeemedia.enigma.core.error.ConcurrentStreamsLimitReachedError;
+import com.redbeemedia.enigma.core.error.EnigmaError;
+import com.redbeemedia.enigma.core.error.GeoBlockedError;
+import com.redbeemedia.enigma.core.error.NotAvailableError;
+import com.redbeemedia.enigma.core.error.NotEntitledError;
+import com.redbeemedia.enigma.core.error.NotPublishedError;
 import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.http.IHttpCall;
 import com.redbeemedia.enigma.core.http.IHttpHandler;
+import com.redbeemedia.enigma.core.http.IHttpTask;
+import com.redbeemedia.enigma.core.http.MockHttpTask;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSessionListener;
 import com.redbeemedia.enigma.core.session.MockSession;
+import com.redbeemedia.enigma.core.task.MockTaskFactoryProvider;
 import com.redbeemedia.enigma.core.testutil.Counter;
 import com.redbeemedia.enigma.core.time.Duration;
 import com.redbeemedia.enigma.core.time.ITimeProvider;
@@ -31,7 +41,9 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 
 public class ProgramServiceTest {
@@ -39,7 +51,7 @@ public class ProgramServiceTest {
     public void testCache() throws JSONException {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
 
-        StreamInfo streamInfo = new MockStreamInfo(MockStreamInfo.Args.liveStream());
+        JsonStreamInfo streamInfo = new MockStreamInfo(MockStreamInfo.Args.liveStream());
         List<IProgram> programs = new ArrayList<>();
         programs.add(new MockProgram("Program 1", 1000, 5000).setAssetId("asset_1"));
         programs.add(new MockProgram("Program 2", 5000, 9000).setAssetId("asset_2"));
@@ -80,7 +92,7 @@ public class ProgramServiceTest {
             }
         };
         final MockTimeProvider mockTimeProvider = new MockTimeProvider(42463683);
-        ProgramService programService = new ProgramService(new MockSession(), streamInfo, streamPrograms, playbackSessionInfo, entitlementProvider, playbackSession) {
+        ProgramService programService = new ProgramService(new MockSession(), streamInfo, streamPrograms, playbackSessionInfo, entitlementProvider, playbackSession, new MockTaskFactoryProvider()) {
             @Override
             protected ITimeProvider createTimeProviderForCache() {
                 return mockTimeProvider;
@@ -182,7 +194,7 @@ public class ProgramServiceTest {
         final Duration fuzz = Duration.seconds(45);
         final String expectedTimeCheckDate = ISO8601Util.newWriter(TimeZone.getTimeZone("UTC")).toIso8601(playbackSessionInfo.getCurrentPlaybackOffset().add(fuzz).add(Duration.millis(channelStart.inWholeUnits(Duration.Unit.MILLISECONDS))).inWholeUnits(Duration.Unit.MILLISECONDS));
         Assert.assertEquals("1999-12-25T11:01:30Z", expectedTimeCheckDate);
-        StreamInfo streamInfo = new MockStreamInfo(MockStreamInfo.Args.liveStream().setChannelId("channelZero").setStart(channelStart));
+        JsonStreamInfo streamInfo = new MockStreamInfo(MockStreamInfo.Args.liveStream().setChannelId("channelZero").setStart(channelStart));
         List<IProgram> programs = new ArrayList<>();
         programs.add(new MockProgram("Program 1", 1000, 50000).setAssetId("asset_1"));
         programs.add(new MockProgram("Program 2", 50000, 100000).setAssetId("asset_2"));
@@ -195,7 +207,7 @@ public class ProgramServiceTest {
                 try {
                     entitlementRequest.doHttpCall(new IHttpHandler() {
                         @Override
-                        public void doHttp(URL url, IHttpCall httpCall, IHttpResponseHandler responseHandler) {
+                        public IHttpTask doHttp(URL url, IHttpCall httpCall, IHttpResponseHandler responseHandler) {
                             callCounter.count();
                             if(callCounter.getCounts() == 1) {
                                 Assert.assertEquals("https://mock.unittests.example.com/v2/customer/mockCu/businessunit/mockBu/entitlement/asset_1/entitle", url.toString());
@@ -205,6 +217,7 @@ public class ProgramServiceTest {
                                 Assert.fail(url.toString());
                             }
                             httpCallMade.count();
+                            return new MockHttpTask();
                         }
 
                         @Override
@@ -238,7 +251,7 @@ public class ProgramServiceTest {
             }
         };
         final MockTimeProvider mockTimeProvider = new MockTimeProvider(42463683);
-        ProgramService programService = new ProgramService(new MockSession(), streamInfo, streamPrograms, playbackSessionInfo, entitlementProvider, playbackSession) {
+        ProgramService programService = new ProgramService(new MockSession(), streamInfo, streamPrograms, playbackSessionInfo, entitlementProvider, playbackSession, new MockTaskFactoryProvider()) {
             @Override
             protected ITimeProvider createTimeProviderForCache() {
                 return mockTimeProvider;
@@ -257,5 +270,62 @@ public class ProgramServiceTest {
         httpCallMade.setExpectedCounts(2);
 
         httpCallMade.assertExpected();
+    }
+
+    @Test
+    public void testPlaybackErrorForEveryStatus() {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+
+        Map<EntitlementStatus, Class<? extends EnigmaError>> expectedErrorType = new HashMap<>();
+        expectedErrorType.put(EntitlementStatus.FORBIDDEN, NotEntitledError.class);
+        expectedErrorType.put(EntitlementStatus.NOT_AVAILABLE, NotAvailableError.class);
+        expectedErrorType.put(EntitlementStatus.BLOCKED, AssetBlockedError.class);
+        expectedErrorType.put(EntitlementStatus.GEO_BLOCKED, GeoBlockedError.class);
+        expectedErrorType.put(EntitlementStatus.CONCURRENT_STREAMS_LIMIT_REACHED, ConcurrentStreamsLimitReachedError.class);
+        expectedErrorType.put(EntitlementStatus.NOT_PUBLISHED, NotPublishedError.class);
+        expectedErrorType.put(EntitlementStatus.NOT_ENTITLED, NotEntitledError.class);
+        expectedErrorType.put(null, NotEntitledError.class);
+        final Counter errorTypesChecked = new Counter();
+
+        for(EntitlementStatus status : EntitlementStatus.values()) {
+            if(status == EntitlementStatus.SUCCESS) {
+                continue;
+            }
+            final String assertMessage = "for "+status.name();
+            final Counter onPlaybackErrorCalled = new Counter();
+            MockCommunicationsChannel comChannel = new MockCommunicationsChannel() {
+                @Override
+                public void onPlaybackError(EnigmaError error, boolean endStream) {
+                    Assert.assertTrue(assertMessage, endStream);
+                    Assert.assertNotNull(assertMessage, expectedErrorType.get(status));
+                    Assert.assertNotNull(assertMessage, error);
+                    Assert.assertEquals(assertMessage, expectedErrorType.get(status), error.getClass());
+                    errorTypesChecked.count();
+                    onPlaybackErrorCalled.count();
+                }
+            };
+            onPlaybackErrorCalled.assertNone(assertMessage);
+            ProgramService.handleEntitlementStatus(comChannel, status);
+            onPlaybackErrorCalled.assertOnce(assertMessage);
+        }
+
+        final Counter onPlaybackErrorCalledForNull = new Counter();
+        MockCommunicationsChannel comChannel = new MockCommunicationsChannel() {
+            @Override
+            public void onPlaybackError(EnigmaError error, boolean endStream) {
+                Assert.assertTrue(endStream);
+                Assert.assertNotNull(expectedErrorType.get(null));
+                Assert.assertNotNull(error);
+                Assert.assertEquals(expectedErrorType.get(null), error.getClass());
+                errorTypesChecked.count();
+                onPlaybackErrorCalledForNull.count();
+            }
+        };
+        onPlaybackErrorCalledForNull.assertNone();
+        ProgramService.handleEntitlementStatus(comChannel, null);
+        onPlaybackErrorCalledForNull.assertOnce();
+
+        //Assert all types listed in expectedErrorType-map checked
+        errorTypesChecked.assertCount(expectedErrorType.size());
     }
 }

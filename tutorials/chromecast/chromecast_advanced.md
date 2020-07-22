@@ -1,4 +1,4 @@
-### Chromecast integration series (work in progress)
+### Chromecast integration series
 # Advanced usage of the cast-module
 #### Listening to events from the chromecast receiver
 

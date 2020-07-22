@@ -5,7 +5,8 @@ import com.redbeemedia.enigma.core.error.AssetGeoBlockedError;
 import com.redbeemedia.enigma.core.error.AssetNotAvailableForDeviceError;
 import com.redbeemedia.enigma.core.error.AssetNotEnabledError;
 import com.redbeemedia.enigma.core.error.AssetRestrictedError;
-import com.redbeemedia.enigma.core.error.ExposureHttpError;
+import com.redbeemedia.enigma.core.error.ServerError;
+import com.redbeemedia.enigma.core.http.ExposureHttpError;
 import com.redbeemedia.enigma.core.error.InternalError;
 import com.redbeemedia.enigma.core.error.InvalidAssetError;
 import com.redbeemedia.enigma.core.error.InvalidJsonToServerError;
@@ -88,7 +89,7 @@ import java.io.InputStream;
                 } else if(statusCode == 422) {
                     onError(new InvalidJsonToServerError());
                 } else if(statusCode == 500) {
-                    onError(new ServerTimeoutError());
+                    onError(new ServerError());
                 } else {
                     onError(new InternalError("Got status code: "+statusCode));
                 }

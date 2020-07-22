@@ -2,26 +2,13 @@ package com.redbeemedia.enigma.core.player;
 
 import android.os.Handler;
 
-import com.redbeemedia.enigma.core.BuildConfig;
-import com.redbeemedia.enigma.core.analytics.AnalyticsException;
-import com.redbeemedia.enigma.core.analytics.AnalyticsHandler;
-import com.redbeemedia.enigma.core.analytics.AnalyticsReporter;
-import com.redbeemedia.enigma.core.analytics.IBufferingAnalyticsHandler;
+import com.redbeemedia.enigma.core.analytics.IAnalyticsReporter;
 import com.redbeemedia.enigma.core.audio.IAudioTrack;
 import com.redbeemedia.enigma.core.context.AppForegroundListener;
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
-import com.redbeemedia.enigma.core.entitlement.EntitlementData;
-import com.redbeemedia.enigma.core.entitlement.EntitlementStatus;
-import com.redbeemedia.enigma.core.entitlement.IEntitlementProvider;
-import com.redbeemedia.enigma.core.entitlement.listener.BaseEntitlementListener;
+import com.redbeemedia.enigma.core.drm.IDrmInfo;
 import com.redbeemedia.enigma.core.epg.IProgram;
-import com.redbeemedia.enigma.core.error.AssetBlockedError;
-import com.redbeemedia.enigma.core.error.ConcurrentStreamsLimitReachedError;
 import com.redbeemedia.enigma.core.error.EnigmaError;
-import com.redbeemedia.enigma.core.error.GeoBlockedError;
-import com.redbeemedia.enigma.core.error.NotAvailableError;
-import com.redbeemedia.enigma.core.error.NotEntitledError;
-import com.redbeemedia.enigma.core.error.NotPublishedError;
 import com.redbeemedia.enigma.core.error.UnexpectedError;
 import com.redbeemedia.enigma.core.playable.IPlayable;
 import com.redbeemedia.enigma.core.playbacksession.BasePlaybackSessionListener;
@@ -31,15 +18,13 @@ import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.track.IPlayerImplementationTrack;
 import com.redbeemedia.enigma.core.restriction.ContractRestriction;
 import com.redbeemedia.enigma.core.restriction.IContractRestrictions;
-import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
 import com.redbeemedia.enigma.core.task.ITask;
 import com.redbeemedia.enigma.core.task.ITaskFactory;
-import com.redbeemedia.enigma.core.task.MainThreadTaskFactory;
+import com.redbeemedia.enigma.core.task.ITaskFactoryProvider;
 import com.redbeemedia.enigma.core.task.Repeater;
 import com.redbeemedia.enigma.core.task.TaskException;
 import com.redbeemedia.enigma.core.time.Duration;
-import com.redbeemedia.enigma.core.time.ITimeProvider;
 import com.redbeemedia.enigma.core.util.AndroidThreadUtil;
 import com.redbeemedia.enigma.core.util.Collector;
 import com.redbeemedia.enigma.core.util.HandlerWrapper;
@@ -53,30 +38,23 @@ import java.util.Collections;
 import java.util.List;
 
 /*package-protected*/ class InternalPlaybackSession implements IInternalPlaybackSession {
-    private static final int CYCLE_SLEEP_MILLIS = 1000;
     private static final long HEARTBEAT_RATE_MILLIS = 60L * 1000L;
-    private static final long PROGRAM_SERVICE_ENTITLEMENT_CHECK_INTERVAL_MILLIS = 4000L;
 
     //Task ids
-    private static final String ANALYTICS_HANDLER_TASK = "analyticsHandlerTask";
-    private static final String SEND_REMAINING_DATA_TASK = "sendRemainingDataTask";
-    private static final String PROGRAM_SERVICE_REPEATER = "programServiceRepeater";
     private static final String HEARTBEAT_REPEATER = "heartbeatRepeater";
     private static final String APP_FOREGROUND_MONITOR = "appForegroundMonitor";
 
-    private final AnalyticsReporter analyticsReporter;
-    private final IBufferingAnalyticsHandler analyticsHandler;
+    private final ComponentsHandler componentsHandler = new ComponentsHandler();
+    private final IAnalyticsReporter analyticsReporter;
     private final AppForegroundMonitor appForegroundMonitor;
-    private final ITask analyticsHandlerTask;
     private final Repeater heartbeatRepeater;
-    private final StreamInfo streamInfo;
+    private final IStreamInfo streamInfo;
     private final IStreamPrograms streamPrograms;
+    private final IDrmInfo drmInfo;
     private final ListenerCollector collector = new ListenerCollector();
     private final IPlaybackSessionInfo playbackSessionInfo;
-    private final ProgramService programService;
-    private final Repeater programServiceRepeater;
     private final IEnigmaPlayerConnection.ICommunicationsChannel communicationChannel = new EnigmaPlayerCommunicationChannel();
-    private boolean playingFromLive = false;
+    private final OpenContainer<Boolean> playingFromLive = new OpenContainer<>(false);
     private final OpenContainer<List<ISubtitleTrack>> subtitleTracks = new OpenContainer<>(new ArrayList<>());
     private final OpenContainer<ISubtitleTrack> selectedSubtitleTrack = new OpenContainer<>(null);
     private final OpenContainer<List<IAudioTrack>> audioTracks = new OpenContainer<>(new ArrayList<>());
@@ -92,74 +70,19 @@ import java.util.List;
     private volatile int state = STATE_NEW;
 
     private final IEnigmaPlayerListener playerListener;
-    private final IEnigmaPlayerListener programServicePlayerListener;
 
 
     public InternalPlaybackSession(ConstructorArgs constructorArgs) {
-        this(constructorArgs.session, constructorArgs.id, constructorArgs.timeProvider, constructorArgs.streamInfo, constructorArgs.streamPrograms, constructorArgs.playbackSessionInfo, constructorArgs.contractRestrictions, constructorArgs.entitlementProvider);
+        this(constructorArgs.streamInfo, constructorArgs.streamPrograms, constructorArgs.playbackSessionInfo, constructorArgs.contractRestrictions, constructorArgs.drmInfo, constructorArgs.analyticsReporter);
     }
 
-    public InternalPlaybackSession(ISession session, String id, ITimeProvider timeProvider, StreamInfo streamInfo, IStreamPrograms streamPrograms, IPlaybackSessionInfo playbackSessionInfo, IContractRestrictions contractRestrictions, IEntitlementProvider entitlementProvider) {
+    public InternalPlaybackSession(IStreamInfo streamInfo, IStreamPrograms streamPrograms, IPlaybackSessionInfo playbackSessionInfo, IContractRestrictions contractRestrictions, IDrmInfo drmInfo, IAnalyticsReporter analyticsReporter) {
         this.playbackSessionInfo = playbackSessionInfo;
         this.streamInfo = streamInfo;
         this.streamPrograms = streamPrograms;
-        this.programService = new ProgramService(session, streamInfo, streamPrograms, playbackSessionInfo, entitlementProvider, this);
-        programService.addEntitlementListener(new BaseEntitlementListener() {
-            @Override
-            public void onEntitlementChanged(EntitlementData oldData, EntitlementData newData) {
-                if (newData != null && !newData.isSuccess()) {
-                    handleEntitlementStatus(communicationChannel, newData.getStatus());
-                }
-            }
-        });
+        this.drmInfo = drmInfo;
         this.contractRestrictions = new OpenContainer<>(contractRestrictions);
-        this.analyticsHandler = newAnalyticsHandler(session, id, timeProvider);
-        this.programServiceRepeater = new Repeater(getTaskFactory(PROGRAM_SERVICE_REPEATER), PROGRAM_SERVICE_ENTITLEMENT_CHECK_INTERVAL_MILLIS, programService::checkEntitlement);
-        this.programServicePlayerListener = new BaseEnigmaPlayerListener() {
-            @Override
-            public void onProgramChanged(IProgram from, IProgram to) {
-                programServiceRepeater.executeNow();
-            }
-        };
-        this.analyticsHandlerTask = getTaskFactory(ANALYTICS_HANDLER_TASK).newTask(new Runnable() {
-            @Override
-            public void run() {
-                boolean initialized = false;
-                while(!initialized) {
-                    try {
-                        analyticsHandler.init();
-                        initialized = true;
-                    } catch (AnalyticsException e) {
-                        handleException(e);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        break;
-                    }
-                }
-                while(!Thread.interrupted()) {
-                    try {
-                        try {
-                            analyticsHandler.sendData();
-                            Thread.sleep(CYCLE_SLEEP_MILLIS);
-                        } catch (AnalyticsException e) {
-                            handleException(e);
-                            Thread.sleep(CYCLE_SLEEP_MILLIS);
-                        }
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                }
-            }
-
-            private void handleException(Exception e) {
-                if(BuildConfig.DEBUG) {
-                    throw new RuntimeException(e);
-                } else {
-                    e.printStackTrace(); //Log
-                }
-            }
-        });
-        this.analyticsReporter = new AnalyticsReporter(timeProvider, analyticsHandler);
+        this.analyticsReporter = analyticsReporter;
         this.playerListener = new EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, streamInfo, selectedVideoTrack);
         this.heartbeatRepeater = new Repeater(getTaskFactory(HEARTBEAT_REPEATER), HEARTBEAT_RATE_MILLIS, new HeartbeatRunnable());
         this.appForegroundMonitor = new AppForegroundMonitor(getTaskFactory(APP_FOREGROUND_MONITOR));
@@ -173,24 +96,19 @@ import java.util.List;
         });
     }
 
-    protected ITaskFactory getTaskFactory(String user) {
-        if(ANALYTICS_HANDLER_TASK.equals(user)) {
-            return EnigmaRiverContext.getTaskFactory();
-        } else if(SEND_REMAINING_DATA_TASK.equals(user)) {
-            return EnigmaRiverContext.getTaskFactory();
-        } else if(PROGRAM_SERVICE_REPEATER.equals(user)) {
-            return new MainThreadTaskFactory();
-        } else if(HEARTBEAT_REPEATER.equals(user)) {
-            return new MainThreadTaskFactory();
+    private ITaskFactory getTaskFactory(String user) {
+        ITaskFactoryProvider taskFactoryProvider = getTaskFactoryProvider();
+        if(HEARTBEAT_REPEATER.equals(user)) {
+            return taskFactoryProvider.getMainThreadTaskFactory();
         } else if(APP_FOREGROUND_MONITOR.equals(user)) {
-            return new MainThreadTaskFactory();
+            return taskFactoryProvider.getMainThreadTaskFactory();
         } else {
             throw new IllegalArgumentException(user+" not handled");
         }
     }
 
-    protected IBufferingAnalyticsHandler newAnalyticsHandler(ISession session, String playbackSessionId, ITimeProvider timeProvider) {
-        return new AnalyticsHandler(session, playbackSessionId, timeProvider);
+    protected ITaskFactoryProvider getTaskFactoryProvider() {
+        return EnigmaRiverContext.getTaskFactoryProvider();
     }
 
     private void changeState(int newState) {
@@ -203,37 +121,14 @@ import java.util.List;
         return (IEnigmaPlayerConnection) communicationChannel;
     }
 
-    protected static void handleEntitlementStatus(IEnigmaPlayerConnection.ICommunicationsChannel communicationsChannel, EntitlementStatus status) {
-        if(status == EntitlementStatus.SUCCESS) {
-            return;
-        }
-        if(status == null) {
-            communicationsChannel.onPlaybackError(new NotEntitledError(status), true);
-            return;
-        }
-        switch (status) {
-            case NOT_AVAILABLE: {
-                communicationsChannel.onPlaybackError(new NotAvailableError(), true);
-            } break;
-            case BLOCKED: {
-                communicationsChannel.onPlaybackError(new AssetBlockedError(), true);
-            } break;
-            case GEO_BLOCKED: {
-                communicationsChannel.onPlaybackError(new GeoBlockedError(), true);
-            } break;
-            case CONCURRENT_STREAMS_LIMIT_REACHED: {
-                communicationsChannel.onPlaybackError(new ConcurrentStreamsLimitReachedError(), true);
-            } break;
-            case NOT_PUBLISHED: {
-                communicationsChannel.onPlaybackError(new NotPublishedError(), true);
-            } break;
-            case NOT_ENTITLED: {
-                communicationsChannel.onPlaybackError(new NotEntitledError(EntitlementStatus.NOT_ENTITLED), true);
-            } break;
-            default: {
-                communicationsChannel.onPlaybackError(new NotEntitledError(status), true);
-            } break;
-        }
+    @Override
+    public IDrmInfo getDrmInfo() {
+        return drmInfo;
+    }
+
+    @Override
+    public void addInternalListener(IInternalPlaybackSessionListener listener) {
+        componentsHandler.listeners.add(listener);
     }
 
     @Override
@@ -246,14 +141,8 @@ import java.util.List;
         analyticsReporter.deviceInfo();
         analyticsReporter.playbackCreated(playbackSessionInfo.getAssetId());
         heartbeatRepeater.setEnabled(true);
-        programServiceRepeater.setEnabled(true);
-        enigmaPlayer.addListener(programServicePlayerListener);
         enigmaPlayer.addListener(playerListener);
-        try {
-            analyticsHandlerTask.start();
-        } catch (TaskException e) {
-            throw new RuntimeException("Could not start analyticsHandlerTask", e);
-        }
+        componentsHandler.fireOnStart(new IInternalPlaybackSessionListener.OnStartArgs(this, enigmaPlayer, communicationChannel));
         appForegroundMonitor.onPlaybackSessionStart();
     }
 
@@ -269,34 +158,16 @@ import java.util.List;
             changeState(STATE_DEAD);
         }
         heartbeatRepeater.setEnabled(false);
-        programServiceRepeater.setEnabled(false);
-        enigmaPlayer.removeListener(programServicePlayerListener);
         if (aborted) {
             analyticsReporter.playbackAborted(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
         }
         enigmaPlayer.removeListener(playerListener);
         appForegroundMonitor.onPlaybackSessionStop();
-        try {
-            analyticsHandlerTask.cancel(500);
-        } catch (TaskException e) {
-            e.printStackTrace(); //Suppress
-        }
-        ITask sendRemainingDataTask = getTaskFactory(SEND_REMAINING_DATA_TASK).newTask(() -> {
-            try {
-                analyticsHandler.sendData(); //Try to send any remaining data.
-            } catch (Exception e) {
-                e.printStackTrace(); //Suppress
-            }
-        });
-        try {
-            sendRemainingDataTask.start();
-        } catch (TaskException e) {
-            e.printStackTrace(); //Suppress
-        }
+        componentsHandler.fireOnStop(new IInternalPlaybackSessionListener.OnStopArgs(this, enigmaPlayer));
     }
 
     @Override
-    public StreamInfo getStreamInfo() {
+    public IStreamInfo getStreamInfo() {
         return streamInfo;
     }
 
@@ -315,10 +186,7 @@ import java.util.List;
         if(!streamInfo.isLiveStream()) {
             live = false;
         }
-        if(live != playingFromLive) {
-            playingFromLive = live;
-            collector.onPlayingFromLiveChanged(live);
-        }
+        OpenContainerUtil.setValueSynchronized(playingFromLive, live, (oldValue, newValue) -> collector.onPlayingFromLiveChanged(newValue));
     }
 
     @Override
@@ -424,7 +292,7 @@ import java.util.List;
 
     @Override
     public boolean isPlayingFromLive() {
-        return streamInfo.isLiveStream() && playingFromLive;
+        return OpenContainerUtil.getValueSynchronized(playingFromLive);
     }
 
     @Override
@@ -517,24 +385,20 @@ import java.util.List;
     }
 
     /*package-protected*/ static class ConstructorArgs {
-        public final ISession session;
-        public final String id;
-        public final ITimeProvider timeProvider;
-        public final StreamInfo streamInfo;
+        public final IStreamInfo streamInfo;
         public final IStreamPrograms streamPrograms;
         public final IPlaybackSessionInfo playbackSessionInfo;
         public final IContractRestrictions contractRestrictions;
-        public final IEntitlementProvider entitlementProvider;
+        public final IDrmInfo drmInfo;
+        public final IAnalyticsReporter analyticsReporter;
 
-        public ConstructorArgs(ISession session, String id, ITimeProvider timeProvider, StreamInfo streamInfo, IStreamPrograms streamPrograms, IPlaybackSessionInfo playbackSessionInfo, IContractRestrictions contractRestrictions, IEntitlementProvider entitlementProvider) {
-            this.session = session;
-            this.id = id;
-            this.timeProvider = timeProvider;
+        public ConstructorArgs(IStreamInfo streamInfo, IStreamPrograms streamPrograms, IPlaybackSessionInfo playbackSessionInfo, IContractRestrictions contractRestrictions, IDrmInfo drmInfo, IAnalyticsReporter analyticsReporter) {
             this.streamInfo = streamInfo;
             this.streamPrograms = streamPrograms;
             this.playbackSessionInfo = playbackSessionInfo;
             this.contractRestrictions = contractRestrictions;
-            this.entitlementProvider = entitlementProvider;
+            this.drmInfo = drmInfo;
+            this.analyticsReporter = analyticsReporter;
         }
     }
 
@@ -555,14 +419,14 @@ import java.util.List;
     }
 
     /*package-protected*/ static class EnigmaPlayerListenerForAnalytics extends BaseEnigmaPlayerListener {
-        private final AnalyticsReporter analyticsReporter;
+        private final IAnalyticsReporter analyticsReporter;
         private final IPlaybackSessionInfo playbackSessionInfo;
-        private final StreamInfo streamInfo;
+        private final IStreamInfo streamInfo;
         private boolean hasStartedAtLeastOnce = false;
         private final OpenContainer<IVideoTrack> selectedVideoTrack;
         private boolean programTrackingLost = false;
 
-        public EnigmaPlayerListenerForAnalytics(AnalyticsReporter analyticsReporter, IPlaybackSessionInfo playbackSessionInfo, StreamInfo streamInfo, OpenContainer<IVideoTrack> selectedVideoTrack) {
+        public EnigmaPlayerListenerForAnalytics(IAnalyticsReporter analyticsReporter, IPlaybackSessionInfo playbackSessionInfo, IStreamInfo streamInfo, OpenContainer<IVideoTrack> selectedVideoTrack) {
             this.analyticsReporter = analyticsReporter;
             this.playbackSessionInfo = playbackSessionInfo;
             this.streamInfo = streamInfo;
@@ -630,7 +494,7 @@ import java.util.List;
         }
     }
 
-    private static long getCurrentPlaybackOffset(IPlaybackSessionInfo playbackSessionInfo, StreamInfo streamInfo) {
+    private static long getCurrentPlaybackOffset(IPlaybackSessionInfo playbackSessionInfo, IStreamInfo streamInfo) {
         long playbackOffset = playbackSessionInfo.getCurrentPlaybackOffset().inWholeUnits(Duration.Unit.MILLISECONDS);
         long startUtcMillis = streamInfo.hasStart() ? streamInfo.getStart(Duration.Unit.MILLISECONDS) : 0;
         long sum = playbackOffset+startUtcMillis;
@@ -729,6 +593,22 @@ import java.util.List;
         public void onPlaybackSessionStop() {
             this.stopListening();
             cancelOngoingGracePeriod(500);
+        }
+    }
+
+    private static class ComponentsHandler {
+        private final List<IInternalPlaybackSessionListener> listeners = new ArrayList<>();
+
+        public void fireOnStart(IInternalPlaybackSessionListener.OnStartArgs args) {
+            for(int i = 0; i < listeners.size(); ++i) {
+                listeners.get(i).onStart(args);
+            }
+        }
+
+        public void fireOnStop(IInternalPlaybackSessionListener.OnStopArgs args) {
+            for(int i = listeners.size()-1; i >= 0; --i) {
+                listeners.get(i).onStop(args);
+            }
         }
     }
 }

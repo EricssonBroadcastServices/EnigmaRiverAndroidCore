@@ -6,6 +6,9 @@ public class HandlerWrapper implements IHandler {
     private Handler handler;
 
     public HandlerWrapper(Handler handler) {
+        if(handler == null) {
+            throw new IllegalArgumentException("handler is null");
+        }
         this.handler = handler;
     }
 

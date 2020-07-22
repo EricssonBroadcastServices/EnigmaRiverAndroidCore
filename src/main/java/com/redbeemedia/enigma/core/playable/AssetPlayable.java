@@ -3,7 +3,7 @@ package com.redbeemedia.enigma.core.playable;
 import android.os.Parcel;
 import android.text.TextUtils;
 
-public class AssetPlayable implements IPlayable {
+public final class AssetPlayable implements IAssetPlayable {
     private final String assetId;
 
     public AssetPlayable(final String assetId) {
@@ -20,6 +20,7 @@ public class AssetPlayable implements IPlayable {
         }
     }
 
+    @Override
     public String getAssetId() {
         return assetId;
     }
