@@ -23,13 +23,13 @@ optional module called `EnigmaRiverAndroidExposureUtils` that handles the conver
 backend Json objects to native java object. To use this module, app developers need to add it as a
 dependency in their gradle build file:
 ```
-implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exposureUtils:r3.1.0-BETA-4"
+implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exposureUtils:r3.1.0-BETA-5"
 ```
 Performing the same call as in the example from the old SDK above is done by
 ```
     EnigmaExposure exposure = new EnigmaExposure(session); // Or 'new EnigmaExposure(businessUnit)'
                                                            // if no authentication is required for the endpoint.
-    IExposureResultHandler<ApiAssetList> resultHandler = new IExposureResultHandler<ApiAssetList>() {
+    IExposureResultHandler<ApiAssetList> resultHandler = new BaseExposureResultHandler<ApiAssetList>() {
         @Override
         public void onSuccess(ApiAssetList result) {
             List<ApiAsset> assets = result.getItems(); //ApiAsset corresponds to the earlier EmpAsset
@@ -60,6 +60,6 @@ ___
 [Structural changes](structural_changes.md)<br/>
 [Changes to SDK initialization](sdk_initialization.md)<br/>
 [Changes to authentication/login](login.md)<br/>
-Changes to asset metadata retrieval (current)<br/>
+&bull; Changes to asset metadata retrieval (current)<br/>
 [Changes to playback](playback.md)<br/>
 [Further reading](further_reading.md)<br/>

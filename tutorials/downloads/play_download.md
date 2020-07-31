@@ -24,8 +24,9 @@ ___
 [Gradle dependencies](dependencies.md)<br/>
 [Check if an asset is downloadable](check_downloadability.md)<br/>
 [Using the download API](enigma_download.md)<br/>
+[Get available tracks for download](get_download_info.md)<br/>
 [Start asset download](start_download.md)<br/>
 [Listing downloaded assets](list_downloads.md)<br/>
-Start playback of a downloaded asset (current)<br/>
+&bull; Start playback of a downloaded asset (current)<br/>
 [Remove downloaded assets](remove_download.md)<br/>
 [Downloads app](example_app.md)<br/>

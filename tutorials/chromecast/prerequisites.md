@@ -9,6 +9,6 @@ This tutorial assumes that you have:
 
 ___
 [Table of Contents](../index.md)<br/>
-Prerequisites (current)<br/>
+&bull; Prerequisites (current)<br/>
 [Integrating Red Bee OTT cast support](chromecast.md)<br/>
 [Advanced usage of the cast-module](chromecast_advanced.md)<br/>

@@ -14,9 +14,11 @@ import com.redbeemedia.enigma.core.drm.IDrmProvider;
 import com.redbeemedia.enigma.core.epg.IProgram;
 import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.error.UnexpectedError;
+import com.redbeemedia.enigma.core.format.ChainedMediaFormatSelector;
 import com.redbeemedia.enigma.core.format.EnigmaMediaFormat;
 import com.redbeemedia.enigma.core.format.EnigmaMediaFormat.DrmTechnology;
 import com.redbeemedia.enigma.core.format.EnigmaMediaFormat.StreamFormat;
+import com.redbeemedia.enigma.core.format.EnigmaMediaFormatUtil;
 import com.redbeemedia.enigma.core.format.IMediaFormatSelector;
 import com.redbeemedia.enigma.core.format.IMediaFormatSupportSpec;
 import com.redbeemedia.enigma.core.format.SimpleMediaFormatSelector;
@@ -49,7 +51,6 @@ import com.redbeemedia.enigma.core.time.ITimeProvider;
 import com.redbeemedia.enigma.core.util.AndroidThreadUtil;
 import com.redbeemedia.enigma.core.util.HandlerWrapper;
 import com.redbeemedia.enigma.core.util.IHandler;
-import com.redbeemedia.enigma.core.util.IInternalCallbackObject;
 import com.redbeemedia.enigma.core.util.IStateMachine;
 import com.redbeemedia.enigma.core.util.OpenContainer;
 import com.redbeemedia.enigma.core.util.OpenContainerUtil;
@@ -64,9 +65,7 @@ import org.json.JSONObject;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 public class EnigmaPlayer implements IEnigmaPlayer {
@@ -288,7 +287,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                         DEFAULT_MEDIA_FORMAT_SELECTOR,
                         mediaFormatSelector,
                         playRequest.getPlaybackProperties().getMediaFormatSelector());
-                return EnigmaPlayer.getUsableMediaFormat(formats, environment.formatSupportSpec, selector);
+                return EnigmaMediaFormatUtil.selectUsableMediaFormat(formats, environment.formatSupportSpec, selector);
             }
 
             @Override
@@ -350,29 +349,6 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
     /*package-protected*/ boolean hasPlaybackSessionSeed() {
         return OpenContainerUtil.getValueSynchronized(playbackSessionSeed) != null;
-    }
-
-    private static JSONObject getUsableMediaFormat(JSONArray formats, IMediaFormatSupportSpec formatSupportSpec, IMediaFormatSelector mediaFormatSelector) throws JSONException {
-        Map<EnigmaMediaFormat, JSONObject> foundFormats = new HashMap<>();
-        for(int i = 0; i < formats.length(); ++i) {
-            JSONObject mediaFormat = formats.getJSONObject(i);
-            EnigmaMediaFormat enigmaMediaFormat = EnigmaMediaFormat.parseMediaFormat(mediaFormat);
-            if(enigmaMediaFormat != null) {
-                if(formatSupportSpec.supports(enigmaMediaFormat)) {
-                    foundFormats.put(enigmaMediaFormat, mediaFormat);
-                }
-            }
-        }
-
-        EnigmaMediaFormat selection = mediaFormatSelector.select(null, foundFormats.keySet());
-        if(selection != null) {
-            JSONObject object = foundFormats.get(selection);
-            if(object != null) {
-                return object;
-            }
-        }
-
-        return null;//If no format was picked we can't decide.
     }
 
     private class EnigmaPlayerEnvironment implements IEnigmaPlayerEnvironment, IDrmProvider {

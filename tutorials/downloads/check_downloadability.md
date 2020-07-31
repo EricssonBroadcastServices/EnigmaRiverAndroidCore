@@ -18,7 +18,7 @@ this module in your project, add the following to your `build.gradle`:
 ...
 dependencies {
     ...
-    implementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exposureUtils:r3.1.0-BETA-4'
+    implementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exposureUtils:r3.1.0-BETA-5'
     ...
 }
 ...
@@ -39,7 +39,7 @@ The following example shows how to get the availability keys for a user from the
 in to use this endpoint.
 ```java
 EnigmaExposure exposure = new EnigmaExposure(session); //Get entitlement/availabilitykey requires Authorization
-exposure.doRequest(new GetAvailabilityKeys(new IExposureResultHandler<ApiAvailabilityKeys>() {
+exposure.doRequest(new GetAvailabilityKeys(new BaseExposureResultHandler<ApiAvailabilityKeys>() {
     @Override
     public void onSuccess(ApiAvailabilityKeys result) {
         List<String> availabilityKeys = result.getAvailabilityKeys();
@@ -56,7 +56,7 @@ exposure.doRequest(new GetAvailabilityKeys(new IExposureResultHandler<ApiAvailab
 The following example shows how to get the first page of assets from the backend.
 ```java
 EnigmaExposure exposure = new EnigmaExposure(businessUnit);
-exposure.doRequest(new GetAllAssetsRequest(new IExposureResultHandler<ApiAssetList>() {
+exposure.doRequest(new GetAllAssetsRequest(new BaseExposureResultHandler<ApiAssetList>() {
     @Override
     public void onSuccess(ApiAssetList result) {
         List<ApiAsset> assets = result.getItems();
@@ -77,7 +77,7 @@ exposure.doRequest(new GetAllAssetsRequest(new IExposureResultHandler<ApiAssetLi
 ## Lightweight option
 
 If you don't want to include `exposureUtils` in your project we recommend you copy the file
-[EnigmaDownloadHelper.java](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidExposureUtils/blob/r3.1.0-BETA-4/src/main/java/com/redbeemedia/enigma/exposureutils/download/EnigmaDownloadHelper.java)
+[EnigmaDownloadHelper.java](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidExposureUtils/blob/r3.1.0-BETA-5/src/main/java/com/redbeemedia/enigma/exposureutils/download/EnigmaDownloadHelper.java)
 into your project and edit it appropriately.
 
 
@@ -85,8 +85,9 @@ ___
 [Table of Contents](../index.md)<br/>
 [Prerequisites](prerequisites.md)<br/>
 [Gradle dependencies](dependencies.md)<br/>
-Check if an asset is downloadable (current)<br/>
+&bull; Check if an asset is downloadable (current)<br/>
 [Using the download API](enigma_download.md)<br/>
+[Get available tracks for download](get_download_info.md)<br/>
 [Start asset download](start_download.md)<br/>
 [Listing downloaded assets](list_downloads.md)<br/>
 [Start playback of a downloaded asset](play_download.md)<br/>

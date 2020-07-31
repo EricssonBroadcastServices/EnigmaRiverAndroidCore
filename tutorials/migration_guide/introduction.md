@@ -74,7 +74,7 @@ REST-calls manually.
 
 ___
 [Table of Contents](../index.md)<br/>
-Introduction (current)<br/>
+&bull; Introduction (current)<br/>
 [Structural changes](structural_changes.md)<br/>
 [Changes to SDK initialization](sdk_initialization.md)<br/>
 [Changes to authentication/login](login.md)<br/>

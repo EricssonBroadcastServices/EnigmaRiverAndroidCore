@@ -11,7 +11,7 @@ This tutorial assumes that you have:
 
 ___
 [Table of Contents](../index.md)<br/>
-Prerequisites (current)<br/>
+&bull; Prerequisites (current)<br/>
 [Introduction](introduction.md)<br/>
 [Project setup](project_setup.md)<br/>
 [Your first app](your_first_app.md)<br/>

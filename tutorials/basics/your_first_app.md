@@ -334,7 +334,7 @@ import com.redbeemedia.enigma.core.error.NoSupportedMediaFormatsError;
 # And that's all there is to it!
 
 This is what our finished app looks like:
-[yourFirstApp](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.1.0-BETA-4/yourFirstApp)<br />
+[yourFirstApp](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.1.0-BETA-5/yourFirstApp)<br />
 
 
 ___
@@ -342,4 +342,4 @@ ___
 [Prerequisites](prerequisites.md)<br/>
 [Introduction](introduction.md)<br/>
 [Project setup](project_setup.md)<br/>
-Your first app (current)<br/>
+&bull; Your first app (current)<br/>

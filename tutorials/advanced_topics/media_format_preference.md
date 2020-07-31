@@ -123,6 +123,62 @@ private void playInEnigmaPlayer(IPlayable playable) {
 ...
 ```
 
+## Overriding the media format selection logic for downloads
+
+In the [Downloads and offline playback series](../index.md#downloads-and-offline-playback-series) we learn how to use the download API.
+
+Similarly to playback we can provide a custom `IMediaFormatSelector` to select media format for
+download. This can either be set on the `EnigmaDownloadContext` during initialization
+(global for downloads), or it can be provided for a single `DownloadStartRequest` (similar to
+"Overriding the media format selection logic for a single play request").
+
+### Setting the default media format selection logic for downloads
+
+Setting the default media format selector for downloads should be done when initializing the SDK.
+
+```java
+public class MyApplication extends Application {
+    ...
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        ...
+        EnigmaRiverContext.EnigmaRiverContextInitialization initialization = new EnigmaRiverContext.EnigmaRiverContextInitialization(exposureBaseUrl);
+        ...
+        initialization.forModule(EnigmaDownloadContext.MODULE_INFO).setDefaultDownloadFormatSelector(new IMediaFormatSelector() {
+            @Override
+            public EnigmaMediaFormat select(EnigmaMediaFormat prospect, Collection<EnigmaMediaFormat> available) {
+                // ... select media format ... //
+            }
+        });
+        ...
+        EnigmaRiverContext.initialize(this, initialization);
+    }
+    ...
+}
+```
+
+### Overriding the default media format selection logic for a single DownloadStartRequest
+
+We can provide a `IMediaFormatSelector` to be applied for a specific DownloadStartRequest. This is
+done by calling
+
+`DownloadStartRequest#setMediaFormatSelector(IMediaFormatSelector)`
+
+```java
+IEnigmaDownload enigmaDownload = new EnigmaDownload(businessUnit);
+...
+DownloadStartRequest downloadStartRequest = new DownloadStartRequest(assetId, session);
+downloadStartRequest.setMediaFormatSelector(new IMediaFormatSelector() {
+    @Override
+    public EnigmaMediaFormat select(EnigmaMediaFormat prospect, Collection<EnigmaMediaFormat> available) {
+        // ... select media format ... //
+    }
+});
+enigmaDownload.startAssetDownload(downloadStartRequest, resultHandler);
+```
+
+
 
 ___
 [Table of Contents](../index.md)<br/>

@@ -8,4 +8,5 @@ import android.app.Application;
  */
 public interface IModuleContextInitialization {
     Application getApplication();
+    <I extends IModuleInitializationSettings> I getModuleSettings(IModuleInfo<I> moduleInfo);
 }

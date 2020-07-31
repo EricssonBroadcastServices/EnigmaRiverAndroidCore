@@ -8,5 +8,5 @@ This tutorial assumes that you have:
 
 ___
 [Table of Contents](../index.md)<br/>
-Prerequisites (current)<br/>
+&bull; Prerequisites (current)<br/>
 [Audio and subtitle selection](audio_and_text_tracks.md)<br/>

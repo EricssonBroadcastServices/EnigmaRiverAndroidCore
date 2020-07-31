@@ -123,7 +123,7 @@ private void updateIsLive(boolean isLive){
 **And that's all there is to it**!
 
 This is what our finished app looks like:
-[customUiApp](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.1.0-BETA-4/customcontrols)<br
+[customUiApp](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.1.0-BETA-5/customcontrols)<br
 />
 
 
@@ -135,4 +135,4 @@ ___
 [Play/Pause Button](play_pause_button.md)<br/>
 [Custom timeline](timeline.md)<br/>
 [Spinner and Live Indicator](spinner_and_live.md)<br/>
-Custom UI app (current)<br/>
+&bull; Custom UI app (current)<br/>

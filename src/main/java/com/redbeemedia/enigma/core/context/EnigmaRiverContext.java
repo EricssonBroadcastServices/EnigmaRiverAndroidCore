@@ -17,6 +17,9 @@ import com.redbeemedia.enigma.core.util.UrlPath;
 import com.redbeemedia.enigma.core.util.device.DeviceInfo;
 import com.redbeemedia.enigma.core.util.device.IDeviceInfo;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public final class EnigmaRiverContext {
     private static volatile EnigmaRiverInitializedContext initializedContext = null;
 
@@ -31,7 +34,7 @@ public final class EnigmaRiverContext {
             }
             if(initializedContext == null) {
                 initializedContext = new EnigmaRiverInitializedContext(application, initialization);
-                EnigmaModuleInitializer.initializeModules(new ModuleContextInitialization(application));
+                EnigmaModuleInitializer.initializeModules(new ModuleContextInitialization(application, initialization.moduleSettings));
             } else {
                 throw new IllegalStateException("EnigmaRiverContext already initialized.");
             }
@@ -97,7 +100,7 @@ public final class EnigmaRiverContext {
 
     //Version if the core library
     public static String getVersion() {
-        String version = "r3.1.0-BETA-4";
+        String version = "r3.1.0-BETA-5";
         if(version.contains("REPLACE_WITH_RELEASE_VERSION")) {
             return "dev-snapshot-"+BuildConfig.VERSION_NAME;
         } else {
@@ -119,6 +122,7 @@ public final class EnigmaRiverContext {
         private ITaskFactoryProvider taskFactoryProvider = new DefaultTaskFactoryProvider(new DefaultTaskFactory());
         private IEpgLocator epgLocator = new DefaultEpgLocator();
         private INetworkMonitor networkMonitor = new DefaultNetworkMonitor();
+        private final Map<String, IModuleInitializationSettings> moduleSettings = new HashMap<>();
 
         public EnigmaRiverContextInitialization(String exposureBaseUrl) {
             this.exposureBaseUrl = exposureBaseUrl;
@@ -207,6 +211,16 @@ public final class EnigmaRiverContext {
         public EnigmaRiverContextInitialization setNetworkMonitor(INetworkMonitor networkMonitor) {
             this.networkMonitor = networkMonitor;
             return this;
+        }
+
+        public <I extends IModuleInitializationSettings> I forModule(IModuleInfo<I> moduleInfo) {
+            String moduleId = moduleInfo.getModuleId();
+            I moduleInitialization = (I) moduleSettings.get(moduleId);
+            if(moduleInitialization == null) {
+                moduleInitialization = moduleInfo.createInitializationSettings();
+                moduleSettings.put(moduleId, moduleInitialization);
+            }
+            return moduleInitialization;
         }
     }
 

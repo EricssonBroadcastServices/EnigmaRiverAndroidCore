@@ -1,11 +1,8 @@
-package com.redbeemedia.enigma.core.player;
-
-import com.redbeemedia.enigma.core.format.EnigmaMediaFormat;
-import com.redbeemedia.enigma.core.format.IMediaFormatSelector;
+package com.redbeemedia.enigma.core.format;
 
 import java.util.Collection;
 
-/*package-protected*/ class ChainedMediaFormatSelector implements IMediaFormatSelector {
+public final class ChainedMediaFormatSelector implements IMediaFormatSelector {
     private final IMediaFormatSelector[] selectors;
 
     public ChainedMediaFormatSelector(IMediaFormatSelector ... selectors) {

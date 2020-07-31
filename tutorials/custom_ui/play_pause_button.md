@@ -72,7 +72,7 @@ ___
 [Table of Contents](../index.md)<br/>
 [Prerequisites](prerequisites.md)<br/>
 [Basics: play, pause and seeking](basics.md)<br/>
-Play/Pause Button (current)<br/>
+&bull; Play/Pause Button (current)<br/>
 [Custom timeline](timeline.md)<br/>
 [Spinner and Live Indicator](spinner_and_live.md)<br/>
 [Custom UI app](custom_ui_app.md)<br/>

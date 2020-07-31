@@ -28,4 +28,4 @@ ___
 [Changes to authentication/login](login.md)<br/>
 [Changes to asset metadata retrieval](asset_metadata.md)<br/>
 [Changes to playback](playback.md)<br/>
-Further reading (current)<br/>
+&bull; Further reading (current)<br/>

@@ -36,7 +36,8 @@ ___
 [Prerequisites](prerequisites.md)<br/>
 [Gradle dependencies](dependencies.md)<br/>
 [Check if an asset is downloadable](check_downloadability.md)<br/>
-Using the download API (current)<br/>
+&bull; Using the download API (current)<br/>
+[Get available tracks for download](get_download_info.md)<br/>
 [Start asset download](start_download.md)<br/>
 [Listing downloaded assets](list_downloads.md)<br/>
 [Start playback of a downloaded asset](play_download.md)<br/>

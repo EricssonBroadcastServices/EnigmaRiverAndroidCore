@@ -46,7 +46,7 @@ ___
 [Table of Contents](../index.md)<br/>
 [Introduction](introduction.md)<br/>
 [Structural changes](structural_changes.md)<br/>
-Changes to SDK initialization (current)<br/>
+&bull; Changes to SDK initialization (current)<br/>
 [Changes to authentication/login](login.md)<br/>
 [Changes to asset metadata retrieval](asset_metadata.md)<br/>
 [Changes to playback](playback.md)<br/>

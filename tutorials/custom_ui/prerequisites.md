@@ -7,7 +7,7 @@ This tutorial assumes that you have:
 
 ___
 [Table of Contents](../index.md)<br/>
-Prerequisites (current)<br/>
+&bull; Prerequisites (current)<br/>
 [Basics: play, pause and seeking](basics.md)<br/>
 [Play/Pause Button](play_pause_button.md)<br/>
 [Custom timeline](timeline.md)<br/>

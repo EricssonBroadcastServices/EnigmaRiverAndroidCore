@@ -34,6 +34,6 @@ A Playable represents a type on object that an EnigmaPlayer can play. This is ty
 ___
 [Table of Contents](../index.md)<br/>
 [Prerequisites](prerequisites.md)<br/>
-Introduction (current)<br/>
+&bull; Introduction (current)<br/>
 [Project setup](project_setup.md)<br/>
 [Your first app](your_first_app.md)<br/>

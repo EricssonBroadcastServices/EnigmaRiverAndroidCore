@@ -174,7 +174,7 @@ Now you have your own custom UI that can pause, play and seek.
 ___
 [Table of Contents](../index.md)<br/>
 [Prerequisites](prerequisites.md)<br/>
-Basics: play, pause and seeking (current)<br/>
+&bull; Basics: play, pause and seeking (current)<br/>
 [Play/Pause Button](play_pause_button.md)<br/>
 [Custom timeline](timeline.md)<br/>
 [Spinner and Live Indicator](spinner_and_live.md)<br/>

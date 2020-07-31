@@ -2,6 +2,19 @@
 
 The following tutorials will show you various ways Enigma River Android SDK can be utilized, and described advanced topics.
 
+<br>
+
+## Jump to...
+<span style="margin-left: 10px"></span>-&gt; [Basics series](#basics-series) <br>
+<span style="margin-left: 10px"></span>-&gt; [Custom UI controls series](#custom-ui-controls-series) <br>
+<span style="margin-left: 10px"></span>-&gt; [Audio and subtitles series](#audio-and-subtitles-series) <br>
+<span style="margin-left: 10px"></span>-&gt; [Chromecast integration series](#chromecast-integration-series) <br>
+<span style="margin-left: 10px"></span>-&gt; [Downloads and offline playback series](#downloads-and-offline-playback-series) <br>
+<span style="margin-left: 10px"></span>-&gt; [Migration guide (Android SDK 2.0 -> Enigma River Android SDK)](#migration-guide-android-sdk-20---enigma-river-android-sdk) <br>
+<br>
+<span style="margin-left: 10px"></span>-&gt; [Advanced Topics](#advanced-topics) <br>
+
+
 ### Basics series
 ###### Purpose
 The purpose of this series is to familiarize yourself with Enigma River Android SDK concepts and basic setup.
@@ -10,6 +23,7 @@ At the end, you should have a running Android application that will:
 * Authenticate to Redbee Media OTT backend.
 * Play media assets from RedBee Media OTT.
 * Use a custom layout for play, pause, seeking, timeline, loading spinner and live indicator controls.
+
 
 [Prerequisites](basics/prerequisites.md)<br/>
 [Introduction](basics/introduction.md)<br/>
@@ -24,6 +38,7 @@ At the end, you should have a running Android application that will:
 * Authenticate to Redbee Media OTT backend.
 * Play media assets from RedBee Media OTT.
 * Use a custom layout for play, pause, seeking, timeline, loading spinner and live indicator controls.
+
 
 [Prerequisites](custom_ui/prerequisites.md)<br/>
 [Basics: play, pause and seeking](custom_ui/basics.md)<br/>
@@ -41,6 +56,7 @@ At the end, you should have a running Android application that will:
 * Play media assets from RedBee Media OTT.
 * Change audio tracks and subtitles.
 
+
 [Prerequisites](audio_subs/prerequisites.md)<br/>
 [Audio and subtitle selection](audio_subs/audio_and_text_tracks.md)<br/>
 
@@ -53,6 +69,7 @@ At the end, you should have a running Android application that will:
 * Play media assets from RedBee Media OTT.
 * Provide custom UI to cast the media to a Chromecast device.
 
+
 [Prerequisites](chromecast/prerequisites.md)<br/>
 [Integrating Red Bee OTT cast support](chromecast/chromecast.md)<br/>
 [Advanced usage of the cast-module](chromecast/chromecast_advanced.md)<br/>
@@ -61,16 +78,19 @@ At the end, you should have a running Android application that will:
 ###### Purpose
 The purpose of this series is to how to add support for offline playback in your Enigma Android Player application.
 ###### What will you learn
-At the end, you should have a running Android application that will:
-* Check if an asset is downloadable.
+You will learn how to:
+* Check if an asset is downloadable.TEST
 * Download an asset.
+* Select bitrate for download.
 * Show a list of downloaded asset.
 * Remove a downloaded asset.
+
 
 [Prerequisites](downloads/prerequisites.md)<br/>
 [Gradle dependencies](downloads/dependencies.md)<br/>
 [Check if an asset is downloadable](downloads/check_downloadability.md)<br/>
 [Using the download API](downloads/enigma_download.md)<br/>
+[Get available tracks for download](downloads/get_download_info.md)<br/>
 [Start asset download](downloads/start_download.md)<br/>
 [Listing downloaded assets](downloads/list_downloads.md)<br/>
 [Start playback of a downloaded asset](downloads/play_download.md)<br/>

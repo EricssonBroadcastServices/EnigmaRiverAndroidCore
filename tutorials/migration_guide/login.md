@@ -68,7 +68,7 @@ ___
 [Introduction](introduction.md)<br/>
 [Structural changes](structural_changes.md)<br/>
 [Changes to SDK initialization](sdk_initialization.md)<br/>
-Changes to authentication/login (current)<br/>
+&bull; Changes to authentication/login (current)<br/>
 [Changes to asset metadata retrieval](asset_metadata.md)<br/>
 [Changes to playback](playback.md)<br/>
 [Further reading](further_reading.md)<br/>

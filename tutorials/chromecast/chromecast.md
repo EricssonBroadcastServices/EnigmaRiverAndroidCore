@@ -17,7 +17,7 @@ The first thing needed in order to add cast functionality to your app is to add 
 ...
 dependencies {
     ...
-    implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:cast:r3.1.0-BETA-4"
+    implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:cast:r3.1.0-BETA-5"
     ...
 }
 ...
@@ -123,5 +123,5 @@ Congratulations, you should now be able to cast Red Bee OTT media assets!
 ___
 [Table of Contents](../index.md)<br/>
 [Prerequisites](prerequisites.md)<br/>
-Integrating Red Bee OTT cast support (current)<br/>
+&bull; Integrating Red Bee OTT cast support (current)<br/>
 [Advanced usage of the cast-module](chromecast_advanced.md)<br/>

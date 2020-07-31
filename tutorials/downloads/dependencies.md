@@ -11,8 +11,8 @@ It is assumed that you already have the dependencies to `core` and `exoplayerint
 ...
 dependencies {
     ...
-    implementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:core:r3.1.0-BETA-4'
-    implementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exoplayerintegration:r3.1.0-BETA-4'
+    implementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:core:r3.1.0-BETA-5'
+    implementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exoplayerintegration:r3.1.0-BETA-5'
     ...
 }
 ...
@@ -29,7 +29,7 @@ Add this to you `build.gradle`:
 ...
 dependencies {
     ...
-    implementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:download:r3.1.0-BETA-4'
+    implementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:download:r3.1.0-BETA-5'
     ...
 }
 ...
@@ -46,7 +46,7 @@ Add this to you `build.gradle`:
 ...
 dependencies {
     ...
-    implementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exoPlayerDownload:r3.1.0-BETA-4'
+    implementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exoPlayerDownload:r3.1.0-BETA-5'
     ...
 }
 ...
@@ -56,9 +56,10 @@ dependencies {
 ___
 [Table of Contents](../index.md)<br/>
 [Prerequisites](prerequisites.md)<br/>
-Gradle dependencies (current)<br/>
+&bull; Gradle dependencies (current)<br/>
 [Check if an asset is downloadable](check_downloadability.md)<br/>
 [Using the download API](enigma_download.md)<br/>
+[Get available tracks for download](get_download_info.md)<br/>
 [Start asset download](start_download.md)<br/>
 [Listing downloaded assets](list_downloads.md)<br/>
 [Start playback of a downloaded asset](play_download.md)<br/>

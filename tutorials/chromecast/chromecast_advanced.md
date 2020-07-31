@@ -72,4 +72,4 @@ ___
 [Table of Contents](../index.md)<br/>
 [Prerequisites](prerequisites.md)<br/>
 [Integrating Red Bee OTT cast support](chromecast.md)<br/>
-Advanced usage of the cast-module (current)<br/>
+&bull; Advanced usage of the cast-module (current)<br/>

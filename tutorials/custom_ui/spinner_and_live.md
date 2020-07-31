@@ -102,5 +102,5 @@ ___
 [Basics: play, pause and seeking](basics.md)<br/>
 [Play/Pause Button](play_pause_button.md)<br/>
 [Custom timeline](timeline.md)<br/>
-Spinner and Live Indicator (current)<br/>
+&bull; Spinner and Live Indicator (current)<br/>
 [Custom UI app](custom_ui_app.md)<br/>

@@ -23,7 +23,7 @@ tracks, and states of the stream (for example, live/not live).
 ___
 [Table of Contents](../index.md)<br/>
 [Introduction](introduction.md)<br/>
-Structural changes (current)<br/>
+&bull; Structural changes (current)<br/>
 [Changes to SDK initialization](sdk_initialization.md)<br/>
 [Changes to authentication/login](login.md)<br/>
 [Changes to asset metadata retrieval](asset_metadata.md)<br/>

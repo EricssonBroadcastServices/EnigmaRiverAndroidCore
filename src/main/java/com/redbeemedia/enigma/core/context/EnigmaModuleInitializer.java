@@ -16,6 +16,7 @@ import java.util.List;
      */
     private static final List<String> supportedModuleNames = buildSupported()
             .add("com.redbeemedia.enigma.exoplayerintegration.ExoPlayerIntegrationContext")
+            .add("com.redbeemedia.enigma.download.EnigmaDownloadContext")
             .add("com.redbeemedia.enigma.exoplayerdownload.ExoPlayerDownloadContext")
             .build();
 

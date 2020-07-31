@@ -102,6 +102,6 @@ ___
 [Prerequisites](prerequisites.md)<br/>
 [Basics: play, pause and seeking](basics.md)<br/>
 [Play/Pause Button](play_pause_button.md)<br/>
-Custom timeline (current)<br/>
+&bull; Custom timeline (current)<br/>
 [Spinner and Live Indicator](spinner_and_live.md)<br/>
 [Custom UI app](custom_ui_app.md)<br/>

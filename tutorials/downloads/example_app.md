@@ -1,7 +1,7 @@
 ### Downloads and offline playback series
 # Downloads app
 For a complete demonstration on how to use the download API you can check out the source code
-for the tutorial app call [downloads](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.1.0-BETA-4/downloads).
+for the tutorial app called [downloads](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.1.0-BETA-5/downloads).
 
 
 ___
@@ -10,8 +10,9 @@ ___
 [Gradle dependencies](dependencies.md)<br/>
 [Check if an asset is downloadable](check_downloadability.md)<br/>
 [Using the download API](enigma_download.md)<br/>
+[Get available tracks for download](get_download_info.md)<br/>
 [Start asset download](start_download.md)<br/>
 [Listing downloaded assets](list_downloads.md)<br/>
 [Start playback of a downloaded asset](play_download.md)<br/>
 [Remove downloaded assets](remove_download.md)<br/>
-Downloads app (current)<br/>
+&bull; Downloads app (current)<br/>

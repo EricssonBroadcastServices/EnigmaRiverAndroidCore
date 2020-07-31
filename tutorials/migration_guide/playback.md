@@ -163,5 +163,5 @@ ___
 [Changes to SDK initialization](sdk_initialization.md)<br/>
 [Changes to authentication/login](login.md)<br/>
 [Changes to asset metadata retrieval](asset_metadata.md)<br/>
-Changes to playback (current)<br/>
+&bull; Changes to playback (current)<br/>
 [Further reading](further_reading.md)<br/>
