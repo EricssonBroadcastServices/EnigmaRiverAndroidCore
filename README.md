@@ -1,31 +1,31 @@
 # Core
 
-The core library, version r3.1.0-BETA-5.
+The core library, version r3.1.0.
 
 See the [tutorials](tutorials/index.md) for more information.
 
 ## Other modules
 
-### [ExoPlayerIntegration](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidExoPlayerIntegration/tree/r3.1.0-BETA-5)
+### [ExoPlayerIntegration](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidExoPlayerIntegration/tree/r3.1.0)
 
 <p>Player implementation module that uses ExoPlayer.</p>
 
 ```gradle
-implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exoplayerintegration:r3.1.0-BETA-5"
+implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exoplayerintegration:r3.1.0"
 ```
 
-### [Cast](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidCast/tree/r3.1.0-BETA-5)
+### [Cast](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidCast/tree/r3.1.0)
 
 <p>Optional module for easy integration with chromecast</p>
 
 ```gradle
-implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:cast:r3.1.0-BETA-5"
+implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:cast:r3.1.0"
 ```
 
-### [ExposureUtils](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidExposureUtils/tree/r3.1.0-BETA-5)
+### [ExposureUtils](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidExposureUtils/tree/r3.1.0)
 
 <p>Optional utility module for converting json-responses to native java/Android objects</p>
 
 ```gradle
-implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exposureUtils:r3.1.0-BETA-5"
+implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exposureUtils:r3.1.0"
 ```
