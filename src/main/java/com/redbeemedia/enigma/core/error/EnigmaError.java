@@ -1,5 +1,7 @@
 package com.redbeemedia.enigma.core.error;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -71,6 +73,15 @@ public abstract class EnigmaError {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+
+    public void logStackTrace(String tag) {
+        logStackTrace(Log.ERROR, tag);
+    }
+
+    public void logStackTrace(int level, String tag) {
+        Log.println(level, tag, getTrace());
     }
 
     public void writeTrace(Writer writer) throws IOException {

@@ -10,6 +10,7 @@ The following tutorials will show you various ways Enigma River Android SDK can 
 <span style="margin-left: 10px"></span>-&gt; [Audio and subtitles series](#audio-and-subtitles-series) <br>
 <span style="margin-left: 10px"></span>-&gt; [Chromecast integration series](#chromecast-integration-series) <br>
 <span style="margin-left: 10px"></span>-&gt; [Downloads and offline playback series](#downloads-and-offline-playback-series) <br>
+<span style="margin-left: 10px"></span>-&gt; [Additional topics for download and offline playback series](#additional-topics-for-download-and-offline-playback-series) <br>
 <span style="margin-left: 10px"></span>-&gt; [Migration guide (Android SDK 2.0 -> Enigma River Android SDK)](#migration-guide-android-sdk-20---enigma-river-android-sdk) <br>
 <br>
 <span style="margin-left: 10px"></span>-&gt; [Advanced Topics](#advanced-topics) <br>
@@ -96,6 +97,13 @@ You will learn how to:
 [Start playback of a downloaded asset](downloads/play_download.md)<br/>
 [Remove downloaded assets](downloads/remove_download.md)<br/>
 [Downloads app](downloads/example_app.md)<br/>
+
+### Additional topics for download and offline playback series
+###### Purpose
+The purpose of this series is to provide some additional tutorials on how to achieve
+            specific tasks and features related to downloads.
+
+[Only download on wifi networks](downloads_advanced/set_download_requirements.md)<br/>
 
 ### Migration guide (Android SDK 2.0 -> Enigma River Android SDK)
 ###### Purpose
