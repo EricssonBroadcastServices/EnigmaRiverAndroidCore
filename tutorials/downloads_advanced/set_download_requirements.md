@@ -4,7 +4,7 @@
 Setting requirements for downloads is currently only possible if you are using the
 `exoPlayerDownload` module as your download implementation.
 
-## Requirements
+## Setting ExoPlayer download requirements
 ExoPlayer provides a way to set certain requirements that need to be fulfilled for a download
 to progress. These can be set by calling `setRequirements` on the `DownloadManager` being used.
 The `exoPlayerDownload` module keeps a reference to it's `DownloadManager` in it's context:

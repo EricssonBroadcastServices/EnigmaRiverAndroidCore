@@ -73,6 +73,30 @@ enigmaDownload.getDownloadableInfo(assetID, session, new BaseResultHandler<IDown
 }, handler);
 ```
 
+### Selecting audio tracks
+
+To select which audio tracks to download we can use `DownloadStartRequest#addAudio(AudioDownloadable)`
+or `DownloadStartRequest#setAudios(List<AudioDownloadable>)` using `AudioDownloadable`s retrieved
+from the `IDownloadableInfo` object for the asset.
+See [Get available tracks for download](get_download_info.md) for more details.
+
+If no audio tracks are selected the SDK will automatically select which audio tracks to download.
+
+<br />
+
+For an example of this in action, see [Downloads app](example_app.md).
+
+### Selecting subtitle tracks
+
+To select which subtitle tracks to download we can use `DownloadStartRequest#addSubtitle(SubtitleDownloadable)`
+or `DownloadStartRequest#setSubtitles(List<SubtitleDownloadable>)` using `SubtitleDownloadable`s
+retrieved from the `IDownloadableInfo` object for the asset.
+See [Get available tracks for download](get_download_info.md) for more details.
+
+<br />
+
+For an example of this in action, see [Downloads app](example_app.md).
+
 ## Advanced options
 
 In [Overriding media format selection logic](../advanced_topics/media_format_preference.md) you can read about how to provide

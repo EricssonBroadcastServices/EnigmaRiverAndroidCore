@@ -22,7 +22,7 @@ public interface IControlResultHandler extends IInternalCallbackObject {
         public static final RejectReasonType OTHER = new RejectReasonType("OTHER");
 
         private final String name;
-        private RejectReasonType(String name) {
+        protected RejectReasonType(String name) {
             this.name = name;
         }
 

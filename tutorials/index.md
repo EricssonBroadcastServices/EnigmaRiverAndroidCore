@@ -80,7 +80,7 @@ At the end, you should have a running Android application that will:
 The purpose of this series is to how to add support for offline playback in your Enigma Android Player application.
 ###### What will you learn
 You will learn how to:
-* Check if an asset is downloadable.TEST
+* Check if an asset is downloadable.
 * Download an asset.
 * Select bitrate for download.
 * Show a list of downloaded asset.
