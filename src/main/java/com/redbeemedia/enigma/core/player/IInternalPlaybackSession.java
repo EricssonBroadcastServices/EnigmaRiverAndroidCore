@@ -22,6 +22,7 @@ import java.util.Collection;
     void setTracks(Collection<? extends IPlayerImplementationTrack> tracks);
     void setSelectedSubtitleTrack(ISubtitleTrack track);
     void setSelectedAudioTrack(IAudioTrack track);
+
     void setSelectedVideoTrack(IVideoTrack track);
 
     void fireEndReached();

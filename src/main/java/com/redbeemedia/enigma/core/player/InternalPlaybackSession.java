@@ -260,12 +260,18 @@ import java.util.List;
     }
 
     @Override
+    public IVideoTrack getSelectedVideoTrack() {
+        return OpenContainerUtil.getValueSynchronized(selectedVideoTrack);
+    }
+
+    @Override
     public void setSelectedVideoTrack(IVideoTrack track) {
         OpenContainerUtil.setValueSynchronized(selectedVideoTrack, track, (oldValue, newValue) -> {
             if(oldValue != null  // If oldValue was null this was the initial value and thus not a change
                && newValue != null) {
                 analyticsReporter.playbackBitrateChanged(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo), newValue.getBitrate());
             }
+            collector.onSelectedVideoTrackChanged(oldValue, newValue);
         });
     }
 
@@ -376,6 +382,11 @@ import java.util.List;
         @Override
         public void onSelectedAudioTrackChanged(IAudioTrack oldSelectedTrack, IAudioTrack newSelectedTrack) {
             forEach(listener -> listener.onSelectedAudioTrackChanged(oldSelectedTrack, newSelectedTrack));
+        }
+
+        @Override
+        public void onSelectedVideoTrackChanged(IVideoTrack oldSelectedTrack, IVideoTrack newSelectedTrack) {
+            forEach(listener -> listener.onSelectedVideoTrackChanged(oldSelectedTrack, newSelectedTrack));
         }
 
         @Override

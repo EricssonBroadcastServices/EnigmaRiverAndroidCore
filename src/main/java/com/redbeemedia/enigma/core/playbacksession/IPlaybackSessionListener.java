@@ -4,6 +4,7 @@ import com.redbeemedia.enigma.core.audio.IAudioTrack;
 import com.redbeemedia.enigma.core.restriction.IContractRestrictions;
 import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
 import com.redbeemedia.enigma.core.util.IInternalListener;
+import com.redbeemedia.enigma.core.video.IVideoTrack;
 
 import java.util.List;
 
@@ -44,6 +45,7 @@ public interface IPlaybackSessionListener extends IInternalListener {
     void onAudioTracks(List<IAudioTrack> tracks);
     void onSelectedAudioTrackChanged(IAudioTrack oldSelectedTrack, IAudioTrack newSelectedTrack);
 
+    void onSelectedVideoTrackChanged(IVideoTrack oldSelectedTrack, IVideoTrack newSelectedTrack);
 
     void onContractRestrictionsChanged(IContractRestrictions oldContractRestrictions, IContractRestrictions newContractRestrictions);
 }

@@ -29,12 +29,16 @@ public final class EnigmaRiverContext {
 
     public static synchronized void initialize(Application application, EnigmaRiverContextInitialization initialization) throws ContextInitializationException {
         try {
+            android.util.Log.d("freezelog", "EnigmaRiverContext 1");
+
             if(application == null) {
                 throw new NullPointerException("application was null");
             }
             if(initializedContext == null) {
                 initializedContext = new EnigmaRiverInitializedContext(application, initialization);
+                android.util.Log.d("freezelog", "EnigmaRiverContext 2");
                 EnigmaModuleInitializer.initializeModules(new ModuleContextInitialization(application, initialization.moduleSettings));
+                android.util.Log.d("freezelog", "EnigmaRiverContext 3");
             } else {
                 throw new IllegalStateException("EnigmaRiverContext already initialized.");
             }
@@ -43,6 +47,8 @@ public final class EnigmaRiverContext {
         } catch (Exception e) {
             throw new ContextInitializationException(e);
         }
+
+        android.util.Log.d("freezelog", "EnigmaRiverContext 4");
     }
 
     /**
@@ -100,7 +106,7 @@ public final class EnigmaRiverContext {
 
     //Version if the core library
     public static String getVersion() {
-        String version = "r3.1.2-BETA-2";
+        String version = "r3.1.2-BETA-LogTest-3";
         if(version.contains("REPLACE_WITH_RELEASE_VERSION")) {
             return "dev-snapshot-"+BuildConfig.VERSION_NAME;
         } else {
@@ -158,7 +164,7 @@ public final class EnigmaRiverContext {
                 return new DeviceInfo(application);
             }
         }
-        
+
         public EnigmaRiverContextInitialization setDeviceInfo(final IDeviceInfo deviceInfo) {
             this.deviceInfo = deviceInfo;
             return this;
@@ -235,21 +241,33 @@ public final class EnigmaRiverContext {
 
         public EnigmaRiverInitializedContext(Application application, EnigmaRiverContextInitialization initialization) {
             try {
+                android.util.Log.d("freezelog", "EnigmaRiverInitializedContext 1");
                 String baseUrl = initialization.getExposureBaseUrl();
+                android.util.Log.d("freezelog", "EnigmaRiverInitializedContext 2");
                 if(baseUrl == null) {
                     throw new IllegalStateException("No exposure base url supplied.");
                 }
+                android.util.Log.d("freezelog", "EnigmaRiverInitializedContext 3");
                 this.exposureBaseUrl = new UrlPath(baseUrl);
+                android.util.Log.d("freezelog", "EnigmaRiverInitializedContext 4");
                 this.httpHandler = initialization.getHttpHandler();
+                android.util.Log.d("freezelog", "EnigmaRiverInitializedContext 5");
                 this.deviceInfo = initialization.getDeviceInfo(application);
+                android.util.Log.d("freezelog", "EnigmaRiverInitializedContext 6");
                 this.activityLifecycleManager = initialization.getActivityLifecycleManager(application);
+                android.util.Log.d("freezelog", "EnigmaRiverInitializedContext 7");
                 this.taskFactoryProvider = initialization.getTaskFactoryProvider();
+                android.util.Log.d("freezelog", "EnigmaRiverInitializedContext 8");
                 this.epgLocator = initialization.getEpgLocator();
+                android.util.Log.d("freezelog", "EnigmaRiverInitializedContext 9");
                 this.networkMonitor = initialization.getNetworkMonitor();
+                android.util.Log.d("freezelog", "EnigmaRiverInitializedContext 10");
                 if(networkMonitor instanceof IDefaultNetworkMonitor) {
                     ((IDefaultNetworkMonitor) networkMonitor).start(application.getApplicationContext(), taskFactoryProvider);
+                    android.util.Log.d("freezelog", "EnigmaRiverInitializedContext 11");
                 }
                 ProcessLifecycleHandler.get().initialize(application);
+                android.util.Log.d("freezelog", "EnigmaRiverInitializedContext 13");
             } catch (Exception e) {
                 throw new ContextInitializationException(e);
             }
