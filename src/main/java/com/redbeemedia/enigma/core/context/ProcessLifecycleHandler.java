@@ -47,41 +47,52 @@ import com.redbeemedia.enigma.core.util.IInternalListener;
 
     public void initialize(Application application) {
         if(application != null) {
+            android.util.Log.d("freezelog", "ProcessLifecycleHandler 1");
             this.handler = new Handler();
+            android.util.Log.d("freezelog", "ProcessLifecycleHandler 1.1");
             application.registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
                 @Override
                 public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
 
+                    android.util.Log.d("freezelog", "ProcessLifecycleHandler 2");
                 }
 
                 @Override
                 public void onActivityStarted(Activity activity) {
+                    android.util.Log.d("freezelog", "ProcessLifecycleHandler 3");
                     ProcessLifecycleHandler.this.activityStarted();
+                    android.util.Log.d("freezelog", "ProcessLifecycleHandler 4");
                 }
 
                 @Override
                 public void onActivityResumed(Activity activity) {
+                    android.util.Log.d("freezelog", "ProcessLifecycleHandler 5");
                     ProcessLifecycleHandler.this.activityResumed();
+                    android.util.Log.d("freezelog", "ProcessLifecycleHandler 6");
                 }
 
                 @Override
                 public void onActivityPaused(Activity activity) {
+                    android.util.Log.d("freezelog", "ProcessLifecycleHandler 7");
                     ProcessLifecycleHandler.this.activityPaused();
+                    android.util.Log.d("freezelog", "ProcessLifecycleHandler 8");
                 }
 
                 @Override
                 public void onActivityStopped(Activity activity) {
+                    android.util.Log.d("freezelog", "ProcessLifecycleHandler 9");
                     ProcessLifecycleHandler.this.activityStopped();
+                    android.util.Log.d("freezelog", "ProcessLifecycleHandler 10");
                 }
 
                 @Override
                 public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
-
+                    android.util.Log.d("freezelog", "ProcessLifecycleHandler 11");
                 }
 
                 @Override
                 public void onActivityDestroyed(Activity activity) {
-
+                    android.util.Log.d("freezelog", "ProcessLifecycleHandler 12");
                 }
             });
         }

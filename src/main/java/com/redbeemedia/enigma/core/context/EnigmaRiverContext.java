@@ -1,6 +1,7 @@
 package com.redbeemedia.enigma.core.context;
 
 import android.app.Application;
+import android.content.Context;
 
 import com.redbeemedia.enigma.core.BuildConfig;
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleManager;
@@ -106,7 +107,7 @@ public final class EnigmaRiverContext {
 
     //Version if the core library
     public static String getVersion() {
-        String version = "r3.1.2-BETA-3-test";
+        String version = "r3.1.2-BETA-LogTest-4";
         if(version.contains("REPLACE_WITH_RELEASE_VERSION")) {
             return "dev-snapshot-"+BuildConfig.VERSION_NAME;
         } else {
@@ -263,13 +264,19 @@ public final class EnigmaRiverContext {
                 this.networkMonitor = initialization.getNetworkMonitor();
                 android.util.Log.d("freezelog", "EnigmaRiverInitializedContext 10");
                 if(networkMonitor instanceof IDefaultNetworkMonitor) {
-                    ((IDefaultNetworkMonitor) networkMonitor).start(application.getApplicationContext(), taskFactoryProvider);
                     android.util.Log.d("freezelog", "EnigmaRiverInitializedContext 11");
+                    Context c = application.getApplicationContext();
+                    android.util.Log.d("freezelog", "EnigmaRiverInitializedContext Application: " + application.toString());
+                    android.util.Log.d("freezelog", "EnigmaRiverInitializedContext Context: " + (c != null ? c.toString() : "null"));
+                    ((IDefaultNetworkMonitor) networkMonitor).start(c, taskFactoryProvider);
+                    android.util.Log.d("freezelog", "EnigmaRiverInitializedContext 12");
                 }
                 ProcessLifecycleHandler.get().initialize(application);
                 android.util.Log.d("freezelog", "EnigmaRiverInitializedContext 13");
             } catch (Exception e) {
+                android.util.Log.d("freezelog", "EnigmaRiverInitializedContext EXCEPTION: " + e.getMessage());
                 throw new ContextInitializationException(e);
+
             }
         }
     }
