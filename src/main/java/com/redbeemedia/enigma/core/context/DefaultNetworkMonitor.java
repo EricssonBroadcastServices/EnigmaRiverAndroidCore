@@ -202,12 +202,8 @@ import com.redbeemedia.enigma.core.util.OpenContainerUtil;
             });
             thread.start();
             android.util.Log.d("freezelog", "LooperThread 3");
-            int i = 0;
             while (looperResult[0] == null && !gotException[0]) {
-                if (i % 50 == 0) {
-                    android.util.Log.d("freezelog", "LooperThread while: " + Integer.toString(i));
-                }
-                i++;
+               // Wait..
             }
             android.util.Log.d("freezelog", "LooperThread 4");
             if(gotException[0]) {
