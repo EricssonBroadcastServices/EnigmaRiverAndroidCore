@@ -174,12 +174,11 @@ import com.redbeemedia.enigma.core.util.OpenContainerUtil;
 
     private static final class LooperThread {
         private final Looper looper;
+        private volatile Looper looperResult = null;
+        private volatile boolean gotException = false;
 
         public LooperThread() {
             android.util.Log.d("freezelog", "LooperThread 1");
-            final Looper[] looperResult = new Looper[]{null};
-            final boolean[] gotException = new boolean[]{false};
-            android.util.Log.d("freezelog", "LooperThread 2");
 
             Thread thread = new Thread(new Runnable() {
                 @Override
@@ -188,11 +187,11 @@ import com.redbeemedia.enigma.core.util.OpenContainerUtil;
                         android.util.Log.d("freezelog", "Looper.run 1");
                         Looper.prepare();
                         android.util.Log.d("freezelog", "Looper.run 2");
-                        looperResult[0] = Looper.myLooper();
+                        looperResult = Looper.myLooper();
                         android.util.Log.d("freezelog", "Looper.run 3");
                     } catch (RuntimeException e) {
                         android.util.Log.d("freezelog", "Looper.run exception: " + e.getMessage());
-                        gotException[0] = true;
+                        gotException = true;
                         throw e;
                     }
                     android.util.Log.d("freezelog", "Looper.run 4");
@@ -202,16 +201,16 @@ import com.redbeemedia.enigma.core.util.OpenContainerUtil;
             });
             thread.start();
             android.util.Log.d("freezelog", "LooperThread 3");
-            while (looperResult[0] == null && !gotException[0]) {
-               // Wait..
+            while (looperResult == null && !gotException) {
+                //Wait
             }
             android.util.Log.d("freezelog", "LooperThread 4");
-            if(gotException[0]) {
+            if(gotException) {
                 android.util.Log.d("freezelog", "LooperThread: exception");
                 throw new RuntimeException("Failed to start looper thread.");
             }
             android.util.Log.d("freezelog", "LooperThread 5");
-            this.looper = looperResult[0];
+            this.looper = looperResult;
             android.util.Log.d("freezelog", "LooperThread 6");
         }
 
