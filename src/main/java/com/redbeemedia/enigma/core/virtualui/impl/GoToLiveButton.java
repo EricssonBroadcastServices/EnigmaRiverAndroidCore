@@ -44,7 +44,7 @@ import com.redbeemedia.enigma.core.util.OpenContainerUtil;
     @Override
     protected boolean calculateEnabled(IVirtualButtonContainer container) {
         ControlLogic.IValidationResults<IPlayerImplementationControls.ISeekPosition> validationResults = ControlLogic.validateSeek(IEnigmaPlayerControls.StreamPosition.LIVE_EDGE, container.getPlaybackSession());
-        return validationResults.isSuccess() && OpenContainerUtil.getValueSynchronized(atLivePoint);
+        return validationResults.isSuccess() && !OpenContainerUtil.getValueSynchronized(atLivePoint);
     }
 
     @Override
