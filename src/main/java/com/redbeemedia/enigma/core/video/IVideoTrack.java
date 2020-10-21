@@ -11,4 +11,14 @@ public interface IVideoTrack extends ITrack {
      * @return Bitrate in bits per second or -1 if N/A
      */
     int getBitrate();
+
+    /**
+     * @return Width in pixels or -1 if N/A
+     */
+    int getWidth();
+
+    /**
+     * @return Height in pixels or -1 if N/A
+     */
+    int getHeight();
 }

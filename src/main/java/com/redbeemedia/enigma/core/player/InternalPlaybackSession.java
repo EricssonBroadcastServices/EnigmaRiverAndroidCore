@@ -59,6 +59,7 @@ import java.util.List;
     private final OpenContainer<ISubtitleTrack> selectedSubtitleTrack = new OpenContainer<>(null);
     private final OpenContainer<List<IAudioTrack>> audioTracks = new OpenContainer<>(new ArrayList<>());
     private final OpenContainer<IAudioTrack> selectedAudioTrack = new OpenContainer<>(null);
+    private final OpenContainer<List<IVideoTrack>> videoTracks = new OpenContainer<>(new ArrayList<>());
     private final OpenContainer<IVideoTrack> selectedVideoTrack = new OpenContainer<>(null);
     private final OpenContainer<IContractRestrictions> contractRestrictions;
     private final OpenContainer<Boolean> seekAllowed = new OpenContainer<>(true);
@@ -200,6 +201,10 @@ import java.util.List;
                 track -> track.asAudioTrack(),
                 collector::onAudioTracks,
                 audioTracks));
+        tracksUpdates.add(new TracksUtil.TracksUpdate<>(
+                track -> track.asVideoTrack(),
+                collector::onVideoTracks,
+                videoTracks));
 
         //Filter out matching tracks
         for(IPlayerImplementationTrack track : tracks) {
@@ -257,6 +262,11 @@ import java.util.List;
     @Override
     public void setSelectedAudioTrack(IAudioTrack track) {
         OpenContainerUtil.setValueSynchronized(selectedAudioTrack, track, collector::onSelectedAudioTrackChanged);
+    }
+
+    @Override
+    public List<IVideoTrack> getVideoTracks() {
+        return getUnmodifiableViewOf(videoTracks);
     }
 
     @Override
@@ -382,6 +392,11 @@ import java.util.List;
         @Override
         public void onSelectedAudioTrackChanged(IAudioTrack oldSelectedTrack, IAudioTrack newSelectedTrack) {
             forEach(listener -> listener.onSelectedAudioTrackChanged(oldSelectedTrack, newSelectedTrack));
+        }
+
+        @Override
+        public void onVideoTracks(List<IVideoTrack> tracks) {
+            forEach(listener -> listener.onVideoTracks(tracks));
         }
 
         @Override

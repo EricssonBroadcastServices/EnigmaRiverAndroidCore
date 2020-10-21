@@ -2,6 +2,9 @@ package com.redbeemedia.enigma.core.virtualui.impl;
 
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.player.ControlLogic;
+import com.redbeemedia.enigma.core.player.timeline.ITimeline;
+import com.redbeemedia.enigma.core.player.timeline.ITimelinePosition;
+import com.redbeemedia.enigma.core.time.Duration;
 
 /*package-protected*/ abstract class AbstractSeekButton extends AbstractVirtualButtonImpl {
     private final boolean forward;
@@ -13,6 +16,18 @@ import com.redbeemedia.enigma.core.player.ControlLogic;
 
     @Override
     protected boolean calculateEnabled(IVirtualButtonContainer container) {
+        if(forward) {
+            ITimeline timeline = container.getEnigmaPlayer().getTimeline();
+            ITimelinePosition currentPosition = timeline.getCurrentPosition();
+            ITimelinePosition livePosition = timeline.getLivePosition();
+            Duration vicinity = container.getSettings().getLivePositionVicinityThreshold();
+            if(livePosition != null) {
+                Duration diff = livePosition.subtract(currentPosition);
+                if(diff.compareTo(vicinity) <= 0) {
+                    return false;
+                }
+            }
+        }
         ControlLogic.IValidationResults<Void> validationResults = ControlLogic.validateSeek(forward, !forward, container.getPlaybackSession());
         return validationResults.isSuccess();
     }

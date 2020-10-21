@@ -126,5 +126,10 @@ import java.util.Date;
         public void seek(IEnigmaPlayerControls controls, IControlResultHandler resultHandler) {
             controls.seekTo(offsetMillis, resultHandler);
         }
+
+        @Override
+        public String toString() {
+            return "TimelinePosition{ offsetMillis=" + offsetMillis + " }";
+        }
     }
 }

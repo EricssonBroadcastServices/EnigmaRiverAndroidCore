@@ -7,12 +7,15 @@ import com.redbeemedia.enigma.core.player.EnigmaPlayer;
 import com.redbeemedia.enigma.core.player.EnigmaPlayerState;
 import com.redbeemedia.enigma.core.player.EnigmaPlayerTest;
 import com.redbeemedia.enigma.core.player.IEnigmaPlayer;
+import com.redbeemedia.enigma.core.player.ITimelinePositionFactory;
 import com.redbeemedia.enigma.core.player.MockEnigmaPlayerControls;
 import com.redbeemedia.enigma.core.player.MockInternalPlaybackSession;
 import com.redbeemedia.enigma.core.player.MockPlayerImplementation;
 import com.redbeemedia.enigma.core.player.controls.IControlResultHandler;
 import com.redbeemedia.enigma.core.player.controls.IEnigmaPlayerControls;
+import com.redbeemedia.enigma.core.player.timeline.ITimeline;
 import com.redbeemedia.enigma.core.player.timeline.ITimelinePosition;
+import com.redbeemedia.enigma.core.player.timeline.SimpleTimeline;
 import com.redbeemedia.enigma.core.restriction.ContractRestriction;
 import com.redbeemedia.enigma.core.restriction.IContractRestriction;
 import com.redbeemedia.enigma.core.restriction.IContractRestrictions;
@@ -20,6 +23,7 @@ import com.redbeemedia.enigma.core.restriction.MockContractRestrictions;
 import com.redbeemedia.enigma.core.session.MockSession;
 import com.redbeemedia.enigma.core.testutil.Counter;
 import com.redbeemedia.enigma.core.testutil.ReflectionUtil;
+import com.redbeemedia.enigma.core.time.Duration;
 import com.redbeemedia.enigma.core.virtualui.BaseVirtualButtonListener;
 import com.redbeemedia.enigma.core.virtualui.IVirtualButton;
 import com.redbeemedia.enigma.core.virtualui.IVirtualControls;
@@ -214,6 +218,72 @@ public class VirtualControlsTest {
                 Assert.assertEquals("[controls.seekTo(ITimelinePosition)]", virtualButtonContainer.controlLog.toString());
             }
         });
+    }
+
+    @Test
+    public void testScrubForwardBeingUnavailable() throws Exception {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+        MockPlayerImplementation mockPlayerImplementation = new MockPlayerImplementation();
+        EnigmaPlayerTest.EnigmaPlayerWithMockedTimeProvider.EnigmaPlayerWithMockedStartSession(new MockSession(), mockPlayerImplementation, true);
+        // We need to fetch a DefaultTimelinePositionFactory, and this is how it's done:
+        MockContainerForForwardButton container = new MockContainerForForwardButton(5000L, 10000L, mockPlayerImplementation.getTimelinePositionFactory());
+
+        FastForwardButton fastForwardButton = new FastForwardButton(container);
+        container.refreshButtons();
+        Assert.assertTrue(fastForwardButton.isEnabled());
+        // Scrubbed within threshold should not enable fast forward
+        container.livePosition = container.currentPos + container.settings.getLivePositionVicinityThreshold().inWholeUnits(Duration.Unit.MILLISECONDS) - 1;
+        container.refreshButtons();
+        Assert.assertFalse(fastForwardButton.isEnabled());
+        // Scrubbed after threshold should not enable fast forward
+        container.livePosition = container.currentPos - container.settings.getLivePositionVicinityThreshold().inWholeUnits(Duration.Unit.MILLISECONDS) + 1;
+        container.refreshButtons();
+        Assert.assertFalse(fastForwardButton.isEnabled());
+        // Scrubbed before threshold should enable fast forward
+        container.livePosition = container.currentPos + container.settings.getLivePositionVicinityThreshold().inWholeUnits(Duration.Unit.MILLISECONDS) + 1;
+        container.refreshButtons();
+        Assert.assertTrue(fastForwardButton.isEnabled());
+    }
+
+    private class MockContainerForForwardButton extends TestVirtualButtonContainer {
+
+        private ITimelinePositionFactory timelinePositionFactory;
+        public long currentPos;
+        public long livePosition;
+        public Boolean isLive = true;
+
+        public MockContainerForForwardButton(long currentPosition, long livePosition, ITimelinePositionFactory timelinePositionFactory) {
+            this.timelinePositionFactory = timelinePositionFactory;
+            this.currentPos = currentPosition;
+            this.livePosition = livePosition;
+        }
+
+        @Override
+        public IPlaybackSession getPlaybackSession() {
+            return new MockInternalPlaybackSession(isLive);
+        }
+
+        @Override
+        public IEnigmaPlayer getEnigmaPlayer() {
+            return new EnigmaPlayer(new MockSession(), new MockPlayerImplementation()) {
+                @Override
+                public ITimeline getTimeline() {
+                    return new SimpleTimeline() {
+
+                        @Override
+                        public ITimelinePosition getCurrentPosition() {
+                            return timelinePositionFactory.newPosition(currentPos);
+                        }
+
+                        @Override
+                        public ITimelinePosition getLivePosition() {
+                            return timelinePositionFactory.newPosition(livePosition);
+                        }
+
+                    };
+                }
+            };
+        }
     }
 
     private <T extends AbstractVirtualButtonImpl> void testVirtualButton(Class<T> buttonType, IVirtualButtonTest virtualButtonTest) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {

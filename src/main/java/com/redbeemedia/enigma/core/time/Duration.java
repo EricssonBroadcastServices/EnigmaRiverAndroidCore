@@ -1,6 +1,6 @@
 package com.redbeemedia.enigma.core.time;
 
-public final class Duration {
+public final class Duration implements Comparable<Duration> {
     private static final IDurationFormat DEFAULT_FORMAT = new SimpleDurationFormat("${hours}h ${min}m ${sec}s ${millis}ms");
 
     private final long milliseconds;
@@ -76,5 +76,10 @@ public final class Duration {
     @Override
     public String toString() {
         return DEFAULT_FORMAT.format(this);
+    }
+
+    @Override
+    public int compareTo(Duration other) {
+        return Long.compare(this.milliseconds, other.milliseconds);
     }
 }

@@ -11,6 +11,7 @@ import java.util.Objects;
 public class SimpleTimeline implements ITimeline {
     private final TimelineListenerCollector collector = new TimelineListenerCollector();
     private final OpenContainer<ITimelinePosition> currentPosition = new OpenContainer<>(null);
+    private final OpenContainer<ITimelinePosition> livePosition = new OpenContainer<>(null);
     private final OpenContainer<Bounds> currentBounds = new OpenContainer<>(null);
     private final OpenContainer<Boolean> visibility = new OpenContainer<>(true);
 
@@ -49,6 +50,11 @@ public class SimpleTimeline implements ITimeline {
     }
 
     @Override
+    public ITimelinePosition getLivePosition() {
+        return OpenContainerUtil.getValueSynchronized(livePosition);
+    }
+
+    @Override
     public boolean getVisibility() {
         return OpenContainerUtil.getValueSynchronized(visibility);
     }
@@ -62,6 +68,12 @@ public class SimpleTimeline implements ITimeline {
     public void setCurrentPosition(ITimelinePosition position) {
         OpenContainerUtil.setValueSynchronized(currentPosition, position, (oldValue, newValue) -> {
             collector.onCurrentPositionChanged(position);
+        });
+    }
+
+    public void setLivePosition(ITimelinePosition position) {
+        OpenContainerUtil.setValueSynchronized(livePosition, position, (oldValue, newValue) -> {
+            collector.onLivePositionChanged(position);
         });
     }
 

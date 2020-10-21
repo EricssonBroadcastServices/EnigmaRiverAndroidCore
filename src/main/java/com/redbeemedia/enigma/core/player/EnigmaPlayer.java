@@ -631,10 +631,11 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         }
 
         @Override
-        public void seekTo(long millis, IControlResultHandler resultHandler) {
+        public void seekTo(long requestedMs, IControlResultHandler resultHandler) {
             ControlResultHandlerAdapter controlResultHandler = wrapResultHandler(resultHandler);
             //We need to use  playerImplementationInternals.getCurrentPosition() so we need to run on UiThread (for exo).
             AndroidThreadUtil.runOnUiThread(() -> {
+                long millis = requestedMs;
                 try {
                     IInternalPlaybackSession playbackSession = OpenContainerUtil.getValueSynchronized(currentPlaybackSession);
                     ITimelinePosition seekPos = environment.timelinePositionFactory.newPosition(millis);
@@ -642,6 +643,11 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                     boolean seekForward = false;
                     boolean seekBackward = false;
                     ITimelinePosition currentPosition = environment.playerImplementationInternals.getCurrentPosition();
+                    ITimelinePosition livePosition = timeline.getLivePosition();
+                    if (livePosition != null && seekPos.after(livePosition)) {
+                        millis += livePosition.subtract(seekPos).inWholeUnits(Duration.Unit.MILLISECONDS);
+                    }
+
                     if(currentPosition != null) {
                         long timeDiffMillis = seekPos.subtract(currentPosition).inWholeUnits(Duration.Unit.MILLISECONDS);
                         seekForward = timeDiffMillis > 0;
@@ -761,6 +767,17 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                     IPlayerImplementationControls::setAudioTrack,
                     IInternalPlaybackSession::setSelectedAudioTrack);
         }
+
+        @Override
+        public void setMaxVideoTrackDimensions(int width, int height, IControlResultHandler resultHandler) {
+            ControlResultHandlerAdapter controlResultHandler = wrapResultHandler(resultHandler);
+            try {
+                environment.playerImplementationControls.setMaxVideoTrackDimensions(width, height, controlResultHandler);
+            } catch (RuntimeException e) {
+                controlResultHandler.onError(new UnexpectedError(e));
+                return;
+            }
+        }
     }
 
     private class EnigmaPlayerTimeline implements ITimeline {
@@ -801,7 +818,10 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
         private EnigmaPlayerTimeline(EnigmaPlayerLifecycle lifecycle) {
             ITaskFactory mainThreadTaskFactory = getTaskFactoryProvider().getMainThreadTaskFactory();
-            repeater = new Repeater(mainThreadTaskFactory, 1000 / 30, () -> timeline.setCurrentPosition(environment.playerImplementationInternals.getCurrentPosition()));
+            repeater = new Repeater(mainThreadTaskFactory, 1000 / 30, () ->  {
+                timeline.setCurrentPosition(environment.playerImplementationInternals.getCurrentPosition());
+                timeline.setLivePosition(environment.playerImplementationInternals.getLivePosition());
+            });
             lifecycle.addListener(new BaseLifecycleListener<Void, Void>() {
                 @Override
                 public void onStart(Void aVoid) {
@@ -842,6 +862,16 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                     }
                 }
             });
+        }
+
+        @Override
+        public ITimelinePosition getLivePosition() {
+            synchronized (currentPlaybackSession) {
+                if (currentPlaybackSession.value != null && currentPlaybackSession.value.getStreamInfo().isLiveStream()) {
+                    return environment.playerImplementationInternals.getLivePosition();
+                }
+            }
+            return null;
         }
 
         @Override

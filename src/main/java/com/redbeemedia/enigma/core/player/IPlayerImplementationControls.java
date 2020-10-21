@@ -17,6 +17,7 @@ public interface IPlayerImplementationControls {
     void setVolume(float volume, IPlayerImplementationControlResultHandler resultHandler);
     void setSubtitleTrack(ISubtitleTrack track, IPlayerImplementationControlResultHandler resultHandler);
     void setAudioTrack(IAudioTrack track, IPlayerImplementationControlResultHandler resultHandler);
+    void setMaxVideoTrackDimensions(int width, int height, IPlayerImplementationControlResultHandler controlResultHandler);
 
     interface ISeekPosition {
         public static ISeekPosition TIMELINE_START = new ISeekPosition() {

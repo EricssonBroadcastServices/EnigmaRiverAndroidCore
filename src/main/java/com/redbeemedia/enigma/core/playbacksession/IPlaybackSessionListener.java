@@ -45,6 +45,7 @@ public interface IPlaybackSessionListener extends IInternalListener {
     void onAudioTracks(List<IAudioTrack> tracks);
     void onSelectedAudioTrackChanged(IAudioTrack oldSelectedTrack, IAudioTrack newSelectedTrack);
 
+    void onVideoTracks(List<IVideoTrack> tracks);
     void onSelectedVideoTrackChanged(IVideoTrack oldSelectedTrack, IVideoTrack newSelectedTrack);
 
     void onContractRestrictionsChanged(IContractRestrictions oldContractRestrictions, IContractRestrictions newContractRestrictions);

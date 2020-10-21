@@ -38,6 +38,10 @@ public class BasePlaybackSessionListener implements IPlaybackSessionListener {
     }
 
     @Override
+    public void onVideoTracks(List<IVideoTrack> tracks) {
+    }
+
+    @Override
     public void onSelectedVideoTrackChanged(IVideoTrack oldSelectedTrack, IVideoTrack newSelectedTrack) {
     }
 

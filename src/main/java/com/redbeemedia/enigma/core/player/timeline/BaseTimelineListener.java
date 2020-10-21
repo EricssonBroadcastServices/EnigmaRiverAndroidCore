@@ -17,4 +17,8 @@ public class BaseTimelineListener implements ITimelineListener {
     @Override
     public void onBoundsChanged(ITimelinePosition start, ITimelinePosition end) {
     }
+
+    @Override
+    public void onLivePositionChanged(ITimelinePosition timelinePosition) {
+    }
 }

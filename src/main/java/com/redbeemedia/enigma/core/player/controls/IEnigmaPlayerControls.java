@@ -3,6 +3,7 @@ package com.redbeemedia.enigma.core.player.controls;
 import com.redbeemedia.enigma.core.audio.IAudioTrack;
 import com.redbeemedia.enigma.core.player.timeline.ITimelinePosition;
 import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
+import com.redbeemedia.enigma.core.video.IVideoTrack;
 
 public interface IEnigmaPlayerControls {
     void start();
@@ -27,6 +28,10 @@ public interface IEnigmaPlayerControls {
     void setSubtitleTrack(ISubtitleTrack track, IControlResultHandler resultHandler);
     void setAudioTrack(IAudioTrack track);
     void setAudioTrack(IAudioTrack track, IControlResultHandler resultHandler);
+    void setMaxVideoTrackDimensions(int width, int height);
+    void setMaxVideoTrackDimensions(int width, int height, IControlResultHandler resultHandler);
+    void setMaxVideoTrackDimensions(IVideoTrack videoTrack);
+    void setMaxVideoTrackDimensions(IVideoTrack videoTrack, IControlResultHandler resultHandler);
 
     enum StreamPosition {
         START, LIVE_EDGE

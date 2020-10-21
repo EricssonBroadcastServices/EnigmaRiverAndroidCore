@@ -46,5 +46,11 @@ public interface IPlaybackSession {
     List<IAudioTrack> getAudioTracks();
     IAudioTrack getSelectedAudioTrack();
 
+    /**
+     * Returns the latest list supplied in the {@link com.redbeemedia.enigma.core.playbacksession.IPlaybackSessionListener#onVideoTracks(List)}-event or <code>null</code> if no such event has been fired yet.
+     *
+     * @return Current list of video tracks or <code>null</code>.
+     */
+    List<IVideoTrack> getVideoTracks();
     IVideoTrack getSelectedVideoTrack();
 }

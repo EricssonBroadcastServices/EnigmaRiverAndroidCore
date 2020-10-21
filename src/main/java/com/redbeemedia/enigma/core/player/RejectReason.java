@@ -2,7 +2,11 @@ package com.redbeemedia.enigma.core.player;
 
 import com.redbeemedia.enigma.core.player.controls.IControlResultHandler;
 
-/*package-protected*/ class RejectReason implements IControlResultHandler.IRejectReason {
+/**
+ * <h3>NOTE</h3>
+ * <p>This class is not part of the public API.</p>
+ */
+public class RejectReason implements IControlResultHandler.IRejectReason {
     private final IControlResultHandler.RejectReasonType type;
     private final String details;
 

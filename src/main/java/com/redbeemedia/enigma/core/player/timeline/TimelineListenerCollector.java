@@ -27,4 +27,9 @@ public class TimelineListenerCollector extends Collector<ITimelineListener> impl
     public void onBoundsChanged(ITimelinePosition start, ITimelinePosition end) {
         forEach(listener -> listener.onBoundsChanged(start, end));
     }
+
+    @Override
+    public void onLivePositionChanged(ITimelinePosition timelinePosition) {
+        forEach(listener -> listener.onLivePositionChanged(timelinePosition));
+    }
 }

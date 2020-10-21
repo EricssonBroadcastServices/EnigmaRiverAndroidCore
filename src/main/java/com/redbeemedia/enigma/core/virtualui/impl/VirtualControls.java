@@ -105,6 +105,11 @@ public final class VirtualControls implements IVirtualControls {
                     public void onContractRestrictionsChanged(IContractRestrictions oldContractRestrictions, IContractRestrictions newContractRestrictions) {
                         OpenContainerUtil.setValueSynchronized(contractRestrictions, newContractRestrictions, (oldValue, newValue) -> refreshButtons());
                     }
+
+                    @Override
+                    public void onPlayingFromLiveChanged(boolean live) {
+                        refreshButtons();
+                    }
                 };
                 @Override
                 public void onStateChanged(EnigmaPlayerState from, EnigmaPlayerState to) {

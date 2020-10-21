@@ -15,4 +15,6 @@ public interface ITimelineListener extends IInternalListener {
     void onVisibilityChanged(boolean visible);
     void onCurrentPositionChanged(ITimelinePosition timelinePosition);
     void onBoundsChanged(ITimelinePosition start, ITimelinePosition end);
+    void onLivePositionChanged(ITimelinePosition timelinePosition);
+
 }

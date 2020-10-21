@@ -27,6 +27,7 @@ import com.redbeemedia.enigma.core.playable.MockPlayable;
 import com.redbeemedia.enigma.core.playbacksession.BasePlaybackSessionListener;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.player.controls.AssertiveControlResultHandler;
+import com.redbeemedia.enigma.core.player.controls.IControlResultHandler;
 import com.redbeemedia.enigma.core.player.listener.BaseEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.timeline.ITimelinePosition;
@@ -1502,6 +1503,127 @@ public class EnigmaPlayerTest {
         callbackHandlerPostCalled.assertSet("Callback handler not used!");
     }
 
+    @Test
+    public void testLiveScrubCapping() {
+
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+        MockPlayerImplementation implementation = new MockPlayerImplementation() {
+
+            @Override
+            public void seekTo(ISeekPosition seekPosition, IPlayerImplementationControlResultHandler resultHandler) {
+                // Set the currentPosition to whatever we get
+                currentPosition = ((IPlayerImplementationControls.TimelineRelativePosition)seekPosition).getMillis();
+                resultHandler.onDone();
+            }
+        };
+
+        implementation.isLiveStream = true;
+        EnigmaPlayer enigmaPlayer = EnigmaPlayerTest.EnigmaPlayerWithMockedTimeProvider.EnigmaPlayerWithMockedStartSession(new MockSession(), implementation, true);
+        MockPlayRequest playRequest = new MockPlayRequest();
+        playRequest.setPlayable(new MockPlayable("MockPlayable"));
+
+        enigmaPlayer.play(playRequest);
+
+        // Current position should be before the live position
+        Assert.assertTrue(implementation.getCurrentPosition().before(implementation.getLivePosition()));
+        // Fetch the mocked live position
+        ITimelinePosition livePosition = implementation.getLivePosition();
+        // Scrub to a point after live position
+        enigmaPlayer.getControls().seekTo(implementation.livePosition + 100L);
+        // The current position should be set to "live position"
+        Assert.assertEquals(livePosition, implementation.getCurrentPosition());
+        // Scrub to a valid point
+        enigmaPlayer.getControls().seekTo(implementation.livePosition - 100L);
+        // The current position should be set to the requested position
+        Assert.assertEquals(implementation.getCurrentPosition(), livePosition.subtract(Duration.millis(100L)));
+        // Make the component behave like a VOD
+        implementation.isLiveStream = false;
+        // Scrub to a point after live position
+        enigmaPlayer.getControls().seekTo(implementation.livePosition + 100L);
+        // Since it's no longer a live stream, scrubbing should be allowed. Confirm the position
+        Assert.assertEquals(livePosition.add(Duration.millis(100L)), implementation.getCurrentPosition());
+    }
+
+    @Test
+    public void testSetMaxVideoDimensions() {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+
+        final Counter setMaxVideoTrackDimensionsCalledOnImpl = new Counter();
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayerWithMockedTimeProvider(new MockSession(), new MockPlayerImplementation() {
+            @Override
+            public void setMaxVideoTrackDimensions(int width, int height, IPlayerImplementationControlResultHandler controlResultHandler) {
+                setMaxVideoTrackDimensionsCalledOnImpl.count();
+                int counts = setMaxVideoTrackDimensionsCalledOnImpl.getCounts();
+                if(counts == 1) {
+                    Assert.assertEquals(100, width);
+                    Assert.assertEquals(200, height);
+                    controlResultHandler.onDone();
+                } else if(counts == 2) {
+                    controlResultHandler.onError(new UnexpectedError(new RuntimeException("Oh no!")));
+                } else if(counts == 3) {
+                    throw new RuntimeException("Uncaught");
+                } else if(counts == 4) {
+                    Assert.assertEquals(1512, width);
+                    Assert.assertEquals(723, height);
+                    controlResultHandler.onDone();
+                } else {
+                    Assert.fail("setMaxVideoTrackDimensions called more than expected ("+counts+" times)");
+                }
+            }
+        });
+
+        { //Test with success
+            AssertiveControlResultHandler controlResultHandler = new AssertiveControlResultHandler();
+            enigmaPlayer.getControls().setMaxVideoTrackDimensions(100, 200, controlResultHandler);
+            setMaxVideoTrackDimensionsCalledOnImpl.addToExpected(1);
+
+            controlResultHandler.assertOnDoneCalled();
+            setMaxVideoTrackDimensionsCalledOnImpl.assertExpected();
+        }
+
+        { //Test with error
+            AssertiveControlResultHandler controlResultHandler = new AssertiveControlResultHandler();
+            enigmaPlayer.getControls().setMaxVideoTrackDimensions(100, 200, controlResultHandler);
+            setMaxVideoTrackDimensionsCalledOnImpl.addToExpected(1);
+
+            controlResultHandler.assertOnErrorCalled();
+            setMaxVideoTrackDimensionsCalledOnImpl.assertExpected();
+        }
+
+        { //Test with uncaught error
+            AssertiveControlResultHandler controlResultHandler = new AssertiveControlResultHandler();
+            enigmaPlayer.getControls().setMaxVideoTrackDimensions(100, 200, controlResultHandler);
+            setMaxVideoTrackDimensionsCalledOnImpl.addToExpected(1);
+
+            controlResultHandler.assertOnErrorCalled();
+            setMaxVideoTrackDimensionsCalledOnImpl.assertExpected();
+        }
+
+        { //Test with video track
+            AssertiveControlResultHandler controlResultHandler = new AssertiveControlResultHandler();
+            MockVideoTrack videoTrack = new MockVideoTrack().setDimensions(1512, 723);
+            enigmaPlayer.getControls().setMaxVideoTrackDimensions(videoTrack, controlResultHandler);
+            setMaxVideoTrackDimensionsCalledOnImpl.addToExpected(1);
+
+            controlResultHandler.assertOnDoneCalled();
+            setMaxVideoTrackDimensionsCalledOnImpl.assertExpected();
+        }
+
+        { //Test with null video track
+            AssertiveControlResultHandler controlResultHandler = new AssertiveControlResultHandler() {
+                @Override
+                public void onRejected(IRejectReason reason) {
+                    Assert.assertEquals(IControlResultHandler.RejectReasonType.ILLEGAL_ARGUMENT, reason.getType());
+                    super.onRejected(reason);
+                }
+            };
+            enigmaPlayer.getControls().setMaxVideoTrackDimensions(null, controlResultHandler);
+
+            controlResultHandler.assertOnRejectedCalled();
+            setMaxVideoTrackDimensionsCalledOnImpl.assertExpected();
+        }
+    }
+
     private static Collection<Throwable> getAllExceptions(Throwable e, Collection<Throwable> result) {
         result.add(e);
         Throwable cause = e.getCause();
@@ -1518,6 +1640,24 @@ public class EnigmaPlayerTest {
     }
 
     public static class EnigmaPlayerWithMockedTimeProvider extends EnigmaPlayer {
+
+        public static EnigmaPlayer EnigmaPlayerWithMockedStartSession(ISession session, IPlayerImplementation playerImplementation, Boolean isLive) {
+
+            return new EnigmaPlayerTest.EnigmaPlayerWithMockedTimeProvider(session, playerImplementation) {
+                @Override
+                protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler, ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection) {
+                    return new MockPlaybackStartAction(playRequest, playerConnection) {
+                        @Override
+                        protected IInternalPlaybackSession newInternalPlaybackSession() {
+
+                            return new MockInternalPlaybackSession(isLive);
+
+                        }
+                    };
+                }
+            };
+        }
+
         public EnigmaPlayerWithMockedTimeProvider(ISession session, IPlayerImplementation playerImplementation) {
             super(session, playerImplementation);
         }
