@@ -6,6 +6,7 @@ import com.redbeemedia.enigma.core.analytics.AnalyticsException;
 import com.redbeemedia.enigma.core.analytics.IBufferingAnalyticsHandler;
 import com.redbeemedia.enigma.core.analytics.MockAnalyticsHandler;
 import com.redbeemedia.enigma.core.analytics.MockAnalyticsReporter;
+import com.redbeemedia.enigma.core.businessunit.BusinessUnit;
 import com.redbeemedia.enigma.core.businessunit.IBusinessUnit;
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
@@ -415,8 +416,8 @@ public class DefaultPlaybackStartActionTest {
     public void testCorrectSessionSelected() {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
 
-        ISession sessionFromEnigmaPlayer = new Session("mockID_1", "CU", "BU");
-        ISession playRequestSession = new Session("PlayMock", "PlayRequest", "Biz");
+        ISession sessionFromEnigmaPlayer = new Session("mockID_1", new BusinessUnit("CU", "BU"));
+        ISession playRequestSession = new Session("PlayMock", new BusinessUnit("PlayRequest", "Biz"));
 
         DefaultPlaybackStartAction playbackStartAction = new DefaultPlaybackStartAction(
                 sessionFromEnigmaPlayer,

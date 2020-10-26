@@ -103,6 +103,7 @@ You will learn how to:
 The purpose of this series is to provide some additional tutorials on how to achieve
             specific tasks and features related to downloads.
 
+[Working with DRM protected offline content](downloads_advanced/download_drm_management.md)<br/>
 [Only download on wifi networks](downloads_advanced/set_download_requirements.md)<br/>
 
 ### Migration guide (Android SDK 2.0 -> Enigma River Android SDK)

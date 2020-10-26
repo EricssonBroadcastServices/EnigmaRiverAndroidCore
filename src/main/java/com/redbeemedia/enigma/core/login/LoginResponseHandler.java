@@ -1,5 +1,6 @@
 package com.redbeemedia.enigma.core.login;
 
+import com.redbeemedia.enigma.core.businessunit.BusinessUnit;
 import com.redbeemedia.enigma.core.error.DeviceLimitReachedError;
 import com.redbeemedia.enigma.core.error.EmptyResponseError;
 import com.redbeemedia.enigma.core.http.ExposureHttpError;
@@ -80,11 +81,11 @@ import javax.net.ssl.HttpsURLConnection;
                 }
             } else if (httpStatus.getResponseCode() == HttpsURLConnection.HTTP_OK) {
                 if (loginRequest instanceof ResumeLoginRequest) {
-                    ISession session = new Session(((ResumeLoginRequest) loginRequest).getSessionToken(), customerUnit, businessUnit);
+                    ISession session = new Session(((ResumeLoginRequest) loginRequest).getSessionToken(), new BusinessUnit(customerUnit, businessUnit));
                     resultHandler.onSuccess(session);
                 } else {
                     String sessionToken = response.getString("sessionToken");
-                    ISession session = new Session(sessionToken, customerUnit, businessUnit);
+                    ISession session = new Session(sessionToken, new BusinessUnit(customerUnit, businessUnit));
                     resultHandler.onSuccess(session);
                 }
             } else {

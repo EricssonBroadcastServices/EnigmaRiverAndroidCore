@@ -1,17 +1,26 @@
 package com.redbeemedia.enigma.core.businessunit;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.util.UrlPath;
 
 import java.util.Objects;
 
 public class BusinessUnit implements IBusinessUnit {
+
     private final String customerUnitName;
     private final String businessUnitName;
 
     public BusinessUnit(String customerUnitName, String businessUnitName) {
         this.customerUnitName = customerUnitName;
         this.businessUnitName = businessUnitName;
+    }
+
+    private BusinessUnit(Parcel parcel) {
+        this.customerUnitName = parcel.readString();
+        this.businessUnitName = parcel.readString();
     }
 
     @Override
@@ -47,5 +56,26 @@ public class BusinessUnit implements IBusinessUnit {
     @Override
     public int hashCode() {
         return (customerUnitName != null ? customerUnitName.hashCode()*31 : 0)+(businessUnitName != null ? businessUnitName.hashCode() : 0);
+    }
+
+    public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
+        public BusinessUnit createFromParcel(Parcel in) {
+            return new BusinessUnit(in);
+        }
+
+        public BusinessUnit[] newArray(int size) {
+            return new BusinessUnit[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(customerUnitName);
+        dest.writeString(businessUnitName);
     }
 }

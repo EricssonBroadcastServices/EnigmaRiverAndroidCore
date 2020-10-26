@@ -303,6 +303,11 @@ import java.util.UUID;
     public void cancel() {
     }
 
+    @Override
+    public void onErrorDuringStartup(EnigmaError error) {
+        getStartActionResultHandler().onError(error);
+    }
+
     protected Analytics createAnalytics(ISession session, String playbackSessionId, ITimeProvider timeProvider, ITaskFactory taskFactory) {
         final IBufferingAnalyticsHandler analyticsHandler = newAnalyticsHandler(session, playbackSessionId, timeProvider);
 

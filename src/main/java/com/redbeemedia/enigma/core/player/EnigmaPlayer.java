@@ -391,6 +391,12 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                     playerImplementationListener = new IPlayerImplementationListener() {
                         @Override
                         public void onError(EnigmaError error) {
+                            if(stateMachine.getState() == EnigmaPlayerState.LOADING) {
+                                IPlaybackStartAction activeStartAction = OpenContainerUtil.getValueSynchronized(currentPlaybackStartAction);
+                                if(activeStartAction != null) {
+                                    activeStartAction.onErrorDuringStartup(error);
+                                }
+                            }
                             enigmaPlayerListeners.onPlaybackError(error);
                             stateMachine.setState(EnigmaPlayerState.IDLE);
                         }

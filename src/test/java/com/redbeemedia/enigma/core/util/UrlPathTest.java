@@ -32,6 +32,6 @@ public class UrlPathTest {
         UrlPath basic = new UrlPath("http://www.google.com");
         UrlPath advanced = basic.append("v1/api").append("test");
         UrlPath withQuery = advanced.append("?hello=3").append("&bye=").append("6");
-        Assert.assertEquals(new URL("http://www.google.com/v1/api/test?hello=3&bye=6"), withQuery.toURL());
+        Assert.assertEquals(new URL("http://www.google.com/v1/api/test?hello=3&bye=6").toString(), withQuery.toURL().toString());
     }
 }

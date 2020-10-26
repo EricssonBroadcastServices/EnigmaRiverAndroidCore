@@ -6,22 +6,24 @@ import android.os.Parcelable;
 import com.redbeemedia.enigma.core.businessunit.BusinessUnit;
 import com.redbeemedia.enigma.core.businessunit.IBusinessUnit;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
 public class Session implements ISession {
-    private static Map<UUID, Session> sessionMap = new HashMap<>();
 
-    private final UUID id;
     private String sessionToken;
     private final IBusinessUnit businessUnit;
 
+    @Deprecated
     public Session(String sessionToken, String customerUnit, String businessUnit) {
-        this.id = UUID.randomUUID();
+        this(sessionToken, new BusinessUnit(customerUnit, businessUnit));
+    }
+
+    public Session(String sessionToken, IBusinessUnit businessUnit) {
         this.sessionToken = sessionToken;
-        this.businessUnit = new BusinessUnit(customerUnit, businessUnit);
-        sessionMap.put(this.id, this);
+        this.businessUnit = businessUnit;
+    }
+
+    private Session(Parcel parcel) {
+        this.sessionToken = parcel.readString();
+        this.businessUnit = parcel.readParcelable(getClass().getClassLoader());
     }
 
     @Override
@@ -40,9 +42,9 @@ public class Session implements ISession {
     }
 
     public static final Parcelable.Creator<Session> CREATOR = new Parcelable.Creator<Session>() {
+
         public Session createFromParcel(Parcel in) {
-            UUID sessionId = (UUID) in.readSerializable();
-            return sessionMap.get(sessionId);
+            return new Session(in);
         }
 
         public Session[] newArray(int size) {
@@ -50,19 +52,20 @@ public class Session implements ISession {
         }
     };
 
-
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeSerializable(this.id);
+        dest.writeString(sessionToken);
+        dest.writeParcelable(businessUnit, flags);
     }
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof Session && this.id.equals(((Session) obj).id);
+        return obj instanceof Session && this.sessionToken.equals(((Session) obj).sessionToken);
     }
 
     @Override
     public int hashCode() {
-        return id.hashCode();
+        return sessionToken.hashCode();
     }
+
 }

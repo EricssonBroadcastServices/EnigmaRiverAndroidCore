@@ -45,6 +45,8 @@ public class ErrorCode {
     public static final int ASSET_BLOCKED = 43;
     public static final int ASSET_NOT_AVAILABLE = 44;
     public static final int ASSET_NOT_PUBLISHED = 45;
+    public static final int DRM_KEYS_EXPIRED = 46;
+    public static final int MAX_DOWNLOAD_COUNT_LIMIT_REACHED = 47;
 
 
     private ErrorCode() {}

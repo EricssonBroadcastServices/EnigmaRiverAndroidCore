@@ -1,5 +1,36 @@
 ### Downloads and offline playback series
 # Start asset download
+## Check download count
+Before attempting to start a download, you should verify that the user has not reached their
+limit om downloads for that asset. The maximum number of downloads as well as the current downloads
+a user has made on an asset is available on the `IDownloadableInfo` object mentioned in the previous
+chapter.
+```java
+public interface IDownloadableInfo {
+    ...
+    int getDownloadCount();
+    int getMaxDownloadCount();
+    ...
+}
+```
+These values can be used to give feedback to the user about how many more times an asset can be
+downloaded by them.
+
+There is also a convenience method for easily checking if the download limit for the asset has been
+reached:
+```java
+public interface IDownloadableInfo {
+    ...
+    boolean isMaxDownloadCountReached();
+    ...
+}
+```
+
+If a `DownloadStartRequest` is made when the max number of downloads for the asset has been reached,
+a `MaxDownloadCountLimitReachedError` will be raised.
+
+## DownloadStartRequest
+
 To start an asset download, simply create a `DownloadStartRequest` and call `IEnigmaDownload#startAssetDownload`.
 ```java
 ...

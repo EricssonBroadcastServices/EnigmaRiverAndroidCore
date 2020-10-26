@@ -1114,7 +1114,7 @@ public class EnigmaPlayerTest {
         class TestSession extends Session {
             private final IBusinessUnit businessUnit;
             public TestSession(String sessionToken, IBusinessUnit businessUnit) {
-                super(sessionToken, businessUnit.getCustomerName(), businessUnit.getName());
+                super(sessionToken, businessUnit);
                 this.businessUnit = businessUnit;
             }
 

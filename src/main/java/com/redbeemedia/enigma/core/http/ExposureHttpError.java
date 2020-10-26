@@ -1,9 +1,11 @@
 package com.redbeemedia.enigma.core.http;
 
+import com.redbeemedia.enigma.core.json.JsonInputStreamParser;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.net.ssl.HttpsURLConnection;
+import java.io.InputStream;
 
 public class ExposureHttpError {
     private int httpCode;
@@ -30,4 +32,10 @@ public class ExposureHttpError {
     public static boolean isError(int statusCode) {
         return statusCode >= 400 && statusCode <= 500;
     }
+
+    public static ExposureHttpError parse(InputStream inputStream) throws JSONException {
+        JSONObject jsonObject = JsonInputStreamParser.obtain().parse(inputStream);
+        return new ExposureHttpError(jsonObject);
+    }
+
 }
