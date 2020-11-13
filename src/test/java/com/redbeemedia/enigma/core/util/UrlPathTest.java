@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 
 public class UrlPathTest {
     @Test
@@ -33,5 +34,43 @@ public class UrlPathTest {
         UrlPath advanced = basic.append("v1/api").append("test");
         UrlPath withQuery = advanced.append("?hello=3").append("&bye=").append("6");
         Assert.assertEquals(new URL("http://www.google.com/v1/api/test?hello=3&bye=6").toString(), withQuery.toURL().toString());
+    }
+
+    private class TestClass {
+
+        String value;
+
+        public TestClass(String value) { this.value = value; }
+
+        @Override
+        public String toString() { return value; }
+    }
+    @Test
+    public void testQueryStringParameters() throws MalformedURLException {
+        HashMap<String, String> stringParameters = new HashMap<>();
+        stringParameters.put("p1", "xyz");
+        stringParameters.put("p2", "1");
+        stringParameters.put("should_not_be_included", null);
+
+        HashMap<String, Float> floatParameters = new HashMap<>();
+        floatParameters.put("p1", 42f);
+        floatParameters.put("p2", 65536.0f);
+
+        Assert.assertEquals("?p1=xyz&p2=1", new UrlPath("").appendQueryStringParameters(stringParameters).toString());
+
+        String baseUrl = "http://www.example.com/";
+        Assert.assertEquals(baseUrl + "path?p1=xyz&p2=1", new UrlPath(baseUrl).append("path").appendQueryStringParameters(stringParameters).toURL().toString());
+        Assert.assertEquals(baseUrl + "path?p1=42.0&p2=65536.0", new UrlPath(baseUrl).append("path").appendQueryStringParameters(floatParameters).toURL().toString());
+        Assert.assertEquals(baseUrl + "path?foo=bar&p1=xyz&p2=1", new UrlPath(baseUrl + "path?foo=bar").appendQueryStringParameters(stringParameters).toURL().toString());
+        Assert.assertEquals(baseUrl + "?dog?cat&p1=xyz&p2=1", new UrlPath(baseUrl).append("?dog?cat").appendQueryStringParameters(stringParameters).toURL().toString());
+        Assert.assertEquals(baseUrl + "?addr=https://www.com&p1=xyz&p2=1&p1=42.0&p2=65536.0", new UrlPath(baseUrl + "?addr=https://www.com").appendQueryStringParameters(stringParameters).appendQueryStringParameters(floatParameters).toURL().toString());
+
+        HashMap<String, TestClass> stringTestClassHashMap = new HashMap<>();
+        stringTestClassHashMap.put("p1", new TestClass("cat"));
+        stringTestClassHashMap.put("p2", new TestClass("dog"));
+
+        Assert.assertEquals(baseUrl + "path?p1=cat&p2=dog", new UrlPath(baseUrl).append("path").appendQueryStringParameters(stringTestClassHashMap).toURL().toString());
+
+
     }
 }

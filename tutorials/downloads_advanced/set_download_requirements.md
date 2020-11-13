@@ -41,4 +41,5 @@ For more available requirement options, see ExoPlayers documentation.
 ___
 [Table of Contents](../index.md)<br/>
 [Working with DRM protected offline content](download_drm_management.md)<br/>
+[AssetDownloadState](asset_download_state.md)<br/>
 &bull; Only download on wifi networks (current)<br/>

@@ -11,6 +11,8 @@ import com.redbeemedia.enigma.core.http.DefaultHttpHandler;
 import com.redbeemedia.enigma.core.http.IHttpHandler;
 import com.redbeemedia.enigma.core.network.IDefaultNetworkMonitor;
 import com.redbeemedia.enigma.core.network.INetworkMonitor;
+import com.redbeemedia.enigma.core.playrequest.IAdInsertionFactory;
+import com.redbeemedia.enigma.core.playrequest.IAdInsertionParameters;
 import com.redbeemedia.enigma.core.task.ITaskFactory;
 import com.redbeemedia.enigma.core.task.ITaskFactoryProvider;
 import com.redbeemedia.enigma.core.util.UrlPath;
@@ -73,6 +75,11 @@ public final class EnigmaRiverContext {
         return initializedContext.activityLifecycleManager;
     }
 
+    public static IAdInsertionFactory getAdInsertionFactory() {
+        assertInitialized();
+        return initializedContext.adInsertionFactory;
+    }
+
     /**
      *
      * @deprecated Use {@link #getTaskFactoryProvider()} <br> Ex: {@code getTaskFactoryProvider().getTaskFactory()}
@@ -100,7 +107,7 @@ public final class EnigmaRiverContext {
 
     //Version if the core library
     public static String getVersion() {
-        String version = "r3.1.5";
+        String version = "r3.1.6-BETA-1";
         if(version.contains("REPLACE_WITH_RELEASE_VERSION")) {
             return "dev-snapshot-"+BuildConfig.VERSION_NAME;
         } else {
@@ -123,6 +130,7 @@ public final class EnigmaRiverContext {
         private IEpgLocator epgLocator = new DefaultEpgLocator();
         private INetworkMonitor networkMonitor = new DefaultNetworkMonitor();
         private final Map<String, IModuleInitializationSettings> moduleSettings = new HashMap<>();
+        private IAdInsertionFactory adInsertionFactory;
 
         public EnigmaRiverContextInitialization(String exposureBaseUrl) {
             this.exposureBaseUrl = exposureBaseUrl;
@@ -146,6 +154,10 @@ public final class EnigmaRiverContext {
             return httpHandler;
         }
 
+        public IAdInsertionFactory getAdInsertionFactory() {
+            return adInsertionFactory;
+        }
+
         public EnigmaRiverContextInitialization setHttpHandler(final IHttpHandler httpHandler) {
             this.httpHandler = httpHandler;
             return this;
@@ -161,6 +173,11 @@ public final class EnigmaRiverContext {
 
         public EnigmaRiverContextInitialization setDeviceInfo(final IDeviceInfo deviceInfo) {
             this.deviceInfo = deviceInfo;
+            return this;
+        }
+
+        public EnigmaRiverContextInitialization setAdInsertionFactory(IAdInsertionFactory adInsertionFactory) {
+            this.adInsertionFactory = adInsertionFactory;
             return this;
         }
 
@@ -232,6 +249,7 @@ public final class EnigmaRiverContext {
         private final ITaskFactoryProvider taskFactoryProvider;
         private final IEpgLocator epgLocator;
         private final INetworkMonitor networkMonitor;
+        private final IAdInsertionFactory adInsertionFactory;
 
         public EnigmaRiverInitializedContext(Application application, EnigmaRiverContextInitialization initialization) {
             try {
@@ -249,6 +267,7 @@ public final class EnigmaRiverContext {
                 if(networkMonitor instanceof IDefaultNetworkMonitor) {
                     ((IDefaultNetworkMonitor) networkMonitor).start(application.getApplicationContext(), taskFactoryProvider);
                 }
+                this.adInsertionFactory = initialization.getAdInsertionFactory();
                 ProcessLifecycleHandler.get().initialize(application);
             } catch (Exception e) {
                 throw new ContextInitializationException(e);

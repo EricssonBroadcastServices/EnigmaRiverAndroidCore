@@ -21,6 +21,9 @@ public interface IEnigmaDownload {
 
     void removeDownloadedAsset(DownloadedPlayable downloadedPlayable, IResultHandler<Void> resultHandler);
     void removeDownloadedAsset(DownloadedPlayable downloadedPlayable, IResultHandler<Void> resultHandler, Handler handler);
+
+    void getDownloadsInProgress(IResultHandler<List<IAssetDownload>> resultHandler);
+    void getDownloadsInProgress(IResultHandler<List<IAssetDownload>> resultHandler, Handler handler);
 }
 ```
 
@@ -39,6 +42,7 @@ ___
 &bull; Using the download API (current)<br/>
 [Get available tracks for download](get_download_info.md)<br/>
 [Start asset download](start_download.md)<br/>
+[Managing ongoing downloads](ongoing_downloads.md)<br/>
 [Listing downloaded assets](list_downloads.md)<br/>
 [Start playback of a downloaded asset](play_download.md)<br/>
 [Remove downloaded assets](remove_download.md)<br/>

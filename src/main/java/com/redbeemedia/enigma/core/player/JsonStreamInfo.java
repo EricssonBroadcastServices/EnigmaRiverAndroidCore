@@ -47,6 +47,11 @@ import org.json.JSONObject;
     }
 
     @Override
+    public boolean isEvent() {
+        return event;
+    }
+
+    @Override
     public boolean hasStart() {
         return startSinceEpoch != null;
     }

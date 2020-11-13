@@ -1,9 +1,16 @@
 package com.redbeemedia.enigma.core.task;
 
+import android.os.Handler;
+
+import com.redbeemedia.enigma.core.util.HandlerWrapper;
 import com.redbeemedia.enigma.core.util.IHandler;
 
 public class HandlerTaskFactory implements ITaskFactory {
     private IHandler handler;
+
+    public HandlerTaskFactory(Handler handler) {
+        this(new HandlerWrapper(handler));
+    }
 
     public HandlerTaskFactory(IHandler handler) {
         this.handler = handler;

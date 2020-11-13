@@ -153,7 +153,7 @@ public class DirectEpg extends AbstractEpg {
                         gotException.set(true);
                     }
 
-                    if(totalHitsAllChannels > 0) {
+                    if(totalHitsAllChannels - (pageSize * page) > 0) {
                         try {
                             getPage(page+1, httpHandler, url, call, pageResults, gotException);
                         } catch (MalformedURLException e) {

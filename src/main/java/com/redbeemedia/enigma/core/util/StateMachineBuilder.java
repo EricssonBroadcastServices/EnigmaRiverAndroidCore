@@ -1,8 +1,10 @@
 package com.redbeemedia.enigma.core.util;
 
+import android.util.Log;
 import android.util.Pair;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -19,6 +21,7 @@ public class StateMachineBuilder<S> implements IStateMachineBuilder<S> {
     private List<DirectTransition> directTransitions = new ArrayList<>();
     private boolean initialStateSupplied = false;
     private S initialState;
+    private IInvalidStateTransitionHandler<S> invalidStateTransitionHandler = InvalidTransitionHandler.THROWING;
 
     @Override
     public void addState(S state) {
@@ -32,6 +35,14 @@ public class StateMachineBuilder<S> implements IStateMachineBuilder<S> {
         }
         initialStateSupplied = true;
         this.initialState = initialState;
+    }
+
+    @Override
+    public void setInvalidStateTransitionHandler(IInvalidStateTransitionHandler<S> invalidStateTransitionHandler) {
+        if(invalidStateTransitionHandler == null) {
+            throw new IllegalArgumentException("invalidStateTransitionHandler was null");
+        }
+        this.invalidStateTransitionHandler = invalidStateTransitionHandler;
     }
 
     @Override
@@ -129,7 +140,7 @@ public class StateMachineBuilder<S> implements IStateMachineBuilder<S> {
     @Override
     public IStateMachine<S> build() {
         try {
-            return new StateMachine<>(validateInternal(), initialState);
+            return new StateMachine<>(validateInternal(), initialState, invalidStateTransitionHandler);
         } catch (ValidationException e) {
             throw new RuntimeException(e);
         }
@@ -166,12 +177,14 @@ public class StateMachineBuilder<S> implements IStateMachineBuilder<S> {
 
     private static class StateMachine<S> implements IStateMachine<S> {
         private final StateMachineTopology<S> topology;
-        private S state;
+        private final IInvalidStateTransitionHandler<S> invalidStateTransitionHandler;
+        private volatile S state;
         private Collector<IStateChangedListener<S>> collector = new Collector(IStateChangedListener.class);
 
-        public StateMachine(StateMachineTopology<S> topology, S initialState) {
+        public StateMachine(StateMachineTopology<S> topology, S initialState, IInvalidStateTransitionHandler<S> invalidStateTransitionHandler) {
             this.topology = topology;
             this.state = initialState;
+            this.invalidStateTransitionHandler = invalidStateTransitionHandler;
         }
 
         @Override
@@ -193,7 +206,12 @@ public class StateMachineBuilder<S> implements IStateMachineBuilder<S> {
         public void setState(S newState) {
             Iterable<S> shortestPath = topology.getShortestPath(state, newState);
             if(shortestPath == null) {
-                throw new IllegalArgumentException("Illegal state transition: "+state+" -> "+newState);
+                List<S> alternativeRoute = invalidStateTransitionHandler.onInvalidStateTransition(state, newState);
+                if(alternativeRoute != null) {
+                    shortestPath = alternativeRoute;
+                } else {
+                    return;
+                }
             }
             for(S node : shortestPath) {
                 S oldState = state;
@@ -359,5 +377,28 @@ public class StateMachineBuilder<S> implements IStateMachineBuilder<S> {
         public DuplicateDirectTransitionSupplied(Object fromState, Object toState) {
             super("Duplicate transition supplied for "+fromState+" -> "+toState);
         }
+    }
+
+    public static class InvalidTransitionHandler {
+        public static final IInvalidStateTransitionHandler THROWING = (fromState, toState) -> {
+            throw new IllegalArgumentException("Illegal state transition: "+fromState+" -> "+toState);
+        };
+        public static final IInvalidStateTransitionHandler LENIENT_LOGGING(String tag) {
+            return (fromState, toState) -> {
+                Log.d(tag, getLogMessage(fromState, toState));
+                return Arrays.asList(toState); //Allow direct transition
+            };
+        }
+        public static final IInvalidStateTransitionHandler STRICT_LOGGING(String tag) {
+            return (fromState, toState) -> {
+                Log.e(tag, getLogMessage(fromState, toState));
+                return null; //Block transition
+            };
+        }
+
+        private static String getLogMessage(Object fromState, Object toState) {
+            return "Invalid state transition "+fromState+" -> "+toState;
+        }
+        private InvalidTransitionHandler() {} //Disable instantiation.
     }
 }

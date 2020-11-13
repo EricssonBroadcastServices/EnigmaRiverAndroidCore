@@ -30,6 +30,7 @@ ___
 [Using the download API](enigma_download.md)<br/>
 [Get available tracks for download](get_download_info.md)<br/>
 [Start asset download](start_download.md)<br/>
+[Managing ongoing downloads](ongoing_downloads.md)<br/>
 [Listing downloaded assets](list_downloads.md)<br/>
 [Start playback of a downloaded asset](play_download.md)<br/>
 &bull; Remove downloaded assets (current)<br/>

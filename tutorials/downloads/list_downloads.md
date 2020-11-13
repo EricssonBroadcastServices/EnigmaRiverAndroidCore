@@ -1,5 +1,7 @@
 ### Downloads and offline playback series
 # Listing downloaded assets
+The `DownloadedPlayable` type represents an offline playable ready for playback.
+
 To list the downloaded asset available for playback, use `IEnigmaDownload#getDownloadedAssets`.
 ```java
 IEnigmaDownload enigmaDownload = new EnigmaDownload(businessUnit);
@@ -27,6 +29,7 @@ ___
 [Using the download API](enigma_download.md)<br/>
 [Get available tracks for download](get_download_info.md)<br/>
 [Start asset download](start_download.md)<br/>
+[Managing ongoing downloads](ongoing_downloads.md)<br/>
 &bull; Listing downloaded assets (current)<br/>
 [Start playback of a downloaded asset](play_download.md)<br/>
 [Remove downloaded assets](remove_download.md)<br/>

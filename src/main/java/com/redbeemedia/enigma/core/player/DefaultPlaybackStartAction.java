@@ -31,6 +31,8 @@ import com.redbeemedia.enigma.core.http.AuthenticatedExposureApiCall;
 import com.redbeemedia.enigma.core.playable.IPlayableHandler;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.player.controls.IControlResultHandler;
+import com.redbeemedia.enigma.core.playrequest.IAdInsertionFactory;
+import com.redbeemedia.enigma.core.playrequest.IAdInsertionParameters;
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
 import com.redbeemedia.enigma.core.playrequest.IPlayResultHandler;
 import com.redbeemedia.enigma.core.restriction.IContractRestrictions;
@@ -43,6 +45,7 @@ import com.redbeemedia.enigma.core.time.Duration;
 import com.redbeemedia.enigma.core.time.ITimeProvider;
 import com.redbeemedia.enigma.core.util.IHandler;
 import com.redbeemedia.enigma.core.util.ProxyCallback;
+import com.redbeemedia.enigma.core.util.UrlPath;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -120,7 +123,14 @@ import java.util.UUID;
 
         URL url;
         try {
-            url = session.getBusinessUnit().getApiBaseUrl("v2").append("entitlement").append(assetId).append("play").toURL();
+            UrlPath path = session.getBusinessUnit().getApiBaseUrl("v2").append("entitlement").append(assetId).append("play");
+
+            IAdInsertionParameters adInsertionParameters = buildAdInsertionParameters(playRequest);
+            if (adInsertionParameters != null) {
+                path = path.appendQueryStringParameters(adInsertionParameters.getParameters());
+            }
+            url = path.toURL();
+
         } catch (MalformedURLException e) {
             getStartActionResultHandler().onError(new InvalidAssetError(assetId, new UnexpectedError(e)));
             return;
@@ -216,6 +226,14 @@ import java.util.UUID;
 
     protected IPlayResultHandler getStartActionResultHandler() {
         return callback;
+    }
+
+    protected IAdInsertionParameters buildAdInsertionParameters(IPlayRequest playRequest) {
+        IAdInsertionFactory adInsertionFactory = EnigmaRiverContext.getAdInsertionFactory();
+        if(adInsertionFactory == null) {
+            return null;
+        }
+        return adInsertionFactory.createParameters(playRequest);
     }
 
     @Override

@@ -93,6 +93,7 @@ You will learn how to:
 [Using the download API](downloads/enigma_download.md)<br/>
 [Get available tracks for download](downloads/get_download_info.md)<br/>
 [Start asset download](downloads/start_download.md)<br/>
+[Managing ongoing downloads](downloads/ongoing_downloads.md)<br/>
 [Listing downloaded assets](downloads/list_downloads.md)<br/>
 [Start playback of a downloaded asset](downloads/play_download.md)<br/>
 [Remove downloaded assets](downloads/remove_download.md)<br/>
@@ -104,6 +105,7 @@ The purpose of this series is to provide some additional tutorials on how to ach
             specific tasks and features related to downloads.
 
 [Working with DRM protected offline content](downloads_advanced/download_drm_management.md)<br/>
+[AssetDownloadState](downloads_advanced/asset_download_state.md)<br/>
 [Only download on wifi networks](downloads_advanced/set_download_requirements.md)<br/>
 
 ### Migration guide (Android SDK 2.0 -> Enigma River Android SDK)
@@ -129,3 +131,4 @@ The following tutorials provide in-depth information about different areas of in
 [Playback Session](advanced_topics/playback_session.md)<br/>
 [Live drift correction (ExoPlayer)](advanced_topics/drift_correction.md)<br/>
 [Overriding media format selection logic](advanced_topics/media_format_preference.md)<br/>
+[Ad Insertion](advanced_topics/ad_insertion.md)<br/>

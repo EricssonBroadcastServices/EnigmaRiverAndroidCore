@@ -142,6 +142,7 @@ ___
 [Using the download API](enigma_download.md)<br/>
 [Get available tracks for download](get_download_info.md)<br/>
 &bull; Start asset download (current)<br/>
+[Managing ongoing downloads](ongoing_downloads.md)<br/>
 [Listing downloaded assets](list_downloads.md)<br/>
 [Start playback of a downloaded asset](play_download.md)<br/>
 [Remove downloaded assets](remove_download.md)<br/>

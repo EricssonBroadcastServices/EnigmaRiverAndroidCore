@@ -1,7 +1,5 @@
 package com.redbeemedia.enigma.core.util;
 
-import com.redbeemedia.enigma.core.player.EnigmaPlayerState;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -80,5 +78,130 @@ public class StateMachineBuilderTest {
         Assert.assertEquals("", log.toString());
         stateMachine.setState(175);
         Assert.assertEquals("[0->6][6->19][19->58][58->175]", log.toString());
+    }
+
+    @Test
+    public void testDefaultIllegalStateTransitionHandler() {
+        IStateMachineBuilder<String> example = new StateMachineBuilder<>();
+        example.addState("A");
+        example.addState("B");
+        example.addState("C");
+        example.addState("D");
+        example.addDirectTransition("A", "B");
+        example.addDirectTransition("B", "C");
+        example.addDirectTransition("B", "D");
+        example.addDirectTransition("C", "D");
+        example.addDirectTransition("C", "A");
+
+        example.setInitialState("A");
+        IStateMachine<String> stateMachine = example.build();
+
+        StringBuilder log = new StringBuilder();
+        log.append(stateMachine.getState());
+        stateMachine.addListener(new IStateChangedListener<String>() {
+            private String last = stateMachine.getState();
+            @Override
+            public void onStateChanged(String from, String to) {
+                Assert.assertEquals(last, from);
+                log.append("->"+to);
+                last = to;
+            }
+        });
+
+        stateMachine.setState("C");
+        Assert.assertEquals("A->B->C", log.toString());
+        stateMachine.setState("A");
+        Assert.assertEquals("A->B->C->A", log.toString());
+        stateMachine.setState("D");
+        Assert.assertEquals("A->B->C->A->B->D", log.toString());
+        try {
+            stateMachine.setState("A");
+            Assert.fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            Assert.assertEquals("Illegal state transition: D -> A",e.getMessage());
+        }
+    }
+
+    @Test
+    public void testIllegalStateTransition_logButAllow() {
+        IStateMachineBuilder<String> example = new StateMachineBuilder<>();
+        example.addState("A");
+        example.addState("B");
+        example.addState("C");
+        example.addState("D");
+        example.addDirectTransition("A", "B");
+        example.addDirectTransition("B", "C");
+        example.addDirectTransition("B", "D");
+        example.addDirectTransition("C", "D");
+        example.addDirectTransition("C", "A");
+
+        example.setInvalidStateTransitionHandler(StateMachineBuilder.InvalidTransitionHandler.LENIENT_LOGGING("UnitTest"));
+
+        example.setInitialState("A");
+        IStateMachine<String> stateMachine = example.build();
+
+        StringBuilder log = new StringBuilder();
+        log.append(stateMachine.getState());
+        stateMachine.addListener(new IStateChangedListener<String>() {
+            private String last = stateMachine.getState();
+            @Override
+            public void onStateChanged(String from, String to) {
+                Assert.assertEquals(last, from);
+                log.append("->"+to);
+                last = to;
+            }
+        });
+
+        stateMachine.setState("C");
+        Assert.assertEquals("A->B->C", log.toString());
+        stateMachine.setState("A");
+        Assert.assertEquals("A->B->C->A", log.toString());
+        stateMachine.setState("D");
+        Assert.assertEquals("A->B->C->A->B->D", log.toString());
+        stateMachine.setState("A"); //Not allowed. But we expect to be at A anyway
+        Assert.assertEquals("A->B->C->A->B->D->A", log.toString());
+        Assert.assertEquals("A", stateMachine.getState());
+    }
+
+    @Test
+    public void testIllegalStateTransition_logDontAllow() {
+        IStateMachineBuilder<String> example = new StateMachineBuilder<>();
+
+        example.setInvalidStateTransitionHandler(StateMachineBuilder.InvalidTransitionHandler.STRICT_LOGGING("UnitTest"));
+
+        example.addState("A");
+        example.addState("B");
+        example.addState("C");
+        example.addState("D");
+        example.addDirectTransition("A", "B");
+        example.addDirectTransition("B", "C");
+        example.addDirectTransition("B", "D");
+        example.addDirectTransition("C", "D");
+        example.addDirectTransition("C", "A");
+
+        example.setInitialState("A");
+        IStateMachine<String> stateMachine = example.build();
+
+        StringBuilder log = new StringBuilder();
+        log.append(stateMachine.getState());
+        stateMachine.addListener(new IStateChangedListener<String>() {
+            private String last = stateMachine.getState();
+            @Override
+            public void onStateChanged(String from, String to) {
+                Assert.assertEquals(last, from);
+                log.append("->"+to);
+                last = to;
+            }
+        });
+
+        stateMachine.setState("C");
+        Assert.assertEquals("A->B->C", log.toString());
+        stateMachine.setState("A");
+        Assert.assertEquals("A->B->C->A", log.toString());
+        stateMachine.setState("D");
+        Assert.assertEquals("A->B->C->A->B->D", log.toString());
+        stateMachine.setState("A"); //Not allowed. We expect to stay at D
+        Assert.assertEquals("A->B->C->A->B->D", log.toString());
+        Assert.assertEquals("D", stateMachine.getState());
     }
 }

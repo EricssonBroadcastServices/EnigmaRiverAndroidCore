@@ -1,7 +1,12 @@
 package com.redbeemedia.enigma.core.util;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
+import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class UrlPath implements IStringAppendable {
     private String url;
@@ -35,6 +40,23 @@ public class UrlPath implements IStringAppendable {
         return new UrlPath(this, path);
     }
 
+    public UrlPath appendQueryStringParameters(Map<String, ?> parameters) {
+        UrlPath self = this;
+        Pattern rightMostQuestionMark = Pattern.compile("\\/.*\\?");
+        if (!rightMostQuestionMark.matcher(url).find()) {
+            self = self.append("?");
+        }
+
+        for (Map.Entry<String, ?> kvp : parameters.entrySet()) {
+            if (kvp.getValue() != null) {
+                if (!self.url.endsWith("?")) {
+                    self = self.append("&");
+                }
+                self = self.append(kvp.getKey() + "=" + kvp.getValue());
+            }
+        }
+        return self;
+    }
 
     public URL toURL() throws MalformedURLException {
         return new URL(url);

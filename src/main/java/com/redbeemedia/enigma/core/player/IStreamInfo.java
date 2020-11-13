@@ -4,6 +4,7 @@ import com.redbeemedia.enigma.core.time.Duration;
 
 /*package-protected*/ interface IStreamInfo {
     boolean isLiveStream();
+    boolean isEvent();
 
     boolean hasStart();
     long getStart(Duration.Unit unit);

@@ -10,6 +10,9 @@ import com.redbeemedia.enigma.core.time.Duration;
     }
 
     @Override
+    public boolean isEvent() { return false; }
+
+    @Override
     public boolean hasStart() {
         return false;
     }

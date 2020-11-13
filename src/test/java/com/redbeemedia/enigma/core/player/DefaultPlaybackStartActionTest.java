@@ -20,6 +20,9 @@ import com.redbeemedia.enigma.core.playable.MockPlayable;
 import com.redbeemedia.enigma.core.playable.UrlPlayable;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.playrequest.BasePlayResultHandler;
+import com.redbeemedia.enigma.core.playrequest.DefaultAdInsertionParameters;
+import com.redbeemedia.enigma.core.playrequest.IAdInsertionFactory;
+import com.redbeemedia.enigma.core.playrequest.IAdInsertionParameters;
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
 import com.redbeemedia.enigma.core.playrequest.IPlayResultHandler;
 import com.redbeemedia.enigma.core.playrequest.MockPlayRequest;
@@ -40,13 +43,21 @@ import com.redbeemedia.enigma.core.testutil.json.JsonObjectBuilder;
 import com.redbeemedia.enigma.core.time.ITimeProvider;
 import com.redbeemedia.enigma.core.time.MockTimeProvider;
 import com.redbeemedia.enigma.core.util.IHandler;
+import com.redbeemedia.enigma.core.util.UrlPath;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
 public class DefaultPlaybackStartActionTest {
@@ -484,4 +495,102 @@ public class DefaultPlaybackStartActionTest {
         Assert.assertSame(playRequestSession, sessionValue);
         Assert.assertSame(playRequestSession.getBusinessUnit(), businessUnitValue);
     }
+
+    @Test
+    public void testAdInsertionParameters() throws JSONException, MalformedURLException {
+
+        MockHttpHandler httpHandler = new MockHttpHandler();
+        {
+            JsonObjectBuilder playResponse = new JsonObjectBuilder();
+            playResponse.putArray("formats").addObject()
+                    .put("format", "DASH")
+                    .put("mediaLocator", "http://example.com/manifest.mpd");
+            httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play"), playResponse.toString());
+        }
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization()
+                .setHttpHandler(httpHandler)
+        );
+
+        MockPlayRequest playRequest = new MockPlayRequest();
+        playRequest.setPlayable(new MockPlayable("MockyMockMock"));
+        IAdInsertionParameters adParameters = new MockAdParameters();
+
+        DefaultPlaybackStartAction playbackStartAction = new DefaultPlaybackStartAction(
+                new MockSession(), new MockSession().getBusinessUnit(), new MockTimeProvider(), playRequest,null,
+                EnigmaRiverContext.getTaskFactoryProvider(), new MockPlayerImplementation(), new MockPlaybackStartAction.MockEnigmaPlayerCallbacks()
+        ) {
+            @Override
+            protected IAdInsertionParameters buildAdInsertionParameters(IPlayRequest playRequest) {
+                return adParameters;
+            }
+        };
+
+        // Execute the query
+        playbackStartAction.startUsingAssetId("foo");
+        // Fetch the query from the request url
+        String query = new URL(new JSONObject(httpHandler.getLog().get(0)).getString("url")).getQuery();
+        // Check that the mock parameters are included.
+        Assert.assertTrue(((MockAdParameters)adParameters).asQueryString().endsWith(query));
+        Assert.assertTrue("?foo=bar&baz=42".endsWith(query));
+
+        httpHandler.clearLog();
+
+        // --- Test without IAdInsertionFactory in context
+
+        // DefaultPlaybackStartAction does not override `buildAdInsertionParameters`
+        playbackStartAction = new DefaultPlaybackStartAction(
+                new MockSession(), new MockSession().getBusinessUnit(), new MockTimeProvider(), playRequest,null,
+                EnigmaRiverContext.getTaskFactoryProvider(), new MockPlayerImplementation(), new MockPlaybackStartAction.MockEnigmaPlayerCallbacks()
+        );
+        // Execute the query
+        playbackStartAction.startUsingAssetId("foo");
+        // Fetch the query from the request url
+        query = new URL(new JSONObject(httpHandler.getLog().get(0)).getString("url")).getQuery();
+        Assert.assertNull(query);
+
+        httpHandler.clearLog();
+
+        DefaultAdInsertionParameters defaultAdInsertionParameters = new DefaultAdInsertionParameters("42", "65536", false, "wtf", null, "", false);
+
+        // Test with an `IAdInsertionParameters` returning a `DefaultAdInsertionParameters`
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization()
+                .setHttpHandler(httpHandler).setAdInsertionFactory(new IAdInsertionFactory() {
+                    @Override
+                    public IAdInsertionParameters createParameters(IPlayRequest request) {
+                        return defaultAdInsertionParameters;
+                    }
+                })
+        );
+        // Execute the query
+        playbackStartAction.startUsingAssetId("foo");
+        query = new URL(new JSONObject(httpHandler.getLog().get(0)).getString("url")).getQuery();
+
+        for (Map.Entry<String, ?> kvp : defaultAdInsertionParameters.getParameters().entrySet()) {
+            if (kvp.getValue() != null) {
+                // Make sure each property is included
+                Assert.assertTrue(query.contains(kvp.getKey() + "=" + kvp.getValue()));
+            } else {
+                // If property was null, it should not be included
+                Assert.assertFalse(query.contains(kvp.getKey()));
+            }
+        }
+    }
+
+    private class MockAdParameters implements IAdInsertionParameters {
+
+        @Override
+        public Map<String, ?> getParameters() {
+            HashMap<String, String> parameters = new HashMap<>();
+            parameters.put("foo", "bar");
+            parameters.put("baz", "42");
+            return parameters;
+        }
+
+        String asQueryString() {
+            UrlPath path = new UrlPath("?");
+            return path.appendQueryStringParameters(getParameters()).toString();
+        }
+
+    }
+
 }
