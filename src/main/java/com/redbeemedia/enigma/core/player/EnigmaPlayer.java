@@ -75,7 +75,8 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                                                                                                             EnigmaMediaFormat.DASH().unenc(),
                                                                                                             EnigmaMediaFormat.HLS().fairplay(),
                                                                                                             EnigmaMediaFormat.HLS().unenc(),
-                                                                                                            EnigmaMediaFormat.SMOOTHSTREAMING().unenc());
+                                                                                                            EnigmaMediaFormat.SMOOTHSTREAMING().unenc(),
+                                                                                                            EnigmaMediaFormat.MP3().unenc());
     private IMediaFormatSelector mediaFormatSelector = null;
 
     private final EnigmaPlayerLifecycle lifecycle = new EnigmaPlayerLifecycle();

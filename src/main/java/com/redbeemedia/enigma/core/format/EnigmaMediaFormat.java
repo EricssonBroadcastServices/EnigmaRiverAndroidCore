@@ -102,6 +102,10 @@ public final class EnigmaMediaFormat {
         return new EnigmaMediaFormatBuilder_DrmTechnologySelector(StreamFormat.SMOOTHSTREAMING);
     }
 
+    public static EnigmaMediaFormatBuilder_DrmTechnologySelector MP3() {
+        return new EnigmaMediaFormatBuilder_DrmTechnologySelector(StreamFormat.MP3);
+    }
+
     public static class EnigmaMediaFormatBuilder_DrmTechnologySelector {
         private final StreamFormat streamFormat;
 
@@ -132,6 +136,7 @@ public final class EnigmaMediaFormat {
         public static final StreamFormat DASH = new StreamFormat();
         public static final StreamFormat HLS = new StreamFormat();
         public static final StreamFormat SMOOTHSTREAMING = new StreamFormat();
+        public static final StreamFormat MP3 = new StreamFormat();
 
         @Override
         public String toString() {
@@ -203,6 +208,8 @@ public final class EnigmaMediaFormat {
             streamFormat = StreamFormat.HLS;
         } else if("SMOOTHSTREAMING".equals(streamFormatName)) {
             streamFormat = StreamFormat.SMOOTHSTREAMING;
+        } else if("MP3".equals(streamFormatName)) {
+            streamFormat = StreamFormat.MP3;
         }
 
         JSONObject drm = mediaFormat.optJSONObject("drm");
