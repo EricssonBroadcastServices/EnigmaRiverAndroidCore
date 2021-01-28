@@ -44,6 +44,8 @@ import com.redbeemedia.enigma.core.time.ITimeProvider;
 import com.redbeemedia.enigma.core.time.MockTimeProvider;
 import com.redbeemedia.enigma.core.util.IHandler;
 import com.redbeemedia.enigma.core.util.UrlPath;
+import com.redbeemedia.enigma.core.video.ISpriteRepository;
+import com.redbeemedia.enigma.core.video.SpriteDataMock;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -51,13 +53,11 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
 public class DefaultPlaybackStartActionTest {
@@ -113,7 +113,8 @@ public class DefaultPlaybackStartActionTest {
                             throw new RuntimeException(e);
                         }
                     }
-                }
+                },
+                new SpriteDataMock.MockSpriteRepository()
         ) {
             @Override
             protected Analytics createAnalytics(ISession session, String playbackSessionId, ITimeProvider timeProvider, ITaskFactory taskFactory) {
@@ -192,7 +193,8 @@ public class DefaultPlaybackStartActionTest {
                         currentPlaybackSession[0] = internalPlaybackSession;
                         internalPlaybackSession.onStart(mockEnigmaPlayer);
                     }
-                }
+                },
+                new SpriteDataMock.MockSpriteRepository()
         ) {
             @Override
             protected IBufferingAnalyticsHandler newAnalyticsHandler(ISession session, String playbackSessionId, ITimeProvider timeProvider) {
@@ -282,7 +284,8 @@ public class DefaultPlaybackStartActionTest {
                 null,
                 EnigmaRiverContext.getTaskFactoryProvider(),
                 new MockPlayerImplementation(),
-                new MockPlaybackStartAction.MockEnigmaPlayerCallbacks()
+                new MockPlaybackStartAction.MockEnigmaPlayerCallbacks(),
+                new SpriteDataMock.MockSpriteRepository()
         ) {
             @Override
             protected IInternalPlaybackSession newPlaybackSession(InternalPlaybackSession.ConstructorArgs constructorArgs) {
@@ -391,7 +394,7 @@ public class DefaultPlaybackStartActionTest {
         };
         EnigmaPlayer enigmaPlayer = new EnigmaPlayerTest.EnigmaPlayerWithMockedTimeProvider(new MockSession(), new MockPlayerImplementation()) {
             @Override
-            protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler, ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection) {
+            protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler, ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection, ISpriteRepository spriteRepository) {
                 return new DefaultPlaybackStartAction(
                         session,
                         businessUnit,
@@ -400,7 +403,8 @@ public class DefaultPlaybackStartActionTest {
                         callbackHandler,
                         taskFactoryProvider,
                         playerImplementationControls,
-                        playerConnection
+                        playerConnection,
+                        spriteRepository
                 ) {
                     @Override
                     protected Analytics createAnalytics(ISession session, String playbackSessionId, ITimeProvider timeProvider, ITaskFactory taskFactory) {
@@ -438,7 +442,8 @@ public class DefaultPlaybackStartActionTest {
                 null,
                 new MockTaskFactoryProvider(),
                 new MockPlayerImplementation(),
-                new MockPlaybackStartAction.MockEnigmaPlayerCallbacks());
+                new MockPlaybackStartAction.MockEnigmaPlayerCallbacks(),
+                new SpriteDataMock.MockSpriteRepository());
 
         ISession sessionValue = ReflectionUtil.getDeclaredField(playbackStartAction, ISession.class, "session");
         IBusinessUnit businessUnitValue = ReflectionUtil.getDeclaredField(playbackStartAction, IBusinessUnit.class, "businessUnit");
@@ -454,7 +459,8 @@ public class DefaultPlaybackStartActionTest {
                 null,
                 new MockTaskFactoryProvider(),
                 new MockPlayerImplementation(),
-                new MockPlaybackStartAction.MockEnigmaPlayerCallbacks());
+                new MockPlaybackStartAction.MockEnigmaPlayerCallbacks(),
+                new SpriteDataMock.MockSpriteRepository());
 
         sessionValue = ReflectionUtil.getDeclaredField(playbackStartAction, ISession.class, "session");
         businessUnitValue = ReflectionUtil.getDeclaredField(playbackStartAction, IBusinessUnit.class, "businessUnit");
@@ -471,7 +477,8 @@ public class DefaultPlaybackStartActionTest {
                 null,
                 new MockTaskFactoryProvider(),
                 new MockPlayerImplementation(),
-                new MockPlaybackStartAction.MockEnigmaPlayerCallbacks());
+                new MockPlaybackStartAction.MockEnigmaPlayerCallbacks(),
+                new SpriteDataMock.MockSpriteRepository());
 
         sessionValue = ReflectionUtil.getDeclaredField(playbackStartAction, ISession.class, "session");
         businessUnitValue = ReflectionUtil.getDeclaredField(playbackStartAction, IBusinessUnit.class, "businessUnit");
@@ -487,7 +494,8 @@ public class DefaultPlaybackStartActionTest {
                 null,
                 new MockTaskFactoryProvider(),
                 new MockPlayerImplementation(),
-                new MockPlaybackStartAction.MockEnigmaPlayerCallbacks());
+                new MockPlaybackStartAction.MockEnigmaPlayerCallbacks(),
+                new SpriteDataMock.MockSpriteRepository());
 
         sessionValue = ReflectionUtil.getDeclaredField(playbackStartAction, ISession.class, "session");
         businessUnitValue = ReflectionUtil.getDeclaredField(playbackStartAction, IBusinessUnit.class, "businessUnit");
@@ -517,7 +525,8 @@ public class DefaultPlaybackStartActionTest {
 
         DefaultPlaybackStartAction playbackStartAction = new DefaultPlaybackStartAction(
                 new MockSession(), new MockSession().getBusinessUnit(), new MockTimeProvider(), playRequest,null,
-                EnigmaRiverContext.getTaskFactoryProvider(), new MockPlayerImplementation(), new MockPlaybackStartAction.MockEnigmaPlayerCallbacks()
+                EnigmaRiverContext.getTaskFactoryProvider(), new MockPlayerImplementation(), new MockPlaybackStartAction.MockEnigmaPlayerCallbacks(),
+                new SpriteDataMock.MockSpriteRepository()
         ) {
             @Override
             protected IAdInsertionParameters buildAdInsertionParameters(IPlayRequest playRequest) {
@@ -540,7 +549,8 @@ public class DefaultPlaybackStartActionTest {
         // DefaultPlaybackStartAction does not override `buildAdInsertionParameters`
         playbackStartAction = new DefaultPlaybackStartAction(
                 new MockSession(), new MockSession().getBusinessUnit(), new MockTimeProvider(), playRequest,null,
-                EnigmaRiverContext.getTaskFactoryProvider(), new MockPlayerImplementation(), new MockPlaybackStartAction.MockEnigmaPlayerCallbacks()
+                EnigmaRiverContext.getTaskFactoryProvider(), new MockPlayerImplementation(), new MockPlaybackStartAction.MockEnigmaPlayerCallbacks(),
+                new SpriteDataMock.MockSpriteRepository()
         );
         // Execute the query
         playbackStartAction.startUsingAssetId("foo");

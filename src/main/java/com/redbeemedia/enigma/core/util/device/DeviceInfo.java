@@ -14,7 +14,9 @@ package com.redbeemedia.enigma.core.util.device;
 
 import android.annotation.SuppressLint;
 import android.app.Application;
+import android.app.UiModeManager;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.media.MediaDrm;
 import android.media.UnsupportedSchemeException;
 import android.os.Build;
@@ -35,10 +37,12 @@ public class DeviceInfo implements IDeviceInfo {
 
     private final String deviceId;
     private final DisplayMetrics displayMetrics;
+    private boolean isTv;
 
     public DeviceInfo(Application application) {
         this.deviceId = getDeviceId(application);
         this.displayMetrics = getDisplayMetrics(application);
+        this.isTv = detectIfTV(application);
     }
 
     @Override
@@ -121,6 +125,14 @@ public class DeviceInfo implements IDeviceInfo {
         return application.getResources().getDisplayMetrics();
     }
 
+    private boolean detectIfTV(Application application) {
+        try {
+            UiModeManager uiModeManager = (UiModeManager)application.getApplicationContext().getSystemService(Application.UI_MODE_SERVICE);
+            return uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION;
+        } catch (Exception e) { e.printStackTrace(); }
+        return false;
+    }
+
     public static JSONObject getDeviceInfoJson(IDeviceInfo deviceInfo) throws JSONException {
         JSONObject deviceJSON = new JSONObject();
         deviceJSON.put("height", deviceInfo.getHeightPixels())
@@ -153,6 +165,7 @@ public class DeviceInfo implements IDeviceInfo {
 
     @Override
     public String getType() {
+        if (isTv) { return "TV"; }
         boolean isTablet = diagonalLargerThanSize(displayMetrics.widthPixels/displayMetrics.xdpi,
                 displayMetrics.heightPixels/displayMetrics.ydpi, TABLET_SIZE_TRESHOLD);
         return isTablet ? "TABLET" : "MOBILE";

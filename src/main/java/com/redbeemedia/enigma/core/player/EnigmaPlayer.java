@@ -56,7 +56,9 @@ import com.redbeemedia.enigma.core.util.OpenContainer;
 import com.redbeemedia.enigma.core.util.OpenContainerUtil;
 import com.redbeemedia.enigma.core.util.ProxyCallback;
 import com.redbeemedia.enigma.core.util.RuntimeExceptionHandler;
+import com.redbeemedia.enigma.core.video.ISpriteRepository;
 import com.redbeemedia.enigma.core.video.IVideoTrack;
+import com.redbeemedia.enigma.core.video.SpriteRepository;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -91,6 +93,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     private IActivityLifecycleListener activityLifecycleListener;
     private ITimeProvider timeProvider;
     private IHandler callbackHandler = null;
+    private ISpriteRepository spriteRepository;
 
     private EnigmaPlayerCollector enigmaPlayerListeners = new EnigmaPlayerCollector();
 
@@ -127,6 +130,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         this.businessUnit = new OpenContainer<>(initialBusinessUnit);
         this.playerImplementation = playerImplementation;
         this.playerImplementation.install(environment);
+        this.spriteRepository = new SpriteRepository(environment.timelinePositionFactory, EnigmaRiverContext.getHttpHandler());
         playbackSessionContainerCollector.addListener(environment.timelinePositionFactory);
         playbackSessionContainerCollector.addListener(timeline);
         stateMachine.addListener((from, to) -> enigmaPlayerListeners.onStateChanged(from, to));
@@ -148,7 +152,6 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     protected ITimeProvider newTimeProvider(IBusinessUnit businessUnit, EnigmaPlayerLifecycle lifecycle) {
         return new ServerTimeService(businessUnit, EnigmaRiverContext.getTaskFactoryProvider().getTaskFactory(), lifecycle);
     }
-
 
     public EnigmaPlayer setActivity(Activity activity) {
         IActivityLifecycleManager lifecycleManager = EnigmaRiverContext.getActivityLifecycleManager();
@@ -180,7 +183,8 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                     callbackHandler,
                     getTaskFactoryProvider(),
                     environment.playerImplementationControls,
-                    newStartActionPlayerConnection(playRequest));
+                    newStartActionPlayerConnection(playRequest),
+                    spriteRepository);
 
             playbackStartAction = currentPlaybackStartAction.value;
         }
@@ -238,7 +242,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         });
         exceptionHandler.catchExceptions(() -> playerImplementation.release());
         exceptionHandler.catchExceptions(() -> lifecycle.fireOnStop(null));
-
+        exceptionHandler.catchExceptions(() -> spriteRepository.clear());
         released = true;
 
         exceptionHandler.rethrowIfAnyExceptions();
@@ -313,8 +317,9 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                                                           IHandler callbackHandler,
                                                           ITaskFactoryProvider taskFactoryProvider,
                                                           IPlayerImplementationControls playerImplementationControls,
-                                                          IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection) {
-        return new DefaultPlaybackStartAction(session, businessUnit, timeProvider, playRequest, callbackHandler,taskFactoryProvider, playerImplementationControls, playerConnection);
+                                                          IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection,
+                                                          ISpriteRepository spriteRepository) {
+        return new DefaultPlaybackStartAction(session, businessUnit, timeProvider, playRequest, callbackHandler,taskFactoryProvider, playerImplementationControls, playerConnection, spriteRepository);
     }
 
     protected ITaskFactoryProvider getTaskFactoryProvider() {

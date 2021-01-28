@@ -6,6 +6,7 @@ import com.redbeemedia.enigma.core.audio.IAudioTrack;
 import com.redbeemedia.enigma.core.playable.IPlayable;
 import com.redbeemedia.enigma.core.restriction.IContractRestrictions;
 import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
+import com.redbeemedia.enigma.core.video.ISpriteRepository;
 import com.redbeemedia.enigma.core.video.IVideoTrack;
 
 import java.util.List;
@@ -53,4 +54,8 @@ public interface IPlaybackSession {
      */
     List<IVideoTrack> getVideoTracks();
     IVideoTrack getSelectedVideoTrack();
+
+    /** Access the sprites repository capable of retrieving sprite metadata. */
+    ISpriteRepository getSpriteRepository();
+
 }

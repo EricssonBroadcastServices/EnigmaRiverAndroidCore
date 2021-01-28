@@ -30,15 +30,17 @@ android {
         unitTests.all {
             useJUnit()
         }
+        unitTests.returnDefaultValues = true
     }
 }
 
 dependencies {
+    implementation 'org.jetbrains:annotations:16.0.1'
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.json:json:20080701'
     if(findProject(':internalTestUtils') != null) {
         testImplementation project(":internalTestUtils")
     } else {
-        testImplementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:internalTestUtils:r3.1.8'
+        testImplementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:internalTestUtils:r3.1.9-BETA-1'
     }
 }

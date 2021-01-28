@@ -22,7 +22,6 @@ import com.redbeemedia.enigma.core.player.listener.BaseEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.task.ITaskFactoryProvider;
-import com.redbeemedia.enigma.core.task.Repeater;
 import com.redbeemedia.enigma.core.time.Duration;
 import com.redbeemedia.enigma.core.time.ITimeProvider;
 import com.redbeemedia.enigma.core.time.SystemBootTimeProvider;
@@ -36,15 +35,12 @@ import java.util.List;
 import java.util.Objects;
 
 /*package-protected*/ class ProgramService implements IInternalPlaybackSessionListener {
-    private static final long PROGRAM_SERVICE_ENTITLEMENT_CHECK_INTERVAL_MILLIS = 4000L;
-
     private final ISession session;
     private final IStreamInfo streamInfo;
     private final IPlaybackSessionInfo playbackSessionInfo;
     private final IStreamPrograms streamPrograms;
     private final IEntitlementProvider entitlementProvider;
     private final ITimeProvider timeProviderForCache;
-    private final Repeater checkEntitlementRepeater;
     private final IEnigmaPlayerListener playerListener;
     private boolean playingFromLive;
     private final EntitlementCollector entitlementCollector = new EntitlementCollector();
@@ -67,11 +63,10 @@ import java.util.Objects;
                 playingFromLive = live;
             }
         });
-        this.checkEntitlementRepeater = new Repeater(taskFactoryProvider.getMainThreadTaskFactory(), PROGRAM_SERVICE_ENTITLEMENT_CHECK_INTERVAL_MILLIS, this::checkEntitlement);
         this.playerListener = new BaseEnigmaPlayerListener() {
             @Override
             public void onProgramChanged(IProgram from, IProgram to) {
-                checkEntitlementRepeater.executeNow();
+                checkEntitlement();
             }
         };
     }
@@ -86,13 +81,13 @@ import java.util.Objects;
                 }
             }
         });
-        checkEntitlementRepeater.setEnabled(true);
+
+        checkEntitlement();
         args.enigmaPlayer.addListener(playerListener);
     }
 
     @Override
     public void onStop(OnStopArgs args) {
-        checkEntitlementRepeater.setEnabled(false);
         args.enigmaPlayer.removeListener(playerListener);
     }
 

@@ -60,6 +60,7 @@ import com.redbeemedia.enigma.core.time.ITimeProvider;
 import com.redbeemedia.enigma.core.time.MockTimeProvider;
 import com.redbeemedia.enigma.core.util.IHandler;
 import com.redbeemedia.enigma.core.util.MockHandler;
+import com.redbeemedia.enigma.core.video.ISpriteRepository;
 import com.redbeemedia.enigma.core.video.IVideoTrack;
 import com.redbeemedia.enigma.core.video.MockVideoTrack;
 
@@ -659,7 +660,7 @@ public class EnigmaPlayerTest {
             }
         }) {
             @Override
-            protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler,ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection) {
+            protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler,ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection, ISpriteRepository spriteRepository) {
                 return new MockPlaybackStartAction(playRequest, playerConnection) {
                     @Override
                     protected IInternalPlaybackSession newInternalPlaybackSession() {
@@ -998,7 +999,7 @@ public class EnigmaPlayerTest {
         MockPlayerImplementation playerImplementation = new MockPlayerImplementation();
         EnigmaPlayer enigmaPlayer = new EnigmaPlayerWithMockedTimeProvider(new MockSession(), playerImplementation) {
             @Override
-            protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler, ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection) {
+            protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler, ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection, ISpriteRepository spriteRepository) {
                 return new MockPlaybackStartAction(playRequest, playerConnection) {
                     @Override
                     protected IInternalPlaybackSession newInternalPlaybackSession() {
@@ -1139,7 +1140,7 @@ public class EnigmaPlayerTest {
 
         EnigmaPlayer enigmaPlayer = new EnigmaPlayer(initialSession, new MockPlayerImplementation()) {
             @Override
-            protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler ,ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection) {
+            protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler ,ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection, ISpriteRepository spriteRepository) {
                 if(newPlaybackStartActionCalled.getCounts() == 0) {
                     Assert.assertEquals(initialSession, session);
                     Assert.assertEquals(initialSession.getBusinessUnit(), businessUnit);
@@ -1645,7 +1646,7 @@ public class EnigmaPlayerTest {
 
             return new EnigmaPlayerTest.EnigmaPlayerWithMockedTimeProvider(session, playerImplementation) {
                 @Override
-                protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler, ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection) {
+                protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler, ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection, ISpriteRepository spriteRepository) {
                     return new MockPlaybackStartAction(playRequest, playerConnection) {
                         @Override
                         protected IInternalPlaybackSession newInternalPlaybackSession() {
@@ -1707,8 +1708,8 @@ public class EnigmaPlayerTest {
         }
 
         @Override
-        protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler, ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection) {
-            return new DefaultPlaybackStartAction(session, businessUnit, timeProvider, playRequest, callbackHandler, taskFactoryProvider, playerImplementationControls, playerConnection) {
+        protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler, ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection, ISpriteRepository videoSpriteRepository) {
+            return new DefaultPlaybackStartAction(session, businessUnit, timeProvider, playRequest, callbackHandler, taskFactoryProvider, playerImplementationControls, playerConnection, videoSpriteRepository) {
                 @Override
                 protected Analytics createAnalytics(ISession session, String playbackSessionId, ITimeProvider timeProvider, ITaskFactory taskFactory) {
                     return new Analytics(new MockAnalyticsReporter(), new MockInternalPlaybackSessionListener());

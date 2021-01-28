@@ -46,6 +46,7 @@ import com.redbeemedia.enigma.core.time.ITimeProvider;
 import com.redbeemedia.enigma.core.util.IHandler;
 import com.redbeemedia.enigma.core.util.ProxyCallback;
 import com.redbeemedia.enigma.core.util.UrlPath;
+import com.redbeemedia.enigma.core.video.ISpriteRepository;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -53,6 +54,8 @@ import org.json.JSONObject;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /*package-protected*/ class DefaultPlaybackStartAction implements IPlaybackStartAction, IPlayableHandler {
@@ -66,8 +69,9 @@ import java.util.UUID;
     private final IEnigmaPlayerCallbacks playerConnector;
     private final ITimeProvider timeProvider;
     private final IPlayResultHandler callback;
+    private final ISpriteRepository spriteRepository;
 
-    public DefaultPlaybackStartAction(ISession defaultSession, IBusinessUnit defaultBusinessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler, ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IEnigmaPlayerCallbacks playerConnector) {
+    public DefaultPlaybackStartAction(ISession defaultSession, IBusinessUnit defaultBusinessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler, ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IEnigmaPlayerCallbacks playerConnector, ISpriteRepository spriteRepository) {
         ISession playRequestSession = playRequest.getSession();
         this.session = playRequestSession != null ? playRequestSession : defaultSession;
         this.businessUnit = playRequestSession != null ? playRequestSession.getBusinessUnit() : defaultBusinessUnit;
@@ -76,6 +80,7 @@ import java.util.UUID;
         this.taskFactoryProvider = taskFactoryProvider;
         this.playerImplementationControls = playerImplementationControls;
         this.playerConnector = playerConnector;
+        this.spriteRepository = spriteRepository;
         this.callback = ProxyCallback.useCallbackHandlerIfPresent(callbackHandler, IPlayResultHandler.class, playRequest.getResultHandler());
     }
 
@@ -148,6 +153,7 @@ import java.util.UUID;
                 String requestId = jsonObject.optString("requestId");
                 String playToken = jsonObject.optString("playToken");
                 JSONArray formats = jsonObject.getJSONArray("formats");
+                JSONArray spritesJson = jsonObject.optJSONArray("sprites");
                 JSONObject usableMediaFormat = playerConnector.getUsableMediaFormat(formats);
                 if (usableMediaFormat != null) {
                     JSONObject drms = usableMediaFormat.optJSONObject("drm");
@@ -166,13 +172,16 @@ import java.util.UUID;
                     EnigmaContractRestrictions contractRestrictions = EnigmaContractRestrictions.createWithDefaults(jsonObject.optJSONObject("contractRestrictions"));
                     IPlaybackSessionInfo playbackSessionInfo = playerConnector.getPlaybackSessionInfo(manifestUrl);
 
+                    final Map<Integer, String> spriteUrls = parseSpriteUrls(spritesJson);
+                    spriteRepository.setVTTUrls(spriteUrls, session);
+
                     IProcessStep<IStreamPrograms> nextStep = new ProcessStep<IStreamPrograms>() {
                         @Override
                         protected void execute(IStreamPrograms streamPrograms) {
 
                             Analytics analytics = createAnalytics(session, playbackSessionId, timeProvider, taskFactoryProvider.getTaskFactory());
 
-                            IInternalPlaybackSession playbackSession = newPlaybackSession(new InternalPlaybackSession.ConstructorArgs(streamInfo, streamPrograms, playbackSessionInfo, contractRestrictions, drmInfo[0], analytics.analyticsReporter));
+                            IInternalPlaybackSession playbackSession = newPlaybackSession(new InternalPlaybackSession.ConstructorArgs(streamInfo, streamPrograms, playbackSessionInfo, contractRestrictions, drmInfo[0], analytics.analyticsReporter, spriteRepository));
                             playbackSession.addInternalListener(analytics.internalPlaybackSessionListener);
                             playbackSession.addInternalListener(createProgramService(session, streamInfo, streamPrograms, playbackSessionInfo, newEntitlementProvider(), playbackSession, taskFactoryProvider));
 
@@ -247,7 +256,8 @@ import java.util.UUID;
                     playbackSessionInfo,
                     contractRestrictions,
                     null,
-                    new IgnoringAnalyticsReporter()
+                    new IgnoringAnalyticsReporter(),
+                    null
             ));
             playerConnector.deliverPlaybackSession(playbackSession);
 
@@ -285,7 +295,8 @@ import java.util.UUID;
                 playbackSessionInfo,
                 new EmptyContractRestrictions(),
                 null,
-                new IgnoringAnalyticsReporter()
+                new IgnoringAnalyticsReporter(),
+                null
         ));
         playerConnector.deliverPlaybackSession(playbackSession);
 
@@ -429,6 +440,16 @@ import java.util.UUID;
 
     private interface IProcessStep<T> {
         void continueProcess(T data);
+    }
+
+    private Map<Integer, String> parseSpriteUrls(JSONArray spritesJson) throws JSONException {
+        final HashMap<Integer, String> spriteUrls = new HashMap<>();
+        if (spritesJson != null) {
+            for(int i = 0; i < spritesJson.length(); i++) {
+                spriteUrls.put(spritesJson.getJSONObject(i).getInt("width"), spritesJson.getJSONObject(i).getString("vtt"));
+            }
+        }
+        return spriteUrls;
     }
 
     private static abstract class ProcessStep<T> implements IProcessStep<T> {

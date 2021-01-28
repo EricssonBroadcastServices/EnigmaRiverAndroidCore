@@ -57,8 +57,8 @@ EnigmaRiverContext.initialize(this, initialization);
 ```
 
 ## Disclaimer
-
 Please note that this tutorial will be a subject for change and will be extended once SSAI is fully implemented.
+
 
 ___
 [Table of Contents](../index.md)<br/>

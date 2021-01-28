@@ -30,6 +30,7 @@ import com.redbeemedia.enigma.core.util.Collector;
 import com.redbeemedia.enigma.core.util.HandlerWrapper;
 import com.redbeemedia.enigma.core.util.OpenContainer;
 import com.redbeemedia.enigma.core.util.OpenContainerUtil;
+import com.redbeemedia.enigma.core.video.ISpriteRepository;
 import com.redbeemedia.enigma.core.video.IVideoTrack;
 
 import java.util.ArrayList;
@@ -53,6 +54,7 @@ import java.util.List;
     private final IDrmInfo drmInfo;
     private final ListenerCollector collector = new ListenerCollector();
     private final IPlaybackSessionInfo playbackSessionInfo;
+    private final ISpriteRepository spriteRepository;
     private final IEnigmaPlayerConnection.ICommunicationsChannel communicationChannel = new EnigmaPlayerCommunicationChannel();
     private final OpenContainer<Boolean> playingFromLive = new OpenContainer<>(false);
     private final OpenContainer<List<ISubtitleTrack>> subtitleTracks = new OpenContainer<>(new ArrayList<>());
@@ -72,12 +74,11 @@ import java.util.List;
 
     private final IEnigmaPlayerListener playerListener;
 
-
     public InternalPlaybackSession(ConstructorArgs constructorArgs) {
-        this(constructorArgs.streamInfo, constructorArgs.streamPrograms, constructorArgs.playbackSessionInfo, constructorArgs.contractRestrictions, constructorArgs.drmInfo, constructorArgs.analyticsReporter);
+        this(constructorArgs.streamInfo, constructorArgs.streamPrograms, constructorArgs.playbackSessionInfo, constructorArgs.contractRestrictions, constructorArgs.drmInfo, constructorArgs.analyticsReporter, constructorArgs.spriteRepository);
     }
 
-    public InternalPlaybackSession(IStreamInfo streamInfo, IStreamPrograms streamPrograms, IPlaybackSessionInfo playbackSessionInfo, IContractRestrictions contractRestrictions, IDrmInfo drmInfo, IAnalyticsReporter analyticsReporter) {
+    public InternalPlaybackSession(IStreamInfo streamInfo, IStreamPrograms streamPrograms, IPlaybackSessionInfo playbackSessionInfo, IContractRestrictions contractRestrictions, IDrmInfo drmInfo, IAnalyticsReporter analyticsReporter, ISpriteRepository spriteRepository) {
         this.playbackSessionInfo = playbackSessionInfo;
         this.streamInfo = streamInfo;
         this.streamPrograms = streamPrograms;
@@ -87,6 +88,7 @@ import java.util.List;
         this.playerListener = new EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, streamInfo, selectedVideoTrack);
         this.heartbeatRepeater = new Repeater(getTaskFactory(HEARTBEAT_REPEATER), HEARTBEAT_RATE_MILLIS, new HeartbeatRunnable());
         this.appForegroundMonitor = new AppForegroundMonitor(getTaskFactory(APP_FOREGROUND_MONITOR));
+        this.spriteRepository = spriteRepository;
 
         updateSeekAllowed(contractRestrictions);
         addListener(new BasePlaybackSessionListener() {
@@ -275,6 +277,11 @@ import java.util.List;
     }
 
     @Override
+    public ISpriteRepository getSpriteRepository() {
+        return spriteRepository;
+    }
+
+    @Override
     public void setSelectedVideoTrack(IVideoTrack track) {
         OpenContainerUtil.setValueSynchronized(selectedVideoTrack, track, (oldValue, newValue) -> {
             if(oldValue != null  // If oldValue was null this was the initial value and thus not a change
@@ -417,14 +424,16 @@ import java.util.List;
         public final IContractRestrictions contractRestrictions;
         public final IDrmInfo drmInfo;
         public final IAnalyticsReporter analyticsReporter;
+        public final ISpriteRepository spriteRepository;
 
-        public ConstructorArgs(IStreamInfo streamInfo, IStreamPrograms streamPrograms, IPlaybackSessionInfo playbackSessionInfo, IContractRestrictions contractRestrictions, IDrmInfo drmInfo, IAnalyticsReporter analyticsReporter) {
+        public ConstructorArgs(IStreamInfo streamInfo, IStreamPrograms streamPrograms, IPlaybackSessionInfo playbackSessionInfo, IContractRestrictions contractRestrictions, IDrmInfo drmInfo, IAnalyticsReporter analyticsReporter, ISpriteRepository spriteRepository) {
             this.streamInfo = streamInfo;
             this.streamPrograms = streamPrograms;
             this.playbackSessionInfo = playbackSessionInfo;
             this.contractRestrictions = contractRestrictions;
             this.drmInfo = drmInfo;
             this.analyticsReporter = analyticsReporter;
+            this.spriteRepository = spriteRepository;
         }
     }
 

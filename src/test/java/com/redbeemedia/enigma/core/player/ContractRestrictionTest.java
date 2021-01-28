@@ -27,6 +27,7 @@ import com.redbeemedia.enigma.core.testutil.json.JsonObjectBuilder;
 import com.redbeemedia.enigma.core.time.ITimeProvider;
 import com.redbeemedia.enigma.core.time.MockTimeProvider;
 import com.redbeemedia.enigma.core.util.IHandler;
+import com.redbeemedia.enigma.core.video.ISpriteRepository;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -307,7 +308,7 @@ public class ContractRestrictionTest {
     private static EnigmaPlayer newPlayerWithMockRestrictions(final JSONObject contractRestrictions, IPlayerImplementation playerImplementation) {
         return new EnigmaPlayerTest.EnigmaPlayerWithMockedTimeProvider(new MockSession(), playerImplementation) {
             @Override
-            protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler, ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection) {
+            protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler, ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection, ISpriteRepository spriteRepository) {
                 return new MockPlaybackStartAction(playRequest, playerConnection) {
                     @Override
                     protected IInternalPlaybackSession newInternalPlaybackSession() {
@@ -398,8 +399,8 @@ public class ContractRestrictionTest {
         }
 
         @Override
-        protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler, ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection) {
-            return new DefaultPlaybackStartAction(session, businessUnit,timeProvider, playRequest, callbackHandler, taskFactoryProvider, playerImplementationControls, playerConnection) {
+        protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler, ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection, ISpriteRepository spriteRepository) {
+            return new DefaultPlaybackStartAction(session, businessUnit,timeProvider, playRequest, callbackHandler, taskFactoryProvider, playerImplementationControls, playerConnection, spriteRepository) {
                 @Override
                 protected IInternalPlaybackSession newPlaybackSession(InternalPlaybackSession.ConstructorArgs constructorArgs) {
                     return new MockInternalPlaybackSession(false);
