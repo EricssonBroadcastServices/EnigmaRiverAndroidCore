@@ -145,7 +145,25 @@ import java.util.UUID;
             @Override
             protected void onError(EnigmaError error) {
                 getStartActionResultHandler().onError(error);
-                setStateIfCurrentStartAction(EnigmaPlayerState.IDLE);
+
+                playerImplementationControls.stop(new IPlayerImplementationControlResultHandler() {
+                    @Override
+                    public void onRejected(IControlResultHandler.IRejectReason rejectReason) {
+                    }
+
+                    @Override
+                    public void onCancelled() {
+                    }
+
+                    @Override
+                    public void onError(EnigmaError error) {
+                    }
+
+                    @Override
+                    public void onDone() {
+                        setStateIfCurrentStartAction(EnigmaPlayerState.IDLE);
+                    }
+                });
             }
 
             @Override

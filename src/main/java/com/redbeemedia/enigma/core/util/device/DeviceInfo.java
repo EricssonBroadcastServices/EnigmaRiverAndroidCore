@@ -165,7 +165,7 @@ public class DeviceInfo implements IDeviceInfo {
 
     @Override
     public String getType() {
-        if (isTv) { return "TV"; }
+        if (isTv) { return "SMART_TV"; }
         boolean isTablet = diagonalLargerThanSize(displayMetrics.widthPixels/displayMetrics.xdpi,
                 displayMetrics.heightPixels/displayMetrics.ydpi, TABLET_SIZE_TRESHOLD);
         return isTablet ? "TABLET" : "MOBILE";
