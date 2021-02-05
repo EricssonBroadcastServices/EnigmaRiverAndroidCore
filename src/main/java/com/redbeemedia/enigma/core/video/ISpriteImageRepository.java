@@ -1,6 +1,6 @@
 package com.redbeemedia.enigma.core.video;
 
-import org.jetbrains.annotations.Nullable;
+import androidx.annotation.Nullable;
 
 import java.util.Collection;
 

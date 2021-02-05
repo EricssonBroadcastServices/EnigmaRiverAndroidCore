@@ -2,12 +2,12 @@ package com.redbeemedia.enigma.core.video;
 
 import android.util.Log;
 
+import androidx.annotation.Nullable;
+
 import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.http.IHttpCall;
 import com.redbeemedia.enigma.core.http.IHttpHandler;
 import com.redbeemedia.enigma.core.http.SimpleHttpCall;
-
-import org.jetbrains.annotations.Nullable;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -151,7 +151,10 @@ public abstract class SpriteImageRepository<T> implements ISpriteImageRepository
 
     private void createSprites(SpriteData spriteData) {
         T masterImage = doDecodeImage(compressedImages.get(spriteData.imageUrl));
-        clearCache();
+        if(masterImage == null) {
+            Log.w(TAG, "SpriteImageRepository can't decode image: " + spriteData.imageUrl);
+            return;
+        }
         for(SpriteData sprite : activeSpriteData) {
             if (sprite.imageUrl.equals(spriteData.imageUrl)) {
                 T spriteImage = doGetSprite(masterImage, sprite.frame);

@@ -28,7 +28,7 @@ class SpriteDataVttParser {
 
     private final ITimelinePositionFactory timelinePositionFactory;
     private final Pattern timePattern = Pattern.compile("[\\d]{2}:[\\d]{2}:[\\d]{2}\\.[\\d]{3}");
-    private final Pattern fileNamePattern = Pattern.compile("[\\/A-Za-z0-9]+\\.[A-Za-z0-9]+");
+    private final Pattern imageSourcePattern = Pattern.compile("^.+#");
     private final Pattern framePattern = Pattern.compile("xywh=[0-9]+,[0-9]+,[0-9]+,[0-9]+");
 
     SpriteDataVttParser(ITimelinePositionFactory timelinePositionFactory) {
@@ -67,9 +67,8 @@ class SpriteDataVttParser {
             if (matcher.find()) { endTime = parseTime(matcher.group()); }
 
             line = scanner.nextLine();
-            matcher = fileNamePattern.matcher(line);
-            if (matcher.find()) { url = parseUrl(vttUrl, matcher.group()); }
-
+            matcher = imageSourcePattern.matcher(line);
+            if (matcher.find()) { url = parseUrl(vttUrl, matcher.group().trim().replace("#", "")); }
             matcher = framePattern.matcher(line);
             if (matcher.find()) { frame = parseFrame(matcher.group()); }
 
@@ -116,6 +115,8 @@ class SpriteDataVttParser {
 
     private URL parseUrl(URL vttUrl, String filename) {
         try {
+            try  { return new URL(filename); }
+            catch (Exception ignored) {}
             if (filename.startsWith("/")) {
                 return new URL(vttUrl.getProtocol(), vttUrl.getHost(), vttUrl.getPort(), filename);
             } else {

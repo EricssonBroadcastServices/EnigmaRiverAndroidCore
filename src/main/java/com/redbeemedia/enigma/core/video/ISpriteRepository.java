@@ -1,9 +1,9 @@
 package com.redbeemedia.enigma.core.video;
 
+import androidx.annotation.Nullable;
+
 import com.redbeemedia.enigma.core.player.timeline.ITimelinePosition;
 import com.redbeemedia.enigma.core.session.ISession;
-
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Map;

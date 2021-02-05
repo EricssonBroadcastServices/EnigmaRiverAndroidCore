@@ -3,6 +3,8 @@ package com.redbeemedia.enigma.core.video;
 import android.os.Handler;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
+
 import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.http.AuthenticatedExposureApiCall;
 import com.redbeemedia.enigma.core.http.IHttpHandler;
@@ -10,8 +12,6 @@ import com.redbeemedia.enigma.core.json.StringResponseHandler;
 import com.redbeemedia.enigma.core.player.ITimelinePositionFactory;
 import com.redbeemedia.enigma.core.player.timeline.ITimelinePosition;
 import com.redbeemedia.enigma.core.session.ISession;
-
-import org.jetbrains.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;

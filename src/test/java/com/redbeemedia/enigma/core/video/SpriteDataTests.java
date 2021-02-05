@@ -51,7 +51,7 @@ public class SpriteDataTests {
             "sprites2.jpg#xywh=640,0,160,90\n" +
             "\n" +
             "00:00:50.000 --> 00:01:00.000\n" +
-            "/absolute/sprites3.jpg#xywh=0,90,160,90"+
+            "/absolute/path/to/sprites3.jpg#xywh=0,90,160,90"+
             "\n" +
             "00:01:00.000 --> 00:01:10.000\n" +
             "sprites.jpg#xywh=160,90,160,90\n" +
@@ -100,6 +100,17 @@ public class SpriteDataTests {
             "02:00:10.000 --> 02:00:20.000\n" +
             "sprites2.jpg#xywh=160,0,160,90\n";
 
+    private final String vttString3 = "WEBVTT\n" +
+            "\n" +
+            "01:00:00.000 --> 01:30:00.000\n" +
+            "sprites.jpg#xywh=0,0,160,90\n" +
+            "\n" +
+            "02:00:10.000 --> 02:00:20.000\n" +
+            "https://www.example.com/sprites2.jpg#xywh=160,0,160,90\n" +
+            "\n" +
+            "02:00:10.000 --> 02:00:20.000\n" +
+            "https://www.example.com/sprites2.jpg?query=42&other_query=yes%3D+no#xywh=160,0,160,90\n";
+
     @Test
     public void testVideSpriteVttParser() throws MalformedURLException {
 
@@ -112,7 +123,7 @@ public class SpriteDataTests {
         // Check that the image urls are correct
         Assert.assertEquals(new URL("https://example.com/sprites/sprites.jpg"), sprites.get(0).imageUrl);
         Assert.assertEquals(new URL("https://example.com/sprites/sprites2.jpg"), sprites.get(3).imageUrl);
-        Assert.assertEquals(new URL("https://example.com/absolute/sprites3.jpg"), sprites.get(5).imageUrl);
+        Assert.assertEquals(new URL("https://example.com/absolute/path/to/sprites3.jpg"), sprites.get(5).imageUrl);
 
         // The first 18 sprites are sequential and copied from a "real" response.
         for (int i = 0 ; i < 18; i++) {
@@ -199,7 +210,7 @@ public class SpriteDataTests {
         // Make sure the image URLs are created correctly
         Assert.assertEquals(new URL("https://example.com/sprites/sprites.jpg"), sprites.get(0).imageUrl);
         Assert.assertEquals(new URL("https://example.com/sprites/sprites2.jpg"), sprites.get(3).imageUrl);
-        Assert.assertEquals(new URL("https://example.com/absolute/sprites3.jpg"), sprites.get(5).imageUrl);
+        Assert.assertEquals(new URL("https://example.com/absolute/path/to/sprites3.jpg"), sprites.get(5).imageUrl);
 
         // Retrieve the list with 2 elements
         httpHandler.queueResponseOk(Pattern.compile(".*\\.vtt"), vttString2);  // Will respond with the content of string `vttString2`.
@@ -230,6 +241,14 @@ public class SpriteDataTests {
         SpriteDataMock.waitForSprites(spriteRepo, 1000);
         Assert.assertFalse(spriteRepo.getSprites().isEmpty());
 
+        // Test the parsing of sprites with images that comes as URLs
+        httpHandler.queueResponseOk(Pattern.compile(".*\\.vtt"), vttString3);  // Will respond with the content of string `vttString2`.
+        spriteRepo.activate(s -> Assert.assertEquals(3, s.size()));
+        SpriteDataMock.waitForSprites(spriteRepo, 1000);
+        sprites = new ArrayList<>(spriteRepo.getSprites());
+        Assert.assertEquals(sprites.get(0).imageUrl, new URL("https://example.com/sprites/sprites.jpg"));
+        Assert.assertEquals(sprites.get(1).imageUrl, new URL("https://www.example.com/sprites2.jpg"));
+        Assert.assertEquals(sprites.get(2).imageUrl, new URL("https://www.example.com/sprites2.jpg?query=42&other_query=yes%3D+no"));
     }
 
     @Test
