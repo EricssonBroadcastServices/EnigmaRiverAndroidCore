@@ -345,6 +345,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     }
 
     private void setPlayingFromLive(boolean live) {
+        if(stateMachine.getState() != EnigmaPlayerState.PLAYING) { return; }
         IInternalPlaybackSession playbackSession = OpenContainerUtil.getValueSynchronized(currentPlaybackSession);
         if(playbackSession != null) {
             playbackSession.setPlayingFromLive(live);
@@ -352,6 +353,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     }
 
     private void updatePlayingFromLive() {
+        if(stateMachine.getState() != EnigmaPlayerState.PLAYING) { return; }
         ITimelinePosition timelinePosition = environment.playerImplementationInternals.getCurrentPosition();
         ITimelinePosition endPos = environment.playerImplementationInternals.getCurrentEndBound();
         if(timelinePosition != null && endPos != null) {
@@ -505,6 +507,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
         @Override
         public IDrmInfo getDrmInfo() {
+            if(stateMachine.getState() != EnigmaPlayerState.PLAYING) { return null; }
             IInternalPlaybackSession playbackSession = OpenContainerUtil.getValueSynchronized(currentPlaybackSession);
             if(playbackSession != null) {
                 return playbackSession.getDrmInfo();
@@ -640,7 +643,6 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             environment.playerImplementationControls.stop(controlResultHandler);
             controlResultHandler.runWhenDone(() -> {
                 stateMachine.setState(EnigmaPlayerState.IDLE);
-                setPlayingFromLive(false);
             });
         }
 
@@ -921,6 +923,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
         @Override
         public ITimelinePosition getLivePosition() {
+            if(stateMachine.getState() != EnigmaPlayerState.PLAYING) { return null; }
             IInternalPlaybackSession session = OpenContainerUtil.getValueSynchronized(currentPlaybackSession);
 
             if (session != null && session.getStreamInfo().isLiveStream()) {
@@ -980,8 +983,10 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             if(!hasProgram) {
                 EnigmaPlayerTimeline.this.onExposedTimelineBoundsChanged(streamTimelineStart, streamTimelineEnd);
             }
-            updateTimelineVisibility();
-            updatePlayingFromLive();
+            if(start != null && end != null) {
+                updateTimelineVisibility();
+                updatePlayingFromLive();
+            }
         }
 
         private void updateStreamOffset() {
