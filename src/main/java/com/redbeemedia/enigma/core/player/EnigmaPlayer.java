@@ -507,7 +507,6 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
         @Override
         public IDrmInfo getDrmInfo() {
-            if(stateMachine.getState() != EnigmaPlayerState.PLAYING) { return null; }
             IInternalPlaybackSession playbackSession = OpenContainerUtil.getValueSynchronized(currentPlaybackSession);
             if(playbackSession != null) {
                 return playbackSession.getDrmInfo();
