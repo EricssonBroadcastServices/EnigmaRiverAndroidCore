@@ -346,7 +346,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
     private void setPlayingFromLive(boolean live) {
         if(stateMachine.getState() != EnigmaPlayerState.PLAYING) { return; }
-        IInternalPlaybackSession playbackSession = OpenContainerUtil.getValueSynchronized(currentPlaybackSession);
+        IInternalPlaybackSession playbackSession = currentPlaybackSession.value;
         if(playbackSession != null) {
             playbackSession.setPlayingFromLive(live);
         }
