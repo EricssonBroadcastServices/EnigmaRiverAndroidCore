@@ -28,6 +28,7 @@ import com.redbeemedia.enigma.core.error.ServerTimeoutError;
 import com.redbeemedia.enigma.core.error.UnexpectedError;
 import com.redbeemedia.enigma.core.format.EnigmaMediaFormat;
 import com.redbeemedia.enigma.core.http.AuthenticatedExposureApiCall;
+import com.redbeemedia.enigma.core.http.IHttpConnection;
 import com.redbeemedia.enigma.core.playable.IPlayableHandler;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.player.controls.IControlResultHandler;
@@ -140,7 +141,15 @@ import java.util.UUID;
             getStartActionResultHandler().onError(new InvalidAssetError(assetId, new UnexpectedError(e)));
             return;
         }
-        AuthenticatedExposureApiCall apiCall = new AuthenticatedExposureApiCall("GET", session);
+        String adobeMediaToken = getPrimetimeMediaToken();
+        AuthenticatedExposureApiCall apiCall = new AuthenticatedExposureApiCall("GET", session) {
+            @Override
+            public void prepare(IHttpConnection connection) {
+                if(adobeMediaToken != null) { connection.setHeader(IAdInsertionFactory.IAdobeAdInsertionFactory.HTTP_HEADER_KEY, adobeMediaToken); }
+                super.prepare(connection);
+            }
+        };
+
         EnigmaRiverContext.getHttpHandler().doHttp(url, apiCall, new PlayResponseHandler(assetId) {
             @Override
             protected void onError(EnigmaError error) {
@@ -261,6 +270,14 @@ import java.util.UUID;
             return null;
         }
         return adInsertionFactory.createParameters(playRequest);
+    }
+
+    protected String getPrimetimeMediaToken() {
+        IAdInsertionFactory adInsertionFactory = EnigmaRiverContext.getAdInsertionFactory();
+        if(adInsertionFactory instanceof IAdInsertionFactory.IAdobeAdInsertionFactory) {
+            return ((IAdInsertionFactory.IAdobeAdInsertionFactory) adInsertionFactory).getAdobePrimetimeMediaToken();
+        }
+        return null;
     }
 
     @Override
