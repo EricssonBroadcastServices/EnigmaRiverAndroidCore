@@ -133,3 +133,4 @@ The following tutorials provide in-depth information about different areas of in
 [Overriding media format selection logic](advanced_topics/media_format_preference.md)<br/>
 [Ad Insertion](advanced_topics/ad_insertion.md)<br/>
 [Sprites API](advanced_topics/sprites.md)<br/>
+[Adobe Primetime](advanced_topics/adobe_primetime.md)<br/>

@@ -1,7 +1,10 @@
 package com.redbeemedia.enigma.core.player;
 
+import androidx.annotation.Nullable;
+
 import com.redbeemedia.enigma.core.format.IMediaFormatSelector;
 import com.redbeemedia.enigma.core.playable.IPlayable;
+import com.redbeemedia.enigma.core.playrequest.AdobePrimetime;
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
 import com.redbeemedia.enigma.core.playrequest.IPlayResultHandler;
 import com.redbeemedia.enigma.core.playrequest.IPlaybackProperties;
@@ -70,6 +73,12 @@ import java.util.concurrent.TimeoutException;
         @Override
         public IMediaFormatSelector getMediaFormatSelector() {
             return wrapped.getMediaFormatSelector();
+        }
+
+        @Nullable
+        @Override
+        public AdobePrimetime getAdobePrimetime() {
+            return wrapped.getAdobePrimetime();
         }
     }
 }

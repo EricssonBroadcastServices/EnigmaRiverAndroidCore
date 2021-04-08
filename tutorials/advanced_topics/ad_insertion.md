@@ -56,9 +56,6 @@ initialization.setAdInsertionFactory(new IAdInsertionFactory() {
 EnigmaRiverContext.initialize(this, initialization);
 ```
 
-## Adobe primetime key
-In order to include the _X-Adobe-Primetime-MediaToken_ in the play request, one can override the `IAdInsertionFactory.IAdobeAdInsertionFactory` which implements the `IAdInsertionFactory` but with the additional method `getAdobePrimetimeMediaToken()`. This method will have to be implemented by the SDK consumer and let it return a Base64 encoded Adobe Primetime token.
-
 ## Disclaimer
 Please note that this tutorial will be a subject for change and will be extended once SSAI is fully implemented.
 

@@ -3,6 +3,8 @@ package com.redbeemedia.enigma.core.playrequest;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import androidx.annotation.Nullable;
+
 import com.redbeemedia.enigma.core.format.IMediaFormatSelector;
 import com.redbeemedia.enigma.core.time.Duration;
 
@@ -15,6 +17,8 @@ import java.util.Objects;
 public interface IPlaybackProperties {
     PlayFrom getPlayFrom();
     IMediaFormatSelector getMediaFormatSelector();
+    @Nullable
+    AdobePrimetime getAdobePrimetime();
 
     class PlayFrom implements Parcelable {
         public static final PlayFrom PLAYER_DEFAULT = new PlayFrom(PlayFromPreference.LIVE_EDGE, PlayFromPreference.BEGINNING);
