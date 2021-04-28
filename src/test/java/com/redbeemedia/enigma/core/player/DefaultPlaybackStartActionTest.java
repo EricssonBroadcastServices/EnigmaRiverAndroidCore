@@ -3,6 +3,7 @@ package com.redbeemedia.enigma.core.player;
 import android.os.Parcel;
 
 import com.redbeemedia.enigma.core.analytics.AnalyticsException;
+import com.redbeemedia.enigma.core.analytics.AnalyticsPlayResponseData;
 import com.redbeemedia.enigma.core.analytics.IBufferingAnalyticsHandler;
 import com.redbeemedia.enigma.core.analytics.MockAnalyticsHandler;
 import com.redbeemedia.enigma.core.analytics.MockAnalyticsReporter;
@@ -117,7 +118,7 @@ public class DefaultPlaybackStartActionTest {
                 new SpriteDataMock.MockSpriteRepository()
         ) {
             @Override
-            protected Analytics createAnalytics(ISession session, String playbackSessionId, ITimeProvider timeProvider, ITaskFactory taskFactory) {
+            protected Analytics createAnalytics(ISession session, String playbackSessionId, ITimeProvider timeProvider, ITaskFactory taskFactory, AnalyticsPlayResponseData analyticsPlayResponseData) {
                 return new Analytics(new MockAnalyticsReporter(), new IInternalPlaybackSessionListener() {
                     @Override
                     public void onStart(OnStartArgs args) {
@@ -197,7 +198,7 @@ public class DefaultPlaybackStartActionTest {
                 new SpriteDataMock.MockSpriteRepository()
         ) {
             @Override
-            protected IBufferingAnalyticsHandler newAnalyticsHandler(ISession session, String playbackSessionId, ITimeProvider timeProvider) {
+            protected IBufferingAnalyticsHandler newAnalyticsHandler(ISession session, String playbackSessionId, ITimeProvider timeProvider, AnalyticsPlayResponseData analyticsPlayResponseData) {
                 return new MockAnalyticsHandler() {
                     @Override
                     public void sendData() throws AnalyticsException, InterruptedException {
@@ -207,7 +208,7 @@ public class DefaultPlaybackStartActionTest {
             }
 
             @Override
-            protected Runnable newAnalyticsHandlerRunnable(IBufferingAnalyticsHandler analyticsHandler) {
+            protected Runnable newAnalyticsHandlerRunnable(IBufferingAnalyticsHandler analyticsHandler, long sleepTime) {
                 return new Runnable() {
                     @Override
                     public void run() {
@@ -300,9 +301,9 @@ public class DefaultPlaybackStartActionTest {
             }
 
             @Override
-            protected Analytics createAnalytics(ISession session, String playbackSessionId, ITimeProvider timeProvider, ITaskFactory taskFactory) {
+            protected Analytics createAnalytics(ISession session, String playbackSessionId, ITimeProvider timeProvider, ITaskFactory taskFactory, AnalyticsPlayResponseData analyticsPlayResponseData) {
                 createAnalyticsCalled.count();
-                Analytics analytics = super.createAnalytics(session, playbackSessionId, timeProvider, taskFactory);
+                Analytics analytics = super.createAnalytics(session, playbackSessionId, timeProvider, taskFactory, analyticsPlayResponseData);
                 analyticsListener[0] =  analytics.getInternalPlaybackSessionListener();
                 return analytics;
             }
@@ -407,7 +408,7 @@ public class DefaultPlaybackStartActionTest {
                         spriteRepository
                 ) {
                     @Override
-                    protected Analytics createAnalytics(ISession session, String playbackSessionId, ITimeProvider timeProvider, ITaskFactory taskFactory) {
+                    protected Analytics createAnalytics(ISession session, String playbackSessionId, ITimeProvider timeProvider, ITaskFactory taskFactory, AnalyticsPlayResponseData analyticsPlayResponseData) {
                         return new Analytics(new IgnoringAnalyticsReporter(), new MockInternalPlaybackSessionListener());
                     }
 

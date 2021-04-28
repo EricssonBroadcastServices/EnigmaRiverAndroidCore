@@ -18,6 +18,7 @@ import org.junit.Test;
 
 public class AnalyticsHandlerTest {
 
+    private final AnalyticsPlayResponseData mockAnalyticsResponse = new AnalyticsPlayResponseData(new JSONObject(), "mock");
     @Test
     public void testInit() throws InterruptedException, AnalyticsException, JSONException {
         MockHttpHandler mockHttpHandler = new MockHttpHandler();
@@ -25,7 +26,7 @@ public class AnalyticsHandlerTest {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(mockHttpHandler));
 
         ISession session = new MockSession();
-        AnalyticsHandler analyticsHandler = new AnalyticsHandler(session,"pbs7", new MockTimeProvider(100));
+        AnalyticsHandler analyticsHandler = new AnalyticsHandler(session,"pbs7", new MockTimeProvider(100), mockAnalyticsResponse);
         analyticsHandler.init();
 
         Assert.assertEquals(1, mockHttpHandler.getLog().size());
@@ -46,7 +47,7 @@ public class AnalyticsHandlerTest {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(mockHttpHandler));
 
         MockTimeProvider timeProvider = new MockTimeProvider(0);
-        AnalyticsHandler analyticsHandler = new AnalyticsHandler(new MockSession(),"pbs1", timeProvider);
+        AnalyticsHandler analyticsHandler = new AnalyticsHandler(new MockSession(),"pbs1", timeProvider, mockAnalyticsResponse);
         analyticsHandler.onAnalytics(newEvent("Test1"));
         timeProvider.addTime(100);
         analyticsHandler.onAnalytics(newEvent("Test2"));
@@ -77,7 +78,7 @@ public class AnalyticsHandlerTest {
         mockHttpHandler.queueResponse(new HttpStatus(200, "OK"));
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(mockHttpHandler));
 
-        AnalyticsHandler analyticsHandler = new AnalyticsHandler(new MockSession(),"pbs1", new MockTimeProvider(0));
+        AnalyticsHandler analyticsHandler = new AnalyticsHandler(new MockSession(),"pbs1", new MockTimeProvider(0), mockAnalyticsResponse);
 
         analyticsHandler.onAnalytics(newEvent("AnalyticsTest1"));
         analyticsHandler.onAnalytics(newEvent("AnalyticsTest2"));
@@ -109,7 +110,7 @@ public class AnalyticsHandlerTest {
         mockHttpHandler.queueResponse(new HttpStatus(500, "Internal error"));
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(mockHttpHandler));
 
-        AnalyticsHandler analyticsHandler = new AnalyticsHandler(new MockSession(),"pbs1", new MockTimeProvider(0));
+        AnalyticsHandler analyticsHandler = new AnalyticsHandler(new MockSession(),"pbs1", new MockTimeProvider(0), mockAnalyticsResponse);
 
         analyticsHandler.onAnalytics(newEvent("Test"));
 

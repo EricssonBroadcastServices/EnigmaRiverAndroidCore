@@ -17,8 +17,12 @@ import java.util.Objects;
 public interface IPlaybackProperties {
     PlayFrom getPlayFrom();
     IMediaFormatSelector getMediaFormatSelector();
+
     @Nullable
     AdobePrimetime getAdobePrimetime();
+
+    /** If true, analytics events will be sent during playback. */
+    boolean enableAnalytics();
 
     class PlayFrom implements Parcelable {
         public static final PlayFrom PLAYER_DEFAULT = new PlayFrom(PlayFromPreference.LIVE_EDGE, PlayFromPreference.BEGINNING);

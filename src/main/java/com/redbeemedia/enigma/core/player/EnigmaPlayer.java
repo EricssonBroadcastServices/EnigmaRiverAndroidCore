@@ -329,9 +329,11 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
     private void replacePlaybackSession(IInternalPlaybackSession playbackSession) {
         isReplacingPlaybackSession = true;
+        IInternalPlaybackSession oldSession = null;
         try {
+
             synchronized (currentPlaybackSession) {
-                IInternalPlaybackSession oldSession = this.currentPlaybackSession.value;
+                oldSession = this.currentPlaybackSession.value;
                 if(this.currentPlaybackSession.value != null) {
                     this.currentPlaybackSession.value.onStop(this);
                     this.currentPlaybackSession.value.getPlayerConnection().severConnection();
@@ -339,7 +341,6 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                 this.currentPlaybackSession.value = playbackSession;
                 playbackSessionContainerCollector.onPlaybackSessionChanged(oldSession, playbackSession);
 
-                enigmaPlayerListeners.onPlaybackSessionChanged(oldSession, playbackSession);
                 if(this.currentPlaybackSession.value != null) {
                     this.currentPlaybackSession.value.getPlayerConnection().openConnection(communicationsChannel);
                     this.currentPlaybackSession.value.onStart(this);
@@ -347,6 +348,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             }
         } finally {
             isReplacingPlaybackSession = false;
+            enigmaPlayerListeners.onPlaybackSessionChanged(oldSession, playbackSession);
         }
     }
 

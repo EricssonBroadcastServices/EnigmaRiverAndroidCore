@@ -80,5 +80,8 @@ import java.util.concurrent.TimeoutException;
         public AdobePrimetime getAdobePrimetime() {
             return wrapped.getAdobePrimetime();
         }
+
+        @Override
+        public boolean enableAnalytics() { return wrapped.enableAnalytics(); }
     }
 }

@@ -30,23 +30,45 @@ public class AnalyticsHandler implements IBufferingAnalyticsHandler {
     private static final String PAYLOAD = "Payload";
     private static final String CLOCK_OFFSET = "ClockOffset";
 
+    private static final String SEQUENCE_NUMBER = "SequenceNumber";
+    private static final String SEQUENCE_INTERVAL = "AnalyticsPostInterval";
+    private static final String PROVIDER = "CDNVendor";
+    private static final String ANALYTICS_TAG = "AnalyticsTag";
+    private static final String STREAMING_TECHNOLOGY = "StreamingTechnology";
+    private static final String BUCKET = "AnalyticsBucket";
+
     private final ISession session;
     private final String playbackSessionId;
     private final ITimeProvider timeProvider;
     private volatile Long clockOffset = null;
+    private long sequenceNumber = 0;
+    private AnalyticsPlayResponseData analyticsPlayResponseData;
 
     private final Object eventsLock = new Object();
     private JSONArray events = new JSONArray();
 
-    public AnalyticsHandler(ISession session, String playbackSessionId, ITimeProvider timeProvider) {
+    public AnalyticsHandler(ISession session, String playbackSessionId, ITimeProvider timeProvider, AnalyticsPlayResponseData analyticsPlayResponseData) {
         this.session = session;
         this.playbackSessionId = playbackSessionId;
         this.timeProvider = timeProvider;
+        this.analyticsPlayResponseData = analyticsPlayResponseData;
     }
 
     @Override
     public void onAnalytics(JSONObject jsonObject) {
         synchronized (eventsLock) {
+            if(analyticsPlayResponseData.initialized) {
+                try {
+                    jsonObject.put(SEQUENCE_NUMBER, sequenceNumber++);
+                    jsonObject.put(SEQUENCE_INTERVAL, analyticsPlayResponseData.postIntervalSeconds);
+                    jsonObject.put(PROVIDER, analyticsPlayResponseData.provider);
+                    jsonObject.put(ANALYTICS_TAG, analyticsPlayResponseData.tag);
+                    jsonObject.put(STREAMING_TECHNOLOGY, analyticsPlayResponseData.streamingTechnology);
+                    jsonObject.put(BUCKET, analyticsPlayResponseData.bucket);
+                } catch (JSONException ex) {
+                    ex.printStackTrace();;
+                }
+            }
             events.put(jsonObject);
         }
     }
@@ -109,6 +131,7 @@ public class AnalyticsHandler implements IBufferingAnalyticsHandler {
                 envelope.put(SESSION_ID, playbackSessionId);
                 envelope.put(DISPATCH_TIME, timeProvider.getTime());
                 envelope.put(PAYLOAD, currentEvents);
+
                 if(clockOffset != null) {
                     envelope.put(CLOCK_OFFSET, clockOffset.longValue());
                 }
@@ -122,6 +145,7 @@ public class AnalyticsHandler implements IBufferingAnalyticsHandler {
             if(Thread.interrupted()) {
                 throw new InterruptedException();
             }
+
             assertOK(response);
         } catch (AnalyticsException e) {
             retryEvents(currentEvents, e);

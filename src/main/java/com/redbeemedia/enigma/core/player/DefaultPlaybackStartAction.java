@@ -5,9 +5,11 @@ import android.util.Log;
 import com.redbeemedia.enigma.core.BuildConfig;
 import com.redbeemedia.enigma.core.analytics.AnalyticsException;
 import com.redbeemedia.enigma.core.analytics.AnalyticsHandler;
+import com.redbeemedia.enigma.core.analytics.AnalyticsPlayResponseData;
 import com.redbeemedia.enigma.core.analytics.AnalyticsReporter;
 import com.redbeemedia.enigma.core.analytics.IAnalyticsReporter;
 import com.redbeemedia.enigma.core.analytics.IBufferingAnalyticsHandler;
+import com.redbeemedia.enigma.core.analytics.SilentAnalyticsReporter;
 import com.redbeemedia.enigma.core.businessunit.IBusinessUnit;
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.drm.DrmInfoFactory;
@@ -186,11 +188,14 @@ import java.util.UUID;
                 if (usableMediaFormat != null) {
                     JSONObject drms = usableMediaFormat.optJSONObject("drm");
                     final IDrmInfo[] drmInfo = new IDrmInfo[]{null};
-                    if ("DASH".equals(usableMediaFormat.optString("format")) && drms != null) {
+                    final String streamingTechnology = usableMediaFormat.optString("format");
+                    if ("DASH".equals(streamingTechnology) && drms != null) {
                         JSONObject drmTypeInfo = drms.optJSONObject(EnigmaMediaFormat.DrmTechnology.WIDEVINE.getKey());
                         String licenseUrl = drmTypeInfo.getString("licenseServerUrl");
                         drmInfo[0] = DrmInfoFactory.createWidevineDrmInfo(licenseUrl, playToken, requestId);
                     }
+
+                    final AnalyticsPlayResponseData analyticsInformation = new AnalyticsPlayResponseData(jsonObject, streamingTechnology);
                     String manifestUrl = usableMediaFormat.getString("mediaLocator");
 
                     final Duration liveDelay = usableMediaFormat.has("liveDelay") ? Duration.millis(usableMediaFormat.getLong("liveDelay")) : null;
@@ -207,7 +212,10 @@ import java.util.UUID;
                         @Override
                         protected void execute(IStreamPrograms streamPrograms) {
 
-                            Analytics analytics = createAnalytics(session, playbackSessionId, timeProvider, taskFactoryProvider.getTaskFactory());
+                            Analytics analytics = playRequest.getPlaybackProperties().enableAnalytics() ?
+                                    createAnalytics(session, playbackSessionId, timeProvider, taskFactoryProvider.getTaskFactory(), analyticsInformation) :
+                                    Analytics.silentAnalitycs();
+
 
                             IInternalPlaybackSession playbackSession = newPlaybackSession(new InternalPlaybackSession.ConstructorArgs(streamInfo, streamPrograms, playbackSessionInfo, contractRestrictions, drmInfo[0], analytics.analyticsReporter, spriteRepository));
                             playbackSession.addInternalListener(analytics.internalPlaybackSessionListener);
@@ -365,10 +373,10 @@ import java.util.UUID;
         getStartActionResultHandler().onError(error);
     }
 
-    protected Analytics createAnalytics(ISession session, String playbackSessionId, ITimeProvider timeProvider, ITaskFactory taskFactory) {
-        final IBufferingAnalyticsHandler analyticsHandler = newAnalyticsHandler(session, playbackSessionId, timeProvider);
+    protected Analytics createAnalytics(ISession session, String playbackSessionId, ITimeProvider timeProvider, ITaskFactory taskFactory, AnalyticsPlayResponseData analyticsInformation) {
+        final IBufferingAnalyticsHandler analyticsHandler = newAnalyticsHandler(session, playbackSessionId, timeProvider, analyticsInformation);
 
-        final ITask analyticsHandlerTask = taskFactory.newTask(newAnalyticsHandlerRunnable(analyticsHandler));
+        final ITask analyticsHandlerTask = taskFactory.newTask(newAnalyticsHandlerRunnable(analyticsHandler, analyticsInformation.postIntervalSeconds * 1000));
 
         return new Analytics(newAnalyticsReporter(timeProvider, analyticsHandler), new IInternalPlaybackSessionListener() {
             @Override
@@ -403,9 +411,8 @@ import java.util.UUID;
         });
     }
 
-    protected Runnable newAnalyticsHandlerRunnable(IBufferingAnalyticsHandler analyticsHandler) {
+    protected Runnable newAnalyticsHandlerRunnable(IBufferingAnalyticsHandler analyticsHandler, long updateFrequency) {
         return new Runnable() {
-            private static final int CYCLE_SLEEP_MILLIS = 1000;
             @Override
             public void run() {
                 boolean initialized = false;
@@ -424,10 +431,10 @@ import java.util.UUID;
                     try {
                         try {
                             analyticsHandler.sendData();
-                            Thread.sleep(CYCLE_SLEEP_MILLIS);
+                            Thread.sleep(updateFrequency);
                         } catch (AnalyticsException e) {
                             handleException(e);
-                            Thread.sleep(CYCLE_SLEEP_MILLIS);
+                            Thread.sleep(updateFrequency);
                         }
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
@@ -445,8 +452,8 @@ import java.util.UUID;
         };
     }
 
-    protected IBufferingAnalyticsHandler newAnalyticsHandler(ISession session, String playbackSessionId, ITimeProvider timeProvider) {
-        return new AnalyticsHandler(session, playbackSessionId, timeProvider);
+    protected IBufferingAnalyticsHandler newAnalyticsHandler(ISession session, String playbackSessionId, ITimeProvider timeProvider, AnalyticsPlayResponseData analyticsPlayResponseData) {
+        return new AnalyticsHandler(session, playbackSessionId, timeProvider, analyticsPlayResponseData);
     }
 
     protected IAnalyticsReporter newAnalyticsReporter(ITimeProvider timeProvider, IBufferingAnalyticsHandler analyticsHandler) {
@@ -529,6 +536,15 @@ import java.util.UUID;
 
         public IInternalPlaybackSessionListener getInternalPlaybackSessionListener() {
             return internalPlaybackSessionListener;
+        }
+
+        /** Returns an analytics reporter that does not send any data. */
+        static Analytics silentAnalitycs() {
+            return new Analytics(
+                    new SilentAnalyticsReporter(), new IInternalPlaybackSessionListener() {
+                public void onStart(OnStartArgs args) { }
+                public void onStop(OnStopArgs args) {}
+            });
         }
     }
 }

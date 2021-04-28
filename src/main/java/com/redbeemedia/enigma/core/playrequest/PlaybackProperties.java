@@ -11,6 +11,7 @@ public final class PlaybackProperties implements IPlaybackProperties {
     private PlayFrom playFrom;
     private IMediaFormatSelector mediaFormatSelector = null;
     private AdobePrimetime primetimeToken;
+    private boolean analyticsEnabled = true;
 
     public PlaybackProperties() {
         this.playFrom = PlayFrom.PLAYER_DEFAULT;
@@ -40,6 +41,11 @@ public final class PlaybackProperties implements IPlaybackProperties {
         return primetimeToken;
     }
 
+    @Override
+    public boolean enableAnalytics() {
+        return analyticsEnabled;
+    }
+
     public PlaybackProperties setMediaFormatSelector(IMediaFormatSelector mediaFormatSelector) {
         this.mediaFormatSelector = mediaFormatSelector;
         return this;
@@ -47,6 +53,11 @@ public final class PlaybackProperties implements IPlaybackProperties {
 
     public PlaybackProperties setAdobePrimetime(@Nullable AdobePrimetime primetimeToken) {
         this.primetimeToken = primetimeToken;
+        return this;
+    }
+
+    public PlaybackProperties setAnalyticsEnabled(boolean enabled) {
+        this.analyticsEnabled = enabled;
         return this;
     }
 

@@ -1,5 +1,6 @@
 package com.redbeemedia.enigma.core.player;
 
+import com.redbeemedia.enigma.core.analytics.AnalyticsPlayResponseData;
 import com.redbeemedia.enigma.core.analytics.MockAnalyticsReporter;
 import com.redbeemedia.enigma.core.audio.IAudioTrack;
 import com.redbeemedia.enigma.core.audio.MockAudioTrack;
@@ -1711,7 +1712,7 @@ public class EnigmaPlayerTest {
         protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler, ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection, ISpriteRepository videoSpriteRepository) {
             return new DefaultPlaybackStartAction(session, businessUnit, timeProvider, playRequest, callbackHandler, taskFactoryProvider, playerImplementationControls, playerConnection, videoSpriteRepository) {
                 @Override
-                protected Analytics createAnalytics(ISession session, String playbackSessionId, ITimeProvider timeProvider, ITaskFactory taskFactory) {
+                protected Analytics createAnalytics(ISession session, String playbackSessionId, ITimeProvider timeProvider, ITaskFactory taskFactory, AnalyticsPlayResponseData analyticsPlayResponseData) {
                     return new Analytics(new MockAnalyticsReporter(), new MockInternalPlaybackSessionListener());
                 }
             };
