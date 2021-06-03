@@ -3,17 +3,18 @@ package com.redbeemedia.enigma.core.login;
 import com.redbeemedia.enigma.core.businessunit.BusinessUnit;
 import com.redbeemedia.enigma.core.error.DeviceLimitReachedError;
 import com.redbeemedia.enigma.core.error.EmptyResponseError;
-import com.redbeemedia.enigma.core.http.ExposureHttpError;
 import com.redbeemedia.enigma.core.error.HttpResourceNotFoundError;
 import com.redbeemedia.enigma.core.error.InvalidCredentialsError;
 import com.redbeemedia.enigma.core.error.InvalidJsonToServerError;
 import com.redbeemedia.enigma.core.error.InvalidSessionTokenError;
 import com.redbeemedia.enigma.core.error.JsonResponseError;
+import com.redbeemedia.enigma.core.error.MigratedUserError;
 import com.redbeemedia.enigma.core.error.SessionLimitExceededError;
 import com.redbeemedia.enigma.core.error.UnexpectedError;
 import com.redbeemedia.enigma.core.error.UnexpectedHttpStatusError;
 import com.redbeemedia.enigma.core.error.UnknownBusinessUnitError;
 import com.redbeemedia.enigma.core.error.UnknownDeviceIdError;
+import com.redbeemedia.enigma.core.http.ExposureHttpError;
 import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.http.IHttpHandler;
 import com.redbeemedia.enigma.core.json.JsonInputStreamParser;
@@ -69,6 +70,8 @@ import javax.net.ssl.HttpsURLConnection;
                         resultHandler.onError(new InvalidSessionTokenError());
                     } else if (httpError.getMessage().equals("INCORRECT_CREDENTIALS")) {
                         resultHandler.onError(new InvalidCredentialsError());
+                    } else if (httpError.getMessage().equals("MIGRATED_USER")) {
+                        resultHandler.onError(new MigratedUserError());
                     } else {
                         resultHandler.onError(new UnexpectedHttpStatusError(new HttpStatus(httpError.getHttpCode(), httpError.getMessage())));
                     }

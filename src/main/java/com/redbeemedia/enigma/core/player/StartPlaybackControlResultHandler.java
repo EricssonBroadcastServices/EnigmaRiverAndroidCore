@@ -13,6 +13,7 @@ import org.json.JSONObject;
 /*package-protected*/ abstract class StartPlaybackControlResultHandler extends BasePlayerImplementationControlResultHandler {
     private static final String LAST_VIEWED_OFFSET = "lastViewedOffset";
     private static final String LIVE_TIME = "liveTime";
+    private static final long BOOKMARK_OFFSET_DELIMITER_MS = 10000;
 
     private final IPlayResultHandler playResultHandler;
     private final JSONObject jsonObject;
@@ -66,6 +67,11 @@ import org.json.JSONObject;
                         if (streamInfo.hasStaticManifest()) {
                             if(bookmarks.has(LAST_VIEWED_OFFSET)) {
                                 long lastViewedOffsetMs = bookmarks.optLong(LAST_VIEWED_OFFSET);
+                                long duration = jsonObject.optLong("durationInMs") / 1000;
+                                if (duration - lastViewedOffsetMs < BOOKMARK_OFFSET_DELIMITER_MS) {
+                                    playerImplementationControls.seekTo(IPlayerImplementationControls.ISeekPosition.TIMELINE_START, new SeekToControlResultHandler());
+                                    return true;
+                                }
                                 IPlayerImplementationControls.TimelineRelativePosition seekPosition = new IPlayerImplementationControls.TimelineRelativePosition(lastViewedOffsetMs);
                                 playerImplementationControls.seekTo(seekPosition, new SeekToControlResultHandler());
                                 applicable = true;

@@ -111,7 +111,11 @@ public class AndroidThreadUtil {
                 if(timeoutMillis > 0 && nowMillis - startMillis > timeoutMillis) {
                     TimeoutException timeoutException =  new TimeoutException();
                     try {
-                        boundThread.interrupt();
+                        if(boundThread != null) {
+                            boundThread.interrupt();
+                        } else {
+                            throw new InterruptedException();
+                        }
                     } catch (Exception e) {
                         timeoutException.addSuppressed(e);
                     }

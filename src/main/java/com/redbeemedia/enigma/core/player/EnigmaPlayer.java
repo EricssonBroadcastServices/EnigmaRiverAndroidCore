@@ -95,7 +95,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     private IHandler callbackHandler = null;
     private ISpriteRepository spriteRepository;
     private boolean isReplacingPlaybackSession = false;
-    
+
     private EnigmaPlayerCollector enigmaPlayerListeners = new EnigmaPlayerCollector();
 
     private final InternalEnigmaPlayerCommunicationsChannel communicationsChannel = new InternalEnigmaPlayerCommunicationsChannel();
@@ -237,6 +237,8 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             return;
         }
 
+        released = true;
+
         RuntimeExceptionHandler exceptionHandler = new RuntimeExceptionHandler();
         exceptionHandler.catchExceptions(() -> {
             replacePlaybackSession(null);
@@ -244,7 +246,6 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         exceptionHandler.catchExceptions(() -> playerImplementation.release());
         exceptionHandler.catchExceptions(() -> lifecycle.fireOnStop(null));
         exceptionHandler.catchExceptions(() -> spriteRepository.clear());
-        released = true;
 
         exceptionHandler.rethrowIfAnyExceptions();
     }
@@ -339,7 +340,9 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                     this.currentPlaybackSession.value.getPlayerConnection().severConnection();
                 }
                 this.currentPlaybackSession.value = playbackSession;
-                playbackSessionContainerCollector.onPlaybackSessionChanged(oldSession, playbackSession);
+                if(!released) {
+                    playbackSessionContainerCollector.onPlaybackSessionChanged(oldSession, playbackSession);
+                }
 
                 if(this.currentPlaybackSession.value != null) {
                     this.currentPlaybackSession.value.getPlayerConnection().openConnection(communicationsChannel);
@@ -348,7 +351,10 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             }
         } finally {
             isReplacingPlaybackSession = false;
-            enigmaPlayerListeners.onPlaybackSessionChanged(oldSession, playbackSession);
+            if(!released) {
+                enigmaPlayerListeners.onPlaybackSessionChanged(oldSession, playbackSession);
+            }
+
         }
     }
 
@@ -1047,6 +1053,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
         @Override
         public Duration getCurrentPlaybackOffset() {
+            if(released) { return Duration.millis(0); }
             ITimelinePosition currentPosition = environment.playerImplementationInternals.getCurrentPosition();
             ITimelinePosition startBound = environment.playerImplementationInternals.getCurrentStartBound();
             if(startBound == null) {

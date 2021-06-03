@@ -1,10 +1,14 @@
 package com.redbeemedia.enigma.core.login;
 
+import com.redbeemedia.enigma.core.businessunit.IBusinessUnit;
+import com.redbeemedia.enigma.core.util.UrlPath;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
 
 public class UserLoginRequest extends AbstractLoginRequest implements ILoginRequest {
@@ -17,6 +21,10 @@ public class UserLoginRequest extends AbstractLoginRequest implements ILoginRequ
         this.password = password;
     }
 
+    @Override
+    public UrlPath getTargetUrl(IBusinessUnit businessUnit) throws MalformedURLException {
+        return getTargetUrl(businessUnit.getApiBaseUrl("v3"));
+    }
 
     @Override
     public void writeBodyTo(OutputStream outputStream) throws IOException {
