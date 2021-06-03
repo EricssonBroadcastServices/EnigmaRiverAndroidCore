@@ -175,7 +175,7 @@ downloadStartRequest.setMediaFormatSelector(new IMediaFormatSelector() {
         // ... select media format ... //
     }
 });
-enigmaDownload.startAssetDownload(downloadStartRequest, resultHandler);
+enigmaDownload.startAssetDownload(context downloadStartRequest, resultHandler);
 ```
 
 

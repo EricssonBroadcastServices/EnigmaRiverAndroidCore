@@ -47,7 +47,7 @@ public class ErrorCode {
     public static final int ASSET_NOT_PUBLISHED = 45;
     public static final int DRM_KEYS_EXPIRED = 46;
     public static final int MAX_DOWNLOAD_COUNT_LIMIT_REACHED = 47;
-    public static final int MIGRATED_USER = 47;
+    public static final int MIGRATED_USER = 48;
 
 
     private ErrorCode() {}

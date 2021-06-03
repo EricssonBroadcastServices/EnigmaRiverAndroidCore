@@ -47,7 +47,7 @@ public class EnigmaLoginTest {
         Assert.assertEquals(1,mockHandlerLog.size());
         JSONObject logEntry = new JSONObject(mockHandlerLog.get(0));
         Assert.assertEquals("POST", logEntry.getString("method"));
-        Assert.assertEquals("https://example.com:8081/v1/customer/dev/businessunit/enigma/auth/login", logEntry.getString("url"));
+        Assert.assertEquals("https://example.com:8081/v3/customer/dev/businessunit/enigma/auth/login", logEntry.getString("url"));
 
         JSONObject headers = logEntry.getJSONObject("headers");
         Assert.assertEquals(2,headers.length());
