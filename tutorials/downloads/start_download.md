@@ -36,7 +36,7 @@ To start an asset download, simply create a `DownloadStartRequest` and call `IEn
 ...
 IEnigmaDownload enigmaDownload = new EnigmaDownload(businessUnit);
 DownloadStartRequest downloadStartRequest = new DownloadStartRequest(assetId, session);
-enigmaDownload.startAssetDownload(context, downloadStartRequest, new BaseDownloadStartResultHandler() {
+enigmaDownload.startAssetDownload(downloadStartRequest, new BaseDownloadStartResultHandler() {
     @Override
     public void onStarted() {
         // Download was successfully started
@@ -84,7 +84,7 @@ enigmaDownload.getDownloadableInfo(assetID, session, new BaseResultHandler<IDown
 
         DownloadStartRequest downloadStartRequest = new DownloadStartRequest(assetID, session);
         downloadStartRequest.setVideo(videoDownloadable);
-        enigmaDownload.startAssetDownload(context, downloadStartRequest, new BaseDownloadStartResultHandler() {
+        enigmaDownload.startAssetDownload(downloadStartRequest, new BaseDownloadStartResultHandler() {
             @Override
             public void onStarted() {
                 // ... download started! ... //
