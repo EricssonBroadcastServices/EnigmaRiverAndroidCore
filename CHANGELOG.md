@@ -1,5 +1,6 @@
 # CHANGELOG
 
+* `3.2.1` Release - [3.2.1](#3.2.1) &nbsp; - &nbsp; 2021-06-15
 * `3.2.0` Release - [3.2.0](#3.2.0) &nbsp; - &nbsp; 2021-06-04
 * `3.1.14` Release - [3.1.14](#3.1.14) &nbsp; - &nbsp; 2021-04-28
 * `3.1.13` Release - [3.1.13](#3.1.13) &nbsp; - &nbsp; 2021-04-08
@@ -10,6 +11,12 @@
 * `3.1.8` Release - [3.1.8](#3.1.8) &nbsp; - &nbsp; 2020-12-11
 * `3.1.7` Release - [3.1.7](#3.1.7) &nbsp; - &nbsp; 2020-12-04
 * `3.1.6` Release - [3.1.6](#3.1.6) &nbsp; - &nbsp; 2020-11-13
+
+# <a name="3.2.1"></a> 3.2.1
+#### Features
+`EricssonBroadcastServices/DevEnigmaRiverAndroidCore`
+* EMP-16122: Configure custom Analytics url
+* EMP-16335: Upgrade exoplayer to 2.14.0
 
 # <a name="3.2.0"></a> 3.2.0
 #### Features

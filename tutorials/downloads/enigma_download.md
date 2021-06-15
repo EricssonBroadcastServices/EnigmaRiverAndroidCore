@@ -13,8 +13,8 @@ public interface IEnigmaDownload {
     void getDownloadableInfo(String assetId, ISession session, IResultHandler<IDownloadableInfo> resultHandler);
     void getDownloadableInfo(String assetId, ISession session, IResultHandler<IDownloadableInfo> resultHandler, Handler handler);
 
-    void startAssetDownload(DownloadStartRequest request, IDownloadStartResultHandler resultHandler);
-    void startAssetDownload(DownloadStartRequest request, IDownloadStartResultHandler resultHandler, Handler handler);
+    void startAssetDownload(context, DownloadStartRequest request, IDownloadStartResultHandler resultHandler);
+    void startAssetDownload(context, DownloadStartRequest request, IDownloadStartResultHandler resultHandler, Handler handler);
 
     void getDownloadedAssets(IResultHandler<List<DownloadedPlayable>> resultHandler);
     void getDownloadedAssets(IResultHandler<List<DownloadedPlayable>> resultHandler, Handler handler);

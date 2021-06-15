@@ -12,7 +12,6 @@ import com.redbeemedia.enigma.core.http.IHttpHandler;
 import com.redbeemedia.enigma.core.network.IDefaultNetworkMonitor;
 import com.redbeemedia.enigma.core.network.INetworkMonitor;
 import com.redbeemedia.enigma.core.playrequest.IAdInsertionFactory;
-import com.redbeemedia.enigma.core.playrequest.IAdInsertionParameters;
 import com.redbeemedia.enigma.core.task.ITaskFactory;
 import com.redbeemedia.enigma.core.task.ITaskFactoryProvider;
 import com.redbeemedia.enigma.core.util.UrlPath;
@@ -53,6 +52,11 @@ public final class EnigmaRiverContext {
      */
     /*package-protected*/ static synchronized void resetInitialization(EnigmaRiverContextInitialization initialization) {
         initializedContext = new EnigmaRiverInitializedContext(null, initialization);
+    }
+
+    public static UrlPath getAnalyticsUrl() {
+        assertInitialized();
+        return initializedContext.analyticsUrl;
     }
 
     public static UrlPath getExposureBaseUrl() {
@@ -107,7 +111,7 @@ public final class EnigmaRiverContext {
 
     //Version if the core library
     public static String getVersion() {
-        String version = "r3.2.0-DOCUMENTATION-UPDATES";
+        String version = "r3.2.1-BETA-1";
         if(version.contains("REPLACE_WITH_RELEASE_VERSION")) {
             return "dev-snapshot-"+BuildConfig.VERSION_NAME;
         } else {
@@ -124,6 +128,7 @@ public final class EnigmaRiverContext {
     public static class EnigmaRiverContextInitialization {
         private IHttpHandler httpHandler = null;
         private String exposureBaseUrl = null;
+        private String analyticsUrl = null;
         private IDeviceInfo deviceInfo = null;
         private IActivityLifecycleManagerFactory activityLifecycleManagerFactory = new DefaultActivityLifecycleManagerFactory();
         private ITaskFactoryProvider taskFactoryProvider = new DefaultTaskFactoryProvider(new DefaultTaskFactory());
@@ -239,10 +244,20 @@ public final class EnigmaRiverContext {
             }
             return moduleInitialization;
         }
+
+        public String getAnalyticsUrl() {
+            return analyticsUrl;
+        }
+
+        public EnigmaRiverContextInitialization setAnalyticsUrl(String analyticsUrl) {
+            this.analyticsUrl = analyticsUrl;
+            return this;
+        }
     }
 
     private static class EnigmaRiverInitializedContext {
         private final UrlPath exposureBaseUrl;
+        private final UrlPath analyticsUrl;
         private final IHttpHandler httpHandler;
         private final IDeviceInfo deviceInfo;
         private final IActivityLifecycleManager activityLifecycleManager;
@@ -258,6 +273,8 @@ public final class EnigmaRiverContext {
                     throw new IllegalStateException("No exposure base url supplied.");
                 }
                 this.exposureBaseUrl = new UrlPath(baseUrl);
+                String analyticsUrl = initialization.getAnalyticsUrl();
+                this.analyticsUrl = analyticsUrl != null ? new UrlPath(analyticsUrl) : null;
                 this.httpHandler = initialization.getHttpHandler();
                 this.deviceInfo = initialization.getDeviceInfo(application);
                 this.activityLifecycleManager = initialization.getActivityLifecycleManager(application);

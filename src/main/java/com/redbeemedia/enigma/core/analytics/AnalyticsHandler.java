@@ -2,12 +2,13 @@ package com.redbeemedia.enigma.core.analytics;
 
 import com.redbeemedia.enigma.core.businessunit.IBusinessUnit;
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
-import com.redbeemedia.enigma.core.http.ExposureHttpError;
 import com.redbeemedia.enigma.core.http.AuthenticatedExposureApiCall;
+import com.redbeemedia.enigma.core.http.ExposureHttpError;
 import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.http.IHttpHandler;
 import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.time.ITimeProvider;
+import com.redbeemedia.enigma.core.util.UrlPath;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -66,7 +67,7 @@ public class AnalyticsHandler implements IBufferingAnalyticsHandler {
                     jsonObject.put(STREAMING_TECHNOLOGY, analyticsPlayResponseData.streamingTechnology);
                     jsonObject.put(BUCKET, analyticsPlayResponseData.bucket);
                 } catch (JSONException ex) {
-                    ex.printStackTrace();;
+                    ex.printStackTrace();
                 }
             }
             events.put(jsonObject);
@@ -193,17 +194,23 @@ public class AnalyticsHandler implements IBufferingAnalyticsHandler {
         }
     }
 
-    private URL getSendUrl() throws AnalyticsException {
-        try {
-            return EnigmaRiverContext.getExposureBaseUrl().append("eventsink/send").toURL();
-        } catch (MalformedURLException e) {
-            throw new AnalyticsException(e);
-        }
+    protected URL getSendUrl() throws AnalyticsException {
+        return createAnalyticsUr("eventsink/send");
     }
 
-    private URL getInitUrl() throws AnalyticsException {
+    protected URL getInitUrl() throws AnalyticsException {
+        return createAnalyticsUr("eventsink/init");
+    }
+
+    private URL createAnalyticsUr(String uri) throws AnalyticsException {
         try {
-            return EnigmaRiverContext.getExposureBaseUrl().append("eventsink/init").toURL();
+            UrlPath analyticsUrl = EnigmaRiverContext.getAnalyticsUrl();
+            if (analyticsUrl == null) {
+                // return Base url
+                return EnigmaRiverContext.getExposureBaseUrl().append(uri).toURL();
+            } else {
+                return analyticsUrl.append(uri).toURL();
+            }
         } catch (MalformedURLException e) {
             throw new AnalyticsException(e);
         }

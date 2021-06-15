@@ -16,6 +16,11 @@ import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.net.URL;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+
 public class AnalyticsHandlerTest {
 
     private final AnalyticsPlayResponseData mockAnalyticsResponse = new AnalyticsPlayResponseData(new JSONObject(), "mock");
@@ -122,6 +127,49 @@ public class AnalyticsHandlerTest {
         }
         exceptionThrown.assertSet("No exception thrown");
     }
+
+    @Test
+    public void testAnalyticsUrl_IfCustomAnalyticsUrlIsNotSet() throws JSONException, InterruptedException, AnalyticsException {
+        MockHttpHandler mockHttpHandler = new MockHttpHandler();
+        mockHttpHandler.queueResponse(new HttpStatus(500, "Internal error"));
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(mockHttpHandler));
+
+        AnalyticsHandler analyticsHandler = new AnalyticsHandler(new MockSession(),"pbs1", new MockTimeProvider(0), mockAnalyticsResponse);
+        assertThat(analyticsHandler.getSendUrl().toExternalForm(), is("https://mock.unittests.example.com/eventsink/send"));
+    }
+
+    @Test
+    public void testAnalyticsUrl_IfCustomAnalyticsUrlIsSet() throws JSONException, InterruptedException, AnalyticsException {
+        MockHttpHandler mockHttpHandler = new MockHttpHandler();
+        mockHttpHandler.queueResponse(new HttpStatus(500, "Internal error"));
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization()
+                .setHttpHandler(mockHttpHandler)
+                .setAnalyticsUrl("https://customurl.com/"));
+        AnalyticsHandler analyticsHandler = new AnalyticsHandler(new MockSession(),"pbs1", new MockTimeProvider(0), mockAnalyticsResponse);
+        assertThat(analyticsHandler.getSendUrl().toExternalForm(), is("https://customurl.com/eventsink/send"));
+    }
+
+    @Test
+    public void testAnalyticsUrl_IfCustomInitAnalyticsUrlIsNotSet() throws JSONException, InterruptedException, AnalyticsException {
+        MockHttpHandler mockHttpHandler = new MockHttpHandler();
+        mockHttpHandler.queueResponse(new HttpStatus(500, "Internal error"));
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(mockHttpHandler));
+
+        AnalyticsHandler analyticsHandler = new AnalyticsHandler(new MockSession(),"pbs1", new MockTimeProvider(0), mockAnalyticsResponse);
+        assertThat(analyticsHandler.getInitUrl().toExternalForm(), is("https://mock.unittests.example.com/eventsink/init"));
+    }
+
+    @Test
+    public void testAnalyticsUrl_IfCustomInitAnalyticsUrlIsSet() throws JSONException, InterruptedException, AnalyticsException {
+        MockHttpHandler mockHttpHandler = new MockHttpHandler();
+        mockHttpHandler.queueResponse(new HttpStatus(500, "Internal error"));
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization()
+                .setHttpHandler(mockHttpHandler)
+                .setAnalyticsUrl("https://customurl.com/"));
+        AnalyticsHandler analyticsHandler = new AnalyticsHandler(new MockSession(),"pbs1", new MockTimeProvider(0), mockAnalyticsResponse);
+        assertThat(analyticsHandler.getInitUrl().toExternalForm(), is("https://customurl.com/eventsink/init"));
+    }
+
 
     private static void AssertEvent(JSONArray payload, int index, String expected) throws JSONException {
         Assert.assertEquals(expected, payload.getJSONObject(index).getString("EventType"));

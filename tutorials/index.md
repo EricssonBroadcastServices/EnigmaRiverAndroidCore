@@ -126,6 +126,7 @@ The following tutorials provide in-depth information about different areas of in
 
 [Virtual controls](advanced_topics/virtual_controls.md)<br/>
 [Controlling EnigmaPlayer programmatically](advanced_topics/controls.md)<br/>
+[Custom Analytics Url](advanced_topics/custom_analytics_url.md)<br/>
 [Timeline API](advanced_topics/timeline.md)<br/>
 [EnigmaPlayerState](advanced_topics/enigma_player_state.md)<br/>
 [Playback Session](advanced_topics/playback_session.md)<br/>
