@@ -111,7 +111,7 @@ public final class EnigmaRiverContext {
 
     //Version if the core library
     public static String getVersion() {
-        String version = "r3.2.1-BETA-1";
+        String version = "r3.2.1";
         if(version.contains("REPLACE_WITH_RELEASE_VERSION")) {
             return "dev-snapshot-"+BuildConfig.VERSION_NAME;
         } else {
