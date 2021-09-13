@@ -1,9 +1,7 @@
-package com.redbeemedia.enigma.core.playrequest;
+package com.redbeemedia.enigma.core.ads;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Default model of <code>IAdInsertionParameters</code>.

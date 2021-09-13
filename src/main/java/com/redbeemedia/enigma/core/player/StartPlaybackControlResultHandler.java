@@ -1,5 +1,8 @@
 package com.redbeemedia.enigma.core.player;
 
+import com.redbeemedia.enigma.core.ads.AdIncludedTimeline;
+import com.redbeemedia.enigma.core.ads.IAdDetector;
+import com.redbeemedia.enigma.core.ads.IAdIncludedTimeline;
 import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.error.UnexpectedError;
 import com.redbeemedia.enigma.core.player.controls.IControlResultHandler;
@@ -19,12 +22,13 @@ import org.json.JSONObject;
     private final JSONObject jsonObject;
     private final IPlaybackProperties.PlayFrom playFrom;
     private final IPlayerImplementationControls playerImplementationControls;
-
-    public StartPlaybackControlResultHandler(IPlayResultHandler playResultHandler, JSONObject jsonObject, IPlaybackProperties.PlayFrom playFrom, IPlayerImplementationControls playerImplementationControls) {
+    private final IAdDetector adDetector;
+    public StartPlaybackControlResultHandler(IPlayResultHandler playResultHandler, JSONObject jsonObject, IPlaybackProperties.PlayFrom playFrom, IPlayerImplementationControls playerImplementationControls, IAdDetector adDetector) {
         this.playResultHandler = playResultHandler;
         this.jsonObject = jsonObject;
         this.playFrom = playFrom != null ? playFrom : IPlaybackProperties.PlayFrom.PLAYER_DEFAULT;
         this.playerImplementationControls = playerImplementationControls;
+        this.adDetector = adDetector;
     }
 
     @Override
@@ -72,7 +76,13 @@ import org.json.JSONObject;
                                     playerImplementationControls.seekTo(IPlayerImplementationControls.ISeekPosition.TIMELINE_START, new SeekToControlResultHandler());
                                     return true;
                                 }
-                                IPlayerImplementationControls.TimelineRelativePosition seekPosition = new IPlayerImplementationControls.TimelineRelativePosition(lastViewedOffsetMs);
+                                IAdIncludedTimeline timeline = adDetector.getTimeline();
+                                long adsForGivenScrubTime = 0;
+                                if (adDetector.isSsaiEnabled() && timeline instanceof AdIncludedTimeline) {
+                                    AdIncludedTimeline adIncludedTimeline = (AdIncludedTimeline) timeline;
+                                    adsForGivenScrubTime = adIncludedTimeline.getTotalAdDurationFromThisTime(adDetector.convertToTimeline(lastViewedOffsetMs));
+                                }
+                                IPlayerImplementationControls.TimelineRelativePosition seekPosition = new IPlayerImplementationControls.TimelineRelativePosition(lastViewedOffsetMs + adsForGivenScrubTime);
                                 playerImplementationControls.seekTo(seekPosition, new SeekToControlResultHandler());
                                 applicable = true;
                             } else if(bookmarks.has(LIVE_TIME) && streamInfo.hasStart()) {

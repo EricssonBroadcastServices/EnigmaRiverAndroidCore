@@ -27,13 +27,25 @@ public final class VirtualControls implements IVirtualControls {
     private final IVirtualButton nextProgram;
     private final IVirtualButton previousProgram;
     private final IVirtualButton restart;
+    private final IVirtualButton seekBar;
+
+    /**
+     * Will ensure we have single instance of IVirtualControls
+     *
+     * @param enigmaPlayer
+     * @param settings
+     * @return
+     */
+    public static IVirtualControls create(IEnigmaPlayer enigmaPlayer, IVirtualControlsSettings settings) {
+        return new VirtualControls(enigmaPlayer, settings);
+    }
 
     private VirtualControls(IEnigmaPlayer enigmaPlayer, IVirtualControlsSettings settings) {
         VirtualButtonContainer buttonContainer = new VirtualButtonContainer(enigmaPlayer, settings);
-
         this.rewind = new RewindButton(buttonContainer);
         this.fastForward = new FastForwardButton(buttonContainer);
         this.play = new PlayButton(buttonContainer);
+        this.seekBar = new SeekBar(buttonContainer);
         this.pause = new PauseButton(buttonContainer);
         this.goToLive = new GoToLiveButton(buttonContainer);
         this.nextProgram = new JumpProgramButton(buttonContainer, false);
@@ -79,8 +91,18 @@ public final class VirtualControls implements IVirtualControls {
     }
 
     @Override
+    public IVirtualButton getSeekBar() {
+        return seekBar;
+    }
+
+    @Override
     public IVirtualButton getRestart() {
         return restart;
+    }
+
+    public void setEnabled(IVirtualButton button, boolean newEnabled) {
+        AbstractVirtualButtonImpl abstractVirtualButton = (AbstractVirtualButtonImpl) button;
+        abstractVirtualButton.setEnabled(newEnabled);
     }
 
     private static class VirtualButtonContainer implements IVirtualButtonContainer {
@@ -95,7 +117,7 @@ public final class VirtualControls implements IVirtualControls {
         public VirtualButtonContainer(IEnigmaPlayer enigmaPlayer, IVirtualControlsSettings settings) {
             Objects.requireNonNull(enigmaPlayer, "enigmaPlayer was null");
             Objects.requireNonNull(settings, "settings was null");
-            
+
             this.enigmaPlayer = enigmaPlayer;
             this.settings = settings;
             this.enigmaPlayerState = new OpenContainer<>(enigmaPlayer.getState());
@@ -111,6 +133,7 @@ public final class VirtualControls implements IVirtualControls {
                         refreshButtons();
                     }
                 };
+
                 @Override
                 public void onStateChanged(EnigmaPlayerState from, EnigmaPlayerState to) {
                     OpenContainerUtil.setValueSynchronized(enigmaPlayerState, to, (oldValue, newValue) -> refreshButtons());
@@ -118,10 +141,10 @@ public final class VirtualControls implements IVirtualControls {
 
                 @Override
                 public void onPlaybackSessionChanged(IPlaybackSession from, IPlaybackSession to) {
-                    if(from != null) {
+                    if (from != null) {
                         from.removeListener(playbackSessionListener);
                     }
-                    if(to != null) {
+                    if (to != null) {
                         OpenContainerUtil.setValueSynchronized(contractRestrictions, to.getContractRestrictions(), (oldValue, newValue) -> refreshButtons());
                         to.addListener(playbackSessionListener);
                     }
@@ -131,7 +154,7 @@ public final class VirtualControls implements IVirtualControls {
         }
 
         private void refreshButtons() {
-            for(AbstractVirtualButtonImpl virtualButton : virtualButtons) {
+            for (AbstractVirtualButtonImpl virtualButton : virtualButtons) {
                 virtualButton.refresh();
             }
         }
@@ -170,9 +193,5 @@ public final class VirtualControls implements IVirtualControls {
         public IPlaybackSession getPlaybackSession() {
             return OpenContainerUtil.getValueSynchronized(playbackSession);
         }
-    }
-
-    public static IVirtualControls create(IEnigmaPlayer enigmaPlayer, IVirtualControlsSettings settings) {
-        return new VirtualControls(enigmaPlayer, settings);
     }
 }

@@ -7,6 +7,7 @@ import com.redbeemedia.enigma.core.time.Duration;
 public interface ITimelinePosition {
     String toString(TimelinePositionFormat timelinePositionFormat);
     ITimelinePosition add(Duration duration);
+    long getStart();
     ITimelinePosition subtract(Duration duration);
     Duration subtract(ITimelinePosition other);
     boolean after(ITimelinePosition other);

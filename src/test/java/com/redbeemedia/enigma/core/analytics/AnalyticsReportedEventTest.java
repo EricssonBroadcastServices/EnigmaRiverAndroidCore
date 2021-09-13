@@ -119,6 +119,10 @@ public class AnalyticsReportedEventTest<E extends IAnalyticsEventType> {
             return reporter -> reporter.playbackScrubbedTo(246246L);
         } else if(eventType == AnalyticsEvents.PROGRAM_CHANGED) {
             return reporter -> reporter.playbackProgramChanged(8346L, "MockProgram");
+        } else if(eventType == AnalyticsEvents.AD_STARTED) {
+            return reporter -> reporter.playbackAdStarted(12345L, "started_test_ad");
+        } else if(eventType == AnalyticsEvents.AD_COMPLETED) {
+            return reporter -> reporter.playbackAdCompleted(65536L, "completed_test_ad");
         } else {
             return null;
         }

@@ -1,4 +1,4 @@
-package com.redbeemedia.enigma.core.playrequest;
+package com.redbeemedia.enigma.core.ads;
 
 import java.util.Map;
 

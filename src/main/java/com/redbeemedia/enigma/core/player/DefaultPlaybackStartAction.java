@@ -3,6 +3,9 @@ package com.redbeemedia.enigma.core.player;
 import android.util.Log;
 
 import com.redbeemedia.enigma.core.BuildConfig;
+import com.redbeemedia.enigma.core.ads.ExposureAdMetadata;
+import com.redbeemedia.enigma.core.ads.IAdResourceLoader;
+import com.redbeemedia.enigma.core.ads.IAdDetector;
 import com.redbeemedia.enigma.core.analytics.AnalyticsException;
 import com.redbeemedia.enigma.core.analytics.AnalyticsHandler;
 import com.redbeemedia.enigma.core.analytics.AnalyticsPlayResponseData;
@@ -34,9 +37,9 @@ import com.redbeemedia.enigma.core.http.IHttpConnection;
 import com.redbeemedia.enigma.core.playable.IPlayableHandler;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.player.controls.IControlResultHandler;
+import com.redbeemedia.enigma.core.ads.IAdInsertionFactory;
+import com.redbeemedia.enigma.core.ads.IAdInsertionParameters;
 import com.redbeemedia.enigma.core.playrequest.AdobePrimetime;
-import com.redbeemedia.enigma.core.playrequest.IAdInsertionFactory;
-import com.redbeemedia.enigma.core.playrequest.IAdInsertionParameters;
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
 import com.redbeemedia.enigma.core.playrequest.IPlayResultHandler;
 import com.redbeemedia.enigma.core.restriction.IContractRestrictions;
@@ -73,6 +76,7 @@ import java.util.UUID;
     private final IEnigmaPlayerCallbacks playerConnector;
     private final ITimeProvider timeProvider;
     private final IPlayResultHandler callback;
+    private IAdDetector adDetector;
     private final ISpriteRepository spriteRepository;
 
     public DefaultPlaybackStartAction(ISession defaultSession, IBusinessUnit defaultBusinessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler, ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IEnigmaPlayerCallbacks playerConnector, ISpriteRepository spriteRepository) {
@@ -86,6 +90,10 @@ import java.util.UUID;
         this.playerConnector = playerConnector;
         this.spriteRepository = spriteRepository;
         this.callback = ProxyCallback.useCallbackHandlerIfPresent(callbackHandler, IPlayResultHandler.class, playRequest.getResultHandler());
+    }
+
+    public void setAdDetector(IAdDetector adDetector) {
+        this.adDetector = adDetector;
     }
 
     @Override
@@ -205,6 +213,25 @@ import java.util.UUID;
                     EnigmaContractRestrictions contractRestrictions = EnigmaContractRestrictions.createWithDefaults(jsonObject.optJSONObject("contractRestrictions"));
                     IPlaybackSessionInfo playbackSessionInfo = playerConnector.getPlaybackSessionInfo(manifestUrl);
 
+                    final JSONObject adsInfoJson = jsonObject.optJSONObject("ads");
+                    final ExposureAdMetadata adsInfo = new ExposureAdMetadata(
+                            adsInfoJson,
+                            EnigmaMediaFormat.parseMediaFormat(usableMediaFormat).getStreamFormat(),
+                            streamInfo.isLiveStream());
+
+                    if (streamInfo.ssaiEnabled() && adDetector != null) {
+                        adDetector.setEnabled(true);
+                        adDetector.getTimeline().setIsActive(true);
+                        if(!streamInfo.isLiveStream()) {
+                            IAdResourceLoader adsLoader = adDetector.getFactory().createResourceLoader(adsInfo, adsInfoJson);
+                            if (adsLoader != null) {
+                                adDetector.update(adsLoader, 0);
+                            }
+                        }
+                    } else if (!streamInfo.ssaiEnabled() && adDetector != null) {
+                        adDetector.setEnabled(false);
+                    }
+
                     final Map<Integer, String> spriteUrls = parseSpriteUrls(spritesJson);
                     spriteRepository.setVTTUrls(spriteUrls, session);
 
@@ -217,7 +244,17 @@ import java.util.UUID;
                                     Analytics.silentAnalitycs();
 
 
-                            IInternalPlaybackSession playbackSession = newPlaybackSession(new InternalPlaybackSession.ConstructorArgs(streamInfo, streamPrograms, playbackSessionInfo, contractRestrictions, drmInfo[0], analytics.analyticsReporter, spriteRepository));
+                            IInternalPlaybackSession playbackSession = newPlaybackSession(
+                                    new InternalPlaybackSession.ConstructorArgs(
+                                            streamInfo,
+                                            streamPrograms,
+                                            playbackSessionInfo,
+                                            contractRestrictions,
+                                            drmInfo[0],
+                                            analytics.analyticsReporter,
+                                            spriteRepository,
+                                            adsInfo,
+                                            adDetector));
                             playbackSession.addInternalListener(analytics.internalPlaybackSessionListener);
                             playbackSession.addInternalListener(createProgramService(session, streamInfo, streamPrograms, playbackSessionInfo, newEntitlementProvider(), playbackSession, taskFactoryProvider));
 
@@ -229,7 +266,7 @@ import java.util.UUID;
                             if(liveDelay != null) {
                                 loadRequest.setLiveDelay(liveDelay);
                             }
-                            playerImplementationControls.load(loadRequest, new StartPlaybackControlResultHandler(getStartActionResultHandler(), jsonObject, playRequest.getPlaybackProperties().getPlayFrom(), playerImplementationControls) {
+                            playerImplementationControls.load(loadRequest, new StartPlaybackControlResultHandler(getStartActionResultHandler(), jsonObject, playRequest.getPlaybackProperties().getPlayFrom(), playerImplementationControls, adDetector) {
                                 @Override
                                 protected void onLogDebug(String message) {
                                     Log.d(TAG, message);
@@ -293,7 +330,9 @@ import java.util.UUID;
                     contractRestrictions,
                     null,
                     new IgnoringAnalyticsReporter(),
-                    null
+                    null,
+                    null,
+                    adDetector
             ));
             playerConnector.deliverPlaybackSession(playbackSession);
 
@@ -332,7 +371,9 @@ import java.util.UUID;
                 new EmptyContractRestrictions(),
                 null,
                 new IgnoringAnalyticsReporter(),
-                null
+                null,
+                null,
+                adDetector
         ));
         playerConnector.deliverPlaybackSession(playbackSession);
 

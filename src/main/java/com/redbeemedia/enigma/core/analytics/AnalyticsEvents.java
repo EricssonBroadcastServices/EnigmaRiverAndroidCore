@@ -20,6 +20,8 @@ package com.redbeemedia.enigma.core.analytics;
     public static final AnalyticsBufferingStoppedEvent BUFFERING_STOPPED = new AnalyticsBufferingStoppedEvent();
     public static final AnalyticsScrubbedToEvent SCRUBBED_TO = new AnalyticsScrubbedToEvent();
     public static final AnalyticsProgramChangedEvent PROGRAM_CHANGED = new AnalyticsProgramChangedEvent();
+    public static final AnalyticsAdEvent AD_STARTED = new AnalyticsAdEvent("Playback.AdStarted");
+    public static final AnalyticsAdEvent AD_COMPLETED = new AnalyticsAdEvent("Playback.AdCompleted");
 
     private static <E extends IAnalyticsEventType,T> IEventProperty<E,T> mandatory(String name) {
         return EventProperty.newMandatoryProperty(name);
@@ -212,5 +214,17 @@ package com.redbeemedia.enigma.core.analytics;
         public String getName() {
             return "Playback.ProgramChanged";
         }
+    }
+
+    public static class AnalyticsAdEvent implements IAnalyticsEventType {
+        private final String eventName;
+        AnalyticsAdEvent(String eventName) { this.eventName = eventName; }
+
+        @Override
+        public String getName() {
+            return eventName;
+        }
+        public final IEventProperty<AnalyticsAdEvent, Long> OFFSET_TIME = mandatory("OffsetTime");
+        public final IEventProperty<AnalyticsAdEvent, String> AD_MEDIA_ID = mandatory("AdMediaId");
     }
 }

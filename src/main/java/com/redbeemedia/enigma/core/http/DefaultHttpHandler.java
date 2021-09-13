@@ -132,7 +132,7 @@ public class DefaultHttpHandler implements IHttpHandler {
                     return;
                 }
 
-                //Recieve data
+                //Receive data
                 HttpStatus responseHttpStatus = new HttpStatus(connection.getResponseCode(), connection.getResponseMessage());
 
                 if(Thread.currentThread().isInterrupted()) {
@@ -142,16 +142,22 @@ public class DefaultHttpHandler implements IHttpHandler {
                 if(connection.getDoInput()) {
                     InputStream inputStream = responseHttpStatus.getResponseCode() == 200 ? connection.getInputStream() : connection.getErrorStream();
                     try {
-                        //This needs to be done synchronously since we are closing the inputStream after.
-                        responseHandler.onResponse(responseHttpStatus, inputStream);
+                        if (responseHandler != null) {
+                            //This needs to be done synchronously since we are closing the inputStream after.
+                            responseHandler.onResponse(responseHttpStatus, inputStream);
+                        }
                     } finally {
-                        inputStream.close();
+                        if (inputStream != null) {
+                            inputStream.close();
+                        }
                     }
-                } else {
+                } else if (responseHandler != null) {
                     responseHandler.onResponse(responseHttpStatus);
                 }
             } catch (IOException e) {
-                responseHandler.onException(e);
+                if (responseHandler != null) {
+                    responseHandler.onException(e);
+                }
             } finally {
                 OpenContainerUtil.setValueSynchronized(done, true, null);
             }

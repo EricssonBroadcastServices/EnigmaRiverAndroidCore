@@ -2,6 +2,12 @@ package com.redbeemedia.enigma.core.player;
 
 import android.os.Handler;
 
+import androidx.annotation.Nullable;
+
+import com.redbeemedia.enigma.core.ads.AdEventType;
+import com.redbeemedia.enigma.core.ads.IAd;
+import com.redbeemedia.enigma.core.ads.IAdDetector;
+import com.redbeemedia.enigma.core.ads.IAdMetadata;
 import com.redbeemedia.enigma.core.analytics.IAnalyticsReporter;
 import com.redbeemedia.enigma.core.audio.IAudioTrack;
 import com.redbeemedia.enigma.core.context.AppForegroundListener;
@@ -52,6 +58,7 @@ import java.util.List;
     private final IStreamInfo streamInfo;
     private final IStreamPrograms streamPrograms;
     private final IDrmInfo drmInfo;
+    private final IAdMetadata adsInfo;
     private final ListenerCollector collector = new ListenerCollector();
     private final IPlaybackSessionInfo playbackSessionInfo;
     private final ISpriteRepository spriteRepository;
@@ -75,19 +82,29 @@ import java.util.List;
     private final IEnigmaPlayerListener playerListener;
 
     public InternalPlaybackSession(ConstructorArgs constructorArgs) {
-        this(constructorArgs.streamInfo, constructorArgs.streamPrograms, constructorArgs.playbackSessionInfo, constructorArgs.contractRestrictions, constructorArgs.drmInfo, constructorArgs.analyticsReporter, constructorArgs.spriteRepository);
+        this(constructorArgs.streamInfo,
+                constructorArgs.streamPrograms,
+                constructorArgs.playbackSessionInfo,
+                constructorArgs.contractRestrictions,
+                constructorArgs.drmInfo,
+                constructorArgs.analyticsReporter,
+                constructorArgs.spriteRepository,
+                constructorArgs.adsInfo,
+                constructorArgs.adDetector);
     }
 
-    public InternalPlaybackSession(IStreamInfo streamInfo, IStreamPrograms streamPrograms, IPlaybackSessionInfo playbackSessionInfo, IContractRestrictions contractRestrictions, IDrmInfo drmInfo, IAnalyticsReporter analyticsReporter, ISpriteRepository spriteRepository) {
+    public InternalPlaybackSession(IStreamInfo streamInfo, IStreamPrograms streamPrograms, IPlaybackSessionInfo playbackSessionInfo, IContractRestrictions contractRestrictions, IDrmInfo drmInfo, IAnalyticsReporter analyticsReporter, ISpriteRepository spriteRepository, IAdMetadata adsInfo, IAdDetector adDetector) {
         this.playbackSessionInfo = playbackSessionInfo;
         this.streamInfo = streamInfo;
         this.streamPrograms = streamPrograms;
         this.drmInfo = drmInfo;
         this.contractRestrictions = new OpenContainer<>(contractRestrictions);
         this.analyticsReporter = analyticsReporter;
-        this.playerListener = new EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, streamInfo, selectedVideoTrack);
+        EnigmaPlayerListenerForAnalytics playerListener = new EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, streamInfo, selectedVideoTrack);
+        this.playerListener = playerListener;
         this.heartbeatRepeater = new Repeater(getTaskFactory(HEARTBEAT_REPEATER), HEARTBEAT_RATE_MILLIS, new HeartbeatRunnable());
         this.appForegroundMonitor = new AppForegroundMonitor(getTaskFactory(APP_FOREGROUND_MONITOR));
+        this.adsInfo = adsInfo;
         this.spriteRepository = spriteRepository;
 
         updateSeekAllowed(contractRestrictions);
@@ -97,6 +114,7 @@ import java.util.List;
                 updateSeekAllowed(newContractRestrictions);
             }
         });
+        if(adDetector != null) { adDetector.addListener(playerListener); }
     }
 
     private ITaskFactory getTaskFactory(String user) {
@@ -122,6 +140,11 @@ import java.util.List;
     @Override
     public IEnigmaPlayerConnection getPlayerConnection() {
         return (IEnigmaPlayerConnection) communicationChannel;
+    }
+
+    @Override
+    public IAdMetadata getAdsMetadata() {
+        return adsInfo;
     }
 
     @Override
@@ -161,7 +184,7 @@ import java.util.List;
             changeState(STATE_DEAD);
         }
         heartbeatRepeater.setEnabled(false);
-        if (aborted) {
+        if(aborted) {
             analyticsReporter.playbackAborted(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
         }
         enigmaPlayer.removeListener(playerListener);
@@ -424,15 +447,28 @@ import java.util.List;
         public final IContractRestrictions contractRestrictions;
         public final IDrmInfo drmInfo;
         public final IAnalyticsReporter analyticsReporter;
+        public final IAdMetadata adsInfo;
         public final ISpriteRepository spriteRepository;
+        public final IAdDetector adDetector;
 
-        public ConstructorArgs(IStreamInfo streamInfo, IStreamPrograms streamPrograms, IPlaybackSessionInfo playbackSessionInfo, IContractRestrictions contractRestrictions, IDrmInfo drmInfo, IAnalyticsReporter analyticsReporter, ISpriteRepository spriteRepository) {
+        public ConstructorArgs(IStreamInfo streamInfo,
+                               IStreamPrograms streamPrograms,
+                               IPlaybackSessionInfo playbackSessionInfo,
+                               IContractRestrictions contractRestrictions,
+                               IDrmInfo drmInfo,
+                               IAnalyticsReporter analyticsReporter,
+                               ISpriteRepository spriteRepository,
+                               IAdMetadata adsInfo,
+                               IAdDetector adDetector) {
+
             this.streamInfo = streamInfo;
             this.streamPrograms = streamPrograms;
             this.playbackSessionInfo = playbackSessionInfo;
             this.contractRestrictions = contractRestrictions;
             this.drmInfo = drmInfo;
             this.analyticsReporter = analyticsReporter;
+            this.adsInfo = adsInfo;
+            this.adDetector = adDetector;
             this.spriteRepository = spriteRepository;
         }
     }
@@ -453,7 +489,7 @@ import java.util.List;
         }
     }
 
-    /*package-protected*/ static class EnigmaPlayerListenerForAnalytics extends BaseEnigmaPlayerListener {
+    /*package-protected*/ static class EnigmaPlayerListenerForAnalytics extends BaseEnigmaPlayerListener implements IAdDetector.IAdStateListener {
         private final IAnalyticsReporter analyticsReporter;
         private final IPlaybackSessionInfo playbackSessionInfo;
         private final IStreamInfo streamInfo;
@@ -525,6 +561,20 @@ import java.util.List;
                     programId = to.getProgramId();
                 }
                 analyticsReporter.playbackProgramChanged(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo), programId);
+            }
+        }
+
+        @Override
+        public void adStateChanged(IAdDetector adsDetector, @Nullable IAd currentAdd, AdEventType eventType) {
+            if(currentAdd == null) { return; }
+            if(eventType == AdEventType.Start) {
+                //TODO: Remove this log output before release
+                android.util.Log.d("SSAI", "Ad started: " + currentAdd.getTitle());
+                analyticsReporter.playbackAdStarted(currentAdd.getStartTime(), currentAdd.getId());
+            } else if(eventType == AdEventType.Complete) {
+                //TODO: Remove this log output before release
+                android.util.Log.d("SSAI", "Ad finished: " + currentAdd.getTitle());
+                analyticsReporter.playbackAdCompleted(currentAdd.getStartTime() + currentAdd.getDuration(), currentAdd.getId());
             }
         }
     }

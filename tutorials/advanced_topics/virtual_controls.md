@@ -7,9 +7,8 @@ These properties might depend on many things such as:
 
 Finding out these rules, implementing them and keeping them updated is a hassle. This is where virtual controls come in.
 
-Virtual controls provide a 'headless UI' that automatically follows the rules listed above. To get hold of some virtual controls we use the factory method `VirtualControls.create(IEnigmaPlayer enigmaPlayer, IVirtualControlsSettings settings)`.
-```java
-IVirtualControls virtualControls = VirtualControls.create(enigmaPlayer, new VirtualControlsSettings());
+Virtual controls provide a 'headless UI' that automatically follows the rules listed above. To get hold of some virtual controls we use Enigmaplayers.getVirtualControls method.
+IVirtualControls virtualControls = Enigmaplayers.getVirtualControls();
 ```
 
 The `IVirtualControls` interface provides access to virtual buttons.
@@ -23,6 +22,7 @@ public interface IVirtualControls {
     IVirtualButton getNextProgram();
     IVirtualButton getPreviousProgram();
     IVirtualButton getRestart();
+    IVirtualButton getSeelkBar();
     etc...
 }
 ```

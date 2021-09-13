@@ -2,6 +2,7 @@ package com.redbeemedia.enigma.core.player;
 
 import android.os.Handler;
 
+import com.redbeemedia.enigma.core.ads.IAdDetector;
 import com.redbeemedia.enigma.core.analytics.AnalyticsReporter;
 import com.redbeemedia.enigma.core.analytics.MockAnalyticsHandler;
 import com.redbeemedia.enigma.core.analytics.MockAnalyticsReporter;
@@ -31,6 +32,7 @@ import com.redbeemedia.enigma.core.util.IStateMachine;
 import com.redbeemedia.enigma.core.util.OpenContainer;
 import com.redbeemedia.enigma.core.video.IVideoTrack;
 import com.redbeemedia.enigma.core.video.MockVideoTrack;
+import com.redbeemedia.enigma.core.virtualui.IVirtualControls;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -593,6 +595,9 @@ public class InternalPlaybackSessionTest {
         }
 
         @Override
+        public IAdDetector getAdDetector() { throw new UnsupportedOperationException(); }
+
+        @Override
         public ITimeline getTimeline() {
             throw new UnsupportedOperationException();
         }
@@ -604,6 +609,21 @@ public class InternalPlaybackSessionTest {
 
         @Override
         public void release() {
+        }
+
+        @Override
+        public boolean isAdBeingPlayed() {
+            return false;
+        }
+
+        @Override
+        public IVirtualControls getVirtualControls() {
+            return null;
+        }
+
+        @Override
+        public void setVirtualControls(IVirtualControls virtualControls) {
+
         }
     }
 

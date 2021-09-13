@@ -142,9 +142,10 @@ public class AnalyticsHandlerTest {
     public void testAnalyticsUrl_IfCustomAnalyticsUrlIsSet() throws JSONException, InterruptedException, AnalyticsException {
         MockHttpHandler mockHttpHandler = new MockHttpHandler();
         mockHttpHandler.queueResponse(new HttpStatus(500, "Internal error"));
-        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization()
-                .setHttpHandler(mockHttpHandler)
-                .setAnalyticsUrl("https://customurl.com/"));
+        MockEnigmaRiverContextInitialization initialization = new MockEnigmaRiverContextInitialization();
+        initialization.setHttpHandler(mockHttpHandler);
+        initialization.setAnalyticsUrl("https://customurl.com/");
+        MockEnigmaRiverContext.resetInitialize(initialization);
         AnalyticsHandler analyticsHandler = new AnalyticsHandler(new MockSession(),"pbs1", new MockTimeProvider(0), mockAnalyticsResponse);
         assertThat(analyticsHandler.getSendUrl().toExternalForm(), is("https://customurl.com/eventsink/send"));
     }
@@ -163,9 +164,10 @@ public class AnalyticsHandlerTest {
     public void testAnalyticsUrl_IfCustomInitAnalyticsUrlIsSet() throws JSONException, InterruptedException, AnalyticsException {
         MockHttpHandler mockHttpHandler = new MockHttpHandler();
         mockHttpHandler.queueResponse(new HttpStatus(500, "Internal error"));
-        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization()
-                .setHttpHandler(mockHttpHandler)
-                .setAnalyticsUrl("https://customurl.com/"));
+        MockEnigmaRiverContextInitialization initialization = new MockEnigmaRiverContextInitialization();
+        initialization.setHttpHandler(mockHttpHandler);
+        initialization.setAnalyticsUrl("https://customurl.com/");
+        MockEnigmaRiverContext.resetInitialize(initialization);
         AnalyticsHandler analyticsHandler = new AnalyticsHandler(new MockSession(),"pbs1", new MockTimeProvider(0), mockAnalyticsResponse);
         assertThat(analyticsHandler.getInitUrl().toExternalForm(), is("https://customurl.com/eventsink/init"));
     }

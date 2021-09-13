@@ -183,6 +183,22 @@ public class AnalyticsReporter implements IAnalyticsReporter {
         });
     }
 
+    @Override
+    public void playbackAdStarted(long offsetTime, String adId) {
+        event(AnalyticsEvents.AD_STARTED, (builder, eventType) -> {
+            builder.addData(eventType.OFFSET_TIME, offsetTime);
+            builder.addData(eventType.AD_MEDIA_ID, adId);
+        });
+    }
+
+    @Override
+    public void playbackAdCompleted(long offsetTime, String adId) {
+        event(AnalyticsEvents.AD_COMPLETED, (builder, eventType) -> {
+            builder.addData(eventType.OFFSET_TIME, offsetTime);
+            builder.addData(eventType.AD_MEDIA_ID, adId);
+        });
+    }
+
     private interface IEventConstruction<T extends IAnalyticsEventType> {
         void construct(IAnalyticsEventBuilder<T> builder, T eventType) throws Exception;
     }

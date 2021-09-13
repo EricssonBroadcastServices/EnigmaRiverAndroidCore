@@ -12,7 +12,7 @@ import com.redbeemedia.enigma.core.restriction.IContractRestrictions;
 
     @Override
     protected boolean calculateEnabled(IVirtualButtonContainer container) {
-        return true;
+        return !container.getEnigmaPlayer().isAdBeingPlayed();
     }
 
     @Override

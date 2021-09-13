@@ -1,0 +1,511 @@
+{
+  "accountId" : "02-293-B488-867C_enigma",
+  "productId" : "free_product_enigma",
+  "publicationId" : "8956cca1-edfd-44bf-9c5a-9b63170a1d3c_enigma",
+  "playSessionId" : "d9xbtI7dXsCPPT0zhgsq",
+  "playToken" : "eyJ0eXAiOiJKV1QiLCJraWQiOiIiLCJhbGciOiJIUzI1NiJ9.eyJhaWQiOiIiLCJzdWIiOiIwMi0yOTMtQjQ4OC04NjdDX2VuaWdtYSIsImlhdCI6MTYwNjc0MDExOSwiZXhwIjoxNjA2NzQwMTc5LCJqdGkiOiJwTVpvOUp3TzBrYzg4UnI4U2M5TW9xZUw5TDFzUHdnNVdLSXFQdVBuNVhVPSIsImVudCI6W3siZXBpZCI6InN0cmVhbWluZyIsImJpZCI6ImZyZWVfcHJvZHVjdF9lbmlnbWEifV0sImlzZSI6dHJ1ZX0.ARL_2KP3iTvQhh5qvD0HfPmwutGD1wJVlBkBWSR4w4g",
+  "playTokenExpiration" : 1606740179,
+  "formats" : [ {
+    "format" : "HLS",
+    "mediaLocator" : "https://live.serverside.ai/hls/5207e4b5-7f1b-42f8-b2e3-0653839223be/master.m3u8?api-key=d55ed14e-8ed0-4f68-9e9e-09b0f7f1af81&dvr_window_length=7200"
+  } ],
+  "streamInfo" : {
+    "live" : false,
+    "static" : false,
+    "event" : false,
+    "start" : 1606732919,
+    "channelId" : "9caf516e_enigma",
+    "ssai" : true
+  },
+  "contractRestrictions" : {
+    "airplayEnabled" : true,
+    "timeshiftEnabled" : true,
+    "rwEnabled" : true,
+    "ffEnabled" : true
+  },
+  "bookmarks" : { },
+  "requestId" : "M5tPjLeRUX",
+  "playTokenExpirationReason" : "MAX_TIME",
+  "concurrentSessionsCount" : 0,
+  "durationInMs" : 0,
+  "materialId" : "13bddb47_enigma",
+  "materialVersion" : 1,
+  "ads" : {
+    "stitcher": "NOWTILUS",
+    "stitcherSession": "245ce17d-cc26-4628-a186-7f1294d47561",
+    "insertionDuration": 30,
+    "insertionMaxCount": 2,
+    "adMarkers": [
+      {
+        "type": "PRE",
+        "offset": 0
+      },
+      {
+        "type": "POST",
+        "offset": 0
+      }
+    ],
+    "clips":[
+      {
+        "category":"ad",
+        "titleId":"httpsserversideaiblobcorewindowsnetsourcenowtilus_wok_panNOWTILUS_5s_Ad_19-03-28_EBU_R128_25fps_16zu9_1080pmp4",
+        "title":"Nowtilus Test Ad - 5sec",
+        "duration":5000.0,
+        "impressionUrlTemplates":[
+          "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=0",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/fcb55356-611c-43f2-9df8-ea60e98c8edb/impression",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/fcb55356-611c-43f2-9df8-ea60e98c8edb/start"
+        ],
+        "trackingEvents":{
+          "firstQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=25",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/fcb55356-611c-43f2-9df8-ea60e98c8edb/firstQuartile"
+          ],
+          "midpoint":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=50",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/fcb55356-611c-43f2-9df8-ea60e98c8edb/midpoint"
+          ],
+          "thirdQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=75",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/fcb55356-611c-43f2-9df8-ea60e98c8edb/thirdQuartile"
+          ],
+          "complete":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=100",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/fcb55356-611c-43f2-9df8-ea60e98c8edb/complete"
+          ]
+        }
+      },
+      {
+        "category":"ad",
+        "titleId":"httpsserversideaiblobcorewindowsnetsourcenowtilus_wok_panNOWTILUS_5s_Ad_19-03-28_EBU_R128_25fps_16zu9_1080pmp4_tord",
+        "title":"Nowtilus Test Ad - 10sec",
+        "duration":10000.0,
+        "impressionUrlTemplates":[
+          "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=0",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/bd0c1134-0f2e-4b3a-b916-61e44c5acea2/impression",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/bd0c1134-0f2e-4b3a-b916-61e44c5acea2/start"
+        ],
+        "trackingEvents":{
+          "firstQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=25",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/bd0c1134-0f2e-4b3a-b916-61e44c5acea2/firstQuartile"
+          ],
+          "midpoint":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=50",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/bd0c1134-0f2e-4b3a-b916-61e44c5acea2/midpoint"
+          ],
+          "thirdQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=75",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/bd0c1134-0f2e-4b3a-b916-61e44c5acea2/thirdQuartile"
+          ],
+          "complete":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=100",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/bd0c1134-0f2e-4b3a-b916-61e44c5acea2/complete"
+          ]
+        }
+      },
+      {
+        "title":"First content, 30 sec",
+        "category":"vod",
+        "duration":30000
+      },
+      {
+        "category":"ad",
+        "titleId":"httpsserversideaiblobcorewindowsnetsourcenowtilus_wok_panNOWTILUS_5s_Ad_19-03-28_EBU_R128_25fps_16zu9_1080pmp4",
+        "title":"Nowtilus Test Ad - 20sec",
+        "duration":20000.0,
+        "impressionUrlTemplates":[
+          "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=0",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/c2827376-c370-4b49-96c5-46fd183c22ac/impression",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/c2827376-c370-4b49-96c5-46fd183c22ac/start"
+        ],
+        "trackingEvents":{
+          "firstQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=25",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/c2827376-c370-4b49-96c5-46fd183c22ac/firstQuartile"
+          ],
+          "midpoint":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=50",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/c2827376-c370-4b49-96c5-46fd183c22ac/midpoint"
+          ],
+          "thirdQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=75",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/c2827376-c370-4b49-96c5-46fd183c22ac/thirdQuartile"
+          ],
+          "complete":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=100",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/c2827376-c370-4b49-96c5-46fd183c22ac/complete"
+          ]
+        }
+      },
+      {
+        "category":"ad",
+        "titleId":"httpsserversideaiblobcorewindowsnetsourcenowtilus_wok_panNOWTILUS_5s_Ad_19-03-28_EBU_R128_25fps_16zu9_1080pmp4",
+        "title":"Nowtilus Test Ad - 5sec",
+        "duration":5000.0,
+        "impressionUrlTemplates":[
+          "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=0",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/87c95cc6-75fb-4ad9-95d1-41b9b05efe14/impression",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/87c95cc6-75fb-4ad9-95d1-41b9b05efe14/start"
+        ],
+        "trackingEvents":{
+          "firstQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=25",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/87c95cc6-75fb-4ad9-95d1-41b9b05efe14/firstQuartile"
+          ],
+          "midpoint":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=50",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/87c95cc6-75fb-4ad9-95d1-41b9b05efe14/midpoint"
+          ],
+          "thirdQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=75",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/87c95cc6-75fb-4ad9-95d1-41b9b05efe14/thirdQuartile"
+          ],
+          "complete":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=100",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/87c95cc6-75fb-4ad9-95d1-41b9b05efe14/complete"
+          ]
+        }
+      },
+      {
+        "category":"ad",
+        "titleId":"httpsserversideaiblobcorewindowsnetsourcenowtilus_wok_panNOWTILUS_5s_Ad_19-03-28_EBU_R128_25fps_16zu9_1080pmp4",
+        "title":"Nowtilus Test Ad - 5sec",
+        "duration":5000.0,
+        "impressionUrlTemplates":[
+          "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=0",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/b3ae71d2-2186-4874-a559-f2b4113b8a30/impression",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/b3ae71d2-2186-4874-a559-f2b4113b8a30/start"
+        ],
+        "trackingEvents":{
+          "firstQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=25",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/b3ae71d2-2186-4874-a559-f2b4113b8a30/firstQuartile"
+          ],
+          "midpoint":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=50",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/b3ae71d2-2186-4874-a559-f2b4113b8a30/midpoint"
+          ],
+          "thirdQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=75",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/b3ae71d2-2186-4874-a559-f2b4113b8a30/thirdQuartile"
+          ],
+          "complete":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=100",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/b3ae71d2-2186-4874-a559-f2b4113b8a30/complete"
+          ]
+        }
+      },
+      {
+        "category":"content",
+        "titleId":null,
+        "title":"Cosmo_Laundromat",
+        "duration":30030
+      },
+      {
+        "category":"ad",
+        "titleId":"httpsserversideaiblobcorewindowsnetsourcenowtilus_wok_panNOWTILUS_5s_Ad_19-03-28_EBU_R128_25fps_16zu9_1080pmp4",
+        "title":"Nowtilus Test Ad - 5sec",
+        "duration":5000,
+        "impressionUrlTemplates":[
+          "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=0",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/ffc04655-04cd-487b-9413-54f46112cea6/impression",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/ffc04655-04cd-487b-9413-54f46112cea6/start"
+        ],
+        "trackingEvents":{
+          "firstQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=25",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/ffc04655-04cd-487b-9413-54f46112cea6/firstQuartile"
+          ],
+          "midpoint":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=50",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/ffc04655-04cd-487b-9413-54f46112cea6/midpoint",
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=50",
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=50"
+          ],
+          "thirdQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=75",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/ffc04655-04cd-487b-9413-54f46112cea6/thirdQuartile"
+          ],
+          "complete":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=100",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/ffc04655-04cd-487b-9413-54f46112cea6/complete"
+          ]
+        }
+      },
+      {
+        "category":"ad",
+        "titleId":"httpsserversideaiblobcorewindowsnetsourcenowtilus_wok_panNOWTILUS_5s_Ad_19-03-28_EBU_R128_25fps_16zu9_1080pmp4",
+        "title":"Nowtilus Test Ad - 5sec",
+        "duration":5000,
+        "impressionUrlTemplates":[
+          "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=0",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/3e614c26-5e2d-4e03-9eb8-cfcba67a0e9c/impression",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/3e614c26-5e2d-4e03-9eb8-cfcba67a0e9c/start"
+        ],
+        "trackingEvents":{
+          "firstQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=25",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/3e614c26-5e2d-4e03-9eb8-cfcba67a0e9c/firstQuartile"
+          ],
+          "midpoint":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=50",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/3e614c26-5e2d-4e03-9eb8-cfcba67a0e9c/midpoint"
+          ],
+          "thirdQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=75",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/3e614c26-5e2d-4e03-9eb8-cfcba67a0e9c/thirdQuartile"
+          ],
+          "complete":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=100",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/3e614c26-5e2d-4e03-9eb8-cfcba67a0e9c/complete"
+          ]
+        }
+      },
+      {
+        "category":"ad",
+        "titleId":"httpsserversideaiblobcorewindowsnetsourcenowtilus_wok_panNOWTILUS_5s_Ad_19-03-28_EBU_R128_25fps_16zu9_1080pmp4",
+        "title":"Nowtilus Test Ad - 5sec",
+        "duration":5000,
+        "impressionUrlTemplates":[
+          "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=0",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/fa1d2e90-847d-43ee-ba79-d13989201e77/impression",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/fa1d2e90-847d-43ee-ba79-d13989201e77/start"
+        ],
+        "trackingEvents":{
+          "firstQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=25",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/fa1d2e90-847d-43ee-ba79-d13989201e77/firstQuartile"
+          ],
+          "midpoint":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=50",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/fa1d2e90-847d-43ee-ba79-d13989201e77/midpoint"
+          ],
+          "thirdQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=75",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/fa1d2e90-847d-43ee-ba79-d13989201e77/thirdQuartile"
+          ],
+          "complete":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=100",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/fa1d2e90-847d-43ee-ba79-d13989201e77/complete"
+          ]
+        }
+      },
+      {
+        "category":"ad",
+        "titleId":"httpsserversideaiblobcorewindowsnetsourcenowtilus_wok_panNOWTILUS_5s_Ad_19-03-28_EBU_R128_25fps_16zu9_1080pmp4",
+        "title":"Nowtilus Test Ad - 5sec",
+        "duration":5000,
+        "impressionUrlTemplates":[
+          "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=0",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/66806f37-24eb-4863-8f00-d05f5a93ae93/impression",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/66806f37-24eb-4863-8f00-d05f5a93ae93/start"
+        ],
+        "trackingEvents":{
+          "firstQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=25",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/66806f37-24eb-4863-8f00-d05f5a93ae93/firstQuartile"
+          ],
+          "midpoint":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=50",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/66806f37-24eb-4863-8f00-d05f5a93ae93/midpoint"
+          ],
+          "thirdQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=75",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/66806f37-24eb-4863-8f00-d05f5a93ae93/thirdQuartile"
+          ],
+          "complete":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=100",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/66806f37-24eb-4863-8f00-d05f5a93ae93/complete"
+          ]
+        }
+      },
+      {
+        "category":"ad",
+        "titleId":"httpsserversideaiblobcorewindowsnetsourcenowtilus_wok_panNOWTILUS_5s_Ad_19-03-28_EBU_R128_25fps_16zu9_1080pmp4",
+        "title":"Nowtilus Test Ad - 5sec",
+        "duration":5000,
+        "impressionUrlTemplates":[
+          "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=0",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/42f0cdd1-7e68-43d8-86e4-c1a7a541ce6b/impression",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/42f0cdd1-7e68-43d8-86e4-c1a7a541ce6b/start"
+        ],
+        "trackingEvents":{
+          "firstQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=25",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/42f0cdd1-7e68-43d8-86e4-c1a7a541ce6b/firstQuartile"
+          ],
+          "midpoint":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=50",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/42f0cdd1-7e68-43d8-86e4-c1a7a541ce6b/midpoint"
+          ],
+          "thirdQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=75",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/42f0cdd1-7e68-43d8-86e4-c1a7a541ce6b/thirdQuartile"
+          ],
+          "complete":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=100",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/c5f7c240-d58f-44c7-9ff2-9dc840dfd34f/42f0cdd1-7e68-43d8-86e4-c1a7a541ce6b/complete"
+          ]
+        }
+      },
+      {
+        "category":"content",
+        "titleId":null,
+        "title":"Cosmo_Laundromat",
+        "duration":42042
+      },
+      {
+        "category":"ad",
+        "titleId":"httpsserversideaiblobcorewindowsnetsourcenowtilus_wok_panNOWTILUS_5s_Ad_19-03-28_EBU_R128_25fps_16zu9_1080pmp4",
+        "title":"Nowtilus Test Ad - 5sec",
+        "duration":5000,
+        "impressionUrlTemplates":[
+          "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=0",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/41c7fbfc-847f-481e-87e8-b5bc300d2381/impression",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/41c7fbfc-847f-481e-87e8-b5bc300d2381/start"
+        ],
+        "trackingEvents":{
+          "firstQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=25",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/41c7fbfc-847f-481e-87e8-b5bc300d2381/firstQuartile"
+          ],
+          "midpoint":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=50",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/41c7fbfc-847f-481e-87e8-b5bc300d2381/midpoint"
+          ],
+          "thirdQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=75",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/41c7fbfc-847f-481e-87e8-b5bc300d2381/thirdQuartile"
+          ],
+          "complete":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=100",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/41c7fbfc-847f-481e-87e8-b5bc300d2381/complete"
+          ]
+        }
+      },
+      {
+        "category":"ad",
+        "titleId":"httpsserversideaiblobcorewindowsnetsourcenowtilus_wok_panNOWTILUS_5s_Ad_19-03-28_EBU_R128_25fps_16zu9_1080pmp4",
+        "title":"Nowtilus Test Ad - 5sec",
+        "duration":5000,
+        "impressionUrlTemplates":[
+          "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=0",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/8c28eec0-f17a-43cc-a5e2-22d432659618/impression",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/8c28eec0-f17a-43cc-a5e2-22d432659618/start"
+        ],
+        "trackingEvents":{
+          "firstQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=25",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/8c28eec0-f17a-43cc-a5e2-22d432659618/firstQuartile"
+          ],
+          "midpoint":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=50",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/8c28eec0-f17a-43cc-a5e2-22d432659618/midpoint"
+          ],
+          "thirdQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=75",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/8c28eec0-f17a-43cc-a5e2-22d432659618/thirdQuartile"
+          ],
+          "complete":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=100",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/8c28eec0-f17a-43cc-a5e2-22d432659618/complete"
+          ]
+        }
+      },
+      {
+        "category":"ad",
+        "titleId":"httpsserversideaiblobcorewindowsnetsourcenowtilus_wok_panNOWTILUS_5s_Ad_19-03-28_EBU_R128_25fps_16zu9_1080pmp4",
+        "title":"Nowtilus Test Ad - 5sec",
+        "duration":5000,
+        "impressionUrlTemplates":[
+          "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=0",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/953fa5f8-b373-4e69-ba66-ac4d805e8bcf/impression",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/953fa5f8-b373-4e69-ba66-ac4d805e8bcf/start"
+        ],
+        "trackingEvents":{
+          "firstQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=25",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/953fa5f8-b373-4e69-ba66-ac4d805e8bcf/firstQuartile"
+          ],
+          "midpoint":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=50",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/953fa5f8-b373-4e69-ba66-ac4d805e8bcf/midpoint"
+          ],
+          "thirdQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=75",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/953fa5f8-b373-4e69-ba66-ac4d805e8bcf/thirdQuartile"
+          ],
+          "complete":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=100",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/953fa5f8-b373-4e69-ba66-ac4d805e8bcf/complete"
+          ]
+        }
+      },
+      {
+        "category":"ad",
+        "titleId":"httpsserversideaiblobcorewindowsnetsourcenowtilus_wok_panNOWTILUS_5s_Ad_19-03-28_EBU_R128_25fps_16zu9_1080pmp4",
+        "title":"Nowtilus Test Ad - 5sec",
+        "duration":5000,
+        "impressionUrlTemplates":[
+          "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=0",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/6bbf11fd-ae3f-467f-94e4-3f5182055253/impression",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/6bbf11fd-ae3f-467f-94e4-3f5182055253/start"
+        ],
+        "trackingEvents":{
+          "firstQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=25",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/6bbf11fd-ae3f-467f-94e4-3f5182055253/firstQuartile"
+          ],
+          "midpoint":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=50",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/6bbf11fd-ae3f-467f-94e4-3f5182055253/midpoint"
+          ],
+          "thirdQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=75",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/6bbf11fd-ae3f-467f-94e4-3f5182055253/thirdQuartile"
+          ],
+          "complete":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=100",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/6bbf11fd-ae3f-467f-94e4-3f5182055253/complete"
+          ]
+        }
+      },
+      {
+        "category":"ad",
+        "titleId":"httpsserversideaiblobcorewindowsnetsourcenowtilus_wok_panNOWTILUS_5s_Ad_19-03-28_EBU_R128_25fps_16zu9_1080pmp4",
+        "title":"Nowtilus Test Ad - 5sec",
+        "duration":5000,
+        "impressionUrlTemplates":[
+          "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=0",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/58c8fd04-c6a8-4577-8af7-1771300c2039/impression",
+          "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/58c8fd04-c6a8-4577-8af7-1771300c2039/start"
+        ],
+        "trackingEvents":{
+          "firstQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=25",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/58c8fd04-c6a8-4577-8af7-1771300c2039/firstQuartile"
+          ],
+          "midpoint":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=50",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/58c8fd04-c6a8-4577-8af7-1771300c2039/midpoint"
+          ],
+          "thirdQuartile":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=75",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/58c8fd04-c6a8-4577-8af7-1771300c2039/thirdQuartile"
+          ],
+          "complete":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=100",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/e307f0ac-e720-4cdd-8e59-2628359ae17e/58c8fd04-c6a8-4577-8af7-1771300c2039/complete"
+          ]
+        }
+      },
+      {
+        "category":"content",
+        "titleId":null,
+        "title":"Cosmo_Laundromat",
+        "duration":665289.625
+      }
+    ]
+  }
+}

@@ -43,7 +43,7 @@ import java.util.Map;
 
     @Override
     public void onResponse(HttpStatus httpStatus) {
-        if(allowEmptyResponse) {
+        if(allowEmptyResponse || httpStatus.hasNoContent()) {
             onResponse(httpStatus, new ByteArrayInputStream(new byte[0]));
         } else {
             onError(new EmptyResponseError("Expected a response."));

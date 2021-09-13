@@ -13,4 +13,7 @@ import com.redbeemedia.enigma.core.time.Duration;
     String getChannelId();
 
     String getPlayMode();
+
+    /** Returns `true` if server side ad insertion (SSAI) is enabled. */
+    boolean ssaiEnabled();
 }

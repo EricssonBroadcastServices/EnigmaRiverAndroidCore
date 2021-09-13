@@ -1,0 +1,39 @@
+{
+  "accountId" : "02-293-B488-867C_enigma",
+  "productId" : "free_product_enigma",
+  "publicationId" : "8956cca1-edfd-44bf-9c5a-9b63170a1d3c_enigma",
+  "playSessionId" : "d9xbtI7dXsCPPT0zhgsq",
+  "playToken" : "eyJ0eXAiOiJKV1QiLCJraWQiOiIiLCJhbGciOiJIUzI1NiJ9.eyJhaWQiOiIiLCJzdWIiOiIwMi0yOTMtQjQ4OC04NjdDX2VuaWdtYSIsImlhdCI6MTYwNjc0MDExOSwiZXhwIjoxNjA2NzQwMTc5LCJqdGkiOiJwTVpvOUp3TzBrYzg4UnI4U2M5TW9xZUw5TDFzUHdnNVdLSXFQdVBuNVhVPSIsImVudCI6W3siZXBpZCI6InN0cmVhbWluZyIsImJpZCI6ImZyZWVfcHJvZHVjdF9lbmlnbWEifV0sImlzZSI6dHJ1ZX0.ARL_2KP3iTvQhh5qvD0HfPmwutGD1wJVlBkBWSR4w4g",
+  "playTokenExpiration" : 1606740179,
+  "formats" : [ {
+    "format" : "HLS",
+    "mediaLocator" : "https://live.serverside.ai/hls/5207e4b5-7f1b-42f8-b2e3-0653839223be/master.m3u8?api-key=d55ed14e-8ed0-4f68-9e9e-09b0f7f1af81&dvr_window_length=7200"
+  } ],
+  "streamInfo" : {
+    "live" : true,
+    "static" : false,
+    "event" : false,
+    "start" : 1606732919,
+    "channelId" : "9caf516e_enigma",
+    "ssai" : true
+  },
+  "contractRestrictions" : {
+    "airplayEnabled" : true,
+    "timeshiftEnabled" : true,
+    "rwEnabled" : true,
+    "ffEnabled" : true
+  },
+  "bookmarks" : { },
+  "requestId" : "M5tPjLeRUX",
+  "playTokenExpirationReason" : "MAX_TIME",
+  "concurrentSessionsCount" : 0,
+  "durationInMs" : 0,
+  "materialId" : "13bddb47_enigma",
+  "materialVersion" : 1,
+  "ads" : {
+    "stitcher" : "NOWTILUS",
+    "stitcherProfileId" : "nowtilus",
+    "insertionDuration" : 0,
+    "insertionMaxCount" : 0
+  }
+}

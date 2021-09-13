@@ -1,4 +1,6 @@
-package com.redbeemedia.enigma.core.playrequest;
+package com.redbeemedia.enigma.core.ads;
+
+import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
 
 import androidx.annotation.Nullable;
 

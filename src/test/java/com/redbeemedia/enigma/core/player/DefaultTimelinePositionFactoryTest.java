@@ -11,6 +11,19 @@ import org.junit.Test;
 
 public class DefaultTimelinePositionFactoryTest {
 
+    /** Exposing DefaultTimelinePositionFactory. */
+    public static class TimeLinePositionCreator implements ITimelinePositionFactory {
+        /**
+         * This is how the creation of a ´ITimelinePosition' has to be done
+         * outside the com.redbeemedia.enigma.core.player package
+         * @param milliseconds
+         * @return a ITimelinePosition
+         */
+        public ITimelinePosition newPosition(long milliseconds) {
+            return new DefaultTimelinePositionFactory().newPosition(milliseconds);
+        }
+    }
+
 
     private static IInternalPlaybackSession newLivePlaybackSession() {
         return new MockInternalPlaybackSession(true, 1505574300000L);
@@ -19,7 +32,6 @@ public class DefaultTimelinePositionFactoryTest {
     private static IInternalPlaybackSession newVoDPlaybackSession() {
         return new MockInternalPlaybackSession(false, -1L);
     }
-
 
     @Test
     public void testUsesRelative() {

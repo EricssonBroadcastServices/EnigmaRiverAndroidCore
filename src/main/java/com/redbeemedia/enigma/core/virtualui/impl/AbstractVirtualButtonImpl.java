@@ -26,6 +26,14 @@ import com.redbeemedia.enigma.core.virtualui.AbstractVirtualButton;
         return OpenContainerUtil.getValueSynchronized(relevant);
     }
 
+    protected final void setEnabled(boolean newEnabled) {
+        StateChangedFlag stateChanged = new StateChangedFlag();
+        OpenContainerUtil.setValueSynchronized(enabled, newEnabled, (oldValue, newValue) -> stateChanged.registerChange());
+        if(stateChanged.hasChanged()) {
+            fireEvent().onStateChanged();
+        }
+    }
+
     protected static boolean aimsToBePlayingAlready(EnigmaPlayerState state) {
         return state == EnigmaPlayerState.PLAYING || state == EnigmaPlayerState.BUFFERING;
     }

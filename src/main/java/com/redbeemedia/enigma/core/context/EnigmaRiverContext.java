@@ -11,7 +11,7 @@ import com.redbeemedia.enigma.core.http.DefaultHttpHandler;
 import com.redbeemedia.enigma.core.http.IHttpHandler;
 import com.redbeemedia.enigma.core.network.IDefaultNetworkMonitor;
 import com.redbeemedia.enigma.core.network.INetworkMonitor;
-import com.redbeemedia.enigma.core.playrequest.IAdInsertionFactory;
+import com.redbeemedia.enigma.core.ads.IAdInsertionFactory;
 import com.redbeemedia.enigma.core.task.ITaskFactory;
 import com.redbeemedia.enigma.core.task.ITaskFactoryProvider;
 import com.redbeemedia.enigma.core.util.UrlPath;
@@ -111,7 +111,7 @@ public final class EnigmaRiverContext {
 
     //Version if the core library
     public static String getVersion() {
-        String version = "r3.2.1";
+        String version = "r3.3.0-BETA-1";
         if(version.contains("REPLACE_WITH_RELEASE_VERSION")) {
             return "dev-snapshot-"+BuildConfig.VERSION_NAME;
         } else {

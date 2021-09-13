@@ -16,6 +16,9 @@ import com.redbeemedia.enigma.core.time.Duration;
 
     @Override
     protected boolean calculateEnabled(IVirtualButtonContainer container) {
+        if(container.getEnigmaPlayer().isAdBeingPlayed()){
+            return false;
+        }
         if(forward) {
             ITimeline timeline = container.getEnigmaPlayer().getTimeline();
             ITimelinePosition currentPosition = timeline.getCurrentPosition();

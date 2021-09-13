@@ -22,6 +22,9 @@ import com.redbeemedia.enigma.core.player.listener.BaseEnigmaPlayerListener;
 
     @Override
     protected boolean calculateEnabled(IVirtualButtonContainer container) {
+        if(container.getEnigmaPlayer().isAdBeingPlayed()){
+            return false;
+        }
         IPlaybackSession playbackSession = container.getPlaybackSession();
         ControlLogic.IValidationResults validationResults = ControlLogic.validateProgramJump(jumpBackwards, playbackSession);
         return validationResults.isSuccess();

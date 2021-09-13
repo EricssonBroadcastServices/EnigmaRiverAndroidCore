@@ -1,5 +1,6 @@
 package com.redbeemedia.enigma.core.player;
 
+import com.redbeemedia.enigma.core.ads.IAdDetector;
 import com.redbeemedia.enigma.core.error.EnigmaError;
 
 import org.json.JSONArray;
@@ -13,6 +14,8 @@ import org.json.JSONObject;
     void onStarted(IInternalPlaybackSession internalPlaybackSession);
 
     void onErrorDuringStartup(EnigmaError error);
+
+    void setAdDetector(IAdDetector adDetector);
 
     interface IEnigmaPlayerCallbacks {
         void setStateIfCurrentStartAction(IPlaybackStartAction action, EnigmaPlayerState state);

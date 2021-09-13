@@ -36,4 +36,7 @@ import com.redbeemedia.enigma.core.time.Duration;
     public String getPlayMode() {
         return "VOD";
     }
+
+    @Override
+    public boolean ssaiEnabled() { return false; }
 }

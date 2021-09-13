@@ -1,5 +1,6 @@
 package com.redbeemedia.enigma.core.player;
 
+import com.redbeemedia.enigma.core.ads.IAdMetadata;
 import com.redbeemedia.enigma.core.audio.IAudioTrack;
 import com.redbeemedia.enigma.core.drm.IDrmInfo;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
@@ -17,6 +18,8 @@ import java.util.Collection;
     IStreamPrograms getStreamPrograms();
     IPlaybackSessionInfo getPlaybackSessionInfo();
     IDrmInfo getDrmInfo();
+    /** Returns ad related information (or `null` if no ad information was detected). */
+    IAdMetadata getAdsMetadata();
     IEnigmaPlayerConnection getPlayerConnection();
     void setPlayingFromLive(boolean live);
     void setTracks(Collection<? extends IPlayerImplementationTrack> tracks);

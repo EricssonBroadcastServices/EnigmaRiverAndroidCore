@@ -709,12 +709,12 @@ public class EnigmaPlayerTest {
             //gap
             programs.add(new MockProgram("program4", 4000, 5000));
         }
-        MockEpgResponse epgResponse = new MockEpgResponse(123L, 5000, programs);
+        MockEpgResponse epgResponse = new MockEpgResponse(0L, 5000, programs);
         MockEpgLocator mockEpgLocator = new MockEpgLocator().setEpg(new MockEpg().setEpgResponse(epgResponse));
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(httpHandler).setEpgLocator(mockEpgLocator));
         MockPlayResponse playResponseMessage = new MockPlayResponse();
         playResponseMessage.streamInfoData.setToChannelLiveStream("channel0");
-        playResponseMessage.streamInfoData.start = 123L;
+        playResponseMessage.streamInfoData.start = 0L;
 
         {
             //Verify the mock response will actually have streamPrograms
@@ -777,8 +777,8 @@ public class EnigmaPlayerTest {
 
         //assert we are at start of program2
         Assert.assertEquals(expectedSeeks, seekPositions.size());
-        Assert.assertEquals(1000-123, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-1)).getMillis());
-        playerImplementation.position = 1000-123; //Update position to seeked
+        Assert.assertEquals(1000, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-1)).getMillis());
+        playerImplementation.position = 1000; //Update position to seeked
 
         { //Seek!
             AssertiveControlResultHandler controlResultHandler = new AssertiveControlResultHandler();
@@ -789,8 +789,8 @@ public class EnigmaPlayerTest {
 
         //assert we are at start of program3
         Assert.assertEquals(expectedSeeks, seekPositions.size());
-        Assert.assertEquals(2000-123, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-1)).getMillis());
-        playerImplementation.position = 2000-123; //Update position to seeked
+        Assert.assertEquals(2000, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-1)).getMillis());
+        playerImplementation.position = 2000; //Update position to seeked
 
         { //Seek!
             AssertiveControlResultHandler controlResultHandler = new AssertiveControlResultHandler();
@@ -801,8 +801,8 @@ public class EnigmaPlayerTest {
 
         //assert we are at start of the gap
         Assert.assertEquals(expectedSeeks, seekPositions.size());
-        Assert.assertEquals(3000-123, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-1)).getMillis());
-        playerImplementation.position = 3000-123; //Update position to seeked
+        Assert.assertEquals(3000, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-1)).getMillis());
+        playerImplementation.position = 3000; //Update position to seeked
 
         { //Seek!
             AssertiveControlResultHandler controlResultHandler = new AssertiveControlResultHandler();
@@ -813,8 +813,8 @@ public class EnigmaPlayerTest {
 
         //assert we are at start of program4
         Assert.assertEquals(expectedSeeks, seekPositions.size());
-        Assert.assertEquals(4000-123, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-1)).getMillis());
-        playerImplementation.position = 4000-123; //Update position to seeked
+        Assert.assertEquals(4000, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-1)).getMillis());
+        playerImplementation.position = 4000; //Update position to seeked
 
         { //Seek! But this time we are at the end of the stream so we can't!
             AssertiveControlResultHandler controlResultHandler = new AssertiveControlResultHandler();
@@ -829,18 +829,18 @@ public class EnigmaPlayerTest {
         MockHttpHandler httpHandler = new MockHttpHandler();
         List<IProgram> programs = new ArrayList<>();
         {
-            programs.add(new MockProgram("program1", 0, 1000));
-            programs.add(new MockProgram("program2", 1000, 2000));
-            programs.add(new MockProgram("program3", 2000, 3000));
+            programs.add(new MockProgram("program1", 0, 10000));
+            programs.add(new MockProgram("program2", 10000, 20000));
+            programs.add(new MockProgram("program3", 20000, 30000));
             //gap
-            programs.add(new MockProgram("program4", 4000, 5000));
+            programs.add(new MockProgram("program4", 40000, 50000));
         }
-        MockEpgResponse epgResponse = new MockEpgResponse(123L, 5000, programs);
+        MockEpgResponse epgResponse = new MockEpgResponse(1L, 50000, programs);
         MockEpgLocator mockEpgLocator = new MockEpgLocator().setEpg(new MockEpg().setEpgResponse(epgResponse));
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(httpHandler).setEpgLocator(mockEpgLocator));
         MockPlayResponse playResponseMessage = new MockPlayResponse();
         playResponseMessage.streamInfoData.setToChannelLiveStream("channel0");
-        playResponseMessage.streamInfoData.start = 123L;
+        playResponseMessage.streamInfoData.start = 1L;
 
         {
             //Verify the mock response will actually have streamPrograms
@@ -895,7 +895,7 @@ public class EnigmaPlayerTest {
         Assert.assertEquals(expectedSeeks, seekPositions.size());
 
         //Start at program4
-        playerImplementation.position = 4500-123;
+        playerImplementation.position = 45000-1;
 
         { //Seek!
             AssertiveControlResultHandler controlResultHandler = new AssertiveControlResultHandler();
@@ -906,8 +906,8 @@ public class EnigmaPlayerTest {
 
         //assert we are at start of the gap
         Assert.assertEquals(expectedSeeks, seekPositions.size());
-        Assert.assertEquals(3000-123, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-1)).getMillis());
-        playerImplementation.position = 3000-123; //Update position to seeked
+        Assert.assertEquals(30000-1, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-1)).getMillis());
+        playerImplementation.position = 30000-1; //Update position to seeked
 
         { //Seek!
             AssertiveControlResultHandler controlResultHandler = new AssertiveControlResultHandler();
@@ -918,8 +918,8 @@ public class EnigmaPlayerTest {
 
         //assert we are at start of program3
         Assert.assertEquals(expectedSeeks, seekPositions.size());
-        Assert.assertEquals(2000-123, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-1)).getMillis());
-        playerImplementation.position = 2000-123; //Update position to seeked
+        Assert.assertEquals(20000-1, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-1)).getMillis());
+        playerImplementation.position = 20000-1; //Update position to seeked
 
         { //Seek!
             AssertiveControlResultHandler controlResultHandler = new AssertiveControlResultHandler();
@@ -930,8 +930,8 @@ public class EnigmaPlayerTest {
 
         //assert we are at start of program2
         Assert.assertEquals(expectedSeeks, seekPositions.size());
-        Assert.assertEquals(1000-123, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-1)).getMillis());
-        playerImplementation.position = 1000-123; //Update position to seeked
+        Assert.assertEquals(10000-1, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-1)).getMillis());
+        playerImplementation.position = 10000-1; //Update position to seeked
 
         { //Seek!
             AssertiveControlResultHandler controlResultHandler = new AssertiveControlResultHandler();

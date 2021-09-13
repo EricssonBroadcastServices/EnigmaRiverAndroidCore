@@ -13,6 +13,7 @@ import org.json.JSONObject;
     private Duration endSinceEpoch = null;
     private String channelId;
     private String programId;
+    private boolean ssai;
 
     public JsonStreamInfo(JSONObject streamInfo) throws JSONException {
 		/*"streamInfo" : {
@@ -22,7 +23,8 @@ import org.json.JSONObject;
             "start" : ${UTC of start in SECONDS!},
             (optional) "end" : ${UTC of end in SECONDS!}, (sometimes present (for example, for catch-up))
             "channelId" : "...",
-            "programId" : "..."
+            "programId" : "...",
+            "ssai": ${bool}
         }*/
         if(streamInfo != null) {
             this.live = streamInfo.optBoolean("live", false);
@@ -38,6 +40,7 @@ import org.json.JSONObject;
             this.event = streamInfo.optBoolean("event", false);
             this.channelId = streamInfo.optString("channelId", null);
             this.programId = streamInfo.optString("programId", null);
+            this.ssai = streamInfo.optBoolean("ssai", false);
         }
     }
 
@@ -115,4 +118,7 @@ import org.json.JSONObject;
     public boolean hasStreamPrograms() {
         return hasStart() && channelId != null;
     }
+
+    @Override
+    public boolean ssaiEnabled() { return ssai; }
 }

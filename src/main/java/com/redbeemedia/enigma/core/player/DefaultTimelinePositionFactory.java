@@ -54,7 +54,7 @@ import java.util.Date;
     }
 
     private class TimelinePosition implements ITimelinePosition {
-        private final long offsetMillis;
+        public final long offsetMillis;
 
         public TimelinePosition(long offsetMillis) {
             this.offsetMillis = offsetMillis;
@@ -68,6 +68,11 @@ import java.util.Date;
         @Override
         public ITimelinePosition add(Duration duration) {
             return new TimelinePosition(offsetMillis +duration.inWholeUnits(Duration.Unit.MILLISECONDS));
+        }
+
+        @Override
+        public long getStart() {
+            return offsetMillis;
         }
 
         @Override
