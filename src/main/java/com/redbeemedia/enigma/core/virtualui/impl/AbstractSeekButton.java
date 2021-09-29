@@ -32,6 +32,11 @@ import com.redbeemedia.enigma.core.time.Duration;
             }
         }
         ControlLogic.IValidationResults<Void> validationResults = ControlLogic.validateSeek(forward, !forward, container.getPlaybackSession());
+        if (container.getPlaybackSession() != null
+                && !container.getPlaybackSession().isSeekInLiveAllowed()
+                && container.getEnigmaPlayer().isLiveStream()) {
+            return false;
+        }
         return validationResults.isSuccess();
     }
 

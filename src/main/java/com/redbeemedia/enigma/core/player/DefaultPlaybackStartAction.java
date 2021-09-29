@@ -4,8 +4,10 @@ import android.util.Log;
 
 import com.redbeemedia.enigma.core.BuildConfig;
 import com.redbeemedia.enigma.core.ads.ExposureAdMetadata;
-import com.redbeemedia.enigma.core.ads.IAdResourceLoader;
 import com.redbeemedia.enigma.core.ads.IAdDetector;
+import com.redbeemedia.enigma.core.ads.IAdInsertionFactory;
+import com.redbeemedia.enigma.core.ads.IAdInsertionParameters;
+import com.redbeemedia.enigma.core.ads.IAdResourceLoader;
 import com.redbeemedia.enigma.core.analytics.AnalyticsException;
 import com.redbeemedia.enigma.core.analytics.AnalyticsHandler;
 import com.redbeemedia.enigma.core.analytics.AnalyticsPlayResponseData;
@@ -34,11 +36,10 @@ import com.redbeemedia.enigma.core.error.UnexpectedError;
 import com.redbeemedia.enigma.core.format.EnigmaMediaFormat;
 import com.redbeemedia.enigma.core.http.AuthenticatedExposureApiCall;
 import com.redbeemedia.enigma.core.http.IHttpConnection;
+import com.redbeemedia.enigma.core.marker.IMarkerPointsDetector;
 import com.redbeemedia.enigma.core.playable.IPlayableHandler;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.player.controls.IControlResultHandler;
-import com.redbeemedia.enigma.core.ads.IAdInsertionFactory;
-import com.redbeemedia.enigma.core.ads.IAdInsertionParameters;
 import com.redbeemedia.enigma.core.playrequest.AdobePrimetime;
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
 import com.redbeemedia.enigma.core.playrequest.IPlayResultHandler;
@@ -62,11 +63,15 @@ import org.json.JSONObject;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /*package-protected*/ class DefaultPlaybackStartAction implements IPlaybackStartAction, IPlayableHandler {
     private static final String TAG = "StartAction";
+    public static final String SUPPORTED_FORMATS = "supportedFormats";
+    public static final String SUPPORTED_DRMS = "supportedDrms";
 
     private final ISession session;
     private final IBusinessUnit businessUnit;
@@ -77,9 +82,11 @@ import java.util.UUID;
     private final ITimeProvider timeProvider;
     private final IPlayResultHandler callback;
     private IAdDetector adDetector;
+    private IMarkerPointsDetector markerPointsDetector;
     private final ISpriteRepository spriteRepository;
+    private Set<EnigmaMediaFormat> supportedFormats;
 
-    public DefaultPlaybackStartAction(ISession defaultSession, IBusinessUnit defaultBusinessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler, ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IEnigmaPlayerCallbacks playerConnector, ISpriteRepository spriteRepository) {
+    public DefaultPlaybackStartAction(ISession defaultSession, IBusinessUnit defaultBusinessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler, ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IEnigmaPlayerCallbacks playerConnector, ISpriteRepository spriteRepository, Set<EnigmaMediaFormat> supportedFormats) {
         ISession playRequestSession = playRequest.getSession();
         this.session = playRequestSession != null ? playRequestSession : defaultSession;
         this.businessUnit = playRequestSession != null ? playRequestSession.getBusinessUnit() : defaultBusinessUnit;
@@ -90,10 +97,16 @@ import java.util.UUID;
         this.playerConnector = playerConnector;
         this.spriteRepository = spriteRepository;
         this.callback = ProxyCallback.useCallbackHandlerIfPresent(callbackHandler, IPlayResultHandler.class, playRequest.getResultHandler());
+        this.supportedFormats = supportedFormats;
     }
 
     public void setAdDetector(IAdDetector adDetector) {
         this.adDetector = adDetector;
+    }
+
+    @Override
+    public void setMarkerPointsDetector(IMarkerPointsDetector markerPointsDetector) {
+        this.markerPointsDetector = markerPointsDetector;
     }
 
     @Override
@@ -137,6 +150,8 @@ import java.util.UUID;
                 return;
             }
         }
+        // make cue-points request
+        contentAssetRequest(assetId);
 
         URL url;
         try {
@@ -146,6 +161,7 @@ import java.util.UUID;
             if (adInsertionParameters != null) {
                 path = path.appendQueryStringParameters(adInsertionParameters.getParameters());
             }
+            path = appendSupportedFormatsAndDRMs(path);
             url = path.toURL();
 
         } catch (MalformedURLException e) {
@@ -298,6 +314,99 @@ import java.util.UUID;
                 } else {
                     onError(new NoSupportedMediaFormatsError("Could not find a media format supported by the current player implementation."));
                 }
+            }
+        });
+    }
+
+
+    private UrlPath appendSupportedFormatsAndDRMs(UrlPath path) {
+        Set<EnigmaMediaFormat.StreamFormat> formats = new HashSet<>();
+        Set<EnigmaMediaFormat.DrmTechnology> drms = new HashSet<>();
+        for(EnigmaMediaFormat mediaFormat : supportedFormats){
+            formats.add(mediaFormat.getStreamFormat());
+            drms.add(mediaFormat.getDrmTechnology());
+        }
+        String formatsBuilder = buildFormats(formats);
+        String drmBuilder = buildDrm(drms);
+        Map<String, String> paramMap = new HashMap<>();
+        if (!formatsBuilder.isEmpty()) {
+            Log.w(TAG, "No supported formats");
+            paramMap.put(SUPPORTED_FORMATS, formatsBuilder);
+        }
+        if (!drmBuilder.trim().isEmpty()) {
+            paramMap.put(SUPPORTED_DRMS, drmBuilder);
+        }
+        if (!paramMap.isEmpty()) {
+            path = path.appendQueryStringParameters(paramMap);
+        }
+        return path;
+    }
+
+    private String buildFormats(Set<EnigmaMediaFormat.StreamFormat> formats) {
+        StringBuilder formatsBuilder = new StringBuilder();
+        if(formats.contains(EnigmaMediaFormat.StreamFormat.DASH)){
+            formatsBuilder.append("dash").append(",");
+        }
+        if(formats.contains(EnigmaMediaFormat.StreamFormat.HLS)){
+            formatsBuilder.append("hls").append(",");
+        }
+        if(formats.contains(EnigmaMediaFormat.StreamFormat.MP3)){
+            formatsBuilder.append("mp3").append(",");
+        }
+        if(formats.contains(EnigmaMediaFormat.StreamFormat.SMOOTHSTREAMING)){
+            formatsBuilder.append("smoothstreaming").append(",");
+        }
+        return removeLastComma(formatsBuilder);
+    }
+
+    private String buildDrm(Set<EnigmaMediaFormat.DrmTechnology> drms) {
+        StringBuilder drmBuilder = new StringBuilder();
+        if(drms.contains(EnigmaMediaFormat.DrmTechnology.WIDEVINE)){
+            drmBuilder.append("widevine").append(",");
+        }
+        if(drms.contains(EnigmaMediaFormat.DrmTechnology.PLAYREADY)){
+            drmBuilder.append("playready").append(",");
+        }
+        if(drms.contains(EnigmaMediaFormat.DrmTechnology.FAIRPLAY)){
+            drmBuilder.append("fairplay").append(",");
+        }
+        return removeLastComma(drmBuilder);
+    }
+
+    private String removeLastComma(StringBuilder drmBuilder) {
+        String drmBuilderStr = drmBuilder.toString();
+        if (drmBuilderStr.endsWith(",")) {
+            drmBuilderStr = drmBuilderStr.substring(0, drmBuilderStr.length() - 1);
+        }
+        return drmBuilderStr;
+    }
+
+    private void contentAssetRequest(String assetId) {
+        URL url = null;
+        try {
+            UrlPath path = session.getBusinessUnit().getApiBaseUrl("v1").append("content/asset").append(assetId);
+            url = path.toURL();
+        } catch (MalformedURLException e) {
+            getStartActionResultHandler().onError(new InvalidAssetError(assetId, new UnexpectedError(e)));
+        }
+
+        AuthenticatedExposureApiCall apiCall = new AuthenticatedExposureApiCall("GET", session) {
+            @Override
+            public void prepare(IHttpConnection connection) {
+                super.prepare(connection);
+            }
+        };
+
+        EnigmaRiverContext.getHttpHandler().doHttp(url, apiCall, new PlayResponseHandler(assetId) {
+
+            @Override
+            protected void onError(EnigmaError error) {
+                Log.w("MarkerPoints", "Couldn't fetch marker point from the server :" + error.getTrace());
+            }
+
+            @Override
+            protected void onSuccess(JSONObject jsonObject) {
+                markerPointsDetector.parseJSONObject(jsonObject);
             }
         });
     }
@@ -589,3 +698,4 @@ import java.util.UUID;
         }
     }
 }
+

@@ -3,6 +3,7 @@ package com.redbeemedia.enigma.core.player;
 import android.os.Handler;
 
 import com.redbeemedia.enigma.core.ads.IAdDetector;
+import com.redbeemedia.enigma.core.marker.IMarkerPointsDetector;
 import com.redbeemedia.enigma.core.player.controls.IEnigmaPlayerControls;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.timeline.ITimeline;
@@ -20,9 +21,11 @@ public interface IEnigmaPlayer {
     ITimeline getTimeline();
     EnigmaPlayerState getState();
     IAdDetector getAdDetector();
+    IMarkerPointsDetector getMarkerPointsDetector();
     IEnigmaPlayer setCallbackHandler(IHandler handler);
     IEnigmaPlayer setCallbackHandler(Handler handler);
     void setDefaultSession(ISession session);
+    boolean isLiveStream();
     void release();
     boolean isAdBeingPlayed();
     IVirtualControls getVirtualControls();

@@ -28,6 +28,7 @@ public final class VirtualControls implements IVirtualControls {
     private final IVirtualButton previousProgram;
     private final IVirtualButton restart;
     private final IVirtualButton seekBar;
+    private final IVirtualButton skipIntro;
 
     /**
      * Will ensure we have single instance of IVirtualControls
@@ -51,6 +52,7 @@ public final class VirtualControls implements IVirtualControls {
         this.nextProgram = new JumpProgramButton(buttonContainer, false);
         this.previousProgram = new JumpProgramButton(buttonContainer, true);
         this.restart = new RestartButton(buttonContainer);
+        this.skipIntro = new SkipIntroButton(buttonContainer);
 
         buttonContainer.refreshButtons();
     }
@@ -98,6 +100,11 @@ public final class VirtualControls implements IVirtualControls {
     @Override
     public IVirtualButton getRestart() {
         return restart;
+    }
+
+    @Override
+    public IVirtualButton getSkipIntro() {
+        return skipIntro;
     }
 
     public void setEnabled(IVirtualButton button, boolean newEnabled) {

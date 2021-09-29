@@ -34,6 +34,7 @@ import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.HashSet;
 import java.util.regex.Pattern;
 
 public class ContractRestrictionTest {
@@ -400,7 +401,7 @@ public class ContractRestrictionTest {
 
         @Override
         protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler, ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection, ISpriteRepository spriteRepository) {
-            return new DefaultPlaybackStartAction(session, businessUnit,timeProvider, playRequest, callbackHandler, taskFactoryProvider, playerImplementationControls, playerConnection, spriteRepository) {
+            return new DefaultPlaybackStartAction(session, businessUnit,timeProvider, playRequest, callbackHandler, taskFactoryProvider, playerImplementationControls, playerConnection, spriteRepository, new HashSet<>()) {
                 @Override
                 protected IInternalPlaybackSession newPlaybackSession(InternalPlaybackSession.ConstructorArgs constructorArgs) {
                     return new MockInternalPlaybackSession(false);

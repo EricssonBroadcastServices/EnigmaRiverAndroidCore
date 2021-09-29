@@ -34,6 +34,8 @@ import com.redbeemedia.enigma.core.format.IMediaFormatSupportSpec;
 import com.redbeemedia.enigma.core.format.SimpleMediaFormatSelector;
 import com.redbeemedia.enigma.core.lifecycle.BaseLifecycleListener;
 import com.redbeemedia.enigma.core.lifecycle.Lifecycle;
+import com.redbeemedia.enigma.core.marker.IMarkerPointsDetector;
+import com.redbeemedia.enigma.core.marker.MarkerPointsDetector;
 import com.redbeemedia.enigma.core.playable.IAssetPlayable;
 import com.redbeemedia.enigma.core.playable.IPlayable;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
@@ -78,7 +80,9 @@ import org.json.JSONObject;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 public class EnigmaPlayer implements IEnigmaPlayer {
@@ -105,6 +109,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     private ITimeProvider timeProvider;
     private IHandler callbackHandler = null;
     private final OpenContainer<IAdDetector> adsDetector;
+    private final OpenContainer<IMarkerPointsDetector> markerPointsDetector;
     private ISpriteRepository spriteRepository;
     private boolean isReplacingPlaybackSession = false;
     private IVirtualControls virtualControls;
@@ -146,6 +151,8 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         this.businessUnit = new OpenContainer<>(initialBusinessUnit);
         AdDetector adDetector = new AdDetector(EnigmaRiverContext.getHttpHandler(), timeline, environment.timelinePositionFactory);
         this.adsDetector = new OpenContainer<>(adDetector);
+        MarkerPointsDetector markerPointsDetector = new MarkerPointsDetector(timeline);
+        this.markerPointsDetector = new OpenContainer<>(markerPointsDetector);
         this.playerImplementation = playerImplementation;
         this.playerImplementation.install(environment);
         this.spriteRepository = new SpriteRepository(environment.timelinePositionFactory, EnigmaRiverContext.getHttpHandler());
@@ -205,6 +212,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                     spriteRepository);
 
             currentPlaybackStartAction.value.setAdDetector(adsDetector.value);
+            currentPlaybackStartAction.value.setMarkerPointsDetector(markerPointsDetector.value);
             playbackStartAction = currentPlaybackStartAction.value;
         }
         playbackStartAction.start();
@@ -247,6 +255,16 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                 OpenContainerUtil.setValueSynchronized(businessUnit, newValue.getBusinessUnit(), null);
             }
         });
+    }
+
+    @Override
+    public boolean isLiveStream() {
+        IInternalPlaybackSession valueSynchronized = OpenContainerUtil.getValueSynchronized(currentPlaybackSession);
+        if (valueSynchronized != null) {
+            return valueSynchronized.getStreamInfo().isLiveStream();
+        } else {
+            return false;
+        }
     }
 
     @Override
@@ -297,6 +315,11 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         return adsDetector.value;
     }
 
+    @Override
+    public IMarkerPointsDetector getMarkerPointsDetector() {
+        return markerPointsDetector.value;
+    }
+
     private IPlaybackStartAction.IEnigmaPlayerCallbacks newStartActionPlayerConnection(final IPlayRequest playRequest) {
         return new IPlaybackStartAction.IEnigmaPlayerCallbacks() {
             @Override
@@ -344,7 +367,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                                                           IPlayerImplementationControls playerImplementationControls,
                                                           IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection,
                                                           ISpriteRepository spriteRepository) {
-        return new DefaultPlaybackStartAction(session, businessUnit, timeProvider, playRequest, callbackHandler,taskFactoryProvider, playerImplementationControls, playerConnection, spriteRepository);
+        return new DefaultPlaybackStartAction(session, businessUnit, timeProvider, playRequest, callbackHandler,taskFactoryProvider, playerImplementationControls, playerConnection, spriteRepository, environment.formatSupportSpec.getSupportedFormats());
     }
 
     protected ITaskFactoryProvider getTaskFactoryProvider() {
@@ -392,12 +415,18 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     private void updatePlayingFromLive() {
         if(stateMachine.getState() != EnigmaPlayerState.PLAYING) { return; }
         ITimelinePosition timelinePosition = environment.playerImplementationInternals.getCurrentPosition();
+        ITimelinePosition startPosition = environment.playerImplementationInternals.getCurrentStartBound();
         ITimelinePosition endPos = environment.playerImplementationInternals.getCurrentEndBound();
+        IInternalPlaybackSession playbackSession = currentPlaybackSession.value;
         if(timelinePosition != null && endPos != null) {
             long seconds = endPos.subtract(timelinePosition).inWholeUnits(Duration.Unit.SECONDS);
             setPlayingFromLive(seconds < 60 && stateMachine.getState() == EnigmaPlayerState.PLAYING);
+            long windowTime = endPos.subtract(startPosition).inWholeUnits(Duration.Unit.SECONDS);
+            boolean allowed = windowTime > 300 && stateMachine.getState() == EnigmaPlayerState.PLAYING;
+            playbackSession.setSeekLiveAllowed(allowed);
         } else {
             setPlayingFromLive(false);
+            playbackSession.setSeekLiveAllowed(false);
         }
     }
 
@@ -623,6 +652,14 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         @Override
         public boolean supports(EnigmaMediaFormat enigmaMediaFormat) {
             return enigmaMediaFormat != null && enigmaMediaFormat.equals(StreamFormat.DASH, DrmTechnology.NONE);
+        }
+
+        @Override
+        public Set<EnigmaMediaFormat> getSupportedFormats() {
+            EnigmaMediaFormat enigmaMediaFormat = new EnigmaMediaFormat(StreamFormat.DASH,DrmTechnology.NONE);
+            Set<EnigmaMediaFormat> enigmaMediaFormats = new HashSet<>();
+            enigmaMediaFormats.add(enigmaMediaFormat);
+            return enigmaMediaFormats;
         }
     }
 

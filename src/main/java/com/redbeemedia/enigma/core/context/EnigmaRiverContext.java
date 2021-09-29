@@ -2,16 +2,15 @@ package com.redbeemedia.enigma.core.context;
 
 import android.app.Application;
 
-import com.redbeemedia.enigma.core.BuildConfig;
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleManager;
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleManagerFactory;
+import com.redbeemedia.enigma.core.ads.IAdInsertionFactory;
 import com.redbeemedia.enigma.core.context.exception.ContextInitializationException;
 import com.redbeemedia.enigma.core.epg.IEpgLocator;
 import com.redbeemedia.enigma.core.http.DefaultHttpHandler;
 import com.redbeemedia.enigma.core.http.IHttpHandler;
 import com.redbeemedia.enigma.core.network.IDefaultNetworkMonitor;
 import com.redbeemedia.enigma.core.network.INetworkMonitor;
-import com.redbeemedia.enigma.core.ads.IAdInsertionFactory;
 import com.redbeemedia.enigma.core.task.ITaskFactory;
 import com.redbeemedia.enigma.core.task.ITaskFactoryProvider;
 import com.redbeemedia.enigma.core.util.UrlPath;
@@ -30,10 +29,10 @@ public final class EnigmaRiverContext {
 
     public static synchronized void initialize(Application application, EnigmaRiverContextInitialization initialization) throws ContextInitializationException {
         try {
-            if(application == null) {
+            if (application == null) {
                 throw new NullPointerException("application was null");
             }
-            if(initializedContext == null) {
+            if (initializedContext == null) {
                 initializedContext = new EnigmaRiverInitializedContext(application, initialization);
                 EnigmaModuleInitializer.initializeModules(new ModuleContextInitialization(application, initialization.moduleSettings));
             } else {
@@ -48,9 +47,11 @@ public final class EnigmaRiverContext {
 
     /**
      * For unit tests.
+     *
      * @param initialization
      */
-    /*package-protected*/ static synchronized void resetInitialization(EnigmaRiverContextInitialization initialization) {
+    /*package-protected*/
+    static synchronized void resetInitialization(EnigmaRiverContextInitialization initialization) {
         initializedContext = new EnigmaRiverInitializedContext(null, initialization);
     }
 
@@ -85,7 +86,6 @@ public final class EnigmaRiverContext {
     }
 
     /**
-     *
      * @deprecated Use {@link #getTaskFactoryProvider()} <br> Ex: {@code getTaskFactoryProvider().getTaskFactory()}
      */
     @Deprecated
@@ -111,16 +111,11 @@ public final class EnigmaRiverContext {
 
     //Version if the core library
     public static String getVersion() {
-        String version = "r3.3.0-BETA-1";
-        if(version.contains("REPLACE_WITH_RELEASE_VERSION")) {
-            return "dev-snapshot-"+BuildConfig.VERSION_NAME;
-        } else {
-            return version;
-        }
+        return "r3.3.1-BETA-1";
     }
 
     private static void assertInitialized() {
-        if(initializedContext == null) {
+        if (initializedContext == null) {
             throw new IllegalStateException("EnigmaRiverContext is not initialized.");
         }
     }
@@ -150,9 +145,8 @@ public final class EnigmaRiverContext {
             return this;
         }
 
-        public IHttpHandler getHttpHandler()
-        {
-            if(httpHandler == null) {
+        public IHttpHandler getHttpHandler() {
+            if (httpHandler == null) {
                 httpHandler = new DefaultHttpHandler();
             }
 
@@ -169,7 +163,7 @@ public final class EnigmaRiverContext {
         }
 
         public IDeviceInfo getDeviceInfo(final Application application) {
-            if(deviceInfo != null) {
+            if (deviceInfo != null) {
                 return deviceInfo;
             } else {
                 return new DeviceInfo(application);
@@ -200,7 +194,7 @@ public final class EnigmaRiverContext {
         }
 
         protected EnigmaRiverContextInitialization setTaskFactory(ITaskFactory taskFactory) {
-            if(taskFactoryProvider instanceof DefaultTaskFactoryProvider) {
+            if (taskFactoryProvider instanceof DefaultTaskFactoryProvider) {
                 ((DefaultTaskFactoryProvider) taskFactoryProvider).setTaskFactory(taskFactory);
             } else {
                 throw new IllegalStateException("Custom ITaskFactoryProvider has been set. Use this to set the TaskFactory");
@@ -238,7 +232,7 @@ public final class EnigmaRiverContext {
         public <I extends IModuleInitializationSettings> I forModule(IModuleInfo<I> moduleInfo) {
             String moduleId = moduleInfo.getModuleId();
             I moduleInitialization = (I) moduleSettings.get(moduleId);
-            if(moduleInitialization == null) {
+            if (moduleInitialization == null) {
                 moduleInitialization = moduleInfo.createInitializationSettings();
                 moduleSettings.put(moduleId, moduleInitialization);
             }
@@ -269,7 +263,7 @@ public final class EnigmaRiverContext {
         public EnigmaRiverInitializedContext(Application application, EnigmaRiverContextInitialization initialization) {
             try {
                 String baseUrl = initialization.getExposureBaseUrl();
-                if(baseUrl == null) {
+                if (baseUrl == null) {
                     throw new IllegalStateException("No exposure base url supplied.");
                 }
                 this.exposureBaseUrl = new UrlPath(baseUrl);
@@ -281,7 +275,7 @@ public final class EnigmaRiverContext {
                 this.taskFactoryProvider = initialization.getTaskFactoryProvider();
                 this.epgLocator = initialization.getEpgLocator();
                 this.networkMonitor = initialization.getNetworkMonitor();
-                if(networkMonitor instanceof IDefaultNetworkMonitor) {
+                if (networkMonitor instanceof IDefaultNetworkMonitor) {
                     ((IDefaultNetworkMonitor) networkMonitor).start(application.getApplicationContext(), taskFactoryProvider);
                 }
                 this.adInsertionFactory = initialization.getAdInsertionFactory();

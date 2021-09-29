@@ -57,6 +57,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -115,8 +116,8 @@ public class DefaultPlaybackStartActionTest {
                         }
                     }
                 },
-                new SpriteDataMock.MockSpriteRepository()
-        ) {
+                new SpriteDataMock.MockSpriteRepository(),
+                new HashSet<>()) {
             @Override
             protected Analytics createAnalytics(ISession session, String playbackSessionId, ITimeProvider timeProvider, ITaskFactory taskFactory, AnalyticsPlayResponseData analyticsPlayResponseData) {
                 return new Analytics(new MockAnalyticsReporter(), new IInternalPlaybackSessionListener() {
@@ -195,8 +196,8 @@ public class DefaultPlaybackStartActionTest {
                         internalPlaybackSession.onStart(mockEnigmaPlayer);
                     }
                 },
-                new SpriteDataMock.MockSpriteRepository()
-        ) {
+                new SpriteDataMock.MockSpriteRepository(),
+                new HashSet<>()) {
             @Override
             protected IBufferingAnalyticsHandler newAnalyticsHandler(ISession session, String playbackSessionId, ITimeProvider timeProvider, AnalyticsPlayResponseData analyticsPlayResponseData) {
                 return new MockAnalyticsHandler() {
@@ -286,8 +287,8 @@ public class DefaultPlaybackStartActionTest {
                 EnigmaRiverContext.getTaskFactoryProvider(),
                 new MockPlayerImplementation(),
                 new MockPlaybackStartAction.MockEnigmaPlayerCallbacks(),
-                new SpriteDataMock.MockSpriteRepository()
-        ) {
+                new SpriteDataMock.MockSpriteRepository(),
+                new HashSet<>()) {
             @Override
             protected IInternalPlaybackSession newPlaybackSession(InternalPlaybackSession.ConstructorArgs constructorArgs) {
                 MockInternalPlaybackSession playbackSession = new MockInternalPlaybackSession(true) {
@@ -405,8 +406,8 @@ public class DefaultPlaybackStartActionTest {
                         taskFactoryProvider,
                         playerImplementationControls,
                         playerConnection,
-                        spriteRepository
-                ) {
+                        spriteRepository,
+                        new HashSet<>()) {
                     @Override
                     protected Analytics createAnalytics(ISession session, String playbackSessionId, ITimeProvider timeProvider, ITaskFactory taskFactory, AnalyticsPlayResponseData analyticsPlayResponseData) {
                         return new Analytics(new IgnoringAnalyticsReporter(), new MockInternalPlaybackSessionListener());
@@ -444,7 +445,7 @@ public class DefaultPlaybackStartActionTest {
                 new MockTaskFactoryProvider(),
                 new MockPlayerImplementation(),
                 new MockPlaybackStartAction.MockEnigmaPlayerCallbacks(),
-                new SpriteDataMock.MockSpriteRepository());
+                new SpriteDataMock.MockSpriteRepository(), new HashSet<>());
 
         ISession sessionValue = ReflectionUtil.getDeclaredField(playbackStartAction, ISession.class, "session");
         IBusinessUnit businessUnitValue = ReflectionUtil.getDeclaredField(playbackStartAction, IBusinessUnit.class, "businessUnit");
@@ -461,7 +462,7 @@ public class DefaultPlaybackStartActionTest {
                 new MockTaskFactoryProvider(),
                 new MockPlayerImplementation(),
                 new MockPlaybackStartAction.MockEnigmaPlayerCallbacks(),
-                new SpriteDataMock.MockSpriteRepository());
+                new SpriteDataMock.MockSpriteRepository(), new HashSet<>());
 
         sessionValue = ReflectionUtil.getDeclaredField(playbackStartAction, ISession.class, "session");
         businessUnitValue = ReflectionUtil.getDeclaredField(playbackStartAction, IBusinessUnit.class, "businessUnit");
@@ -479,7 +480,7 @@ public class DefaultPlaybackStartActionTest {
                 new MockTaskFactoryProvider(),
                 new MockPlayerImplementation(),
                 new MockPlaybackStartAction.MockEnigmaPlayerCallbacks(),
-                new SpriteDataMock.MockSpriteRepository());
+                new SpriteDataMock.MockSpriteRepository(), new HashSet<>());
 
         sessionValue = ReflectionUtil.getDeclaredField(playbackStartAction, ISession.class, "session");
         businessUnitValue = ReflectionUtil.getDeclaredField(playbackStartAction, IBusinessUnit.class, "businessUnit");
@@ -496,7 +497,7 @@ public class DefaultPlaybackStartActionTest {
                 new MockTaskFactoryProvider(),
                 new MockPlayerImplementation(),
                 new MockPlaybackStartAction.MockEnigmaPlayerCallbacks(),
-                new SpriteDataMock.MockSpriteRepository());
+                new SpriteDataMock.MockSpriteRepository(), new HashSet<>());
 
         sessionValue = ReflectionUtil.getDeclaredField(playbackStartAction, ISession.class, "session");
         businessUnitValue = ReflectionUtil.getDeclaredField(playbackStartAction, IBusinessUnit.class, "businessUnit");
@@ -527,8 +528,8 @@ public class DefaultPlaybackStartActionTest {
         DefaultPlaybackStartAction playbackStartAction = new DefaultPlaybackStartAction(
                 new MockSession(), new MockSession().getBusinessUnit(), new MockTimeProvider(), playRequest,null,
                 EnigmaRiverContext.getTaskFactoryProvider(), new MockPlayerImplementation(), new MockPlaybackStartAction.MockEnigmaPlayerCallbacks(),
-                new SpriteDataMock.MockSpriteRepository()
-        ) {
+                new SpriteDataMock.MockSpriteRepository(),
+                new HashSet<>()) {
             @Override
             protected IAdInsertionParameters buildAdInsertionParameters(IPlayRequest playRequest) {
                 return adParameters;
@@ -537,11 +538,10 @@ public class DefaultPlaybackStartActionTest {
 
         // Execute the query
         playbackStartAction.startUsingAssetId("foo");
-        // Fetch the query from the request url
-        String query = new URL(new JSONObject(httpHandler.getLog().get(0)).getString("url")).getQuery();
+        // Fetch the play request query from the request url
+        String query = new URL(new JSONObject(httpHandler.getLog().get(1)).getString("url")).getQuery();
         // Check that the mock parameters are included.
-        Assert.assertTrue(((MockAdParameters)adParameters).asQueryString().endsWith(query));
-        Assert.assertTrue("?foo=bar&baz=42".endsWith(query));
+        Assert.assertTrue(query.contains("foo=bar&baz=42"));
 
         httpHandler.clearLog();
 
@@ -551,12 +551,12 @@ public class DefaultPlaybackStartActionTest {
         playbackStartAction = new DefaultPlaybackStartAction(
                 new MockSession(), new MockSession().getBusinessUnit(), new MockTimeProvider(), playRequest,null,
                 EnigmaRiverContext.getTaskFactoryProvider(), new MockPlayerImplementation(), new MockPlaybackStartAction.MockEnigmaPlayerCallbacks(),
-                new SpriteDataMock.MockSpriteRepository()
-        );
+                new SpriteDataMock.MockSpriteRepository(),
+                new HashSet<>());
         // Execute the query
         playbackStartAction.startUsingAssetId("foo");
         // Fetch the query from the request url
-        query = new URL(new JSONObject(httpHandler.getLog().get(0)).getString("url")).getQuery();
+        query = new URL(new JSONObject(httpHandler.getLog().get(1)).getString("url")).getQuery();
         Assert.assertNull(query);
 
         httpHandler.clearLog();
@@ -574,7 +574,7 @@ public class DefaultPlaybackStartActionTest {
         );
         // Execute the query
         playbackStartAction.startUsingAssetId("foo");
-        query = new URL(new JSONObject(httpHandler.getLog().get(0)).getString("url")).getQuery();
+        query = new URL(new JSONObject(httpHandler.getLog().get(1)).getString("url")).getQuery();
 
         for (Map.Entry<String, ?> kvp : defaultAdInsertionParameters.getParameters().entrySet()) {
             if (kvp.getValue() != null) {

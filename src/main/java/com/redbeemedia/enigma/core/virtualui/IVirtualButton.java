@@ -26,6 +26,8 @@ public interface IVirtualButton {
 
     void click();
 
+    void refresh();
+
     boolean addListener(IVirtualButtonListener listener);
     boolean addListener(IVirtualButtonListener listener, Handler handler);
     boolean removeListener(IVirtualButtonListener listener);

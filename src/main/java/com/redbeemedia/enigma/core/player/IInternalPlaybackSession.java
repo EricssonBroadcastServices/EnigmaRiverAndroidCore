@@ -22,6 +22,7 @@ import java.util.Collection;
     IAdMetadata getAdsMetadata();
     IEnigmaPlayerConnection getPlayerConnection();
     void setPlayingFromLive(boolean live);
+    void setSeekLiveAllowed(boolean allowed);
     void setTracks(Collection<? extends IPlayerImplementationTrack> tracks);
     void setSelectedSubtitleTrack(ISubtitleTrack track);
     void setSelectedAudioTrack(IAudioTrack track);

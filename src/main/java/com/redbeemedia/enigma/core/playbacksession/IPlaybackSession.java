@@ -19,6 +19,7 @@ public interface IPlaybackSession {
     boolean isPlayingFromLive();
     boolean isSeekToLiveAllowed();
     boolean isSeekAllowed();
+    boolean isSeekInLiveAllowed();
 
     /**
      * Garuaneed to not be <code>null</code>.

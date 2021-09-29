@@ -8,12 +8,17 @@ import com.redbeemedia.enigma.core.virtualui.AbstractVirtualButton;
 
 /*package-protected*/ abstract class AbstractVirtualButtonImpl extends AbstractVirtualButton {
     private final IVirtualButtonContainer container;
-    private final OpenContainer<Boolean> enabled = new OpenContainer<>(true);
+    private final OpenContainer<Boolean> enabled;
     private final OpenContainer<Boolean> relevant = new OpenContainer<>(true);
 
     public AbstractVirtualButtonImpl(IVirtualButtonContainer container) {
+        this(container, true);
+    }
+
+    public AbstractVirtualButtonImpl(IVirtualButtonContainer container, boolean defaultEnabled) {
         container.addButton(this);
         this.container = container;
+        enabled = new OpenContainer<>(defaultEnabled);
     }
 
     @Override
@@ -51,7 +56,8 @@ import com.redbeemedia.enigma.core.virtualui.AbstractVirtualButton;
         });
     }
 
-    protected void refresh() {
+    @Override
+    public void refresh() {
         StateChangedFlag stateChanged = new StateChangedFlag();
 
         boolean newRelevant;

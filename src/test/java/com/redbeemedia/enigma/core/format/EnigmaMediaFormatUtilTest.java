@@ -1,5 +1,7 @@
 package com.redbeemedia.enigma.core.format;
 
+import static com.redbeemedia.enigma.core.format.EnigmaMediaFormat.StreamFormat.SMOOTHSTREAMING;
+
 import com.redbeemedia.enigma.core.testutil.json.JsonArrayBuilder;
 import com.redbeemedia.enigma.core.testutil.json.JsonObjectBuilder;
 
@@ -9,6 +11,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 public class EnigmaMediaFormatUtilTest {
     @Test
@@ -18,7 +22,7 @@ public class EnigmaMediaFormatUtilTest {
             public EnigmaMediaFormat select(EnigmaMediaFormat prospect, Collection<EnigmaMediaFormat> available) {
                 //Prefer smooth streaming
                 for(EnigmaMediaFormat mediaFormat : available) {
-                    if(mediaFormat.getStreamFormat() == EnigmaMediaFormat.StreamFormat.SMOOTHSTREAMING) {
+                    if(mediaFormat.getStreamFormat() == SMOOTHSTREAMING) {
                         return mediaFormat;
                     }
                 }
@@ -41,8 +45,17 @@ public class EnigmaMediaFormatUtilTest {
             @Override
             public boolean supports(EnigmaMediaFormat enigmaMediaFormat) {
                 //Support everything except smooth streaming
-                return enigmaMediaFormat.getStreamFormat() != EnigmaMediaFormat.StreamFormat.SMOOTHSTREAMING;
+                return enigmaMediaFormat.getStreamFormat() != SMOOTHSTREAMING;
             }
+
+            @Override
+            public Set<EnigmaMediaFormat> getSupportedFormats() {
+                Set<EnigmaMediaFormat> formatSet =  new HashSet<>();
+                EnigmaMediaFormat format = new EnigmaMediaFormat(SMOOTHSTREAMING, EnigmaMediaFormat.DrmTechnology.NONE);
+                formatSet.add(format);
+                return formatSet;
+            }
+
         };
 
         JsonArrayBuilder arrayBuilder = new JsonArrayBuilder();

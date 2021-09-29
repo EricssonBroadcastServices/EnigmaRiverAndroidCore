@@ -11,6 +11,7 @@ import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
 import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.http.MockHttpHandler;
+import com.redbeemedia.enigma.core.marker.IMarkerPointsDetector;
 import com.redbeemedia.enigma.core.playbacksession.BasePlaybackSessionListener;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSessionListener;
 import com.redbeemedia.enigma.core.player.controls.IEnigmaPlayerControls;
@@ -598,6 +599,11 @@ public class InternalPlaybackSessionTest {
         public IAdDetector getAdDetector() { throw new UnsupportedOperationException(); }
 
         @Override
+        public IMarkerPointsDetector getMarkerPointsDetector() {
+            return null;
+        }
+
+        @Override
         public ITimeline getTimeline() {
             throw new UnsupportedOperationException();
         }
@@ -605,6 +611,11 @@ public class InternalPlaybackSessionTest {
         @Override
         public void setDefaultSession(ISession session) {
             throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isLiveStream() {
+            return false;
         }
 
         @Override

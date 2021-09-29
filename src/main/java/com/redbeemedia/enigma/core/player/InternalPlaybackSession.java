@@ -72,6 +72,7 @@ import java.util.List;
     private final OpenContainer<IVideoTrack> selectedVideoTrack = new OpenContainer<>(null);
     private final OpenContainer<IContractRestrictions> contractRestrictions;
     private final OpenContainer<Boolean> seekAllowed = new OpenContainer<>(true);
+    private final OpenContainer<Boolean> seekLiveAllowed = new OpenContainer<>(false);
 
     private static final int STATE_NEW = 0;
     private static final int STATE_STARTED = 1;
@@ -349,6 +350,16 @@ import java.util.List;
     private void updateSeekAllowed(IContractRestrictions contractRestrictions) {
         boolean allowed = contractRestrictions.getValue(ContractRestriction.TIMESHIFT_ENABLED, true);
         OpenContainerUtil.setValueSynchronized(seekAllowed, allowed, null);
+    }
+
+    @Override
+    public void setSeekLiveAllowed(boolean allowed) {
+        OpenContainerUtil.setValueSynchronized(seekLiveAllowed, allowed, null);
+    }
+
+    @Override
+    public boolean isSeekInLiveAllowed() {
+        return OpenContainerUtil.getValueSynchronized(seekLiveAllowed) && streamInfo.isLiveStream();
     }
 
     @Override

@@ -74,13 +74,17 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 public class EnigmaPlayerTest {
     @Test
     public void testPlayer() throws JSONException {
         MockHttpHandler mockHttpHandler = new MockHttpHandler();
+        // duplicate one for content/Asset request : for markerpoints
+        queuePlayResponse(mockHttpHandler, new MockPlayResponse());
         queuePlayResponse(mockHttpHandler, new MockPlayResponse());
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(mockHttpHandler));
 
@@ -189,6 +193,8 @@ public class EnigmaPlayerTest {
             mockPlayResponse.addFormat("https://media.example.com", "DASH");
             mockPlayResponse.addFormat("https://media.example.com", "DASH", EnigmaMediaFormat.DrmTechnology.WIDEVINE.getKey());
             mockPlayResponse.streamInfoData.live = false;
+            // duplicate one for content/Asset request : for markerpoints
+            queuePlayResponse(mockHttpHandler, mockPlayResponse);
             queuePlayResponse(mockHttpHandler, mockPlayResponse);
         }
         {
@@ -198,6 +204,8 @@ public class EnigmaPlayerTest {
             mockPlayResponse.addFormat("https://media.example.com?format=HLS", "HLS");
             mockPlayResponse.streamInfoData.live = true;
             mockPlayResponse.streamInfoData.start = 1505574300000L;
+            // duplicate one for content/Asset request : for markerpoints
+            queuePlayResponse(mockHttpHandler, mockPlayResponse);
             queuePlayResponse(mockHttpHandler, mockPlayResponse);
         }
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(mockHttpHandler));
@@ -212,6 +220,11 @@ public class EnigmaPlayerTest {
                     @Override
                     public boolean supports(EnigmaMediaFormat enigmaMediaFormat) {
                         return enigmaMediaFormat.equals(DASH_UNENC);
+                    }
+
+                    @Override
+                    public Set<EnigmaMediaFormat> getSupportedFormats() {
+                        return new HashSet<>();
                     }
                 });
                 installed.setFlag();
@@ -343,6 +356,8 @@ public class EnigmaPlayerTest {
         MockHttpHandler mockHttpHandler = new MockHttpHandler();
         {
             MockPlayResponse mockPlayResponse = new MockPlayResponse();
+            // one for content/Asset request : for markerpoints
+            queuePlayResponse(mockHttpHandler, mockPlayResponse);
             queuePlayResponse(mockHttpHandler, mockPlayResponse);
         }
 
@@ -351,7 +366,16 @@ public class EnigmaPlayerTest {
             @Override
             public void install(IEnigmaPlayerEnvironment environment) {
                 super.install(environment);
-                environment.setMediaFormatSupportSpec(enigmaMediaFormat -> true);
+                environment.setMediaFormatSupportSpec(new IMediaFormatSupportSpec() {
+                    @Override
+                    public boolean supports(EnigmaMediaFormat enigmaMediaFormat) {
+                        return true;
+                    }
+                    @Override
+                    public Set<EnigmaMediaFormat> getSupportedFormats() {
+                        return new HashSet<>();
+                    }
+                });
             }
         });
 
@@ -426,7 +450,7 @@ public class EnigmaPlayerTest {
     public void testPlayableReachableFromPlaybackSession() throws JSONException {
         MockHttpHandler httpHandler = new MockHttpHandler();
 
-        for(int i = 0; i < 3; ++i) {
+        for(int i = 0; i < 4; ++i) {
             queuePlayResponse(httpHandler, new MockPlayResponse());
         }
 
@@ -458,8 +482,8 @@ public class EnigmaPlayerTest {
 
     private void setupForTrackTests() throws JSONException {
         MockHttpHandler httpHandler = new MockHttpHandler();
-
-        for(int i = 0; i < 1; ++i) {
+        // one extra for content/Asset request : for markerpoints
+        for(int i = 0; i < 2; ++i) {
             queuePlayResponse(httpHandler, new MockPlayResponse());
         }
 
@@ -723,6 +747,7 @@ public class EnigmaPlayerTest {
         }
 
         queuePlayResponse(httpHandler, playResponseMessage);
+        queuePlayResponse(httpHandler, playResponseMessage);
 
         final List<IPlayerImplementationControls.ISeekPosition> seekPositions = new ArrayList<>();
 
@@ -848,6 +873,8 @@ public class EnigmaPlayerTest {
             Assert.assertTrue(streamInfo.hasStreamPrograms());
         }
 
+        // one for content/Asset request : for markerpoints
+        queuePlayResponse(httpHandler, playResponseMessage);
         queuePlayResponse(httpHandler, playResponseMessage);
 
         final List<IPlayerImplementationControls.ISeekPosition> seekPositions = new ArrayList<>();
@@ -953,6 +980,8 @@ public class EnigmaPlayerTest {
         mockPlayResponse.formats.clear();
         mockPlayResponse.addFormat("https://media.example.com", "DASH", EnigmaMediaFormat.DrmTechnology.WIDEVINE.getKey(), 9483);
         mockPlayResponse.streamInfoData.live = true;
+        // duplicate one for content/Asset request : for markerpoints
+        queuePlayResponse(httpHandler, mockPlayResponse);
         queuePlayResponse(httpHandler, mockPlayResponse);
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(httpHandler));
 
@@ -965,6 +994,11 @@ public class EnigmaPlayerTest {
                     @Override
                     public boolean supports(EnigmaMediaFormat enigmaMediaFormat) {
                         return true;
+                    }
+
+                    @Override
+                    public Set<EnigmaMediaFormat> getSupportedFormats() {
+                        return new HashSet<>();
                     }
                 });
             }
@@ -1065,7 +1099,17 @@ public class EnigmaPlayerTest {
             @Override
             public void install(IEnigmaPlayerEnvironment environment) {
                 super.install(environment);
-                environment.setMediaFormatSupportSpec(enigmaMediaFormat -> true); //Support all formats
+                environment.setMediaFormatSupportSpec(new IMediaFormatSupportSpec() {
+                    @Override
+                    public boolean supports(EnigmaMediaFormat enigmaMediaFormat) {
+                        return true;
+                    }
+
+                    @Override
+                    public Set<EnigmaMediaFormat> getSupportedFormats() {
+                        return new HashSet<>();
+                    }
+                }); //Support all formats
             }
 
             @Override
@@ -1710,7 +1754,7 @@ public class EnigmaPlayerTest {
 
         @Override
         protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler, ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection, ISpriteRepository videoSpriteRepository) {
-            return new DefaultPlaybackStartAction(session, businessUnit, timeProvider, playRequest, callbackHandler, taskFactoryProvider, playerImplementationControls, playerConnection, videoSpriteRepository) {
+            return new DefaultPlaybackStartAction(session, businessUnit, timeProvider, playRequest, callbackHandler, taskFactoryProvider, playerImplementationControls, playerConnection, videoSpriteRepository, new HashSet<>()) {
                 @Override
                 protected Analytics createAnalytics(ISession session, String playbackSessionId, ITimeProvider timeProvider, ITaskFactory taskFactory, AnalyticsPlayResponseData analyticsPlayResponseData) {
                     return new Analytics(new MockAnalyticsReporter(), new MockInternalPlaybackSessionListener());

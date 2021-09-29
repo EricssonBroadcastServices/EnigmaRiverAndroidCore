@@ -1,5 +1,8 @@
 package com.redbeemedia.enigma.core.ads;
 
+import static com.redbeemedia.enigma.core.format.EnigmaMediaFormat.StreamFormat.DASH;
+import static com.redbeemedia.enigma.core.format.EnigmaMediaFormat.StreamFormat.HLS;
+
 import androidx.annotation.Nullable;
 
 import com.redbeemedia.enigma.core.format.EnigmaMediaFormat;
@@ -23,7 +26,8 @@ public class AdResourceLoaderFactory implements IAdResourceLoaderFactory {
         if(adsInfo.getStitcher() == IAdMetadata.AdStitcherType.None) {return null;}
 
         if(adsInfo.getStitcher() == IAdMetadata.AdStitcherType.Nowtilus &&
-            EnigmaMediaFormat.StreamFormat.HLS.equals(adsInfo.getStreamFormat())) {
+                (HLS.equals(adsInfo.getStreamFormat())
+                    || DASH.equals(adsInfo.getStreamFormat()))) {
                 return adsInfo.isLive() ?
                     getNowtilusHlsLiveResourceLoader((String)metadata) :
                     getNowtilusVodResourceLoader((JSONObject)metadata);

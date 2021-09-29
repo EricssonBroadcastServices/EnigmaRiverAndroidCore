@@ -14,4 +14,5 @@ public interface IVirtualControls {
     IVirtualButton getPreviousProgram();
     IVirtualButton getSeekBar();
     IVirtualButton getRestart();
+    IVirtualButton getSkipIntro();
 }

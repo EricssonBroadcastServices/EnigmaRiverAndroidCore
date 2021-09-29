@@ -1,8 +1,6 @@
 package com.redbeemedia.enigma.core.virtualui.impl;
 
 import com.redbeemedia.enigma.core.player.timeline.ITimelinePosition;
-import com.redbeemedia.enigma.core.restriction.ContractRestriction;
-import com.redbeemedia.enigma.core.restriction.IContractRestrictions;
 
 /*package-protected*/ class SeekBar extends AbstractVirtualButtonImpl {
 
@@ -17,7 +15,12 @@ import com.redbeemedia.enigma.core.restriction.IContractRestrictions;
 
     @Override
     protected boolean calculateEnabled(IVirtualButtonContainer container) {
-        if(container.getEnigmaPlayer().isAdBeingPlayed()){
+        if (container.getEnigmaPlayer().isAdBeingPlayed() || container.getPlaybackSession() == null) {
+            return false;
+        } else if (container.getPlaybackSession() != null
+                && !container.getPlaybackSession().isSeekInLiveAllowed()
+                && container.getEnigmaPlayer().isLiveStream()) {
+            // if live stream and seek live is not allowed
             return false;
         }
         return true;
