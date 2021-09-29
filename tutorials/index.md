@@ -132,6 +132,7 @@ The following tutorials provide in-depth information about different areas of in
 [Playback Session](advanced_topics/playback_session.md)<br/>
 [Live drift correction (ExoPlayer)](advanced_topics/drift_correction.md)<br/>
 [Overriding media format selection logic](advanced_topics/media_format_preference.md)<br/>
+[Marker points](advanced_topics/marker_points.md)<br/>
 [Ad Insertion](advanced_topics/ad_insertion.md)<br/>
 [Sprites API](advanced_topics/sprites.md)<br/>
 [Playback Configuration](advanced_topics/playback_configuration.md)<br/>

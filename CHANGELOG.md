@@ -1,5 +1,8 @@
 # CHANGELOG
-
+* `3.3.2` Release - [3.3.2](#3.3.2) &nbsp; - &nbsp; 2021-09-29
+* `3.3.1` Release - [3.3.1](#3.3.1) &nbsp; - &nbsp; 2021-09-29
+* `3.3.0` Release - [3.3.0](#3.3.0) &nbsp; - &nbsp; 2021-09-10
+* `3.2.1` Release - [3.2.1](#3.2.1) &nbsp; - &nbsp; 2021-06-15
 * `3.2.1` Release - [3.2.1](#3.2.1) &nbsp; - &nbsp; 2021-06-15
 * `3.2.0` Release - [3.2.0](#3.2.0) &nbsp; - &nbsp; 2021-06-04
 * `3.1.14` Release - [3.1.14](#3.1.14) &nbsp; - &nbsp; 2021-04-28
@@ -11,6 +14,27 @@
 * `3.1.8` Release - [3.1.8](#3.1.8) &nbsp; - &nbsp; 2020-12-11
 * `3.1.7` Release - [3.1.7](#3.1.7) &nbsp; - &nbsp; 2020-12-04
 * `3.1.6` Release - [3.1.6](#3.1.6) &nbsp; - &nbsp; 2020-11-13
+
+
+# <a name="3.3.2"></a> 3.3.2
+#### Features
+`EricssonBroadcastServices/DevEnigmaRiverAndroidCore`
+* EMP-16814: Updated ChangeLog
+
+# <a name="3.3.1"></a> 3.3.1
+#### Features
+`EricssonBroadcastServices/DevEnigmaRiverAndroidCore/DevEnigmaRiverAndroidExoPlayerIntegration/
+DevEnigmaRiverAndroidInternalTestUtils/DevEnigmaRiverAndroidExperimentalLowLatency/
+DevEnigmaRiverAndroidExoPlayerDownload`
+* EMP-16814: Player cue points exposed from SDK
+* EMP-16857: SSAI- Send in supported formats and drms to the play request
+* EMP-16781: Live SSAI- Should not show Seekbar
+
+# <a name="3.3.0"></a> 3.3.0
+#### Features
+`EricssonBroadcastServices/DevEnigmaRiverAndroidCore/DevEnigmaRiverAndroidExoPlayerIntegration/
+DevEnigmaRiverAndroidCast`
+* EMP-16975 : VOD SSAI implementation and Update tutorials
 
 # <a name="3.2.1"></a> 3.2.1
 #### Features
