@@ -192,7 +192,7 @@ public class AdIncludedTimeline extends BaseTimelineListener implements IAdInclu
             return 0;
         }
         int totalAds = 0;
-        if (adDetector.getAdBreaks().get(0).getStart().getStart() == 0) {
+        if (adDetector.getAdBreaks().get(0).getStart().getStart() <= 0) {
             totalAds = 1;
         }
         for (Long content : adDetector.getContentBreaks()) {

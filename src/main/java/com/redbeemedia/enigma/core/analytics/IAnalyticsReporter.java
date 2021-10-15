@@ -49,5 +49,11 @@ public interface IAnalyticsReporter {
 
     void playbackAdCompleted(long offsetTime, String adId);
 
+    void playbackDrm(long offsetTime);
 
+    void playbackStartCasting(long offsetTime);
+
+    void playbackStopCasting(long offsetTime);
+
+    void playbackAdFailed(long offsetTime);
 }

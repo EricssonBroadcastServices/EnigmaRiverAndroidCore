@@ -108,4 +108,24 @@ import com.redbeemedia.enigma.core.error.EnigmaError;
     public void playbackAdCompleted(long offsetTime, String adId) {
 
     }
+
+    @Override
+    public void playbackDrm(long offsetTime) {
+
+    }
+
+    @Override
+    public void playbackStartCasting(long offsetTime) {
+
+    }
+
+    @Override
+    public void playbackStopCasting(long offsetTime) {
+
+    }
+
+    @Override
+    public void playbackAdFailed(long offsetTime) {
+
+    }
 }

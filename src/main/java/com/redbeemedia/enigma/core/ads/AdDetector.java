@@ -164,10 +164,7 @@ public class AdDetector extends BaseTimelineListener implements IAdDetector, ITi
 
         if(entry != null) {
             AdBreak adBreak = adIncludedTimeline.getAdBreakIfPositionIsBetweenTheAd(timelinePositionFactory.newPosition(currentPosition));
-            if(adBreak != null) {
-                adBreak.setAdShown(true);
-            }
-            sendImpression(entry.getImpression());
+            sendImpression(entry.getImpression(), adBreak);
         }
 
         callListeners(entry, entry == null ? null : entry.getEventType(currentPosition));
@@ -185,7 +182,7 @@ public class AdDetector extends BaseTimelineListener implements IAdDetector, ITi
         for(WeakReference<IAdStateListener> reference : nullReferences) { listeners.remove(reference); }
     }
 
-    private void sendImpression(VastImpression impression) {
+    private void sendImpression(VastImpression impression, AdBreak adBreak) {
         if(impression != null && !impression.isSent()) {
             //TODO: Remove this log output before release
             android.util.Log.d(TAG, "Sending impression: " + impression.type);
@@ -197,6 +194,9 @@ public class AdDetector extends BaseTimelineListener implements IAdDetector, ITi
                 } catch(Exception e) {
                     e.printStackTrace();
                 }
+            }
+            if(impression.type == AdEventType.Complete){
+                adBreak.setAdShown(true);
             }
         }
     }

@@ -150,6 +150,9 @@ import java.util.List;
 
     @Override
     public IDrmInfo getDrmInfo() {
+        if (drmInfo != null) {
+            analyticsReporter.playbackDrm(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
+        }
         return drmInfo;
     }
 
@@ -186,6 +189,9 @@ import java.util.List;
         }
         heartbeatRepeater.setEnabled(false);
         if(aborted) {
+            if(enigmaPlayer.getAdDetector().isAdPlaying()){
+                analyticsReporter.playbackAdFailed(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
+            }
             analyticsReporter.playbackAborted(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
         }
         enigmaPlayer.removeListener(playerListener);
@@ -196,6 +202,11 @@ import java.util.List;
     @Override
     public IStreamInfo getStreamInfo() {
         return streamInfo;
+    }
+
+    @Override
+    public IAnalyticsReporter getAnalyticsReporter() {
+        return analyticsReporter;
     }
 
     @Override
@@ -579,12 +590,8 @@ import java.util.List;
         public void adStateChanged(IAdDetector adsDetector, @Nullable IAd currentAdd, AdEventType eventType) {
             if(currentAdd == null) { return; }
             if(eventType == AdEventType.Start) {
-                //TODO: Remove this log output before release
-                android.util.Log.d("SSAI", "Ad started: " + currentAdd.getTitle());
                 analyticsReporter.playbackAdStarted(currentAdd.getStartTime(), currentAdd.getId());
             } else if(eventType == AdEventType.Complete) {
-                //TODO: Remove this log output before release
-                android.util.Log.d("SSAI", "Ad finished: " + currentAdd.getTitle());
                 analyticsReporter.playbackAdCompleted(currentAdd.getStartTime() + currentAdd.getDuration(), currentAdd.getId());
             }
         }

@@ -2,6 +2,7 @@ package com.redbeemedia.enigma.core.player;
 
 import android.app.Activity;
 import android.os.Handler;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -16,6 +17,7 @@ import com.redbeemedia.enigma.core.ads.IAd;
 import com.redbeemedia.enigma.core.ads.IAdDetector;
 import com.redbeemedia.enigma.core.ads.IAdIncludedTimeline;
 import com.redbeemedia.enigma.core.ads.IAdResourceLoader;
+import com.redbeemedia.enigma.core.analytics.IAnalyticsReporter;
 import com.redbeemedia.enigma.core.audio.IAudioTrack;
 import com.redbeemedia.enigma.core.businessunit.IBusinessUnit;
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
@@ -123,6 +125,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     private final OpenContainer<IPlaybackStartAction> currentPlaybackStartAction = new OpenContainer<>(null);
 
     private volatile boolean released = false;
+    private volatile boolean isSeekBusy = false;
 
     /**
      * @param session              the default session to use for PlayRequest
@@ -410,6 +413,14 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         if(playbackSession != null) {
             playbackSession.setPlayingFromLive(live);
         }
+    }
+
+    public IAnalyticsReporter getCurrentAnalyticsReporter() {
+        IInternalPlaybackSession playbackSession = currentPlaybackSession.value;
+        if(playbackSession != null) {
+           return playbackSession.getAnalyticsReporter();
+        }
+        return null;
     }
 
     private void updatePlayingFromLive() {
@@ -1010,10 +1021,19 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                 public void onCurrentPositionChanged(ITimelinePosition timelinePosition) {
                     streamTimelinePosition = timelinePosition;
                     updateStreamOffset();
-                    if (adsDetector.value != null) {
+                    if (isSeekBusy) {
+                        return;
+                    }
+                    isSeekBusy = true;
+                    try {
+                        if (adsDetector.value != null) {
 
-                        if (!adsDetector.value.isAdPlaying()) {
-                            IAdIncludedTimeline timeline = adsDetector.value.getTimeline();
+                            // if ad is not being played
+                            if(adsDetector.value.isAdPlaying()){
+                                return;
+                            }
+
+                                IAdIncludedTimeline timeline = adsDetector.value.getTimeline();
                             if (timeline instanceof AdIncludedTimeline) {
                                 AdIncludedTimeline adIncludedTimeline = (AdIncludedTimeline) timeline;
                                 // See if we started playing right on top of an ad
@@ -1025,15 +1045,35 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                                 }
                                 if (newAdtoStart != null && newAdtoStart.isAdShown()) {
                                     ITimelinePosition newPosition = newAdtoStart.getEnd();
-
                                     environment.playerImplementationControls.seekTo(
                                             new IPlayerImplementationControls.TimelineRelativePosition(newPosition.getStart()),
-                                            new BasePlayerImplementationControlResultHandler());
+                                            new BasePlayerImplementationControlResultHandler() {
+                                                @Override
+                                                public void onError(EnigmaError error) {
+                                                    Log.d("Timeline", error.getTrace());
+                                                }
+                                            });
+                                }else{
+                                    if(newAdtoStart != null && !newAdtoStart.isAdShown()) {
+                                        if (!adsDetector.value.isAdPlaying()) {
+                                            environment.playerImplementationControls.seekTo(
+                                                    new IPlayerImplementationControls.TimelineRelativePosition(newAdtoStart.getStart().getStart()),
+                                                    new BasePlayerImplementationControlResultHandler() {
+                                                        @Override
+                                                        public void onError(EnigmaError error) {
+                                                            Log.d("Timeline", error.getTrace());
+                                                        }
+                                                    });
+                                        }
+                                    }
                                 }
                             }
                         }
+                    } catch (Exception ex) {
+                        Log.e("SSAI", ex.getMessage(), ex);
+                    } finally {
+                        isSeekBusy = false;
                     }
-
                 }
             });
             if(adsDetector.value != null) {

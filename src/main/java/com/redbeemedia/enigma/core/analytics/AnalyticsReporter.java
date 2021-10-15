@@ -27,13 +27,19 @@ public class AnalyticsReporter implements IAnalyticsReporter {
     public void playbackError(EnigmaError error) {
         event(AnalyticsEvents.ERROR, (builder, eventType) -> {
             builder.addData(eventType.CODE, error.getErrorCode());
+            String additionalMessage = "";
 
-            if(error instanceof PlayerImplementationError) {
+            if (error instanceof PlayerImplementationError) {
                 PlayerImplementationError playerImplementationError = (PlayerImplementationError) error;
                 builder.addData(new PlayerSpecificErrorCode(playerImplementationError), playerImplementationError.getInternalErrorCode());
             }
 
-            builder.addData(eventType.MESSAGE, error.getClass().getSimpleName());
+            if (!error.getMessageAndCauseMessage().trim().isEmpty()) {
+                // will add message and cause message in it
+                additionalMessage = " : " + error.getMessageAndCauseMessage();
+            }
+
+            builder.addData(eventType.MESSAGE, error.getClass().getSimpleName() + additionalMessage);
             builder.addData(eventType.DETAILS, error.getTrace());
         });
     }
@@ -196,6 +202,33 @@ public class AnalyticsReporter implements IAnalyticsReporter {
         event(AnalyticsEvents.AD_COMPLETED, (builder, eventType) -> {
             builder.addData(eventType.OFFSET_TIME, offsetTime);
             builder.addData(eventType.AD_MEDIA_ID, adId);
+        });
+    }
+
+    @Override
+    public void playbackDrm(long offsetTime) {
+        event(AnalyticsEvents.DRM, (builder, eventType) -> {
+            builder.addData(eventType.OFFSET_TIME, offsetTime);
+        });
+    }
+    @Override
+    public void playbackStartCasting(long offsetTime) {
+        event(AnalyticsEvents.START_CASTING, (builder, eventType) -> {
+            builder.addData(eventType.OFFSET_TIME, offsetTime);
+        });
+    }
+
+    @Override
+    public void playbackStopCasting(long offsetTime) {
+        event(AnalyticsEvents.STOP_CASTING, (builder, eventType) -> {
+            builder.addData(eventType.OFFSET_TIME, offsetTime);
+        });
+    }
+
+    @Override
+    public void playbackAdFailed(long offsetTime) {
+        event(AnalyticsEvents.AD_FAILED, (builder, eventType) -> {
+            builder.addData(eventType.OFFSET_TIME, offsetTime);
         });
     }
 

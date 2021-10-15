@@ -1,6 +1,7 @@
 package com.redbeemedia.enigma.core.player;
 
 import com.redbeemedia.enigma.core.ads.IAdMetadata;
+import com.redbeemedia.enigma.core.analytics.IAnalyticsReporter;
 import com.redbeemedia.enigma.core.audio.IAudioTrack;
 import com.redbeemedia.enigma.core.drm.IDrmInfo;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
@@ -15,6 +16,7 @@ import java.util.Collection;
     void onStop(IEnigmaPlayer enigmaPlayer);
 
     IStreamInfo getStreamInfo();
+    IAnalyticsReporter getAnalyticsReporter();
     IStreamPrograms getStreamPrograms();
     IPlaybackSessionInfo getPlaybackSessionInfo();
     IDrmInfo getDrmInfo();

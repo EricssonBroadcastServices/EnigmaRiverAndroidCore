@@ -71,6 +71,9 @@ import org.json.JSONObject;
                         if (streamInfo.hasStaticManifest()) {
                             if(bookmarks.has(LAST_VIEWED_OFFSET)) {
                                 long lastViewedOffsetMs = bookmarks.optLong(LAST_VIEWED_OFFSET);
+                                if(lastViewedOffsetMs<0){
+                                    lastViewedOffsetMs = 0;
+                                }
                                 long duration = jsonObject.optLong("durationInMs") / 1000;
                                 if (duration - lastViewedOffsetMs < BOOKMARK_OFFSET_DELIMITER_MS) {
                                     playerImplementationControls.seekTo(IPlayerImplementationControls.ISeekPosition.TIMELINE_START, new SeekToControlResultHandler());

@@ -107,6 +107,20 @@ public abstract class EnigmaError {
         return (mess != null) ? (name + ": " + mess) : name;
     }
 
+    public String getMessageAndCauseMessage() {
+        StringBuilder messageDetails = new StringBuilder();
+        if (getMessage() != null) {
+            messageDetails.append(getMessage());
+        }
+        if (cause != null) {
+            String causeMsg = cause.getMessage();
+            if (causeMsg != null) {
+                messageDetails.append(" Cause : [").append(causeMsg).append("]");
+            }
+        }
+        return messageDetails.toString();
+    }
+
     private String getMessage() {
         return message;
     }

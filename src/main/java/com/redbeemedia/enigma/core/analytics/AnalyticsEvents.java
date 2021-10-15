@@ -22,6 +22,10 @@ package com.redbeemedia.enigma.core.analytics;
     public static final AnalyticsProgramChangedEvent PROGRAM_CHANGED = new AnalyticsProgramChangedEvent();
     public static final AnalyticsAdEvent AD_STARTED = new AnalyticsAdEvent("Playback.AdStarted");
     public static final AnalyticsAdEvent AD_COMPLETED = new AnalyticsAdEvent("Playback.AdCompleted");
+    public static final AnalyticsDrm DRM = new AnalyticsDrm();
+    public static final AnalyticsStartCasting START_CASTING = new AnalyticsStartCasting();
+    public static final AnalyticsStopCasting STOP_CASTING = new AnalyticsStopCasting();
+    public static final AnalyticsAdFailed AD_FAILED = new AnalyticsAdFailed();
 
     private static <E extends IAnalyticsEventType,T> IEventProperty<E,T> mandatory(String name) {
         return EventProperty.newMandatoryProperty(name);
@@ -226,5 +230,33 @@ package com.redbeemedia.enigma.core.analytics;
         }
         public final IEventProperty<AnalyticsAdEvent, Long> OFFSET_TIME = mandatory("OffsetTime");
         public final IEventProperty<AnalyticsAdEvent, String> AD_MEDIA_ID = mandatory("AdMediaId");
+    }
+
+    public static class AnalyticsDrm extends AbstractOffsetTimeAnalyticsEvent {
+        @Override
+        public String getName() {
+            return "Playback.DRM";
+        }
+    }
+
+    public static class AnalyticsStartCasting extends AbstractOffsetTimeAnalyticsEvent {
+        @Override
+        public String getName() {
+            return "Playback.StartCasting";
+        }
+    }
+
+    public static class AnalyticsStopCasting extends AbstractOffsetTimeAnalyticsEvent {
+        @Override
+        public String getName() {
+            return "Playback.StopCasting";
+        }
+    }
+
+    public static class AnalyticsAdFailed extends AbstractOffsetTimeAnalyticsEvent {
+        @Override
+        public String getName() {
+            return "Playback.AdFailed";
+        }
     }
 }

@@ -2,13 +2,18 @@ package com.redbeemedia.enigma.core.player;
 
 import android.os.Handler;
 
+import com.redbeemedia.enigma.core.ads.AdDetector;
+import com.redbeemedia.enigma.core.ads.ExposureAdMetadata;
 import com.redbeemedia.enigma.core.ads.IAdDetector;
+import com.redbeemedia.enigma.core.ads.IAdMetadata;
 import com.redbeemedia.enigma.core.analytics.AnalyticsReporter;
+import com.redbeemedia.enigma.core.analytics.IAnalyticsReporter;
 import com.redbeemedia.enigma.core.analytics.MockAnalyticsHandler;
 import com.redbeemedia.enigma.core.analytics.MockAnalyticsReporter;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
 import com.redbeemedia.enigma.core.error.EnigmaError;
+import com.redbeemedia.enigma.core.format.EnigmaMediaFormat;
 import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.http.MockHttpHandler;
 import com.redbeemedia.enigma.core.marker.IMarkerPointsDetector;
@@ -17,6 +22,7 @@ import com.redbeemedia.enigma.core.playbacksession.IPlaybackSessionListener;
 import com.redbeemedia.enigma.core.player.controls.IEnigmaPlayerControls;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.timeline.ITimeline;
+import com.redbeemedia.enigma.core.player.timeline.SimpleTimeline;
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
 import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.task.ITask;
@@ -596,7 +602,12 @@ public class InternalPlaybackSessionTest {
         }
 
         @Override
-        public IAdDetector getAdDetector() { throw new UnsupportedOperationException(); }
+        public IAdDetector getAdDetector() {
+            ITimeline timeline = new SimpleTimeline();
+            MockHttpHandler mockHttpHandler = new MockHttpHandler();
+            DefaultTimelinePositionFactoryTest.TimeLinePositionCreator timeFactory = new DefaultTimelinePositionFactoryTest.TimeLinePositionCreator();
+            return new AdDetector(mockHttpHandler, timeline,timeFactory);
+        }
 
         @Override
         public IMarkerPointsDetector getMarkerPointsDetector() {
@@ -635,6 +646,11 @@ public class InternalPlaybackSessionTest {
         @Override
         public void setVirtualControls(IVirtualControls virtualControls) {
 
+        }
+
+        @Override
+        public IAnalyticsReporter getCurrentAnalyticsReporter() {
+            return null;
         }
     }
 

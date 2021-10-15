@@ -3,6 +3,7 @@ package com.redbeemedia.enigma.core.player;
 import android.os.Handler;
 
 import com.redbeemedia.enigma.core.ads.IAdDetector;
+import com.redbeemedia.enigma.core.analytics.IAnalyticsReporter;
 import com.redbeemedia.enigma.core.marker.IMarkerPointsDetector;
 import com.redbeemedia.enigma.core.player.controls.IEnigmaPlayerControls;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
@@ -30,4 +31,5 @@ public interface IEnigmaPlayer {
     boolean isAdBeingPlayed();
     IVirtualControls getVirtualControls();
     void setVirtualControls(IVirtualControls virtualControls);
+    IAnalyticsReporter getCurrentAnalyticsReporter();
 }

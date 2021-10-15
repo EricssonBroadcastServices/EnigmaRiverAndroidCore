@@ -89,39 +89,47 @@ public class AnalyticsReportedEventTest<E extends IAnalyticsEventType> {
             return reporter -> reporter.playbackCreated("mockAsset");
         } else if(eventType == AnalyticsEvents.HANDSHAKE_STARTED) {
             return reporter -> reporter.playbackHandshakeStarted("mockAsset");
-        } else if(eventType == AnalyticsEvents.PLAYER_READY) {
+        } else if (eventType == AnalyticsEvents.PLAYER_READY) {
             return reporter -> reporter.playbackPlayerReady(72442L, "MockTech", "1.0");
-        } else if(eventType == AnalyticsEvents.STARTED) {
+        } else if (eventType == AnalyticsEvents.STARTED) {
             return reporter -> reporter.playbackStarted(35737L, "test", "http://mock.example.com/media/mock", null, null, null);
-        } else if(eventType == AnalyticsEvents.PAUSED) {
+        } else if (eventType == AnalyticsEvents.PAUSED) {
             return reporter -> reporter.playbackPaused(37357L);
-        } else if(eventType == AnalyticsEvents.RESUMED) {
+        } else if (eventType == AnalyticsEvents.RESUMED) {
             return reporter -> reporter.playbackResumed(4662L);
-        } else if(eventType == AnalyticsEvents.COMPLETED) {
+        } else if (eventType == AnalyticsEvents.COMPLETED) {
             return reporter -> reporter.playbackCompleted(373577L);
-        } else if(eventType == AnalyticsEvents.ABORTED) {
+        } else if (eventType == AnalyticsEvents.ABORTED) {
             return reporter -> reporter.playbackAborted(82772L);
-        } else if(eventType == AnalyticsEvents.HEARTBEAT) {
+        } else if (eventType == AnalyticsEvents.HEARTBEAT) {
             return reporter -> reporter.playbackHeartbeat(8272L);
-        } else if(eventType == AnalyticsEvents.APP_BACKGROUNDED) {
+        } else if (eventType == AnalyticsEvents.APP_BACKGROUNDED) {
             return reporter -> reporter.playbackAppBackgrounded(2662L);
-        } else if(eventType == AnalyticsEvents.APP_RESUMED) {
+        } else if (eventType == AnalyticsEvents.APP_RESUMED) {
             return reporter -> reporter.playbackAppResumed(34654L);
-        } else if(eventType == AnalyticsEvents.GRACE_PERIOD_ENDED) {
+        } else if (eventType == AnalyticsEvents.GRACE_PERIOD_ENDED) {
             return reporter -> reporter.playbackGracePeriodEnded(882277L);
-        } else if(eventType == AnalyticsEvents.BITRATE_CHANGED) {
+        } else if (eventType == AnalyticsEvents.BITRATE_CHANGED) {
             return reporter -> reporter.playbackBitrateChanged(12345, 1000);
-        } else if(eventType == AnalyticsEvents.BUFFERING_STARTED) {
+        } else if (eventType == AnalyticsEvents.BUFFERING_STARTED) {
             return reporter -> reporter.playbackBufferingStarted(35373L);
-        } else if(eventType == AnalyticsEvents.BUFFERING_STOPPED) {
+        } else if (eventType == AnalyticsEvents.BUFFERING_STOPPED) {
             return reporter -> reporter.playbackBufferingStopped(32727L);
-        } else if(eventType == AnalyticsEvents.SCRUBBED_TO) {
+        } else if (eventType == AnalyticsEvents.SCRUBBED_TO) {
             return reporter -> reporter.playbackScrubbedTo(246246L);
-        } else if(eventType == AnalyticsEvents.PROGRAM_CHANGED) {
+        } else if (eventType == AnalyticsEvents.DRM) {
+            return reporter -> reporter.playbackDrm(246246L);
+        } else if (eventType == AnalyticsEvents.STOP_CASTING) {
+            return reporter -> reporter.playbackStopCasting(246246L);
+        } else if (eventType == AnalyticsEvents.START_CASTING) {
+            return reporter -> reporter.playbackStartCasting(246200L);
+        } else if (eventType == AnalyticsEvents.AD_FAILED) {
+            return reporter -> reporter.playbackAdFailed(246246L);
+        } else if (eventType == AnalyticsEvents.PROGRAM_CHANGED) {
             return reporter -> reporter.playbackProgramChanged(8346L, "MockProgram");
-        } else if(eventType == AnalyticsEvents.AD_STARTED) {
+        } else if (eventType == AnalyticsEvents.AD_STARTED) {
             return reporter -> reporter.playbackAdStarted(12345L, "started_test_ad");
-        } else if(eventType == AnalyticsEvents.AD_COMPLETED) {
+        } else if (eventType == AnalyticsEvents.AD_COMPLETED) {
             return reporter -> reporter.playbackAdCompleted(65536L, "completed_test_ad");
         } else {
             return null;
