@@ -1,4 +1,5 @@
 # CHANGELOG
+* `3.3.3` Release - [3.3.3](#3.3.3) &nbsp; - &nbsp; 2021-10-15
 * `3.3.2` Release - [3.3.2](#3.3.2) &nbsp; - &nbsp; 2021-09-29
 * `3.3.1` Release - [3.3.1](#3.3.1) &nbsp; - &nbsp; 2021-09-29
 * `3.3.0` Release - [3.3.0](#3.3.0) &nbsp; - &nbsp; 2021-09-10
@@ -14,6 +15,22 @@
 * `3.1.8` Release - [3.1.8](#3.1.8) &nbsp; - &nbsp; 2020-12-11
 * `3.1.7` Release - [3.1.7](#3.1.7) &nbsp; - &nbsp; 2020-12-04
 * `3.1.6` Release - [3.1.6](#3.1.6) &nbsp; - &nbsp; 2020-11-13
+
+# <a name="3.3.3"></a> 3.3.3
+#### Features
+`
+DevEnigmaRiverAndroidCore
+DevEnigmaRiverAndroidExoPlayerIntegration
+DevEnigmaRiverAndroidInternalTestUtils
+`
+* EMP-17202 - Crash after ad playback
+* EMP-16153 - Add support for audio description / captions for hearing impaired
+* EMP-17118 - Upgraded Exoplayer version to 2.15.1
+* EMP-17114 - Scrubbing issue in SSAI, when ad offset is -1
+* Emp-17122 - In vast LAST_VIEWED_OFFSET can come negative
+* EMP-17139 - SSAI- Freezing issue
+* EMP-16992 - Align Analytics implementation with the current specification.
+* EMP-16716 - Enhance reported player errors sent to analytics
 
 
 # <a name="3.3.2"></a> 3.3.2

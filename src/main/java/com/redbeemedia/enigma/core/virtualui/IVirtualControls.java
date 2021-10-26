@@ -15,4 +15,6 @@ public interface IVirtualControls {
     IVirtualButton getSeekBar();
     IVirtualButton getRestart();
     IVirtualButton getSkipIntro();
+    IVirtualButton getSubtitlesButton();
+    IVirtualButton getAudioTrackButton();
 }

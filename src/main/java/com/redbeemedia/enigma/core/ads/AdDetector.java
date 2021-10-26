@@ -137,10 +137,12 @@ public class AdDetector extends BaseTimelineListener implements IAdDetector, ITi
             currentAdBreak.add(ad);
             lastAdFinished = ad.getStartTime() + ad.getDuration();
         }
-        if(!adBreaks.isEmpty()) {
-            AdBreak adBreak = new AdBreak(timelinePositionFactory.newPosition(adBreakStart), Duration.millis(lastAdFinished - adBreakStart), currentAdBreak);
-            adBreaks.add(adBreak);
-        }
+
+        // When there is single Ad at the start, then we have VASTAdEntry only
+
+        AdBreak adBreak = new AdBreak(timelinePositionFactory.newPosition(adBreakStart), Duration.millis(lastAdFinished - adBreakStart), currentAdBreak);
+        adBreaks.add(adBreak);
+
         Log.d(TAG, "SSAI Total adbreaks:" + adBreaks.size());
     }
 

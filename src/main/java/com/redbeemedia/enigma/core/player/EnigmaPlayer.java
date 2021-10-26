@@ -583,6 +583,12 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                         @Override
                         public void onTracksChanged(Collection<? extends IPlayerImplementationTrack> tracks) {
                             propagateToCurrentPlaybackSession(tracks, IInternalPlaybackSession::setTracks);
+                            // sometime tracks are fetched even before playback start, so there is null check
+                            if (virtualControls != null) {
+                                // tracks have changed , so refresh buttons state
+                                virtualControls.getAudioTrackButton().refresh();
+                                virtualControls.getSubtitlesButton().refresh();
+                            }
                         }
 
                         @Override
