@@ -23,6 +23,7 @@ DevEnigmaRiverAndroidCore
 DevEnigmaRiverAndroidExoPlayerIntegration
 DevEnigmaRiverAndroidInternalTestUtils
 `
+* EMP-16992 - Align Start/Stop Cast events.
 * EMP-17202 - Crash after ad playback
 * EMP-16153 - Add support for audio description / captions for hearing impaired
 * EMP-17118 - Upgraded Exoplayer version to 2.15.1
