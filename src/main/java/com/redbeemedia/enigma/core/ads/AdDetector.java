@@ -102,6 +102,7 @@ public class AdDetector extends BaseTimelineListener implements IAdDetector, ITi
      * This will fetch the metadata from the manifest, parse it and call
      * impression links found in the document if the playback position is
      * within the bounds of an ad.
+     *
      * @param startTime Latest detected absolute time of the stream.
      */
     public void update(IAdResourceLoader resourceLoader, long startTime) {
@@ -139,9 +140,10 @@ public class AdDetector extends BaseTimelineListener implements IAdDetector, ITi
         }
 
         // When there is single Ad at the start, then we have VASTAdEntry only
-
-        AdBreak adBreak = new AdBreak(timelinePositionFactory.newPosition(adBreakStart), Duration.millis(lastAdFinished - adBreakStart), currentAdBreak);
-        adBreaks.add(adBreak);
+        if (!ads.getEntries().isEmpty()) {
+            AdBreak adBreak = new AdBreak(timelinePositionFactory.newPosition(adBreakStart), Duration.millis(lastAdFinished - adBreakStart), currentAdBreak);
+            adBreaks.add(adBreak);
+        }
 
         Log.d(TAG, "SSAI Total adbreaks:" + adBreaks.size());
     }

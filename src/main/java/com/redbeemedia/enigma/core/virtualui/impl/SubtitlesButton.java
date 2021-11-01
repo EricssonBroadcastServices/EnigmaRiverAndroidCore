@@ -13,7 +13,7 @@ package com.redbeemedia.enigma.core.virtualui.impl;
     @Override
     protected boolean calculateEnabled(IVirtualButtonContainer container) throws Exception {
         if (container.getPlaybackSession() != null) {
-            return container.getPlaybackSession().getSubtitleTracks().size() > 1;
+            return container.getPlaybackSession().getSubtitleTracks().size() >= 1;
         }
         return false;
     }

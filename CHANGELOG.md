@@ -23,6 +23,8 @@ DevEnigmaRiverAndroidCore
 DevEnigmaRiverAndroidExoPlayerIntegration
 DevEnigmaRiverAndroidInternalTestUtils
 `
+* EMP-16153 - language/label for subtitles(if label is empty then it will show the language)
+* EMP-17202 - There was no ad, but it was showing admarker in starting.
 * EMP-16992 - Align Start/Stop Cast events.
 * EMP-17202 - Crash after ad playback
 * EMP-16153 - Add support for audio description / captions for hearing impaired
