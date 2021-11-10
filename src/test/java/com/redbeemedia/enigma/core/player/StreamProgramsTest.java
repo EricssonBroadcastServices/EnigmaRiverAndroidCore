@@ -10,6 +10,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class StreamProgramsTest {
@@ -26,7 +27,7 @@ public class StreamProgramsTest {
         programs.add(program2);
         IProgram program3 = new MockProgram("program3", 10000, 15000);
         programs.add(program3);
-        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(5000, 20000, programs));
+        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(5000, 20000, programs),false);
 
         Assert.assertSame(program1, streamPrograms.getProgramAtOffset(0));
         Assert.assertSame(program1, streamPrograms.getProgramAtOffset(500));
@@ -50,7 +51,7 @@ public class StreamProgramsTest {
         programs.add(program2);
         IProgram program3 = new MockProgram("program3", 10000, 15000);
         programs.add(program3);
-        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(2000, 15000, programs));
+        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(2000, 15000, programs),false);
 
         Assert.assertEquals(null, streamPrograms.getNeighbouringSectionStartOffset(-3000, true));
         Assert.assertSame(program0, streamPrograms.getProgramAtOffset(streamPrograms.getNeighbouringSectionStartOffset(-3000, false)));
@@ -84,11 +85,30 @@ public class StreamProgramsTest {
         programs.add(program2);
         IProgram program3 = new MockProgram("program3", 10000, 15000);
         programs.add(program3);
-        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(2000, 20000, programs));
+        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(2000, 20000, programs),false);
 
         Assert.assertEquals(Long.valueOf(13000), streamPrograms.getNeighbouringSectionStartOffset(9000, false));
         Assert.assertEquals(null, streamPrograms.getProgramAtOffset(13000));
         Assert.assertEquals(null, streamPrograms.getNeighbouringSectionStartOffset(13000, false));
+    }
+
+    @Test
+    public void testGetProgramWithOffsetForLive() {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+
+        long currentTime = (new Date()).getTime();
+
+        List<IProgram> programs = new ArrayList<>();
+        IProgram program0 = new MockProgram("program0", currentTime - 20, currentTime - 10);
+        programs.add(program0);
+        IProgram program1 = new MockProgram("program1", currentTime - 10, currentTime);
+        programs.add(program1);
+        IProgram program2 = new MockProgram("program2", currentTime, currentTime + 10);
+        programs.add(program2);
+        IProgram program3 = new MockProgram("program3", currentTime + 10, currentTime + 20);
+        programs.add(program3);
+        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(currentTime - 20, currentTime + 20, programs), true);
+        Assert.assertEquals(program3, streamPrograms.getProgramAtOffset(10));
     }
 
     @Test
@@ -104,7 +124,7 @@ public class StreamProgramsTest {
         programs.add(program2);
         IProgram program3 = new MockProgram("program3", 10000, 15000);
         programs.add(program3);
-        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(0, 15000, programs));
+        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(0, 15000, programs),false);
 
         long pos = 0;
         Assert.assertSame(program0, streamPrograms.getProgramAtOffset(pos));
@@ -151,7 +171,7 @@ public class StreamProgramsTest {
         programs.add(program2);
         IProgram program3 = new MockProgram("program3", 10000, 15000);
         programs.add(program3);
-        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(0, 15000, programs));
+        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(0, 15000, programs),false);
 
         Assert.assertSame(program0, streamPrograms.getProgramAtOffset(1000));
         Assert.assertSame(program1, streamPrograms.getProgramAtOffset(2000));
@@ -203,7 +223,7 @@ public class StreamProgramsTest {
         programs.add(program2);
         IProgram program3 = new MockProgram("program3", 10000, 15000);
         programs.add(program3);
-        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(1000, 15000, programs));
+        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(1000, 15000, programs),false);
 
         //End
         long pos = 14000;
@@ -257,7 +277,7 @@ public class StreamProgramsTest {
         programs.add(program3);
         long streamStart = 3000;
         long streamEnd = 7000;
-        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(streamStart, streamEnd, programs));
+        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(streamStart, streamEnd, programs),false);
 
 
         //Search backwards from start of stream --> Expect null

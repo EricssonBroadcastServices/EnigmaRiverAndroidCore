@@ -189,13 +189,13 @@ public class AdsVODTests {
         long firstContentSectionEnd = firstAdSectionEnd + firstContentDuration; // ~30 sec content.
         long secondAdSectionStart = firstContentSectionEnd;
 
-        Assert.assertNull(set.getEntry(startMs()).getImpression()); // Start is missing.
+        Assert.assertEquals(AdEventType.Start, set.getEntry(startMs()).getImpression().type);
         Assert.assertEquals(AdEventType.FirstQuartile, set.getEntry(firstQMs(0, firstAdDuration)).getImpression().type);
         Assert.assertEquals(AdEventType.MidPoint, set.getEntry(midpointMs(0, firstAdDuration)).getImpression().type);
         Assert.assertEquals(AdEventType.ThirdQuartile, set.getEntry(thirdQMs(0, firstAdDuration)).getImpression().type);
         Assert.assertEquals(AdEventType.Complete, set.getEntry(completeMs(0, firstAdDuration)).getImpression().type);
 
-        Assert.assertNull(set.getEntry(startMs()).getImpression(firstAdDuration)); // Start is missing.
+        Assert.assertEquals(AdEventType.Start, set.getEntry(startMs()).getImpression(firstAdDuration).type); // Start is missing.
         Assert.assertEquals(AdEventType.FirstQuartile, set.getEntry(firstQMs(firstAdDuration, secondAdDuration)).getImpression().type);
         Assert.assertEquals(AdEventType.MidPoint, set.getEntry(midpointMs(firstAdDuration, secondAdDuration)).getImpression().type);
         Assert.assertEquals(AdEventType.ThirdQuartile, set.getEntry(thirdQMs(firstAdDuration, secondAdDuration)).getImpression().type);
@@ -205,7 +205,7 @@ public class AdsVODTests {
         Assert.assertNull(set.getEntry(completeMs(firstAdSectionEnd) + 1)); // Just after last ad in first ad section.
         Assert.assertNull(set.getEntry(completeMs(firstContentSectionEnd) - 1)); // Just before the first content section ends.
 
-        Assert.assertNull(set.getEntry(startMs()).getImpression(secondAdSectionStart)); // Start is missing.
+        Assert.assertEquals(AdEventType.Start, set.getEntry(startMs()).getImpression(secondAdSectionStart).type); // Start is missing.
         Assert.assertEquals(AdEventType.FirstQuartile, set.getEntry(firstQMs(secondAdSectionStart, thirdAdDuration)).getImpression().type);
         Assert.assertEquals(AdEventType.MidPoint, set.getEntry(midpointMs(secondAdSectionStart, thirdAdDuration)).getImpression().type);
         Assert.assertEquals(AdEventType.ThirdQuartile, set.getEntry(thirdQMs(secondAdSectionStart, thirdAdDuration)).getImpression().type);
@@ -270,7 +270,7 @@ public class AdsVODTests {
 
         // Timeline position changed and delegate should have been called.
         playerTime += 1;
-        int requestsSent = mockHttpHandler.getLog().size();
+        int requestsSent = 3; // start of ad has 3 url
         timeline.setCurrentPosition(timeFactory.newPosition(playerTime)); // Trigger listener with the first ad.
         Assert.assertEquals(1, listener.changeCount);
         Assert.assertTrue(listener.adsPlaying);

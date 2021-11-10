@@ -298,7 +298,7 @@ import java.util.UUID;
                         epg.getPrograms(request, new IEpgResponseHandler() {
                             @Override
                             public void onSuccess(IEpgResponse epgResponse) {
-                                nextStep.continueProcess(new StreamPrograms(epgResponse));
+                                nextStep.continueProcess(new StreamPrograms(epgResponse, streamInfo.isLiveStream()));
                             }
 
                             @Override

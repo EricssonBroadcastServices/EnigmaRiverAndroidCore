@@ -14,7 +14,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-/** Responsible for pasing VOD json data. */
+/**
+ * Responsible for pasing VOD json data.
+ */
 class NowtilusVodParser implements INowtilusParser {
 
     private final static String TAG = NowtilusVodParser.class.getName();
@@ -72,6 +74,15 @@ class NowtilusVodParser implements INowtilusParser {
                 }
                 logEntrySets.put(type, new VastImpression(type, eventUrls));
             }
+        }
+        // this is should be sent as soon as ad start
+        JSONArray impressionUrlsJson = clip.optJSONArray("impressionUrlTemplates");
+        if (impressionUrlsJson != null) {
+            ArrayList<URL> eventUrls = new ArrayList<>();
+            for (int i = 0; i < impressionUrlsJson.length(); i++) {
+                eventUrls.add(eventParser.parseEventUrl(impressionUrlsJson.get(i).toString()));
+            }
+            logEntrySets.put(AdEventType.Start, new VastImpression(AdEventType.Start, eventUrls));
         }
         return new VastAdEntry(id, title, adStartTime, duration, logEntrySets);
     }

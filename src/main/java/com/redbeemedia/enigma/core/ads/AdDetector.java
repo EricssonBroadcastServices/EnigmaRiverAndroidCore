@@ -197,6 +197,7 @@ public class AdDetector extends BaseTimelineListener implements IAdDetector, ITi
                     impression.setSent();
                 } catch(Exception e) {
                     e.printStackTrace();
+                    Log.w("SSAI", e);
                 }
             }
             if(impression.type == AdEventType.Complete){

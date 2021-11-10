@@ -23,6 +23,8 @@ DevEnigmaRiverAndroidCore
 DevEnigmaRiverAndroidExoPlayerIntegration
 DevEnigmaRiverAndroidInternalTestUtils
 `
+* EMP-17232 - Entitlement issue in live channel NotPublishedError.
+* EMP-17282-  SDK doesn't track ad impression.
 * EMP-16153 - language/label for subtitles(if label is empty then it will show the language)
 * EMP-17202 - There was no ad, but it was showing admarker in starting.
 * EMP-16992 - Align Start/Stop Cast events.

@@ -9,14 +9,21 @@ import com.redbeemedia.enigma.core.util.section.SectionListBuilder;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 /*package-protected*/ class StreamPrograms implements IStreamPrograms {
     private final long startUtcMillis;
     private final ISectionList<IProgram> sections;
+    private final boolean isPlayingLive;
 
-    public StreamPrograms(IEpgResponse epgResponse) {
-        this.startUtcMillis = epgResponse.getStartUtcMillis();
+    public StreamPrograms(IEpgResponse epgResponse, boolean isPlayingLive) {
+        this.isPlayingLive = isPlayingLive;
+        if (isPlayingLive) {
+            this.startUtcMillis = new Date().getTime();
+        } else {
+            this.startUtcMillis = epgResponse.getStartUtcMillis();
+        }
 
         ISectionListBuilder<IProgram> sectionListBuilder = new SectionListBuilder<>();
         sectionListBuilder.putItem(epgResponse.getStartUtcMillis(), epgResponse.getEndUtcMillis(), null);

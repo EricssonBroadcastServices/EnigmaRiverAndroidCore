@@ -59,7 +59,7 @@ public class ProgramServiceTest {
         Duration asset4End = asset3End.add(Duration.hours(1));
         programs.add(new MockProgram("Program 3", 9000, asset3End.inWholeUnits(Duration.Unit.MILLISECONDS)).setAssetId("asset_3"));
         programs.add(new MockProgram("Program 4", asset3End.inWholeUnits(Duration.Unit.MILLISECONDS), asset4End.inWholeUnits(Duration.Unit.MILLISECONDS)).setAssetId("asset_4"));
-        IStreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(1000, asset4End.inWholeUnits(Duration.Unit.MILLISECONDS), programs));
+        IStreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(1000, asset4End.inWholeUnits(Duration.Unit.MILLISECONDS), programs),false);
         MockPlaybackSessionInfo playbackSessionInfo = new MockPlaybackSessionInfo();
         final Counter checkEntitlementCalled = new Counter();
         IEntitlementProvider entitlementProvider = new IEntitlementProvider() {
@@ -198,7 +198,7 @@ public class ProgramServiceTest {
         List<IProgram> programs = new ArrayList<>();
         programs.add(new MockProgram("Program 1", 1000, 50000).setAssetId("asset_1"));
         programs.add(new MockProgram("Program 2", 50000, 100000).setAssetId("asset_2"));
-        IStreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(1000, 100000, programs));
+        IStreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(1000, 100000, programs),false);
         final Counter httpCallMade = new Counter();
         IEntitlementProvider entitlementProvider = new IEntitlementProvider() {
             private final Counter callCounter = new Counter();
