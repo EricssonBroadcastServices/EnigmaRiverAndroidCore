@@ -507,7 +507,7 @@ public class EnigmaPlayerTest {
             @Override
             public void setSubtitleTrack(ISubtitleTrack track, IPlayerImplementationControlResultHandler resultHandler) {
                 trackSentToImpl.count();
-                if("duck".equals(track.getLanguageCode())) {
+                if("duck".equals(track.getLabel())) {
                     resultHandler.onRejected(RejectReason.inapplicable("Test"));
                 } else {
                     resultHandler.onDone();
@@ -521,7 +521,7 @@ public class EnigmaPlayerTest {
                 to.addListener(new BasePlaybackSessionListener() {
                     @Override
                     public void onSelectedSubtitleTrackChanged(ISubtitleTrack oldselectedTrack, ISubtitleTrack newSelectedTrack) {
-                        Assert.assertEquals("cow",newSelectedTrack.getLanguageCode());
+                        Assert.assertEquals("cow",newSelectedTrack.getLabel());
                         subtitleChanged.count();
                     }
                 });
@@ -569,10 +569,10 @@ public class EnigmaPlayerTest {
                     @Override
                     public void onSubtitleTracks(List<ISubtitleTrack> tracks) {
                         Assert.assertEquals(4, tracks.size());
-                        Assert.assertEquals("eng", tracks.get(0).getLanguageCode());
-                        Assert.assertEquals("swe", tracks.get(1).getLanguageCode());
-                        Assert.assertEquals("deu", tracks.get(2).getLanguageCode());
-                        Assert.assertEquals("nor", tracks.get(3).getLanguageCode());
+                        Assert.assertEquals("eng", tracks.get(0).getLabel());
+                        Assert.assertEquals("swe", tracks.get(1).getLabel());
+                        Assert.assertEquals("deu", tracks.get(2).getLabel());
+                        Assert.assertEquals("nor", tracks.get(3).getLabel());
 
                         gotCorrectSubtitles.count();
                     }
@@ -580,9 +580,9 @@ public class EnigmaPlayerTest {
                     @Override
                     public void onAudioTracks(List<IAudioTrack> tracks) {
                         Assert.assertEquals(3, tracks.size());
-                        Assert.assertEquals("sv", tracks.get(0).getLanguageCode());
-                        Assert.assertEquals("dk", tracks.get(1).getLanguageCode());
-                        Assert.assertEquals("en", tracks.get(2).getLanguageCode());
+                        Assert.assertEquals("sv", tracks.get(0).getLabel());
+                        Assert.assertEquals("dk", tracks.get(1).getLabel());
+                        Assert.assertEquals("en", tracks.get(2).getLabel());
 
                         gotCorrectAudio.count();
                     }
@@ -631,7 +631,7 @@ public class EnigmaPlayerTest {
             @Override
             public void setAudioTrack(IAudioTrack track, IPlayerImplementationControlResultHandler resultHandler) {
                 trackSentToImpl.count();
-                if("sv".equals(track.getLanguageCode())) {
+                if("sv".equals(track.getLabel())) {
                     resultHandler.onRejected(RejectReason.illegal("UnitTest"));
                 } else {
                     resultHandler.onDone();
@@ -645,7 +645,7 @@ public class EnigmaPlayerTest {
                 to.addListener(new BasePlaybackSessionListener() {
                     @Override
                     public void onSelectedAudioTrackChanged(IAudioTrack oldSelectedTrack, IAudioTrack newSelectedTrack) {
-                        Assert.assertEquals("de",newSelectedTrack.getLanguageCode());
+                        Assert.assertEquals("de",newSelectedTrack.getLabel());
                         audioChanged.count();
                     }
                 });
@@ -933,7 +933,7 @@ public class EnigmaPlayerTest {
 
         //assert we are at start of the gap
         Assert.assertEquals(expectedSeeks, seekPositions.size());
-        Assert.assertEquals(30000-1, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-1)).getMillis());
+        Assert.assertEquals(30000, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-1)).getMillis());
         playerImplementation.position = 30000-1; //Update position to seeked
 
         { //Seek!
@@ -945,7 +945,7 @@ public class EnigmaPlayerTest {
 
         //assert we are at start of program3
         Assert.assertEquals(expectedSeeks, seekPositions.size());
-        Assert.assertEquals(20000-1, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-1)).getMillis());
+        Assert.assertEquals(10000, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-1)).getMillis());
         playerImplementation.position = 20000-1; //Update position to seeked
 
         { //Seek!
@@ -957,19 +957,19 @@ public class EnigmaPlayerTest {
 
         //assert we are at start of program2
         Assert.assertEquals(expectedSeeks, seekPositions.size());
-        Assert.assertEquals(10000-1, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-1)).getMillis());
+        Assert.assertEquals(1, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-1)).getMillis());
         playerImplementation.position = 10000-1; //Update position to seeked
 
         { //Seek!
             AssertiveControlResultHandler controlResultHandler = new AssertiveControlResultHandler();
             enigmaPlayer.getControls().previousProgram(controlResultHandler);
-            controlResultHandler.assertOnDoneCalled();
+            controlResultHandler.assertOnRejectedCalled();
             expectedSeeks++;
         }
 
         //assert we are at start of program1
-        Assert.assertEquals(expectedSeeks, seekPositions.size());
-        Assert.assertEquals(0, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-1)).getMillis());
+        Assert.assertEquals(expectedSeeks-1, seekPositions.size());
+        Assert.assertEquals(1, ((IPlayerImplementationControls.TimelineRelativePosition) seekPositions.get(expectedSeeks-2)).getMillis());
         playerImplementation.position = 0; //Update position to seeked
     }
 

@@ -259,6 +259,15 @@ public class SectionListBuilder<T> implements ISectionListBuilder<T> {
         }
 
         @Override
+        public T getFirstItem() {
+            if(!sections.isEmpty()) {
+                return sections.get(0).getItem();
+            } else {
+                return null;
+            }
+        }
+
+        @Override
         public long getLastEnd() {
             if(!sections.isEmpty()) {
                 return sections.get(sections.size()-1).getEnd();

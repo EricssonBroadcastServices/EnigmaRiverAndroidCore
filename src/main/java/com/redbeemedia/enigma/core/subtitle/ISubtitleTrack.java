@@ -7,5 +7,6 @@ import com.redbeemedia.enigma.core.track.ITrack;
  * <p>Implementing or extending this interface is not part of the public API.</p>
  */
 public interface ISubtitleTrack extends ITrack {
-    String getLanguageCode();
+    String getLabel();
+    String getCode();
 }

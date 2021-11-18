@@ -988,6 +988,9 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                             ITimelinePosition start = positionFactory.newPosition(startOffset);
                             ITimelinePosition end = positionFactory.newPosition(endOffset);
                             timeline.setVisibility(!streamInfo.isLiveStream());
+                            if (start.getStart() < 0) {
+                                start = positionFactory.newPosition(0);
+                            }
                             EnigmaPlayerTimeline.this.onExposedTimelineBoundsChanged(start, end);
                             hasProgram = true;
                         }

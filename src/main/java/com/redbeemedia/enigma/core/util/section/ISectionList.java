@@ -12,6 +12,7 @@ public interface ISectionList<T> {
     ISection<T> getSectionAt(long value);
     T getItemAt(long value);
     long getFirstStart();
+    T getFirstItem();
     long getLastEnd();
     boolean isEmpty();
 }

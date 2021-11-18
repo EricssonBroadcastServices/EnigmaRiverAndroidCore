@@ -19,11 +19,6 @@ import java.util.List;
 
     public StreamPrograms(IEpgResponse epgResponse, boolean isPlayingLive) {
         this.isPlayingLive = isPlayingLive;
-        if (isPlayingLive) {
-            this.startUtcMillis = new Date().getTime();
-        } else {
-            this.startUtcMillis = epgResponse.getStartUtcMillis();
-        }
 
         ISectionListBuilder<IProgram> sectionListBuilder = new SectionListBuilder<>();
         sectionListBuilder.putItem(epgResponse.getStartUtcMillis(), epgResponse.getEndUtcMillis(), null);
@@ -39,6 +34,12 @@ import java.util.List;
         sectionListBuilder.trim(epgResponse.getStartUtcMillis(), epgResponse.getEndUtcMillis());
 
         this.sections = sectionListBuilder.build();
+
+        if (isPlayingLive) {
+            this.startUtcMillis = new Date().getTime();
+        } else {
+            this.startUtcMillis = this.sections.getFirstItem().getStartUtcMillis();
+        }
     }
 
     @Override
