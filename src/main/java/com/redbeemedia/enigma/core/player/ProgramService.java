@@ -140,35 +140,12 @@ import java.util.Objects;
             if(assetId != null) {
                 checkEntitlement(assetId);
             }
-            // Here 'fuzzy' refers to the fact that the time the entitlement is checked for is not exact (it is fuzzy).
-            // The terminology is borrowed from the term 'fuzzy logic'. The reason behind this fuzzy check
-            // is to spread out the calls to the backend over a time period (see parameters passed to generateFuzzyOffset())
-            // so that the backend is not overloaded when a live stream changes programs and all clients, at the same time,
-            // wants to do an entitlement check for the new program.
-            if(usesFuzzyCheck()) {
-                Duration fuzz = generateFuzzyOffset(Duration.seconds(30), Duration.minutes(2));
-                Duration futurePointOffset = offset.add(fuzz);
-                AssetIdFallbackChain futureAssetId = getAssetIdsToCheckForAt(futurePointOffset);
-                if(futureAssetId != null) {
-                    if(!Objects.equals(assetId.getAssetId(), futureAssetId.getAssetId())) {
-                        checkFutureEntitlementAndCache(futureAssetId, futurePointOffset, Duration.minutes(5));
-                    }
-                }
-            }
         } else {
             String channelId = streamInfo.getChannelId();
             if(channelId != null) {
                 checkEntitlement(new AssetIdFallbackChain(channelId));
             }
         }
-    }
-
-    protected Duration generateFuzzyOffset(Duration min, Duration max) {
-        return min.add(max.subtract(min).multiply((float) Math.random()));
-    }
-
-    private boolean usesFuzzyCheck() {
-        return playingFromLive && streamPrograms != null;
     }
 
     private AssetIdFallbackChain getAssetIdsToCheckForAt(Duration offset) {
@@ -221,25 +198,6 @@ import java.util.Objects;
         } else {
             entitlementProvider.checkEntitlement(new EntitlementRequest(session, assetIds.getAssetId()), responseHandler);
         }
-    }
-
-    private void checkFutureEntitlementAndCache(final AssetIdFallbackChain assetId, Duration offset, Duration cacheTime) {
-        long time = streamInfo.getStart(Duration.Unit.MILLISECONDS) + offset.inWholeUnits(Duration.Unit.MILLISECONDS);
-        EntitlementRequest entitlementRequest = new EntitlementRequest(session, assetId.getAssetId()).setTime(time);
-        entitlementProvider.checkEntitlement(entitlementRequest, new IEntitlementResponseHandler() {
-            @Override
-            public void onResponse(EntitlementData entitlementData) {
-                synchronized (cachedEntitlementResponses) {
-                    cachedEntitlementResponses.add(new CachedEntitlementResponse(assetId.getAssetId(), entitlementData, cacheTime, timeProviderForCache));
-                }
-            }
-
-            @Override
-            public void onError(EnigmaError error) {
-                error.printStackTrace();
-                //Too bad
-            }
-        });
     }
 
     protected void addEntitlementListener(IEntitlementListener listener) {

@@ -24,8 +24,9 @@ DevEnigmaRiverAndroidExoPlayerIntegration
 DevEnigmaRiverAndroidInternalTestUtils
 DevEnigmaRiverAndroidCast
 `
-* EMP-17281 - Android timeline issues in Catchup Play
-* EMP-17036 - Add support for default cast subtitle & audio language
+* EMP-17368 - Disable cache for future entitlements.
+* EMP-17281 - Android timeline issues in Catchup Play.
+* EMP-17036 - Add support for default cast subtitle & audio language.
 * EMP-17232 - Entitlement issue in live channel NotPublishedError.
 * EMP-17282-  SDK doesn't track ad impression.
 * EMP-16153 - language/label for subtitles(if label is empty then it will show the language)
