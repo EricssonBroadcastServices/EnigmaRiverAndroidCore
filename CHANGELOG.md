@@ -24,6 +24,7 @@ DevEnigmaRiverAndroidExoPlayerIntegration
 DevEnigmaRiverAndroidInternalTestUtils
 DevEnigmaRiverAndroidCast
 `
+* EMP-17397 - In case of live stream don't use player offset , for finding current program.
 * EMP-17368 - Disable cache for future entitlements.
 * EMP-17281 - Android timeline issues in Catchup Play.
 * EMP-17036 - Add support for default cast subtitle & audio language.

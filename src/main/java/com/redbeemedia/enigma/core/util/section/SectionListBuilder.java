@@ -1,19 +1,21 @@
 package com.redbeemedia.enigma.core.util.section;
 
+import com.redbeemedia.enigma.core.epg.IProgram;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class SectionListBuilder<T> implements ISectionListBuilder<T> {
-    private List<SectionTemplate<T>> sortedList = new ArrayList<>();
+public class SectionListBuilder implements ISectionListBuilder<IProgram> {
+    private List<SectionTemplate<IProgram>> sortedList = new ArrayList<>();
 
     @Override
-    public ISectionList<T> build() {
-        List<ISection<T>> sections = new ArrayList<>();
+    public ISectionList<IProgram> build() {
+        List<ISection<IProgram>> sections = new ArrayList<>();
         SectionListImpl sectionList = new SectionListImpl(sections);
 
         int index = 0;
-        for(SectionTemplate<T> sectionTemplate : sortedList) {
-            sections.add(new SectionImpl<T>(sectionList, index++, sectionTemplate.start, sectionTemplate.end, sectionTemplate.item));
+        for(SectionTemplate<IProgram> sectionTemplate : sortedList) {
+            sections.add(new SectionImpl(sectionList, index++, sectionTemplate.start, sectionTemplate.end, sectionTemplate.item));
         }
 
         return sectionList;
@@ -23,18 +25,18 @@ public class SectionListBuilder<T> implements ISectionListBuilder<T> {
         if(sortedList.isEmpty()) {
             return -1;
         } else {
-            SectionTemplate<T> first = sortedList.get(0);
+            SectionTemplate<IProgram> first = sortedList.get(0);
             if(value < first.start) {
                 return -1;
             }
 
-            SectionTemplate<T> last = sortedList.get(sortedList.size()-1);
+            SectionTemplate<IProgram> last = sortedList.get(sortedList.size()-1);
             if(value >= last.end) {
                 return sortedList.size();
             }
 
             for(int index = 0; index < sortedList.size(); ++index) {
-                SectionTemplate<T> section = sortedList.get(index);
+                SectionTemplate<IProgram> section = sortedList.get(index);
                 if(value >= section.start && value < section.end) {
                     return index;
                 }
@@ -51,28 +53,28 @@ public class SectionListBuilder<T> implements ISectionListBuilder<T> {
         } else if(index >= sortedList.size()) {
             return new OutsideMarker(true);
         } else {
-            SectionTemplate<T> section = sortedList.get(index);
+            SectionTemplate<IProgram> section = sortedList.get(index);
             return new SectionMarker(section, value-section.start);
         }
     }
 
 
     @Override
-    public void putItem(long start, long end, T item) {
+    public void putItem(long start, long end, IProgram item) {
         if(start >= end) {
             throw new IllegalArgumentException("start >= end");
         }
         //  -1 [  0  ][   1   ][   2   ]   3
 
-        List<SectionTemplate<T>> newSortedList = new ArrayList<>();
+        List<SectionTemplate<IProgram>> newSortedList = new ArrayList<>();
         newSortedList.addAll(getMarker(start).cut(sortedList)[0]);
         newSortedList.add(new SectionTemplate<>(start, end, item));
         newSortedList.addAll(getMarker(end).cut(sortedList)[1]);
 
         //Fill in holes
         for(int i = 1; i < newSortedList.size(); ++i) {
-            SectionTemplate<T> last = newSortedList.get(i-1);
-            SectionTemplate<T> current = newSortedList.get(i);
+            SectionTemplate<IProgram> last = newSortedList.get(i-1);
+            SectionTemplate<IProgram> current = newSortedList.get(i);
             if(last.end != current.start) {
                 newSortedList.add(i, new SectionTemplate<>(last.end, current.start, null));
                 i++;
@@ -91,7 +93,7 @@ public class SectionListBuilder<T> implements ISectionListBuilder<T> {
     }
 
     private interface IMarker {
-        <T> List<SectionTemplate<T>>[] cut(List<SectionTemplate<T>> list);
+        <IProgram> List<SectionTemplate<IProgram>>[] cut(List<SectionTemplate<IProgram>> list);
     }
 
     private static class SectionMarker implements IMarker {
@@ -107,20 +109,20 @@ public class SectionListBuilder<T> implements ISectionListBuilder<T> {
         }
 
         @Override
-        public <T> List<SectionTemplate<T>>[] cut(List<SectionTemplate<T>> list) {
-            List<SectionTemplate<T>> beginning = new ArrayList<>();
-            List<SectionTemplate<T>> end = new ArrayList<>();
+        public <IProgram> List<SectionTemplate<IProgram>>[] cut(List<SectionTemplate<IProgram>> list) {
+            List<SectionTemplate<IProgram>> beginning = new ArrayList<>();
+            List<SectionTemplate<IProgram>> end = new ArrayList<>();
 
             int index = list.indexOf(section);
             for(int i = 0; i < list.size(); ++i) {
-                SectionTemplate<T> currentSection = list.get(i);
+                SectionTemplate<IProgram> currentSection = list.get(i);
                 if(i < index) {
                     beginning.add(currentSection);
                 } else if(i > index) {
                     end.add(currentSection);
                 } else {
-                    SectionTemplate<T> firstHalf = currentSection.copy();
-                    SectionTemplate<T> lastHalf = currentSection.copy();
+                    SectionTemplate<IProgram> firstHalf = currentSection.copy();
+                    SectionTemplate<IProgram> lastHalf = currentSection.copy();
 
                     firstHalf.end = firstHalf.start+relativePos;
                     lastHalf.start = firstHalf.end;
@@ -146,7 +148,7 @@ public class SectionListBuilder<T> implements ISectionListBuilder<T> {
         }
 
         @Override
-        public <T> List<SectionTemplate<T>>[] cut(List<SectionTemplate<T>> list) {
+        public <IProgram> List<SectionTemplate<IProgram>>[] cut(List<SectionTemplate<IProgram>> list) {
             if(afterSpan) {
                 return new List[]{new ArrayList(list), new ArrayList()};
             } else {
@@ -155,18 +157,18 @@ public class SectionListBuilder<T> implements ISectionListBuilder<T> {
         }
     }
 
-    private static class SectionTemplate<T> {
+    private static class SectionTemplate<IProgram> {
         public long start;
         public long end;
-        public T item;
+        public com.redbeemedia.enigma.core.epg.IProgram item;
 
-        public SectionTemplate(long start, long end, T item) {
+        public SectionTemplate(long start, long end, com.redbeemedia.enigma.core.epg.IProgram item) {
             this.start = start;
             this.end = end;
             this.item = item;
         }
 
-        public SectionTemplate<T> copy() {
+        public SectionTemplate<IProgram> copy() {
             return new SectionTemplate<>(start, end, item);
         }
 
@@ -175,15 +177,15 @@ public class SectionListBuilder<T> implements ISectionListBuilder<T> {
         }
     }
 
-    private static class SectionImpl<T> implements ISection<T> {
+    private static class SectionImpl implements ISection<com.redbeemedia.enigma.core.epg.IProgram> {
         private final SectionListImpl list;
         private final int index;
 
         private final long start;
         private final long end;
-        private final T item;
+        private final com.redbeemedia.enigma.core.epg.IProgram item;
 
-        public SectionImpl(SectionListImpl list, int index, long start, long end, T item) {
+        public SectionImpl(SectionListImpl list, int index, long start, long end, com.redbeemedia.enigma.core.epg.IProgram item) {
             this.list = list;
             this.index = index;
             this.start = start;
@@ -192,17 +194,17 @@ public class SectionListBuilder<T> implements ISectionListBuilder<T> {
         }
 
         @Override
-        public T getItem() {
+        public com.redbeemedia.enigma.core.epg.IProgram getItem() {
             return item;
         }
 
         @Override
-        public ISection<T> getPrevious() {
+        public ISection<IProgram> getPrevious() {
             return list.getAtIndex(index-1);
         }
 
         @Override
-        public ISection<T> getNext() {
+        public ISection<IProgram> getNext() {
             return list.getAtIndex(index+1);
         }
 
@@ -217,14 +219,14 @@ public class SectionListBuilder<T> implements ISectionListBuilder<T> {
         }
     }
 
-    private static class SectionListImpl<T> implements ISectionList<T> {
-        private final List<ISection<T>> sections;
+    private static class SectionListImpl implements ISectionList<com.redbeemedia.enigma.core.epg.IProgram> {
+        private final List<ISection<IProgram>> sections;
 
-        public SectionListImpl(List<ISection<T>> sections) {
+        public SectionListImpl(List<ISection<IProgram>> sections) {
             this.sections = sections;
         }
 
-        public ISection<T> getAtIndex(int index) {
+        public ISection<IProgram> getAtIndex(int index) {
             if(index < 0 || index >= sections.size()) {
                 return null;
             } else {
@@ -234,9 +236,10 @@ public class SectionListBuilder<T> implements ISectionListBuilder<T> {
 
 
         @Override
-        public ISection<T> getSectionAt(long value) {
-            for(ISection<T> section : sections) {
-                if(section.getStart() <= value && section.getEnd() > value) {
+        public ISection<IProgram> getSectionAt(long value) {
+            for(ISection<IProgram> section : sections) {
+                long startTm = section.getItem()==null? section.getStart() : section.getItem().getStartUtcMillis();
+                if(startTm <= value && section.getEnd() > value) {
                     return section;
                 }
             }
@@ -244,8 +247,8 @@ public class SectionListBuilder<T> implements ISectionListBuilder<T> {
         }
 
         @Override
-        public T getItemAt(long value) {
-            ISection<T> section = getSectionAt(value);
+        public IProgram getItemAt(long value) {
+            ISection<IProgram> section = getSectionAt(value);
             return section != null ? section.getItem() : null;
         }
 
@@ -259,7 +262,7 @@ public class SectionListBuilder<T> implements ISectionListBuilder<T> {
         }
 
         @Override
-        public T getFirstItem() {
+        public IProgram getFirstItem() {
             if(!sections.isEmpty()) {
                 return sections.get(0).getItem();
             } else {

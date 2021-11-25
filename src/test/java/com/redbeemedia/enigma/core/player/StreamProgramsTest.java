@@ -29,13 +29,7 @@ public class StreamProgramsTest {
         programs.add(program3);
         StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(5000, 20000, programs), false);
 
-        Assert.assertSame(program1, streamPrograms.getProgramAtOffset(0));
-        Assert.assertSame(program1, streamPrograms.getProgramAtOffset(500));
-        Assert.assertSame(program2, streamPrograms.getProgramAtOffset(1500));
-        Assert.assertSame(program2, streamPrograms.getProgramAtOffset(1000));
-        Assert.assertNull(streamPrograms.getProgramAtOffset(2500));
-        Assert.assertSame(program3, streamPrograms.getProgramAtOffset(5500));
-        Assert.assertNull(streamPrograms.getProgramAtOffset(15500));
+        Assert.assertSame(program1, streamPrograms.getProgram());
     }
 
     @Test
@@ -54,13 +48,13 @@ public class StreamProgramsTest {
         StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(2000, 15000, programs), false);
 
         Assert.assertEquals(null, streamPrograms.getNeighbouringSectionStartOffset(-3000, true));
-        Assert.assertSame(program0, streamPrograms.getProgramAtOffset(streamPrograms.getNeighbouringSectionStartOffset(-3000, false)));
+        Assert.assertSame(program0, streamPrograms.getProgram());
 
         Assert.assertEquals(null, streamPrograms.getNeighbouringSectionStartOffset(0, true));
         //Here we search from offset 0. The stream starts at utc 2000, so we would start in
         // program0 (0 <= 2000 < 5000). Searing forwards we end up in program1, which starts at
         // utc 5000 which is at offset 3000 since the stream starts at utc 2000.
-        Assert.assertEquals(Long.valueOf(2000), streamPrograms.getNeighbouringSectionStartOffset(0, false));
+        Assert.assertEquals(Long.valueOf(5000), streamPrograms.getNeighbouringSectionStartOffset(0, false));
 
         Assert.assertEquals(null, streamPrograms.getNeighbouringSectionStartOffset(4000, true));
         Assert.assertEquals(Long.valueOf(5000), streamPrograms.getNeighbouringSectionStartOffset(4000, false));
@@ -88,7 +82,7 @@ public class StreamProgramsTest {
         StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(2000, 20000, programs), false);
 
         Assert.assertEquals(Long.valueOf(10000), streamPrograms.getNeighbouringSectionStartOffset(9000, false));
-        Assert.assertEquals(program3, streamPrograms.getProgramAtOffset(13000));
+        Assert.assertEquals(program0, streamPrograms.getProgram());
         Assert.assertEquals(null, streamPrograms.getNeighbouringSectionStartOffset(15000, false));
     }
 
@@ -99,16 +93,16 @@ public class StreamProgramsTest {
         long currentTime = (new Date()).getTime();
 
         List<IProgram> programs = new ArrayList<>();
-        IProgram program0 = new MockProgram("program0", currentTime - 20, currentTime - 10);
+        IProgram program0 = new MockProgram("program0", currentTime - 20000, currentTime - 10000);
         programs.add(program0);
-        IProgram program1 = new MockProgram("program1", currentTime - 10, currentTime);
+        IProgram program1 = new MockProgram("program1", currentTime - 10000, currentTime);
         programs.add(program1);
-        IProgram program2 = new MockProgram("program2", currentTime, currentTime + 10);
+        IProgram program2 = new MockProgram("program2", currentTime, currentTime + 10000);
         programs.add(program2);
-        IProgram program3 = new MockProgram("program3", currentTime + 10, currentTime + 20);
+        IProgram program3 = new MockProgram("program3", currentTime + 10000, currentTime + 20000);
         programs.add(program3);
-        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(currentTime - 20, currentTime + 20, programs), true);
-        Assert.assertEquals(program3, streamPrograms.getProgramAtOffset(10));
+        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(currentTime - 20000, currentTime + 20000, programs), true);
+        Assert.assertEquals(program1, streamPrograms.getProgram());
     }
 
     @Test
@@ -127,35 +121,21 @@ public class StreamProgramsTest {
         StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(0, 15000, programs), false);
 
         long pos = 0;
-        Assert.assertSame(program0, streamPrograms.getProgramAtOffset(pos));
+        Assert.assertSame(program0, streamPrograms.getProgram());
 
         //Gap
         pos = streamPrograms.getNeighbouringSectionStartOffset(pos, false);
         Assert.assertEquals(2000, pos);
-        Assert.assertSame(null, streamPrograms.getProgramAtOffset(pos));
+        Assert.assertSame(program0, streamPrograms.getProgram());
 
         //Program 1
         pos = streamPrograms.getNeighbouringSectionStartOffset(pos, false);
         Assert.assertEquals(5000, pos);
-        Assert.assertSame(program1, streamPrograms.getProgramAtOffset(pos));
+        Assert.assertSame(program0, streamPrograms.getProgram());
 
-        //Program 2
-        pos = streamPrograms.getNeighbouringSectionStartOffset(pos, false);
-        Assert.assertEquals(6000, pos);
-        Assert.assertSame(program2, streamPrograms.getProgramAtOffset(pos));
-
-        //Second gap
-        pos = streamPrograms.getNeighbouringSectionStartOffset(pos, false);
-        Assert.assertEquals(7000, pos);
-        Assert.assertSame(null, streamPrograms.getProgramAtOffset(pos));
-
-        //Program 3
-        pos = streamPrograms.getNeighbouringSectionStartOffset(pos, false);
-        Assert.assertEquals(10000, pos);
-        Assert.assertSame(program3, streamPrograms.getProgramAtOffset(pos));
-
+        System.out.println(pos);
         //End
-        Assert.assertEquals(null, streamPrograms.getNeighbouringSectionStartOffset(pos, false));
+        Assert.assertEquals(new Long(6000), streamPrograms.getNeighbouringSectionStartOffset(pos, false));
     }
 
     @Test
@@ -173,41 +153,13 @@ public class StreamProgramsTest {
         programs.add(program3);
         StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(0, 15000, programs), false);
 
-        Assert.assertSame(program0, streamPrograms.getProgramAtOffset(1000));
-        Assert.assertSame(program1, streamPrograms.getProgramAtOffset(2000));
-        Assert.assertSame(program1, streamPrograms.getProgramAtOffset(3000));
-        Assert.assertSame(program0, streamPrograms.getProgramAtOffset(4000));
-        Assert.assertSame(program0, streamPrograms.getProgramAtOffset(5000));
-        Assert.assertSame(program2, streamPrograms.getProgramAtOffset(6000));
-
-        //Program 0
-        long pos = 0;
-        Assert.assertSame(program0, streamPrograms.getProgramAtOffset(pos));
+        Assert.assertSame(program0, streamPrograms.getProgram());
 
         //Program 1
+        long pos = 0;
         pos = streamPrograms.getNeighbouringSectionStartOffset(pos, false);
         Assert.assertEquals(2000, pos);
-        Assert.assertSame(program1, streamPrograms.getProgramAtOffset(pos));
-
-        //Program 0 again
-        pos = streamPrograms.getNeighbouringSectionStartOffset(pos, false);
-        Assert.assertEquals(4000, pos);
-        Assert.assertSame(program0, streamPrograms.getProgramAtOffset(pos));
-
-        //Program 2
-        pos = streamPrograms.getNeighbouringSectionStartOffset(pos, false);
-        Assert.assertEquals(6000, pos);
-        Assert.assertSame(program2, streamPrograms.getProgramAtOffset(pos));
-
-        //Gap
-        pos = streamPrograms.getNeighbouringSectionStartOffset(pos, false);
-        Assert.assertEquals(7000, pos);
-        Assert.assertSame(null, streamPrograms.getProgramAtOffset(pos));
-
-        //Program 3
-        pos = streamPrograms.getNeighbouringSectionStartOffset(pos, false);
-        Assert.assertEquals(10000, pos);
-        Assert.assertSame(program3, streamPrograms.getProgramAtOffset(pos));
+        Assert.assertSame(program0, streamPrograms.getProgram());
     }
 
     @Test
@@ -227,34 +179,14 @@ public class StreamProgramsTest {
 
         //End
         long pos = 14000;
-        Assert.assertSame(program3, streamPrograms.getProgramAtOffset(pos));
+        Assert.assertSame(program0, streamPrograms.getProgram());
 
         //Program 3
         pos = streamPrograms.getNeighbouringSectionStartOffset(pos, true);
         Assert.assertEquals(7000, pos);
-        Assert.assertSame(null, streamPrograms.getProgramAtOffset(pos));
+        Assert.assertSame(program0, streamPrograms.getProgram());
 
-        //Gap
-        pos = streamPrograms.getNeighbouringSectionStartOffset(pos, true);
-        Assert.assertEquals(6000, pos);
-        Assert.assertSame(program2, streamPrograms.getProgramAtOffset(pos));
-
-        //Program 2
-        pos = streamPrograms.getNeighbouringSectionStartOffset(pos, true);
-        Assert.assertEquals(4000, pos);
-        Assert.assertSame(program0, streamPrograms.getProgramAtOffset(pos));
-
-        //Program 0
-        pos = streamPrograms.getNeighbouringSectionStartOffset(pos, true);
-        Assert.assertEquals(2000, pos);
-        Assert.assertSame(program1, streamPrograms.getProgramAtOffset(pos));
-
-        //Program 1
-        pos = streamPrograms.getNeighbouringSectionStartOffset(pos, true);
-        Assert.assertEquals(1000, pos);
-        Assert.assertSame(program0, streamPrograms.getProgramAtOffset(pos));
-
-        Assert.assertEquals(null, streamPrograms.getNeighbouringSectionStartOffset(pos, true));
+        Assert.assertEquals(Long.valueOf(6000), streamPrograms.getNeighbouringSectionStartOffset(pos, true));
     }
 
     @Test
@@ -284,8 +216,8 @@ public class StreamProgramsTest {
         Assert.assertNull(streamPrograms.getNeighbouringSectionStartOffset((streamEnd - streamStart), false));
 
 
-        Assert.assertEquals(null, streamPrograms.getNeighbouringSectionStartOffset(-1, true));
-        Assert.assertEquals(Long.valueOf(1000L), streamPrograms.getNeighbouringSectionStartOffset(-1, false));
+        Assert.assertEquals(Long.valueOf(1000L), streamPrograms.getNeighbouringSectionStartOffset(-1, true));
+        Assert.assertEquals(Long.valueOf(4000L), streamPrograms.getNeighbouringSectionStartOffset(-1, false));
 
         Assert.assertEquals(Long.valueOf(2000L), streamPrograms.getNeighbouringSectionStartOffset((streamEnd - streamStart), true));
         Assert.assertEquals(null, streamPrograms.getNeighbouringSectionStartOffset((streamEnd - streamStart), false));

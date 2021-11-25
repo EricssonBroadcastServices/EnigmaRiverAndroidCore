@@ -45,10 +45,240 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.regex.Matcher;
 
 public class ProgramServiceTest {
+
     @Test
-    public void testCache() throws JSONException {
+    public void testEntitlementCallWhenProgramChange() throws JSONException {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+
+        JsonStreamInfo streamInfo = new MockStreamInfo(MockStreamInfo.Args.vod());
+        List<IProgram> programs = new ArrayList<>();
+        programs.add(new MockProgram("Program 1", 1000, 5000).setAssetId("asset_1"));
+        programs.add(new MockProgram("Program 2", 5000, 9000).setAssetId("asset_2"));
+        Duration asset3End = Duration.millis(10000).add(Duration.minutes(5));
+        Duration asset4End = asset3End.add(Duration.hours(1));
+        programs.add(new MockProgram("Program 3", 9000, asset3End.inWholeUnits(Duration.Unit.MILLISECONDS)).setAssetId("asset_3"));
+        programs.add(new MockProgram("Program 4", asset3End.inWholeUnits(Duration.Unit.MILLISECONDS), asset4End.inWholeUnits(Duration.Unit.MILLISECONDS)).setAssetId("asset_4"));
+        IStreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(1000, asset4End.inWholeUnits(Duration.Unit.MILLISECONDS), programs),false);
+        MockPlaybackSessionInfo playbackSessionInfo = new MockPlaybackSessionInfo();
+        final Counter checkEntitlementCalled = new Counter();
+
+        final String[] assetIdChecked = {null};
+        IEntitlementProvider entitlementProvider = new IEntitlementProvider() {
+            @Override
+            public void checkEntitlement(IEntitlementRequest entitlementRequest, IEntitlementResponseHandler responseHandler) {
+                assetIdChecked[0] = entitlementRequest.getAssetId();
+                switch (checkEntitlementCalled.getCounts()) {
+                    case 0: {
+                        responseHandler.onResponse(new EntitlementData(EntitlementStatus.SUCCESS));
+                    } break;
+                    case 1: {
+                        responseHandler.onResponse(new EntitlementData(EntitlementStatus.SUCCESS));
+                    } break;
+                    case 2: {
+                        responseHandler.onResponse(new EntitlementData(EntitlementStatus.NOT_ENTITLED));
+                    } break;
+                    case 3: {
+                        responseHandler.onResponse(new EntitlementData(EntitlementStatus.NOT_ENTITLED));
+                    } break;
+                    default: {
+                        Assert.fail("Unexpected");
+                    } break;
+                }
+                checkEntitlementCalled.count();
+            }
+        };
+        IPlaybackSession playbackSession = new MockInternalPlaybackSession(true) {
+            @Override
+            public void addListener(IPlaybackSessionListener listener) {
+                listener.onPlayingFromLiveChanged(true);
+            }
+        };
+        final MockTimeProvider mockTimeProvider = new MockTimeProvider(42463683);
+        ProgramService programService = new ProgramService(new MockSession(), streamInfo, streamPrograms, playbackSessionInfo, entitlementProvider, playbackSession, new MockTaskFactoryProvider()) {
+            @Override
+            protected ITimeProvider createTimeProviderForCache() {
+                return mockTimeProvider;
+            }
+
+        };
+        final Counter onEntitlementChangedCalled = new Counter();
+        programService.addEntitlementListener(new BaseEntitlementListener() {
+            @Override
+            public void onEntitlementChanged(EntitlementData oldData, EntitlementData newData) {
+                switch (onEntitlementChangedCalled.getCounts()) {
+                    case 0: {
+                        Assert.assertEquals(EntitlementStatus.SUCCESS, newData.getStatus());
+                    } break;
+                    case 1: {
+                        Assert.assertEquals(EntitlementStatus.NOT_ENTITLED, newData.getStatus());
+                    } break;
+                    default: {
+                        Assert.fail("Unexpected call "+onEntitlementChangedCalled.getCounts());
+                    } break;
+                }
+                onEntitlementChangedCalled.count();
+            }
+        });
+
+        checkEntitlementCalled.setExpectedCounts(0);
+        onEntitlementChangedCalled.setExpectedCounts(0);
+        checkEntitlementCalled.assertExpected();
+        onEntitlementChangedCalled.assertExpected();
+
+        playbackSessionInfo.setCurrentPlaybackOffset(Duration.millis(10000));
+        MockProgram toProgram = new MockProgram("To Program", 1000, 5000).setAssetId("asset_123456");
+        programService.checkEntitlementForProgram(toProgram);
+        checkEntitlementCalled.addToExpected(1);
+        onEntitlementChangedCalled.addToExpected(1);
+        Assert.assertEquals(assetIdChecked[0], "asset_123456");
+        checkEntitlementCalled.assertExpected();
+        onEntitlementChangedCalled.assertExpected();
+
+        playbackSessionInfo.setCurrentPlaybackOffset(asset3End.subtract(Duration.seconds(20)));
+        programService.checkEntitlementForProgram(null);
+        Assert.assertEquals(assetIdChecked[0], "asset_1");
+        checkEntitlementCalled.addToExpected(2);
+        onEntitlementChangedCalled.addToExpected(0);
+
+        //After 4 minutes (since cache time is currently 5 minutes) the cached response should be used.
+        Duration timePassage = Duration.minutes(4);
+        mockTimeProvider.addTime(timePassage.inWholeUnits(Duration.Unit.MILLISECONDS));
+        playbackSessionInfo.setCurrentPlaybackOffset(playbackSessionInfo.getCurrentPlaybackOffset().add(timePassage));
+        programService.checkEntitlementForProgram(null);
+        checkEntitlementCalled.addToExpected(0);
+        onEntitlementChangedCalled.addToExpected(1);
+
+        checkEntitlementCalled.assertExpected();
+        onEntitlementChangedCalled.assertExpected();
+
+
+        //After 30 seconds more the cached time should still be used.
+        timePassage = Duration.seconds(30);
+        mockTimeProvider.addTime(timePassage.inWholeUnits(Duration.Unit.MILLISECONDS));
+        playbackSessionInfo.setCurrentPlaybackOffset(playbackSessionInfo.getCurrentPlaybackOffset().add(timePassage));
+
+        programService.checkEntitlementForProgram(null);
+        checkEntitlementCalled.addToExpected(0);
+        onEntitlementChangedCalled.addToExpected(0);
+    }
+
+    @Test
+    public void testEntitlementCall() throws JSONException {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+
+        JsonStreamInfo streamInfo = new MockStreamInfo(MockStreamInfo.Args.vod());
+        List<IProgram> programs = new ArrayList<>();
+        programs.add(new MockProgram("Program 1", 1000, 5000).setAssetId("asset_1"));
+        programs.add(new MockProgram("Program 2", 5000, 9000).setAssetId("asset_2"));
+        Duration asset3End = Duration.millis(10000).add(Duration.minutes(5));
+        Duration asset4End = asset3End.add(Duration.hours(1));
+        programs.add(new MockProgram("Program 3", 9000, asset3End.inWholeUnits(Duration.Unit.MILLISECONDS)).setAssetId("asset_3"));
+        programs.add(new MockProgram("Program 4", asset3End.inWholeUnits(Duration.Unit.MILLISECONDS), asset4End.inWholeUnits(Duration.Unit.MILLISECONDS)).setAssetId("asset_4"));
+        IStreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(1000, asset4End.inWholeUnits(Duration.Unit.MILLISECONDS), programs),false);
+        MockPlaybackSessionInfo playbackSessionInfo = new MockPlaybackSessionInfo();
+        final Counter checkEntitlementCalled = new Counter();
+        IEntitlementProvider entitlementProvider = new IEntitlementProvider() {
+            @Override
+            public void checkEntitlement(IEntitlementRequest entitlementRequest, IEntitlementResponseHandler responseHandler) {
+                switch (checkEntitlementCalled.getCounts()) {
+                    case 0: {
+                        responseHandler.onResponse(new EntitlementData(EntitlementStatus.SUCCESS));
+                    } break;
+                    case 1: {
+                        responseHandler.onResponse(new EntitlementData(EntitlementStatus.SUCCESS));
+                    } break;
+                    case 2: {
+                        responseHandler.onResponse(new EntitlementData(EntitlementStatus.NOT_ENTITLED));
+                    } break;
+                    case 3: {
+                        responseHandler.onResponse(new EntitlementData(EntitlementStatus.NOT_ENTITLED));
+                    } break;
+                    default: {
+                        Assert.fail("Unexpected");
+                    } break;
+                }
+                checkEntitlementCalled.count();
+            }
+        };
+        IPlaybackSession playbackSession = new MockInternalPlaybackSession(true) {
+            @Override
+            public void addListener(IPlaybackSessionListener listener) {
+                listener.onPlayingFromLiveChanged(true);
+            }
+        };
+        final MockTimeProvider mockTimeProvider = new MockTimeProvider(42463683);
+        ProgramService programService = new ProgramService(new MockSession(), streamInfo, streamPrograms, playbackSessionInfo, entitlementProvider, playbackSession, new MockTaskFactoryProvider()) {
+            @Override
+            protected ITimeProvider createTimeProviderForCache() {
+                return mockTimeProvider;
+            }
+
+        };
+        final Counter onEntitlementChangedCalled = new Counter();
+        programService.addEntitlementListener(new BaseEntitlementListener() {
+            @Override
+            public void onEntitlementChanged(EntitlementData oldData, EntitlementData newData) {
+                switch (onEntitlementChangedCalled.getCounts()) {
+                    case 0: {
+                        Assert.assertEquals(EntitlementStatus.SUCCESS, newData.getStatus());
+                    } break;
+                    case 1: {
+                        Assert.assertEquals(EntitlementStatus.NOT_ENTITLED, newData.getStatus());
+                    } break;
+                    default: {
+                        Assert.fail("Unexpected call "+onEntitlementChangedCalled.getCounts());
+                    } break;
+                }
+                onEntitlementChangedCalled.count();
+            }
+        });
+
+        checkEntitlementCalled.setExpectedCounts(0);
+        onEntitlementChangedCalled.setExpectedCounts(0);
+        checkEntitlementCalled.assertExpected();
+        onEntitlementChangedCalled.assertExpected();
+
+
+        playbackSessionInfo.setCurrentPlaybackOffset(Duration.millis(10000));
+        programService.checkEntitlementForProgram(null);
+        checkEntitlementCalled.addToExpected(1);
+        onEntitlementChangedCalled.addToExpected(1);
+
+        checkEntitlementCalled.assertExpected();
+        onEntitlementChangedCalled.assertExpected();
+
+        playbackSessionInfo.setCurrentPlaybackOffset(asset3End.subtract(Duration.seconds(20)));
+        programService.checkEntitlementForProgram(null);
+        checkEntitlementCalled.addToExpected(2);
+        onEntitlementChangedCalled.addToExpected(0);
+
+        //After 4 minutes (since cache time is currently 5 minutes) the cached response should be used.
+        Duration timePassage = Duration.minutes(4);
+        mockTimeProvider.addTime(timePassage.inWholeUnits(Duration.Unit.MILLISECONDS));
+        playbackSessionInfo.setCurrentPlaybackOffset(playbackSessionInfo.getCurrentPlaybackOffset().add(timePassage));
+        programService.checkEntitlementForProgram(null);
+        checkEntitlementCalled.addToExpected(0);
+        onEntitlementChangedCalled.addToExpected(1);
+
+        checkEntitlementCalled.assertExpected();
+        onEntitlementChangedCalled.assertExpected();
+
+
+        //After 30 seconds more the cached time should still be used.
+        timePassage = Duration.seconds(30);
+        mockTimeProvider.addTime(timePassage.inWholeUnits(Duration.Unit.MILLISECONDS));
+        playbackSessionInfo.setCurrentPlaybackOffset(playbackSessionInfo.getCurrentPlaybackOffset().add(timePassage));
+
+        programService.checkEntitlementForProgram(null);
+        checkEntitlementCalled.addToExpected(0);
+        onEntitlementChangedCalled.addToExpected(0);
+    }
+
+    @Test
+    public void testEntitlementCallForLive() throws JSONException {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
 
         JsonStreamInfo streamInfo = new MockStreamInfo(MockStreamInfo.Args.liveStream());
@@ -125,7 +355,7 @@ public class ProgramServiceTest {
 
 
         playbackSessionInfo.setCurrentPlaybackOffset(Duration.millis(10000));
-        programService.checkEntitlement();
+        programService.checkEntitlementForProgram(null);
         checkEntitlementCalled.addToExpected(1);
         onEntitlementChangedCalled.addToExpected(1);
 
@@ -133,7 +363,7 @@ public class ProgramServiceTest {
         onEntitlementChangedCalled.assertExpected();
 
         playbackSessionInfo.setCurrentPlaybackOffset(asset3End.subtract(Duration.seconds(20)));
-        programService.checkEntitlement();
+        programService.checkEntitlementForProgram(null);
         checkEntitlementCalled.addToExpected(2);
         onEntitlementChangedCalled.addToExpected(0);
 
@@ -141,7 +371,7 @@ public class ProgramServiceTest {
         Duration timePassage = Duration.minutes(4);
         mockTimeProvider.addTime(timePassage.inWholeUnits(Duration.Unit.MILLISECONDS));
         playbackSessionInfo.setCurrentPlaybackOffset(playbackSessionInfo.getCurrentPlaybackOffset().add(timePassage));
-        programService.checkEntitlement();
+        programService.checkEntitlementForProgram(null);
         checkEntitlementCalled.addToExpected(0);
         onEntitlementChangedCalled.addToExpected(1);
 
@@ -154,14 +384,13 @@ public class ProgramServiceTest {
         mockTimeProvider.addTime(timePassage.inWholeUnits(Duration.Unit.MILLISECONDS));
         playbackSessionInfo.setCurrentPlaybackOffset(playbackSessionInfo.getCurrentPlaybackOffset().add(timePassage));
 
-        programService.checkEntitlement();
+        programService.checkEntitlementForProgram(null);
         checkEntitlementCalled.addToExpected(0);
         onEntitlementChangedCalled.addToExpected(0);
     }
 
-
     @Test
-    public void testFutureEntitlementIsCheckedUsingCorrectTime() throws JSONException {
+    public void testEntitlementCallsIsCheckedUsingCorrectTime() throws JSONException {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
 
         MockPlaybackSessionInfo playbackSessionInfo = new MockPlaybackSessionInfo();
@@ -238,7 +467,7 @@ public class ProgramServiceTest {
         httpCallMade.assertExpected();
 
 
-        programService.checkEntitlement();
+        programService.checkEntitlementForProgram(null);
         httpCallMade.setExpectedCounts(1);
 
         httpCallMade.assertExpected();

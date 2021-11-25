@@ -32,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 
 /*package-protected*/ class ProgramService implements IInternalPlaybackSessionListener {
     private final ISession session;
@@ -66,7 +65,7 @@ import java.util.Objects;
         this.playerListener = new BaseEnigmaPlayerListener() {
             @Override
             public void onProgramChanged(IProgram from, IProgram to) {
-                checkEntitlement();
+                checkEntitlementForProgram(to);
             }
         };
     }
@@ -82,7 +81,7 @@ import java.util.Objects;
             }
         });
 
-        checkEntitlement();
+        checkEntitlementForProgram(null);
         args.enigmaPlayer.addListener(playerListener);
     }
 
@@ -128,32 +127,28 @@ import java.util.Objects;
         return new SystemBootTimeProvider();
     }
 
-    protected void checkEntitlement() {
-        if(streamPrograms != null) {
-            Duration offset = playbackSessionInfo.getCurrentPlaybackOffset();
-            if(lastCheckedOffset != null && lastCheckedOffset.equals(offset)) {
-                return;
-            } else {
-                lastCheckedOffset = offset;
+    protected void checkEntitlementForProgram(IProgram toProgram) {
+        if (streamPrograms != null) {
+            if (toProgram == null) {
+                toProgram = streamPrograms.getProgram();
             }
-            AssetIdFallbackChain assetId = getAssetIdsToCheckForAt(offset);
-            if(assetId != null) {
+            AssetIdFallbackChain assetId = getAssetIdsToCheckForAt(toProgram);
+            if (assetId != null) {
                 checkEntitlement(assetId);
             }
         } else {
             String channelId = streamInfo.getChannelId();
-            if(channelId != null) {
+            if (channelId != null) {
                 checkEntitlement(new AssetIdFallbackChain(channelId));
             }
         }
     }
 
-    private AssetIdFallbackChain getAssetIdsToCheckForAt(Duration offset) {
-        IProgram program = streamPrograms.getProgramAtOffset(offset.inWholeUnits(Duration.Unit.MILLISECONDS));
+    private AssetIdFallbackChain getAssetIdsToCheckForAt(IProgram toProgram) {
         String channelId = streamInfo.getChannelId();
         List<String> fallbackChain = new ArrayList<>();
-        if(program != null) {
-            fallbackChain.add(program.getAssetId());
+        if(toProgram != null) {
+            fallbackChain.add(toProgram.getAssetId());
         }
         if(channelId != null) {
             fallbackChain.add(channelId);

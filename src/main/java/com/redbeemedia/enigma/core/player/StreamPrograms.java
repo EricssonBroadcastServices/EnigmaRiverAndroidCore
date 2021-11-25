@@ -20,7 +20,7 @@ import java.util.List;
     public StreamPrograms(IEpgResponse epgResponse, boolean isPlayingLive) {
         this.isPlayingLive = isPlayingLive;
 
-        ISectionListBuilder<IProgram> sectionListBuilder = new SectionListBuilder<>();
+        ISectionListBuilder<IProgram> sectionListBuilder = new SectionListBuilder();
         sectionListBuilder.putItem(epgResponse.getStartUtcMillis(), epgResponse.getEndUtcMillis(), null);
 
         List<IProgram> modifiablePrograms = new ArrayList<>();
@@ -43,8 +43,18 @@ import java.util.List;
     }
 
     @Override
-    public IProgram getProgramAtOffset(long offset) {
-        long utcMillis = startUtcMillis + offset;
+    public IProgram getProgram() {
+        long utcMillis;
+        if (isPlayingLive) {
+            // for live current UTC time, give a delay for 1 sec
+            utcMillis = new Date().getTime() - 1000;
+        } else {
+            if (!this.sections.isEmpty()) {
+                utcMillis = this.sections.getFirstItem().getStartUtcMillis();
+            } else {
+                return null;
+            }
+        }
         ISection<IProgram> section = sections.getSectionAt(utcMillis);
         return section != null ? section.getItem() : null;
     }

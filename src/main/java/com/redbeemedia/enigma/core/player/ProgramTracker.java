@@ -24,7 +24,7 @@ import java.util.List;
                     synchronized (currentStreamPrograms) {
                         currentStreamPrograms.value = streamPrograms;
                     }
-                    changeProgram(streamPrograms != null ? streamPrograms.getProgramAtOffset(0L) : null);
+                    changeProgram(streamPrograms != null ? streamPrograms.getProgram() : null);
                 } else {
                     synchronized (currentStreamPrograms) {
                         currentStreamPrograms.value = null;
@@ -48,7 +48,7 @@ import java.util.List;
         IProgram newCurrentProgram = null;
         synchronized (currentStreamPrograms) {
              if(currentStreamPrograms.value != null) {
-                 newCurrentProgram = currentStreamPrograms.value.getProgramAtOffset(millis);
+                 newCurrentProgram = currentStreamPrograms.value.getProgram();
              }
         }
         boolean programChanged = false;
