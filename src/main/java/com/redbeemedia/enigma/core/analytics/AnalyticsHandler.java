@@ -75,45 +75,6 @@ public class AnalyticsHandler implements IBufferingAnalyticsHandler {
     }
 
     @Override
-    public void init() throws AnalyticsException, InterruptedException {
-        JSONObject envelope = new JSONObject();
-        try {
-            IBusinessUnit businessUnit = session.getBusinessUnit();
-            envelope.put(CUSTOMER, businessUnit.getCustomerName());
-            envelope.put(BUSINESS_UNIT, businessUnit.getName());
-            envelope.put(SESSION_ID, playbackSessionId);
-        } catch (JSONException e) {
-            throw new AnalyticsException("Failed to construct envelope.", e);
-        }
-
-        //Here we actually want to do a synchronous http call since we are on a separate thread already.
-        Response response = new Response();
-        long initRequestTime = timeProvider.getTime();
-        EnigmaRiverContext.getHttpHandler().doHttpBlocking(getInitUrl(), new AuthenticatedExposureApiCall("POST", session, envelope), response);
-        if(Thread.interrupted()) {
-            throw new InterruptedException();
-        }
-        assertOK(response);
-        if(response.data == null) {
-            throw new AnalyticsException("Server returned empty response.");
-        }
-        this.clockOffset = calculateClockOffset(initRequestTime, response.data);
-    }
-
-    private long calculateClockOffset(long initRequestTime, JSONObject response) throws AnalyticsException {
-        long currentTime = timeProvider.getTime();
-        try {
-            return (currentTime - response.getLong("repliedTime") + initRequestTime - response.getLong("receivedTime")) / 2L;
-        } catch (JSONException e) {
-            throw new AnalyticsException("Could not calculate clock offset.",e);
-        }
-    }
-
-    protected Long getClockOffsetForUnitTests() {
-        return clockOffset;
-    }
-
-    @Override
     public synchronized void sendData() throws AnalyticsException, InterruptedException {
         final JSONArray currentEvents;
         synchronized (eventsLock) {

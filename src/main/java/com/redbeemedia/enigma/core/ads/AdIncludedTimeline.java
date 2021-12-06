@@ -37,7 +37,7 @@ public class AdIncludedTimeline extends BaseTimelineListener implements IAdInclu
     public boolean isActive() { return isActive && adDetector.getAdBreaks() != null && adDetector.getAdBreaks().size() > 0; }
 
     @Override
-    @Nullable public List<ITimelinePosition> getAdBreaks() {
+    @Nullable public List<ITimelinePosition> getAdBreaksPositions() {
         if(!isActive()) { return null; }
 
         List<ITimelinePosition> positions = new ArrayList<>();
@@ -48,6 +48,12 @@ public class AdIncludedTimeline extends BaseTimelineListener implements IAdInclu
             previousAdBreaks = previousAdBreaks.add(adBreak.duration);
         }
         return positions;
+    }
+
+    @Override
+    @Nullable public List<AdBreak> getAdBreaks() {
+        if(!isActive()) { return null; }
+        return adDetector.getAdBreaks();
     }
 
     @Override

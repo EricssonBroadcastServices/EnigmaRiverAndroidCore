@@ -210,17 +210,7 @@ public class DefaultPlaybackStartActionTest {
 
             @Override
             protected Runnable newAnalyticsHandlerRunnable(IBufferingAnalyticsHandler analyticsHandler, long sleepTime) {
-                return new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            analyticsHandler.init();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            Assert.fail(e.getMessage());
-                        }
-                    }
-                };
+                return () -> {};
             }
         };
 
@@ -433,8 +423,8 @@ public class DefaultPlaybackStartActionTest {
     public void testCorrectSessionSelected() {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
 
-        ISession sessionFromEnigmaPlayer = new Session("mockID_1", new BusinessUnit("CU", "BU"));
-        ISession playRequestSession = new Session("PlayMock", new BusinessUnit("PlayRequest", "Biz"));
+        ISession sessionFromEnigmaPlayer = new Session("mockID_1", new BusinessUnit("CU", "BU"),"123");
+        ISession playRequestSession = new Session("PlayMock", new BusinessUnit("PlayRequest", "Biz"),"123");
 
         DefaultPlaybackStartAction playbackStartAction = new DefaultPlaybackStartAction(
                 sessionFromEnigmaPlayer,
@@ -516,6 +506,7 @@ public class DefaultPlaybackStartActionTest {
                     .put("format", "DASH")
                     .put("mediaLocator", "http://example.com/manifest.mpd");
             httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play"), playResponse.toString());
+            httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play"), playResponse.toString());
         }
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization()
                 .setHttpHandler(httpHandler)
@@ -539,7 +530,7 @@ public class DefaultPlaybackStartActionTest {
         // Execute the query
         playbackStartAction.startUsingAssetId("foo");
         // Fetch the play request query from the request url
-        String query = new URL(new JSONObject(httpHandler.getLog().get(1)).getString("url")).getQuery();
+        String query = new URL(new JSONObject(httpHandler.getLog().get(2)).getString("url")).getQuery();
         // Check that the mock parameters are included.
         Assert.assertTrue(query.contains("foo=bar&baz=42"));
 
@@ -556,7 +547,7 @@ public class DefaultPlaybackStartActionTest {
         // Execute the query
         playbackStartAction.startUsingAssetId("foo");
         // Fetch the query from the request url
-        query = new URL(new JSONObject(httpHandler.getLog().get(1)).getString("url")).getQuery();
+        query = new URL(new JSONObject(httpHandler.getLog().get(2)).getString("url")).getQuery();
         Assert.assertNull(query);
 
         httpHandler.clearLog();
@@ -574,7 +565,7 @@ public class DefaultPlaybackStartActionTest {
         );
         // Execute the query
         playbackStartAction.startUsingAssetId("foo");
-        query = new URL(new JSONObject(httpHandler.getLog().get(1)).getString("url")).getQuery();
+        query = new URL(new JSONObject(httpHandler.getLog().get(2)).getString("url")).getQuery();
 
         for (Map.Entry<String, ?> kvp : defaultAdInsertionParameters.getParameters().entrySet()) {
             if (kvp.getValue() != null) {

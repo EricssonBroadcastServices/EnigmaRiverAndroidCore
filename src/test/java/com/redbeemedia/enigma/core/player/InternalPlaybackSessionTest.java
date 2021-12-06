@@ -274,7 +274,7 @@ public class InternalPlaybackSessionTest {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
         MockTimeProvider timeProvider = new MockTimeProvider();
         final List<JSONObject> analyticsEvents = new ArrayList<>();
-        AnalyticsReporter analyticsReporter = new AnalyticsReporter(timeProvider, jsonObject -> analyticsEvents.add(jsonObject));
+        AnalyticsReporter analyticsReporter = new AnalyticsReporter(timeProvider, jsonObject -> analyticsEvents.add(jsonObject),0l);
         MockPlaybackSessionInfo playbackSessionInfo = new MockPlaybackSessionInfo();
         OpenContainer<IVideoTrack> selectedVideoTrack = new OpenContainer<>(null);
         InternalPlaybackSession.EnigmaPlayerListenerForAnalytics analytics = new InternalPlaybackSession.EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, JsonStreamInfo.createForNull(), selectedVideoTrack);
@@ -332,7 +332,7 @@ public class InternalPlaybackSessionTest {
 
         MockTimeProvider timeProvider = new MockTimeProvider();
         final List<JSONObject> analyticsEvents = new ArrayList<>();
-        AnalyticsReporter analyticsReporter = new AnalyticsReporter(timeProvider, jsonObject -> analyticsEvents.add(jsonObject));
+        AnalyticsReporter analyticsReporter = new AnalyticsReporter(timeProvider, jsonObject -> analyticsEvents.add(jsonObject),0l);
         MockPlaybackSessionInfo playbackSessionInfo = new MockPlaybackSessionInfo();
         JsonStreamInfo streamInfo = new JsonStreamInfo(new JSONObject("{\"live\" : true, \"static\" : false, \"start\" : 8765432}"));
         InternalPlaybackSession.EnigmaPlayerListenerForAnalytics analytics = new InternalPlaybackSession.EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, streamInfo, new OpenContainer<>(null));
@@ -351,7 +351,7 @@ public class InternalPlaybackSessionTest {
 
         MockTimeProvider timeProvider = new MockTimeProvider();
         final List<JSONObject> analyticsEvents = new ArrayList<>();
-        AnalyticsReporter analyticsReporter = new AnalyticsReporter(timeProvider, jsonObject -> analyticsEvents.add(jsonObject));
+        AnalyticsReporter analyticsReporter = new AnalyticsReporter(timeProvider, jsonObject -> analyticsEvents.add(jsonObject),0l);
         MockPlaybackSessionInfo playbackSessionInfo = new MockPlaybackSessionInfo();
         JsonStreamInfo streamInfo = new JsonStreamInfo(new JSONObject("{\"live\" : false, \"start\" : 8765432}"));
         InternalPlaybackSession.EnigmaPlayerListenerForAnalytics analytics = new InternalPlaybackSession.EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, streamInfo, new OpenContainer<>(null));
@@ -434,7 +434,7 @@ public class InternalPlaybackSessionTest {
                     eventLog.append("]");
                 }
             }
-        }));
+        },0l));
         InternalPlaybackSession internalPlaybackSession = new InternalPlaybackSession(args.create());
 
         Assert.assertEquals(0, eventLog.length());

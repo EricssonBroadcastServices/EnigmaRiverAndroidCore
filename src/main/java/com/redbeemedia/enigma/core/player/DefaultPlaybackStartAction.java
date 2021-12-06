@@ -36,6 +36,8 @@ import com.redbeemedia.enigma.core.error.UnexpectedError;
 import com.redbeemedia.enigma.core.format.EnigmaMediaFormat;
 import com.redbeemedia.enigma.core.http.AuthenticatedExposureApiCall;
 import com.redbeemedia.enigma.core.http.IHttpConnection;
+import com.redbeemedia.enigma.core.http.SimpleHttpCall;
+import com.redbeemedia.enigma.core.json.StringResponseHandler;
 import com.redbeemedia.enigma.core.marker.IMarkerPointsDetector;
 import com.redbeemedia.enigma.core.playable.IPlayableHandler;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
@@ -62,6 +64,7 @@ import org.json.JSONObject;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -72,6 +75,7 @@ import java.util.UUID;
     private static final String TAG = "StartAction";
     public static final String SUPPORTED_FORMATS = "supportedFormats";
     public static final String SUPPORTED_DRMS = "supportedDrms";
+    public static final String URL_SERVER_TIME_PROVIDER = "https://time.akamai.com/";
 
     private final ISession session;
     private final IBusinessUnit businessUnit;
@@ -82,6 +86,7 @@ import java.util.UUID;
     private final ITimeProvider timeProvider;
     private final IPlayResultHandler callback;
     private IAdDetector adDetector;
+    private long deviceUtcTimeDifference;
     private IMarkerPointsDetector markerPointsDetector;
     private final ISpriteRepository spriteRepository;
     private Set<EnigmaMediaFormat> supportedFormats;
@@ -134,6 +139,7 @@ import java.util.UUID;
 
     @Override
     public void startUsingAssetId(String assetId) {
+        setDeviceUtcTimeDifference();
         { //Check requirements
             if (session == null) {
                 getStartActionResultHandler().onError(new NoSessionRejectionError());
@@ -298,7 +304,7 @@ import java.util.UUID;
                         epg.getPrograms(request, new IEpgResponseHandler() {
                             @Override
                             public void onSuccess(IEpgResponse epgResponse) {
-                                nextStep.continueProcess(new StreamPrograms(epgResponse, streamInfo.isLiveStream()));
+                                nextStep.continueProcess(new StreamPrograms(epgResponse, streamInfo.isLiveStream(), deviceUtcTimeDifference));
                             }
 
                             @Override
@@ -340,6 +346,37 @@ import java.util.UUID;
             path = path.appendQueryStringParameters(paramMap);
         }
         return path;
+    }
+
+    private void setDeviceUtcTimeDifference() {
+        try {
+            UrlPath url = new UrlPath(URL_SERVER_TIME_PROVIDER);
+            SimpleHttpCall apiCall = new SimpleHttpCall("GET");
+            EnigmaRiverContext.getHttpHandler().doHttp(url.toURL(), apiCall, new StringResponseHandler() {
+
+                @Override
+                public void onError(EnigmaError error) {
+                    deviceUtcTimeDifference = 0L;
+                }
+
+                @Override
+                public void onSuccess(String serverUtcTimeStr) {
+                    try {
+                        long serverUtcTime = Long.parseLong(serverUtcTimeStr) * 1000;
+                        long deviceTime = new Date().getTime();
+                        long networkTime = 500L;
+                        deviceUtcTimeDifference = deviceTime - serverUtcTime - networkTime;
+                    }catch (Exception e){
+                        e.printStackTrace();
+                        // ignore and set device time difference as 0
+                        deviceUtcTimeDifference = 0L;
+                    }
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            // IGNORE
+        }
     }
 
     private String buildFormats(Set<EnigmaMediaFormat.StreamFormat> formats) {
@@ -565,18 +602,6 @@ import java.util.UUID;
         return new Runnable() {
             @Override
             public void run() {
-                boolean initialized = false;
-                while(!initialized) {
-                    try {
-                        analyticsHandler.init();
-                        initialized = true;
-                    } catch (AnalyticsException e) {
-                        handleException(e);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        break;
-                    }
-                }
                 while(!Thread.interrupted()) {
                     try {
                         try {
@@ -607,7 +632,7 @@ import java.util.UUID;
     }
 
     protected IAnalyticsReporter newAnalyticsReporter(ITimeProvider timeProvider, IBufferingAnalyticsHandler analyticsHandler) {
-        return new AnalyticsReporter(timeProvider, analyticsHandler);
+        return new AnalyticsReporter(timeProvider, analyticsHandler, deviceUtcTimeDifference);
     }
 
 

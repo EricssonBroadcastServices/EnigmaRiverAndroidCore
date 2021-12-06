@@ -991,13 +991,31 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                             if (start.getStart() < 0) {
                                 start = positionFactory.newPosition(0);
                             }
+                            // for Live stream display end equal to live position
+                            if (isLiveStream()) {
+                                end = getLivePosition();
+                            } else {
+                                if (end == null) {
+                                    end = positionFactory.newPosition(0);
+                                }
+                            }
+                            if (oldProgram != null && isLiveStream()) {
+                                startOffset = oldProgram.getStartUtcMillis() - streamStartUtcMillis;
+                                start = positionFactory.newPosition(startOffset);
+                            }
                             EnigmaPlayerTimeline.this.onExposedTimelineBoundsChanged(start, end);
                             hasProgram = true;
                         }
                     }
                 } else {
                     hasProgram = false;
-                    EnigmaPlayerTimeline.this.onExposedTimelineBoundsChanged(streamTimelineStart, streamTimelineEnd);
+                    // for Live stream display end equal to live position
+                    if (isLiveStream() && getLivePosition() != null) {
+                        ITimelinePosition end = getLivePosition();
+                        EnigmaPlayerTimeline.this.onExposedTimelineBoundsChanged(streamTimelineStart, end);
+                    } else {
+                        EnigmaPlayerTimeline.this.onExposedTimelineBoundsChanged(streamTimelineStart, streamTimelineEnd);
+                    }
                 }
             }
         });

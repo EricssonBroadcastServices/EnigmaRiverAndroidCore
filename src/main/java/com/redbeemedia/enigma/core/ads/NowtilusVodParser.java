@@ -70,7 +70,10 @@ class NowtilusVodParser implements INowtilusParser {
                 AdEventType type = eventParser.parse(eventType);
                 ArrayList<URL> eventUrls = new ArrayList<>();
                 for(int i = 0; i < eventUrlsJson.length(); i++) {
-                    eventUrls.add(eventParser.parseEventUrl(eventUrlsJson.get(i).toString()));
+                    URL url = eventParser.parseEventUrl(eventUrlsJson.get(i).toString());
+                    if(url!=null){
+                        eventUrls.add(url);
+                    }
                 }
                 logEntrySets.put(type, new VastImpression(type, eventUrls));
             }
@@ -80,7 +83,10 @@ class NowtilusVodParser implements INowtilusParser {
         if (impressionUrlsJson != null) {
             ArrayList<URL> eventUrls = new ArrayList<>();
             for (int i = 0; i < impressionUrlsJson.length(); i++) {
-                eventUrls.add(eventParser.parseEventUrl(impressionUrlsJson.get(i).toString()));
+                URL url = eventParser.parseEventUrl(impressionUrlsJson.get(i).toString());
+                if (url != null) {
+                    eventUrls.add(url);
+                }
             }
             logEntrySets.put(AdEventType.Start, new VastImpression(AdEventType.Start, eventUrls));
         }

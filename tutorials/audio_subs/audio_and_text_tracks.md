@@ -107,7 +107,7 @@ This is only allowed for subtitle tracks. A request to `setAudioTrack(null)` wil
 
 ### Working example
 Here is a working example project using what is described in this tutorial:
-[audioAndSubtitles](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.3.3-BETA-10/audioAndSubtitles)<br />
+[audioAndSubtitles](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.3.3-BETA-11/audioAndSubtitles)<br />
 
 
 ___

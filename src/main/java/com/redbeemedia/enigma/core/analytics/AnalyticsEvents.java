@@ -44,6 +44,7 @@ package com.redbeemedia.enigma.core.analytics;
         public final IEventProperty<AnalyticsErrorEvent, Integer> CODE = mandatory("Code");
         public final IEventProperty<AnalyticsErrorEvent, String> MESSAGE = mandatory("Message");
         public final IEventProperty<AnalyticsErrorEvent, String> DETAILS = mandatory("Details");
+        public final IEventProperty<AnalyticsErrorEvent, String> UTC_TIME_DIFFERENCE = optional("deviceUTCtimedifference");
     }
 
 

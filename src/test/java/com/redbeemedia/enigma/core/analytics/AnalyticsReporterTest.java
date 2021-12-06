@@ -49,7 +49,7 @@ public class AnalyticsReporterTest {
                 }
                 onAnalyticsCalled.count();
             }
-        });
+        },0l);
         onAnalyticsCalled.assertNone();
         analyticsReporter.playbackError(new UnexpectedError("UnitTest"));
         onAnalyticsCalled.assertOnce();
@@ -71,7 +71,7 @@ public class AnalyticsReporterTest {
                 }
                 onAnalyticsCalled.count();
             }
-        });
+        },0l);
         onAnalyticsCalled.assertNone();
         analyticsReporter.playbackError(new PlayerImplementationError(777, "UnitTestPlayerErrorCode"));
         onAnalyticsCalled.assertOnce();
@@ -85,7 +85,7 @@ public class AnalyticsReporterTest {
             public void onAnalytics(JSONObject jsonObject) {
                 onAnalyticsCalled.count();
             }
-        });
+        },0l);
         onAnalyticsCalled.assertCount(0);
 
         analyticsReporter.playbackResumed(Duration.hours(1).inWholeUnits(Duration.Unit.MILLISECONDS));
@@ -107,7 +107,7 @@ public class AnalyticsReporterTest {
             public void onAnalytics(JSONObject jsonObject) {
                 onAnalyticsCalled.count();
             }
-        });
+        },0l);
         onAnalyticsCalled.assertCount(0);
 
         analyticsReporter.playbackHeartbeat(Duration.hours(1).inWholeUnits(Duration.Unit.MILLISECONDS));
@@ -128,7 +128,7 @@ public class AnalyticsReporterTest {
             public void onAnalytics(JSONObject jsonObject) {
                 onAnalyticsCalled.count();
             }
-        });
+        },0l);
         onAnalyticsCalled.assertCount(0);
 
         analyticsReporter.playbackCreated("mockAsset");

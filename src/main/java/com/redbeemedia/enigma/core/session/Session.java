@@ -10,20 +10,28 @@ public class Session implements ISession {
 
     private String sessionToken;
     private final IBusinessUnit businessUnit;
+    private final String userId;
 
     @Deprecated
-    public Session(String sessionToken, String customerUnit, String businessUnit) {
-        this(sessionToken, new BusinessUnit(customerUnit, businessUnit));
+    public Session(String sessionToken, String customerUnit, String businessUnit, String userId) {
+        this(sessionToken, new BusinessUnit(customerUnit, businessUnit), userId);
     }
 
-    public Session(String sessionToken, IBusinessUnit businessUnit) {
+    public Session(String sessionToken, IBusinessUnit businessUnit, String userId) {
         this.sessionToken = sessionToken;
         this.businessUnit = businessUnit;
+        this.userId = userId;
     }
 
     private Session(Parcel parcel) {
         this.sessionToken = parcel.readString();
         this.businessUnit = parcel.readParcelable(getClass().getClassLoader());
+        this.userId = parcel.readString();
+    }
+
+    @Override
+    public String getUserId() {
+        return userId;
     }
 
     @Override
@@ -56,6 +64,7 @@ public class Session implements ISession {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(sessionToken);
         dest.writeParcelable(businessUnit, flags);
+        dest.writeString(userId);
     }
 
     @Override

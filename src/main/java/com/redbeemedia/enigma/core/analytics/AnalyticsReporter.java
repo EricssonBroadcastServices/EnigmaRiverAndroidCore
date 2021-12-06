@@ -17,10 +17,12 @@ public class AnalyticsReporter implements IAnalyticsReporter {
     private final IAnalyticsHandler analyticsHandler;
     private final ITimeProvider timeProvider;
     private volatile boolean terminalStateReached = false;
+    private final long deviceUtcTimeDifference;
 
-    public AnalyticsReporter(ITimeProvider timeProvider, IAnalyticsHandler analyticsHandler) {
+    public AnalyticsReporter(ITimeProvider timeProvider, IAnalyticsHandler analyticsHandler, long deviceUtcTimeDifference) {
         this.timeProvider = timeProvider;
         this.analyticsHandler = analyticsHandler;
+        this.deviceUtcTimeDifference = deviceUtcTimeDifference;
     }
 
     @Override
@@ -41,6 +43,7 @@ public class AnalyticsReporter implements IAnalyticsReporter {
 
             builder.addData(eventType.MESSAGE, error.getClass().getSimpleName() + additionalMessage);
             builder.addData(eventType.DETAILS, error.getTrace());
+            builder.addData(eventType.UTC_TIME_DIFFERENCE, deviceUtcTimeDifference+"");
         });
     }
 

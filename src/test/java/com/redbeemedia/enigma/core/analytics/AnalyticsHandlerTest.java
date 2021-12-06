@@ -24,26 +24,6 @@ import static org.junit.Assert.assertThat;
 public class AnalyticsHandlerTest {
 
     private final AnalyticsPlayResponseData mockAnalyticsResponse = new AnalyticsPlayResponseData(new JSONObject(), "mock");
-    @Test
-    public void testInit() throws InterruptedException, AnalyticsException, JSONException {
-        MockHttpHandler mockHttpHandler = new MockHttpHandler();
-        mockHttpHandler.queueResponse(new HttpStatus(200, "OK"), "{\"receivedTime\": 123, \"repliedTime\": 151}");
-        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(mockHttpHandler));
-
-        ISession session = new MockSession();
-        AnalyticsHandler analyticsHandler = new AnalyticsHandler(session,"pbs7", new MockTimeProvider(100), mockAnalyticsResponse);
-        analyticsHandler.init();
-
-        Assert.assertEquals(1, mockHttpHandler.getLog().size());
-        JSONObject envelope = getEnvelope(mockHttpHandler.getLog().get(0));
-        Assert.assertEquals("pbs7", envelope.getString("SessionId"));
-        IBusinessUnit businessUnit = session.getBusinessUnit();
-        Assert.assertEquals(businessUnit.getCustomerName(), envelope.getString("Customer"));
-        Assert.assertEquals(businessUnit.getName(), envelope.getString("BusinessUnit"));
-
-        Assert.assertEquals( Long.valueOf(-37),analyticsHandler.getClockOffsetForUnitTests());
-    }
-
 
     @Test
     public void testEventBuffering() throws JSONException, InterruptedException, AnalyticsException {

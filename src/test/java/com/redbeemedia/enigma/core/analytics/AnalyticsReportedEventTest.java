@@ -38,7 +38,7 @@ public class AnalyticsReportedEventTest<E extends IAnalyticsEventType> {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
         this.reportedEvents = new ArrayList<>();
         this.reportedProperties = new ArrayList<>();
-        this.analyticsReporter = new AnalyticsReporter(new MockTimeProvider(), jsonObject -> {}) {
+        this.analyticsReporter = new AnalyticsReporter(new MockTimeProvider(), jsonObject -> {},0l) {
             @Override
             protected <E extends IAnalyticsEventType> IAnalyticsEventBuilder<E> newEventBuilder(E eventType) throws JSONException {
                 reportedEvents.add(eventType);

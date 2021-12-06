@@ -25,5 +25,8 @@ public interface IAdIncludedTimeline extends ITimeline, ITimelineListener {
     boolean isActive();
 
     /** Returns the transposed ad breaks for this timeline as points in the timeline. */
-    @Nullable List<ITimelinePosition> getAdBreaks();
+    @Nullable List<ITimelinePosition> getAdBreaksPositions();
+
+    /** Returns the ad breaks for this timeline  */
+    @Nullable List<AdBreak> getAdBreaks();
 }

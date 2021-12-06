@@ -83,12 +83,13 @@ import javax.net.ssl.HttpsURLConnection;
                     resultHandler.onError(new UnexpectedHttpStatusError(new HttpStatus(httpError.getHttpCode(), httpError.getMessage())));
                 }
             } else if (httpStatus.getResponseCode() == HttpsURLConnection.HTTP_OK) {
+                String userId = response.optString("userId");
                 if (loginRequest instanceof ResumeLoginRequest) {
-                    ISession session = new Session(((ResumeLoginRequest) loginRequest).getSessionToken(), new BusinessUnit(customerUnit, businessUnit));
+                    ISession session = new Session(((ResumeLoginRequest) loginRequest).getSessionToken(), new BusinessUnit(customerUnit, businessUnit),userId);
                     resultHandler.onSuccess(session);
                 } else {
                     String sessionToken = response.getString("sessionToken");
-                    ISession session = new Session(sessionToken, new BusinessUnit(customerUnit, businessUnit));
+                    ISession session = new Session(sessionToken, new BusinessUnit(customerUnit, businessUnit),userId);
                     resultHandler.onSuccess(session);
                 }
             } else {

@@ -22,7 +22,7 @@ public class EntitlementRequestTest {
     @Test
     public void testHttpCall() throws MalformedURLException, JSONException {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setExposureBaseUrl("https://mocky.example.com/base"));
-        EntitlementRequest entitlementRequest = new EntitlementRequest(new Session("mockSessToken123", new BusinessUnit("myCU", "myBU")), "mockAssetIDz");
+        EntitlementRequest entitlementRequest = new EntitlementRequest(new Session("mockSessToken123", new BusinessUnit("myCU", "myBU"),"123"), "mockAssetIDz");
 
         MockHttpHandler httpHandler = new MockHttpHandler();
         entitlementRequest.doHttpCall(httpHandler, new IHttpHandler.IHttpResponseHandler() {
@@ -53,7 +53,7 @@ public class EntitlementRequestTest {
     @Test
     public void testHttpCallWithTime() throws MalformedURLException, JSONException {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setExposureBaseUrl("https://mockful.example.com/base"));
-        EntitlementRequest entitlementRequest = new EntitlementRequest(new Session("mockSessToken123", new BusinessUnit("myCU", "myBusnus")), "mockAssetIDz");
+        EntitlementRequest entitlementRequest = new EntitlementRequest(new Session("mockSessToken123", new BusinessUnit("myCU", "myBusnus"),"123"), "mockAssetIDz");
         entitlementRequest.setTime(1569325020000L);
 
         MockHttpHandler httpHandler = new MockHttpHandler();

@@ -86,6 +86,8 @@ public class EnigmaPlayerTest {
         // duplicate one for content/Asset request : for markerpoints
         queuePlayResponse(mockHttpHandler, new MockPlayResponse());
         queuePlayResponse(mockHttpHandler, new MockPlayResponse());
+        queuePlayResponse(mockHttpHandler, new MockPlayResponse());
+        queuePlayResponse(mockHttpHandler, new MockPlayResponse());
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(mockHttpHandler));
 
         final Flag loadCalled = new Flag();
@@ -196,6 +198,8 @@ public class EnigmaPlayerTest {
             // duplicate one for content/Asset request : for markerpoints
             queuePlayResponse(mockHttpHandler, mockPlayResponse);
             queuePlayResponse(mockHttpHandler, mockPlayResponse);
+            queuePlayResponse(mockHttpHandler, mockPlayResponse);
+            queuePlayResponse(mockHttpHandler, mockPlayResponse);
         }
         {
             MockPlayResponse mockPlayResponse = new MockPlayResponse();
@@ -205,6 +209,9 @@ public class EnigmaPlayerTest {
             mockPlayResponse.streamInfoData.live = true;
             mockPlayResponse.streamInfoData.start = 1505574300000L;
             // duplicate one for content/Asset request : for markerpoints
+            queuePlayResponse(mockHttpHandler, mockPlayResponse);
+            queuePlayResponse(mockHttpHandler, mockPlayResponse);
+            queuePlayResponse(mockHttpHandler, mockPlayResponse);
             queuePlayResponse(mockHttpHandler, mockPlayResponse);
             queuePlayResponse(mockHttpHandler, mockPlayResponse);
         }
@@ -359,6 +366,8 @@ public class EnigmaPlayerTest {
             // one for content/Asset request : for markerpoints
             queuePlayResponse(mockHttpHandler, mockPlayResponse);
             queuePlayResponse(mockHttpHandler, mockPlayResponse);
+            queuePlayResponse(mockHttpHandler, mockPlayResponse);
+            queuePlayResponse(mockHttpHandler, mockPlayResponse);
         }
 
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(mockHttpHandler));
@@ -450,7 +459,7 @@ public class EnigmaPlayerTest {
     public void testPlayableReachableFromPlaybackSession() throws JSONException {
         MockHttpHandler httpHandler = new MockHttpHandler();
 
-        for(int i = 0; i < 4; ++i) {
+        for(int i = 0; i < 6; ++i) {
             queuePlayResponse(httpHandler, new MockPlayResponse());
         }
 
@@ -483,7 +492,7 @@ public class EnigmaPlayerTest {
     private void setupForTrackTests() throws JSONException {
         MockHttpHandler httpHandler = new MockHttpHandler();
         // one extra for content/Asset request : for markerpoints
-        for(int i = 0; i < 2; ++i) {
+        for(int i = 0; i < 4; ++i) {
             queuePlayResponse(httpHandler, new MockPlayResponse());
         }
 
@@ -748,6 +757,8 @@ public class EnigmaPlayerTest {
 
         queuePlayResponse(httpHandler, playResponseMessage);
         queuePlayResponse(httpHandler, playResponseMessage);
+        queuePlayResponse(httpHandler, playResponseMessage);
+        queuePlayResponse(httpHandler, playResponseMessage);
 
         final List<IPlayerImplementationControls.ISeekPosition> seekPositions = new ArrayList<>();
 
@@ -876,6 +887,8 @@ public class EnigmaPlayerTest {
         // one for content/Asset request : for markerpoints
         queuePlayResponse(httpHandler, playResponseMessage);
         queuePlayResponse(httpHandler, playResponseMessage);
+        queuePlayResponse(httpHandler, playResponseMessage);
+        queuePlayResponse(httpHandler, playResponseMessage);
 
         final List<IPlayerImplementationControls.ISeekPosition> seekPositions = new ArrayList<>();
 
@@ -981,6 +994,8 @@ public class EnigmaPlayerTest {
         mockPlayResponse.addFormat("https://media.example.com", "DASH", EnigmaMediaFormat.DrmTechnology.WIDEVINE.getKey(), 9483);
         mockPlayResponse.streamInfoData.live = true;
         // duplicate one for content/Asset request : for markerpoints
+        queuePlayResponse(httpHandler, mockPlayResponse);
+        queuePlayResponse(httpHandler, mockPlayResponse);
         queuePlayResponse(httpHandler, mockPlayResponse);
         queuePlayResponse(httpHandler, mockPlayResponse);
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(httpHandler));
@@ -1160,7 +1175,7 @@ public class EnigmaPlayerTest {
         class TestSession extends Session {
             private final IBusinessUnit businessUnit;
             public TestSession(String sessionToken, IBusinessUnit businessUnit) {
-                super(sessionToken, businessUnit);
+                super(sessionToken, businessUnit,"123");
                 this.businessUnit = businessUnit;
             }
 

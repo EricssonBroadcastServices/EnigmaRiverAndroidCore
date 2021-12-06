@@ -28,7 +28,7 @@ public class SessionTest {
     @Test
     public void testBaseUrl() throws MalformedURLException {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setExposureBaseUrl("http://www.fakeurl.fake"));
-        Session session = new Session("sessionToken", new BusinessUnit("sfhsjrt", "x357srhsh"));
+        Session session = new Session("sessionToken", new BusinessUnit("sfhsjrt", "x357srhsh"),"123");
         Assert.assertEquals(new URL("http://www.fakeurl.fake/v1/customer/sfhsjrt/businessunit/x357srhsh"), session.getBusinessUnit().getApiBaseUrl().toURL());
     }
 

@@ -5,6 +5,8 @@ import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
 import com.redbeemedia.enigma.core.epg.IProgram;
 import com.redbeemedia.enigma.core.epg.MockProgram;
 import com.redbeemedia.enigma.core.epg.response.MockEpgResponse;
+import com.redbeemedia.enigma.core.http.HttpStatus;
+import com.redbeemedia.enigma.core.http.MockHttpHandler;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -27,7 +29,7 @@ public class StreamProgramsTest {
         programs.add(program2);
         IProgram program3 = new MockProgram("program3", 10000, 15000);
         programs.add(program3);
-        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(5000, 20000, programs), false);
+        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(5000, 20000, programs), false, 0L);
 
         Assert.assertSame(program1, streamPrograms.getProgram());
     }
@@ -45,7 +47,7 @@ public class StreamProgramsTest {
         programs.add(program2);
         IProgram program3 = new MockProgram("program3", 10000, 15000);
         programs.add(program3);
-        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(2000, 15000, programs), false);
+        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(2000, 15000, programs), false, 0L);
 
         Assert.assertEquals(null, streamPrograms.getNeighbouringSectionStartOffset(-3000, true));
         Assert.assertSame(program0, streamPrograms.getProgram());
@@ -79,7 +81,7 @@ public class StreamProgramsTest {
         programs.add(program2);
         IProgram program3 = new MockProgram("program3", 10000, 15000);
         programs.add(program3);
-        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(2000, 20000, programs), false);
+        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(2000, 20000, programs), false, 0L);
 
         Assert.assertEquals(Long.valueOf(10000), streamPrograms.getNeighbouringSectionStartOffset(9000, false));
         Assert.assertEquals(program0, streamPrograms.getProgram());
@@ -87,23 +89,71 @@ public class StreamProgramsTest {
     }
 
     @Test
-    public void testGetProgramWithOffsetForLive() {
-        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+    public void testGetProgramWithOffsetForLiveWhenDeviceTimeAhead() throws InterruptedException {
+        MockEnigmaRiverContextInitialization initialization = new MockEnigmaRiverContextInitialization();
+        MockHttpHandler httpHandler = new MockHttpHandler();
+        initialization.setHttpHandler(httpHandler);
+        MockEnigmaRiverContext.resetInitialize(initialization);
 
-        long currentTime = (new Date()).getTime();
+        long deviceTime = (new Date()).getTime();
+        // deviceTime is ahead
+        long serverTime = deviceTime - 10000;
+        httpHandler.queueResponse(new HttpStatus(200,"OK"),serverTime+"");
 
         List<IProgram> programs = new ArrayList<>();
-        IProgram program0 = new MockProgram("program0", currentTime - 20000, currentTime - 10000);
+        IProgram program0 = new MockProgram("program0", deviceTime - 20000, deviceTime - 10000);
         programs.add(program0);
-        IProgram program1 = new MockProgram("program1", currentTime - 10000, currentTime);
+        IProgram program1 = new MockProgram("program1", deviceTime - 10000, deviceTime);
         programs.add(program1);
-        IProgram program2 = new MockProgram("program2", currentTime, currentTime + 10000);
+        IProgram program2 = new MockProgram("program2", deviceTime, deviceTime + 15000);
         programs.add(program2);
-        IProgram program3 = new MockProgram("program3", currentTime + 10000, currentTime + 20000);
+        IProgram program3 = new MockProgram("program3", deviceTime + 15000, deviceTime + 50000);
         programs.add(program3);
-        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(currentTime - 20000, currentTime + 20000, programs), true);
-        Assert.assertEquals(program1, streamPrograms.getProgram());
+        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(deviceTime - 20000, deviceTime + 50000, programs), true, 10000L);
+
+        // pass 21 seconds
+        Thread.sleep(21000);
+        Assert.assertEquals(program2, streamPrograms.getProgram());
+
+        // pass another 15 seconds
+        Thread.sleep(15000);
+        Assert.assertEquals(program3, streamPrograms.getProgram());
     }
+
+    @Test
+    public void testGetProgramWithOffsetForLiveWhenDeviceBehind() throws InterruptedException {
+        MockEnigmaRiverContextInitialization initialization = new MockEnigmaRiverContextInitialization();
+        MockHttpHandler httpHandler = new MockHttpHandler();
+        initialization.setHttpHandler(httpHandler);
+        MockEnigmaRiverContext.resetInitialize(initialization);
+
+        long deviceTime = (new Date()).getTime();
+        // deviceTime is ahead
+        long serverTime = deviceTime + 10000;
+        httpHandler.queueResponse(new HttpStatus(200,"OK"),serverTime+"");
+
+        List<IProgram> programs = new ArrayList<>();
+        IProgram program0 = new MockProgram("program0", deviceTime - 10000, deviceTime);
+        programs.add(program0);
+        IProgram program1 = new MockProgram("program1", deviceTime  , deviceTime + 10000);
+        programs.add(program1);
+        IProgram program2 = new MockProgram("program2", deviceTime + 10000, deviceTime + 20000);
+        programs.add(program2);
+        IProgram program3 = new MockProgram("program3", deviceTime + 20000, deviceTime + 30000);
+        programs.add(program3);
+        IProgram program4 = new MockProgram("program3", deviceTime + 30000, deviceTime + 40000);
+        programs.add(program4);
+        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(deviceTime - 10000, deviceTime + 40000, programs), true, -10000L);
+
+        // pass 16 seconds
+        Thread.sleep(19000);
+        Assert.assertEquals(program3, streamPrograms.getProgram());
+
+        // pass 16 seconds
+        Thread.sleep(16000);
+        Assert.assertEquals(program4, streamPrograms.getProgram());
+    }
+
 
     @Test
     public void testNeighbouringProgramWithGap() {
@@ -118,7 +168,7 @@ public class StreamProgramsTest {
         programs.add(program2);
         IProgram program3 = new MockProgram("program3", 10000, 15000);
         programs.add(program3);
-        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(0, 15000, programs), false);
+        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(0, 15000, programs), false, 0L);
 
         long pos = 0;
         Assert.assertSame(program0, streamPrograms.getProgram());
@@ -151,7 +201,7 @@ public class StreamProgramsTest {
         programs.add(program2);
         IProgram program3 = new MockProgram("program3", 10000, 15000);
         programs.add(program3);
-        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(0, 15000, programs), false);
+        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(0, 15000, programs), false, 0L);
 
         Assert.assertSame(program0, streamPrograms.getProgram());
 
@@ -175,7 +225,7 @@ public class StreamProgramsTest {
         programs.add(program2);
         IProgram program3 = new MockProgram("program3", 10000, 15000);
         programs.add(program3);
-        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(1000, 15000, programs), false);
+        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(1000, 15000, programs), false, 0L);
 
         //End
         long pos = 14000;
@@ -206,7 +256,7 @@ public class StreamProgramsTest {
         programs.add(program3);
         long streamStart = 3000;
         long streamEnd = 7000;
-        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(streamStart, streamEnd, programs), false);
+        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(streamStart, streamEnd, programs), false, 0L);
 
 
         //Search backwards from start of stream --> Expect null

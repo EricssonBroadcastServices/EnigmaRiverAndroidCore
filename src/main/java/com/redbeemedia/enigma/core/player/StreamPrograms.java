@@ -16,10 +16,11 @@ import java.util.List;
     private final long startUtcMillis;
     private final ISectionList<IProgram> sections;
     private final boolean isPlayingLive;
+    private long deviceUtcTimeDifference;
 
-    public StreamPrograms(IEpgResponse epgResponse, boolean isPlayingLive) {
+    public StreamPrograms(IEpgResponse epgResponse, boolean isPlayingLive, Long deviceUtcTimeDifference) {
         this.isPlayingLive = isPlayingLive;
-
+        this.deviceUtcTimeDifference = deviceUtcTimeDifference;
         ISectionListBuilder<IProgram> sectionListBuilder = new SectionListBuilder();
         sectionListBuilder.putItem(epgResponse.getStartUtcMillis(), epgResponse.getEndUtcMillis(), null);
 
@@ -46,8 +47,9 @@ import java.util.List;
     public IProgram getProgram() {
         long utcMillis;
         if (isPlayingLive) {
-            // for live current UTC time, give a delay for 1 sec
-            utcMillis = new Date().getTime() - 1000;
+            // for live current UTC time, give a delay for 8 sec
+            long someDelay = 8000L;
+            utcMillis = new Date().getTime() - deviceUtcTimeDifference - someDelay ;
         } else {
             if (!this.sections.isEmpty()) {
                 utcMillis = this.sections.getFirstItem().getStartUtcMillis();

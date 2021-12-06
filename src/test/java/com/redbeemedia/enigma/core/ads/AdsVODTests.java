@@ -385,16 +385,17 @@ public class AdsVODTests {
         timeline.setIsActive(true);
 
         //No ad breaks loaded
-        Assert.assertNull(timeline.getAdBreaks());
+        Assert.assertNull(timeline.getAdBreaksPositions());
 
         adsDetector.update(adResourceLoader, 0);
 
         // Fetch the points in the timeline containing the perceived (transposed) ad breaks
+        Assert.assertEquals(3, timeline.getAdBreaksPositions().size());
         Assert.assertEquals(3, timeline.getAdBreaks().size());
         // Check that the transposed ad breaks are at the expected positions (matching the content parts of the ads
-        Assert.assertEquals(timeFactory.newPosition(0), timeline.getAdBreaks().get(0));
-        Assert.assertEquals(timeFactory.newPosition(30030), timeline.getAdBreaks().get(1));
-        Assert.assertEquals(timeFactory.newPosition(30030 + 42042), timeline.getAdBreaks().get(2));
+        Assert.assertEquals(timeFactory.newPosition(0), timeline.getAdBreaksPositions().get(0));
+        Assert.assertEquals(timeFactory.newPosition(30030), timeline.getAdBreaksPositions().get(1));
+        Assert.assertEquals(timeFactory.newPosition(30030 + 42042), timeline.getAdBreaksPositions().get(2));
 
         List<AdBreak> breaks = adsDetector.getAdBreaks();
 
