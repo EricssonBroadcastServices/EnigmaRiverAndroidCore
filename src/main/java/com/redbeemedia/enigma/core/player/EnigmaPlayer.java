@@ -1184,6 +1184,13 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             if(currentEnd == null) {
                 currentEnd = environment.playerImplementationInternals.getCurrentEndBound();
             }
+            if (isLiveStream()) {
+                if (adsDetector.value != null && adsDetector.value.getLiveDelay() != null) {
+                    if (currentEnd != null) {
+                        currentEnd = currentEnd.subtract(adsDetector.value.getLiveDelay());
+                    }
+                }
+            }
             return currentEnd;
         }
 

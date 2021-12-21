@@ -39,4 +39,9 @@ import com.redbeemedia.enigma.core.time.Duration;
 
     @Override
     public boolean ssaiEnabled() { return false; }
+
+    @Override
+    public Duration getLiveDelay() {
+        return null;
+    }
 }

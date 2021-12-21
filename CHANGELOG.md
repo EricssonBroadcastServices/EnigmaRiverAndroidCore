@@ -24,9 +24,12 @@ DevEnigmaRiverAndroidExoPlayerIntegration
 DevEnigmaRiverAndroidInternalTestUtils
 DevEnigmaRiverAndroidCast
 `
-*EMP-17405 - Live stream freezes when scrubbed past live point.
-*EMP-17416 - Use UTC time from the server.
-*EMP-17351 - ad option uid should be user id, not email.
+* EMP-17140 - ExoMedia DRM issue.
+* EMP-17492 - Missing bitrates on analytics.
+* EMP-17456 - Support for set delay from the live edge.
+* EMP-17405 - Live stream freezes when scrubbed past live point.
+* EMP-17416 - Use UTC time from the server.
+* EMP-17351 - ad option uid should be user id, not email.
 * EMP-17397 - In case of live stream don't use player offset , for finding current program.
 * EMP-17368 - Disable cache for future entitlements.
 * EMP-17281 - Android timeline issues in Catchup Play.

@@ -47,8 +47,8 @@ import java.util.List;
     public IProgram getProgram() {
         long utcMillis;
         if (isPlayingLive) {
-            // for live current UTC time, give a delay for 8 sec
-            long someDelay = 8000L;
+            // for live current UTC time, give a delay for 10 sec
+            long someDelay = 10000L;
             utcMillis = new Date().getTime() - deviceUtcTimeDifference - someDelay ;
         } else {
             if (!this.sections.isEmpty()) {

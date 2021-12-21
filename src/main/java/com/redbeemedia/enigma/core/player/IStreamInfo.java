@@ -16,4 +16,6 @@ import com.redbeemedia.enigma.core.time.Duration;
 
     /** Returns `true` if server side ad insertion (SSAI) is enabled. */
     boolean ssaiEnabled();
+
+    Duration getLiveDelay();
 }

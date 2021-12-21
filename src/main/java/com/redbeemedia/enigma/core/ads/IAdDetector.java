@@ -3,6 +3,7 @@ package com.redbeemedia.enigma.core.ads;
 import androidx.annotation.Nullable;
 
 import com.redbeemedia.enigma.core.player.timeline.ITimelinePosition;
+import com.redbeemedia.enigma.core.time.Duration;
 
 /**
  * Responsible for detecting and reporting ad information retrieved
@@ -69,4 +70,16 @@ public interface IAdDetector {
      * @return
      */
     boolean isSsaiEnabled();
+
+    /**
+     * will return livedelay value
+     * @return
+     */
+    Duration getLiveDelay();
+
+    /**
+     * will return livedelay value
+     * @return
+     */
+    void setLiveDelay(Duration liveDelay);
 }

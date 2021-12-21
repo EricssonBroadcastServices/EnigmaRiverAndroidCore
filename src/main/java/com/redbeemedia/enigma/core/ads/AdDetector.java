@@ -39,6 +39,7 @@ public class AdDetector extends BaseTimelineListener implements IAdDetector, ITi
     private volatile VastAdEntrySet ads;
     private VastAdEntry lastAd;
     private boolean ssaiEnabled;
+    private Duration liveDelay;
     private HashMap<VastAdEntry, List<AdEventType>> broadcastedEvents = new HashMap<>();
     private List<AdBreak> adBreaks;
     private List<Long> contentBreaks;
@@ -237,5 +238,15 @@ public class AdDetector extends BaseTimelineListener implements IAdDetector, ITi
 
     public boolean isSsaiEnabled() {
         return ssaiEnabled;
+    }
+
+    @Override
+    public Duration getLiveDelay() {
+        return liveDelay;
+    }
+
+    @Override
+    public void setLiveDelay(Duration liveDelay) {
+        this.liveDelay = liveDelay;
     }
 }

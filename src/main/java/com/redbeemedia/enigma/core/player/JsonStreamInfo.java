@@ -14,6 +14,7 @@ import org.json.JSONObject;
     private String channelId;
     private String programId;
     private boolean ssai;
+    private Duration liveDelay;
 
     public JsonStreamInfo(JSONObject streamInfo) throws JSONException {
 		/*"streamInfo" : {
@@ -121,4 +122,12 @@ import org.json.JSONObject;
 
     @Override
     public boolean ssaiEnabled() { return ssai; }
+
+    public Duration getLiveDelay() {
+        return liveDelay;
+    }
+
+    public void setLiveDelay(Duration liveDelay) {
+        this.liveDelay = liveDelay;
+    }
 }

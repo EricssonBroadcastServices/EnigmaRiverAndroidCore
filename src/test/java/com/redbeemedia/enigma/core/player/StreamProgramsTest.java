@@ -141,13 +141,13 @@ public class StreamProgramsTest {
         programs.add(program2);
         IProgram program3 = new MockProgram("program3", deviceTime + 20000, deviceTime + 30000);
         programs.add(program3);
-        IProgram program4 = new MockProgram("program3", deviceTime + 30000, deviceTime + 40000);
+        IProgram program4 = new MockProgram("program3", deviceTime + 30000, deviceTime + 50000);
         programs.add(program4);
-        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(deviceTime - 10000, deviceTime + 40000, programs), true, -10000L);
+        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(deviceTime - 10000, deviceTime + 50000, programs), true, -10000L);
 
         // pass 16 seconds
         Thread.sleep(19000);
-        Assert.assertEquals(program3, streamPrograms.getProgram());
+        Assert.assertEquals(program2, streamPrograms.getProgram());
 
         // pass 16 seconds
         Thread.sleep(16000);

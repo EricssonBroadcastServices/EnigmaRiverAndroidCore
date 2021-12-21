@@ -70,6 +70,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /*package-protected*/ class DefaultPlaybackStartAction implements IPlaybackStartAction, IPlayableHandler {
     private static final String TAG = "StartAction";
@@ -90,6 +91,7 @@ import java.util.UUID;
     private IMarkerPointsDetector markerPointsDetector;
     private final ISpriteRepository spriteRepository;
     private Set<EnigmaMediaFormat> supportedFormats;
+    protected static final AtomicBoolean IN_PROGRESS = new AtomicBoolean(false);
 
     public DefaultPlaybackStartAction(ISession defaultSession, IBusinessUnit defaultBusinessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler, ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IEnigmaPlayerCallbacks playerConnector, ISpriteRepository spriteRepository, Set<EnigmaMediaFormat> supportedFormats) {
         ISession playRequestSession = playRequest.getSession();
@@ -139,19 +141,27 @@ import java.util.UUID;
 
     @Override
     public void startUsingAssetId(String assetId) {
+        if (!IN_PROGRESS.compareAndSet(false, true)) {
+            Log.w("WARN","Called play asset multiple times in short span, ignoring latest call");
+            return;
+        }
+
         setDeviceUtcTimeDifference();
         { //Check requirements
             if (session == null) {
+                IN_PROGRESS.set(false);
                 getStartActionResultHandler().onError(new NoSessionRejectionError());
                 return;
             }
 
             if (!EnigmaRiverContext.getNetworkMonitor().hasInternetAccess()) {
+                IN_PROGRESS.set(false);
                 getStartActionResultHandler().onError(new NoInternetConnectionError());
                 return;
             }
 
             if(!timeProvider.isReady(Duration.seconds(30))) {
+                IN_PROGRESS.set(false);
                 getStartActionResultHandler().onError(new ServerTimeoutError("Could not start time service"));
                 return;
             }
@@ -171,6 +181,7 @@ import java.util.UUID;
             url = path.toURL();
 
         } catch (MalformedURLException e) {
+            IN_PROGRESS.set(false);
             getStartActionResultHandler().onError(new InvalidAssetError(assetId, new UnexpectedError(e)));
             return;
         }
@@ -186,6 +197,7 @@ import java.util.UUID;
         EnigmaRiverContext.getHttpHandler().doHttp(url, apiCall, new PlayResponseHandler(assetId) {
             @Override
             protected void onError(EnigmaError error) {
+                IN_PROGRESS.set(false);
                 getStartActionResultHandler().onError(error);
 
                 playerImplementationControls.stop(new IPlayerImplementationControlResultHandler() {
@@ -210,6 +222,7 @@ import java.util.UUID;
 
             @Override
             protected void onSuccess(JSONObject jsonObject) throws JSONException {
+                try{
                 String requestId = jsonObject.optString("requestId");
                 String playToken = jsonObject.optString("playToken");
                 JSONArray formats = jsonObject.getJSONArray("formats");
@@ -250,8 +263,10 @@ import java.util.UUID;
                                 adDetector.update(adsLoader, 0);
                             }
                         }
+                        adDetector.setLiveDelay(liveDelay);
                     } else if (!streamInfo.ssaiEnabled() && adDetector != null) {
                         adDetector.setEnabled(false);
+                        adDetector.setLiveDelay(liveDelay);
                     }
 
                     final Map<Integer, String> spriteUrls = parseSpriteUrls(spritesJson);
@@ -307,18 +322,21 @@ import java.util.UUID;
                                 nextStep.continueProcess(new StreamPrograms(epgResponse, streamInfo.isLiveStream(), deviceUtcTimeDifference));
                             }
 
-                            @Override
-                            public void onError(EnigmaError error) {
-                                Log.d("EnigmaPlayer", "Could not fetch epg-data for "+streamInfo.getChannelId());
-                                Log.d("EnigmaPlayer", error.getTrace());
-                                nextStep.continueProcess(null);
-                            }
-                        });
+                                @Override
+                                public void onError(EnigmaError error) {
+                                    Log.d("EnigmaPlayer", "Could not fetch epg-data for "+streamInfo.getChannelId());
+                                    Log.d("EnigmaPlayer", error.getTrace());
+                                    nextStep.continueProcess(null);
+                                }
+                            });
+                        } else {
+                            nextStep.continueProcess(null);
+                        }
                     } else {
-                        nextStep.continueProcess(null);
+                        onError(new NoSupportedMediaFormatsError("Could not find a media format supported by the current player implementation."));
                     }
-                } else {
-                    onError(new NoSupportedMediaFormatsError("Could not find a media format supported by the current player implementation."));
+                } finally {
+                    IN_PROGRESS.set(false);
                 }
             }
         });

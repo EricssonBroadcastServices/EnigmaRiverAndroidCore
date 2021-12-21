@@ -363,6 +363,7 @@ public class DefaultPlaybackStartActionTest {
                     .put("format", "DASH")
                     .put("mediaLocator", "http://example.com/manifest.mpd");
             httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play"), playResponse.toString());
+            httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play"), playResponse.toString());
         }
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization()
                 .setHttpHandler(httpHandler)
@@ -412,7 +413,7 @@ public class DefaultPlaybackStartActionTest {
         };
 
         onStartedCalled.assertNone();
-
+        DefaultPlaybackStartAction.IN_PROGRESS.set(false);
         enigmaPlayer.play(new MockPlayRequest().setPlayable(playable).setResultHandler(resultHandler));
         testTaskFactoryProvider.letTimePass(1000);
 
@@ -544,6 +545,7 @@ public class DefaultPlaybackStartActionTest {
                 EnigmaRiverContext.getTaskFactoryProvider(), new MockPlayerImplementation(), new MockPlaybackStartAction.MockEnigmaPlayerCallbacks(),
                 new SpriteDataMock.MockSpriteRepository(),
                 new HashSet<>());
+        DefaultPlaybackStartAction.IN_PROGRESS.set(false);
         // Execute the query
         playbackStartAction.startUsingAssetId("foo");
         // Fetch the query from the request url
