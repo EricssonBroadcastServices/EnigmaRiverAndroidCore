@@ -983,8 +983,8 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                         if(streamInfo.hasStart()) {
                             long streamStartUtcMillis = streamInfo.getStart(Duration.Unit.MILLISECONDS);
                             ITimelinePositionFactory positionFactory = environment.timelinePositionFactory;
-                            long startOffset = newProgram.getStartUtcMillis()-streamStartUtcMillis;
-                            long endOffset = newProgram.getEndUtcMillis()-streamStartUtcMillis;
+                            long startOffset = newProgram.getStartUtcMillis() - streamStartUtcMillis;
+                            long endOffset = newProgram.getEndUtcMillis() - streamStartUtcMillis;
                             ITimelinePosition start = positionFactory.newPosition(startOffset);
                             ITimelinePosition end = positionFactory.newPosition(endOffset);
                             timeline.setVisibility(!streamInfo.isLiveStream());
@@ -1003,7 +1003,12 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                                 startOffset = oldProgram.getStartUtcMillis() - streamStartUtcMillis;
                                 start = positionFactory.newPosition(startOffset);
                             }
-                            EnigmaPlayerTimeline.this.onExposedTimelineBoundsChanged(start, end);
+
+                            if (isLiveStream()) {
+                                // dont use it for VOD, as duration should come from stream read by Player
+                                // for Live stream display end equal to live position
+                                EnigmaPlayerTimeline.this.onExposedTimelineBoundsChanged(start, end);
+                            }
                             hasProgram = true;
                         }
                     }
