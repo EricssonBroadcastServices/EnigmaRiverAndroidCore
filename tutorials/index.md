@@ -136,3 +136,4 @@ The following tutorials provide in-depth information about different areas of in
 [Ad Insertion](advanced_topics/ad_insertion.md)<br/>
 [Sprites API](advanced_topics/sprites.md)<br/>
 [Playback Configuration](advanced_topics/playback_configuration.md)<br/>
+[RTBF - AUDIO ONLY 3.0](advanced_topics/rtbf_audio_only.md)<br/>
