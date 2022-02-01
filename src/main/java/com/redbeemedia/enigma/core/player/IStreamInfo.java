@@ -18,4 +18,7 @@ import com.redbeemedia.enigma.core.time.Duration;
     boolean ssaiEnabled();
 
     Duration getLiveDelay();
+
+    /** returns if MediaType is audio or video **/
+    MediaType getMediaType();
 }

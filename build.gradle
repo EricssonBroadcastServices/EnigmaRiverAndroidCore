@@ -38,9 +38,10 @@ dependencies {
     implementation 'androidx.annotation:annotation:1.0.2'
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.json:json:20080701'
+    api 'com.google.android.exoplayer:exoplayer:2.15.1'
     if(findProject(':internalTestUtils') != null) {
         testImplementation project(":internalTestUtils")
     } else {
-        testImplementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:internalTestUtils:r3.3.4'
+        testImplementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:internalTestUtils:r3.4.0-BETA-1'
     }
 }

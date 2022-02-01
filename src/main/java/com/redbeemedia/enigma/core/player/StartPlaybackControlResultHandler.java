@@ -118,7 +118,9 @@ import org.json.JSONObject;
 
     private JsonStreamInfo getStreamInfo() {
         try {
-            return new JsonStreamInfo(jsonObject.optJSONObject("streamInfo"));
+            boolean audioOnly = jsonObject.optBoolean("audioOnly",false);
+            MediaType mediaType = audioOnly ? MediaType.AUDIO : MediaType.VIDEO;
+            return new JsonStreamInfo(jsonObject.optJSONObject("streamInfo"), mediaType);
         } catch (JSONException e) {
             return null;
         }

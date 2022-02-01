@@ -15,8 +15,13 @@ import org.json.JSONObject;
     private String programId;
     private boolean ssai;
     private Duration liveDelay;
+    private MediaType mediaType;
 
     public JsonStreamInfo(JSONObject streamInfo) throws JSONException {
+        this(streamInfo, MediaType.VIDEO);
+    }
+
+    public JsonStreamInfo(JSONObject streamInfo, MediaType mediaType) throws JSONException {
 		/*"streamInfo" : {
 			"live" : ${bool},
             "static" : ${bool},
@@ -43,6 +48,7 @@ import org.json.JSONObject;
             this.programId = streamInfo.optString("programId", null);
             this.ssai = streamInfo.optBoolean("ssai", false);
         }
+        this.mediaType = mediaType;
     }
 
     @Override
@@ -130,4 +136,12 @@ import org.json.JSONObject;
     public void setLiveDelay(Duration liveDelay) {
         this.liveDelay = liveDelay;
     }
+
+    public MediaType getMediaType() {
+        return mediaType;
+    }
+}
+
+enum MediaType{
+    VIDEO, AUDIO;
 }

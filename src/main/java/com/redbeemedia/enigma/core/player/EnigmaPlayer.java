@@ -85,6 +85,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 public class EnigmaPlayer implements IEnigmaPlayer {
@@ -126,6 +127,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
     private volatile boolean released = false;
     private volatile boolean isSeekBusy = false;
+    private final AtomicBoolean isStickyPlayer = new AtomicBoolean(false);
 
     /**
      * @param session              the default session to use for PlayRequest
@@ -166,7 +168,18 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         this.activityLifecycleListener = new AbstractActivityLifecycleListener() {
             @Override
             public void onDestroy() {
-                EnigmaPlayer.this.release();
+                if (!isStickyPlayer.get()) {
+                    // release if not sticky player
+                    EnigmaPlayer.this.release();
+                } else {
+                    IInternalPlaybackSession valueSynchronized = OpenContainerUtil.getValueSynchronized(currentPlaybackSession);
+                    if (valueSynchronized != null) {
+                        if (valueSynchronized.getStreamInfo().getMediaType() != MediaType.AUDIO) {
+                            // if stream info is not audio
+                            EnigmaPlayer.this.release();
+                        }
+                    }
+                }
             }
         };
 
@@ -464,6 +477,25 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
     public void setVirtualControls(IVirtualControls virtualControls) {
         this.virtualControls = virtualControls;
+    }
+
+    @Override
+    public void setStickyPlayer(boolean isStickyPlayer) {
+        this.isStickyPlayer.set(isStickyPlayer);
+    }
+
+    @Override
+    public boolean isStickyPlayer() {
+        return this.isStickyPlayer.get();
+    }
+
+    @Override
+    public boolean isCurrentStreamTypeAudioOnly() {
+        IInternalPlaybackSession valueSynchronized = OpenContainerUtil.getValueSynchronized(currentPlaybackSession);
+        if (valueSynchronized != null) {
+            return valueSynchronized.getStreamInfo().getMediaType() == MediaType.AUDIO;
+        }
+        return false;
     }
 
     private class EnigmaPlayerEnvironment implements IEnigmaPlayerEnvironment, IDrmProvider {

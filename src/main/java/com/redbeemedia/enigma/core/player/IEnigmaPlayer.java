@@ -32,4 +32,24 @@ public interface IEnigmaPlayer {
     IVirtualControls getVirtualControls();
     void setVirtualControls(IVirtualControls virtualControls);
     IAnalyticsReporter getCurrentAnalyticsReporter();
+
+    /**
+     * Set it true to enable sticky player functionality.
+     * Failing to set this value true, will release the player as soon as the PlayerActivity will be destroyed
+     *
+     * @param isStickyPlayer
+     */
+    void setStickyPlayer(boolean isStickyPlayer);
+
+    /**
+     * return is sticky player functionality has been set via app
+     * @return
+     */
+    boolean isStickyPlayer();
+
+    /**
+     * returns 'true' if the asset is being played and current asset is audio-only
+     * @return
+     */
+    boolean isCurrentStreamTypeAudioOnly();
 }

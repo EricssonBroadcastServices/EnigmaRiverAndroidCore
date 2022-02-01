@@ -227,6 +227,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
                 String playToken = jsonObject.optString("playToken");
                 JSONArray formats = jsonObject.getJSONArray("formats");
                 JSONArray spritesJson = jsonObject.optJSONArray("sprites");
+                boolean audioOnly = jsonObject.optBoolean("audioOnly",false);
+                MediaType mediaType = audioOnly ? MediaType.AUDIO : MediaType.VIDEO;
                 JSONObject usableMediaFormat = playerConnector.getUsableMediaFormat(formats);
                 if (usableMediaFormat != null) {
                     JSONObject drms = usableMediaFormat.optJSONObject("drm");
@@ -244,7 +246,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
                     final Duration liveDelay = usableMediaFormat.has("liveDelay") ? Duration.millis(usableMediaFormat.getLong("liveDelay")) : null;
 
                     String playbackSessionId = jsonObject.optString("playSessionId", UUID.randomUUID().toString());
-                    JsonStreamInfo streamInfo = new JsonStreamInfo(jsonObject.optJSONObject("streamInfo"));
+                    JsonStreamInfo streamInfo = new JsonStreamInfo(jsonObject.optJSONObject("streamInfo"), mediaType);
                     EnigmaContractRestrictions contractRestrictions = EnigmaContractRestrictions.createWithDefaults(jsonObject.optJSONObject("contractRestrictions"));
                     IPlaybackSessionInfo playbackSessionInfo = playerConnector.getPlaybackSessionInfo(manifestUrl);
 

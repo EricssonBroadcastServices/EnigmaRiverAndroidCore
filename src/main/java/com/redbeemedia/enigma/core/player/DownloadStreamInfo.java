@@ -44,4 +44,9 @@ import com.redbeemedia.enigma.core.time.Duration;
     public Duration getLiveDelay() {
         return null;
     }
+
+    @Override
+    public MediaType getMediaType() {
+        return null;
+    }
 }
