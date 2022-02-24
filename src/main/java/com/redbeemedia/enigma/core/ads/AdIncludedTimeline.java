@@ -303,4 +303,8 @@ public class AdIncludedTimeline extends BaseTimelineListener implements IAdInclu
         }
         return length;
     }
+
+    public void sendAdEvent(VastAdEntry entry, AdEventType type) {
+        collector.onAdEvent(entry,type);
+    }
 }

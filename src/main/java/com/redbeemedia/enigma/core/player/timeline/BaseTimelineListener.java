@@ -1,5 +1,8 @@
 package com.redbeemedia.enigma.core.player.timeline;
 
+import com.redbeemedia.enigma.core.ads.AdEventType;
+import com.redbeemedia.enigma.core.ads.VastAdEntry;
+
 public class BaseTimelineListener implements ITimelineListener {
     @Deprecated
     @Override
@@ -20,5 +23,10 @@ public class BaseTimelineListener implements ITimelineListener {
 
     @Override
     public void onLivePositionChanged(ITimelinePosition timelinePosition) {
+    }
+
+    @Override
+    public void onAdEvent(VastAdEntry entry, AdEventType eventType) {
+
     }
 }

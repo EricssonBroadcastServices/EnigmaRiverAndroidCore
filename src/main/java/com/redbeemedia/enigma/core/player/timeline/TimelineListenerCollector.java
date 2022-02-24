@@ -1,5 +1,7 @@
 package com.redbeemedia.enigma.core.player.timeline;
 
+import com.redbeemedia.enigma.core.ads.AdEventType;
+import com.redbeemedia.enigma.core.ads.VastAdEntry;
 import com.redbeemedia.enigma.core.util.Collector;
 
 public class TimelineListenerCollector extends Collector<ITimelineListener> implements ITimelineListener {
@@ -31,5 +33,10 @@ public class TimelineListenerCollector extends Collector<ITimelineListener> impl
     @Override
     public void onLivePositionChanged(ITimelinePosition timelinePosition) {
         forEach(listener -> listener.onLivePositionChanged(timelinePosition));
+    }
+
+    @Override
+    public void onAdEvent(VastAdEntry entry, AdEventType eventType) {
+        forEach(listener -> listener.onAdEvent(entry, eventType));
     }
 }

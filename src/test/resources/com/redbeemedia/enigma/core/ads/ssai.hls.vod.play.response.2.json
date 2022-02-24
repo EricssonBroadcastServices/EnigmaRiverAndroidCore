@@ -57,6 +57,14 @@
           "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/fcb55356-611c-43f2-9df8-ea60e98c8edb/start"
         ],
         "trackingEvents":{
+          "loaded":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=0",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/87c95cc6-75fb-4ad9-95d1-41b9b05efe14/loaded"
+          ],
+          "start":[
+            "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=0",
+            "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/87c95cc6-75fb-4ad9-95d1-41b9b05efe14/start"
+          ],
           "firstQuartile":[
             "http://ad-server-mock.azurewebsites.net/api/ad-server-mock?percentage=25",
             "https://clientside-tracking.ssai.stage.serverside.ai/3b52d1cb-3550-4c0b-a466-172b147845bf/fe65ad25-cc63-4e01-be22-a7d2f4e30af7/ccb30421-be35-4c1f-9c73-37654b3e4a5d/fcb55356-611c-43f2-9df8-ea60e98c8edb/firstQuartile"

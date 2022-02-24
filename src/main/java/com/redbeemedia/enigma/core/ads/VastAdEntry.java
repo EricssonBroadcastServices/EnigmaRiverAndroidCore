@@ -23,6 +23,7 @@ public class VastAdEntry implements IAd {
     private final long startTime;
     private final String title;
     private long currentTime;
+    private final VideoClicks videoClicks;
 
     /**
      * Set up the VastAdEntry model.
@@ -32,12 +33,13 @@ public class VastAdEntry implements IAd {
      * @param duration The duration of an ad (in ms).
      * @param impressions The container for all event types and their corresponding URLs.
      */
-    VastAdEntry(@Nullable String id, @Nullable String title, long startTime, long duration, @Nullable Map<AdEventType, VastImpression> impressions) {
+    VastAdEntry(@Nullable String id, @Nullable String title, long startTime, long duration, @Nullable Map<AdEventType, VastImpression> impressions, @Nullable VideoClicks videoClicks) {
         this.id = id;
         this.title = title;
         this.duration = duration;
         this.impressions = impressions;
         this.startTime = startTime;
+        this.videoClicks = videoClicks;
     }
 
 
@@ -137,4 +139,8 @@ public class VastAdEntry implements IAd {
 
     @Override
     public long getDuration() { return duration; }
+
+    public VideoClicks getVideoClicks() {
+        return videoClicks;
+    }
 }

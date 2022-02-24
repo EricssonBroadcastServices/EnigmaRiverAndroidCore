@@ -13,6 +13,7 @@ import org.json.JSONObject;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Responsible for pasing VOD json data.
@@ -75,7 +76,15 @@ class NowtilusVodParser implements INowtilusParser {
                         eventUrls.add(url);
                     }
                 }
-                logEntrySets.put(type, new VastImpression(type, eventUrls));
+                if (type == AdEventType.Loaded) {
+                    type = AdEventType.Start;
+                }
+                VastImpression vastImpression = logEntrySets.get(type);
+                if (vastImpression != null) {
+                    vastImpression.getUrls().addAll(eventUrls);
+                } else {
+                    logEntrySets.put(type, new VastImpression(type, eventUrls));
+                }
             }
         }
         // this is should be sent as soon as ad start
@@ -88,8 +97,34 @@ class NowtilusVodParser implements INowtilusParser {
                     eventUrls.add(url);
                 }
             }
-            logEntrySets.put(AdEventType.Start, new VastImpression(AdEventType.Start, eventUrls));
+
+            VastImpression vastImpression = logEntrySets.get(AdEventType.Start);
+            if (vastImpression != null) {
+                vastImpression.getUrls().addAll(eventUrls);
+            } else {
+                logEntrySets.put(AdEventType.Start, new VastImpression(AdEventType.Start, eventUrls));
+            }
         }
-        return new VastAdEntry(id, title, adStartTime, duration, logEntrySets);
+
+        VideoClicks videoClicks = null;
+        // Ad click through
+        JSONObject videoClicksJson = clip.optJSONObject("videoClicks");
+        if (videoClicksJson != null) {
+            String clickThroughUrl = videoClicksJson.optString("clickThroughUrl","");
+            JSONArray clickTrackingUrlJson = videoClicksJson.optJSONArray("clickTrackingUrls");
+            List<URL> clickTrackingUrls = new ArrayList<>();
+            if(clickTrackingUrlJson!=null){
+                for(int i = 0; i < clickTrackingUrlJson.length(); i++){
+                    URL url = eventParser.parseEventUrl(clickTrackingUrlJson.get(i).toString());
+                    if (url != null) {
+                        clickTrackingUrls.add(url);
+                    }
+                }
+            }
+            if (clickThroughUrl != null && !clickThroughUrl.isEmpty()) {
+                videoClicks = new VideoClicks(clickThroughUrl, clickTrackingUrls);
+            }
+        }
+        return new VastAdEntry(id, title, adStartTime, duration, logEntrySets, videoClicks);
     }
 }

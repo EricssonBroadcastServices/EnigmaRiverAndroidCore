@@ -99,7 +99,7 @@ class NowtilusLiveParser implements INowtilusParser {
             for(AdEventType type : eventUrls.keySet()) {
                 logEntrySets.put(type, new VastImpression(type, eventUrls.get(type)));
             }
-            VastAdEntry entry = new VastAdEntry(id, title, startOffset, duration, logEntrySets);
+            VastAdEntry entry = new VastAdEntry(id, title, startOffset, duration, logEntrySets, null);
             startOffset += duration;
             entries.add(entry);
         }

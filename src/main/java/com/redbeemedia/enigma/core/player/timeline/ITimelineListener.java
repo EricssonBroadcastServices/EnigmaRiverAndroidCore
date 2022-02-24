@@ -1,5 +1,7 @@
 package com.redbeemedia.enigma.core.player.timeline;
 
+import com.redbeemedia.enigma.core.ads.AdEventType;
+import com.redbeemedia.enigma.core.ads.VastAdEntry;
 import com.redbeemedia.enigma.core.util.IInternalListener;
 
 public interface ITimelineListener extends IInternalListener {
@@ -16,5 +18,5 @@ public interface ITimelineListener extends IInternalListener {
     void onCurrentPositionChanged(ITimelinePosition timelinePosition);
     void onBoundsChanged(ITimelinePosition start, ITimelinePosition end);
     void onLivePositionChanged(ITimelinePosition timelinePosition);
-
+    void onAdEvent(VastAdEntry entry, AdEventType eventType);
 }

@@ -12,4 +12,5 @@ public interface IDeviceInfo {
     int getHeightPixels();
     String getName();
     String getType();
+    String getAppType();
 }

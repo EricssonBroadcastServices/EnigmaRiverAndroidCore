@@ -10,7 +10,7 @@ public class SilentAnalyticsReporter implements IAnalyticsReporter {
     }
 
     @Override
-    public void deviceInfo() {
+    public void deviceInfo(String cdnProvider) {
 
     }
 

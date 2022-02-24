@@ -69,5 +69,10 @@ public class DeviceInfoTest {
         public String getType() {
             return "JUNIT_TEST_DEVICE";
         }
+
+        @Override
+        public String getAppType() {
+            return "mock-app-type";
+        }
     }
 }

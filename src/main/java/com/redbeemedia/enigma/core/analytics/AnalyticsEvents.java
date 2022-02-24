@@ -57,6 +57,8 @@ package com.redbeemedia.enigma.core.analytics;
         public final IEventProperty<AnalyticsDeviceInfoEvent, String> DEVICE_ID = mandatory("DeviceId");
         public final IEventProperty<AnalyticsDeviceInfoEvent, String> DEVICE_MODEL = mandatory("DeviceModel");
         public final IEventProperty<AnalyticsDeviceInfoEvent, String> OS = mandatory("OS");
+        public final IEventProperty<AnalyticsDeviceInfoEvent, String> APP_TYPE = mandatory("AppType");
+        public final IEventProperty<AnalyticsDeviceInfoEvent, String> CDN_VENDOR = mandatory("CDNVendor");
         public final IEventProperty<AnalyticsDeviceInfoEvent, String> OS_VERSION = mandatory("OSVersion");
         public final IEventProperty<AnalyticsDeviceInfoEvent, String> MANUFACTURER = mandatory("Manufacturer");
         public final IEventProperty<AnalyticsDeviceInfoEvent, Boolean> IS_ROOTED = mandatory("IsRooted");

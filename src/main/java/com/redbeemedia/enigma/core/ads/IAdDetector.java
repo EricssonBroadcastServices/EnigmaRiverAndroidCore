@@ -42,6 +42,9 @@ public interface IAdDetector {
     /** @return true if an ad is playing, otherwise false. */
     boolean isAdPlaying();
 
+    /** @return current VastAdEntry */
+    VastAdEntry getCurrentAdEntry();
+
     /** @return true if an ad is playing, otherwise false. */
     void setAdPlaying(boolean adPlaying);
 
@@ -82,4 +85,9 @@ public interface IAdDetector {
      * @return
      */
     void setLiveDelay(Duration liveDelay);
+
+    /**
+     * send video click impression
+     */
+    void sendVideoAdClickImpression();
 }

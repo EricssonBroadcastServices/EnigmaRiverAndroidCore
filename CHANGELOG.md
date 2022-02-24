@@ -1,4 +1,5 @@
 # CHANGELOG
+* `3.4.1` Release - [3.4.1](#3.4.1) &nbsp; - &nbsp; 2022-02-24
 * `3.4.0` Release - [3.4.0](#3.4.0) &nbsp; - &nbsp; 2022-02-01
 * `3.3.3` Release - [3.3.3](#3.3.3) &nbsp; - &nbsp; 2021-10-15
 * `3.3.2` Release - [3.3.2](#3.3.2) &nbsp; - &nbsp; 2021-09-29
@@ -16,6 +17,17 @@
 * `3.1.8` Release - [3.1.8](#3.1.8) &nbsp; - &nbsp; 2020-12-11
 * `3.1.7` Release - [3.1.7](#3.1.7) &nbsp; - &nbsp; 2020-12-04
 * `3.1.6` Release - [3.1.6](#3.1.6) &nbsp; - &nbsp; 2020-11-13
+
+# <a name="3.4.1"></a> 3.4.1
+#### Features
+`
+DevEnigmaRiverAndroidCore
+DevEnigmaRiverAndroidExoPlayerIntegration
+DevEnigmaRiverAndroidInternalTestUtils
+`
+* EMP-17795 - Implement for ad tracking events Loaded and Start.
+* EMP-17464 - Click through support on ads.
+* EMP-17817 - Missing analytics parameters.
 
 # <a name="3.4.0"></a> 3.4.0
 #### Features

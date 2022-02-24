@@ -15,6 +15,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -188,6 +189,11 @@ public class AdsVODTests {
         long firstAdSectionEnd = firstAdDuration + secondAdDuration; // 5 seconds + 10 seconds
         long firstContentSectionEnd = firstAdSectionEnd + firstContentDuration; // ~30 sec content.
         long secondAdSectionStart = firstContentSectionEnd;
+
+        VastImpression firstLoadedEvent = new ArrayList<>(set.getEntries()).get(0).getEntrySet(AdEventType.Loaded);
+        VastImpression firstStartEvent = new ArrayList<>(set.getEntries()).get(0).getEntrySet(AdEventType.Start);
+        Assert.assertNull(firstLoadedEvent);
+        Assert.assertEquals(firstStartEvent.getUrls().size(),7);
 
         Assert.assertEquals(AdEventType.Start, set.getEntry(startMs()).getImpression().type);
         Assert.assertEquals(AdEventType.FirstQuartile, set.getEntry(firstQMs(0, firstAdDuration)).getImpression().type);

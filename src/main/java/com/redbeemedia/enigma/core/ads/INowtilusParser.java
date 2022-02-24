@@ -35,6 +35,7 @@ interface INowtilusParser {
         static {
             HashMap <String, AdEventType> types = new HashMap<>();
             types.put("start", AdEventType.Start);
+            types.put("loaded", AdEventType.Loaded);
             types.put("firstQuartile", AdEventType.FirstQuartile);
             types.put("midpoint", AdEventType.MidPoint);
             types.put("thirdQuartile", AdEventType.ThirdQuartile);

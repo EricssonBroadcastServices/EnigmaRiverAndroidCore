@@ -9,7 +9,7 @@ import com.redbeemedia.enigma.core.error.EnigmaError;
 public interface IAnalyticsReporter {
     void playbackError(EnigmaError error);
 
-    void deviceInfo();
+    void deviceInfo(String cdnProvider);
 
     void playbackCreated(String assetId);
 

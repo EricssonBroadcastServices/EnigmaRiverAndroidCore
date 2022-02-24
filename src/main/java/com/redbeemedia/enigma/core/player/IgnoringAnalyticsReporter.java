@@ -10,7 +10,7 @@ import com.redbeemedia.enigma.core.error.EnigmaError;
     }
 
     @Override
-    public void deviceInfo() {
+    public void deviceInfo(String cdnProvider) {
 
     }
 

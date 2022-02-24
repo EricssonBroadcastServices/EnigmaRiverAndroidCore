@@ -168,7 +168,7 @@ import java.util.List;
         } else {
             changeState(STATE_STARTED);
         }
-        analyticsReporter.deviceInfo();
+        analyticsReporter.deviceInfo(playbackSessionInfo.getCdnProvider());
         analyticsReporter.playbackCreated(playbackSessionInfo.getAssetId());
         heartbeatRepeater.setEnabled(true);
         enigmaPlayer.addListener(playerListener);

@@ -17,4 +17,5 @@ public interface IVirtualControls {
     IVirtualButton getSkipIntro();
     IVirtualButton getSubtitlesButton();
     IVirtualButton getAudioTrackButton();
+    IVirtualButton getVideoAdClickButton();
 }

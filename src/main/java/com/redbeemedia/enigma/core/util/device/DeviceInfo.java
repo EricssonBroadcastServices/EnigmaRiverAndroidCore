@@ -170,4 +170,10 @@ public class DeviceInfo implements IDeviceInfo {
                 displayMetrics.heightPixels/displayMetrics.ydpi, TABLET_SIZE_TRESHOLD);
         return isTablet ? "TABLET" : "MOBILE";
     }
+
+    @Override
+    public String getAppType(){
+        if (isTv) { return "android_tv"; }
+        else return "android";
+    }
 }

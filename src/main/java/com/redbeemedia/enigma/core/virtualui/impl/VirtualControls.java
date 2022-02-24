@@ -31,6 +31,7 @@ public final class VirtualControls implements IVirtualControls {
     private final IVirtualButton skipIntro;
     private final IVirtualButton audioTrackButton;
     private final IVirtualButton subtitlesButton;
+    private final IVirtualButton videoAdClickButton;
 
     /**
      * Will ensure we have single instance of IVirtualControls
@@ -57,6 +58,7 @@ public final class VirtualControls implements IVirtualControls {
         this.skipIntro = new SkipIntroButton(buttonContainer);
         this.audioTrackButton = new AudioTracksButton(buttonContainer);
         this.subtitlesButton = new SubtitlesButton(buttonContainer);
+        this.videoAdClickButton = new VideoAdClickButton(buttonContainer);
 
         buttonContainer.refreshButtons();
     }
@@ -124,6 +126,10 @@ public final class VirtualControls implements IVirtualControls {
     public void setEnabled(IVirtualButton button, boolean newEnabled) {
         AbstractVirtualButtonImpl abstractVirtualButton = (AbstractVirtualButtonImpl) button;
         abstractVirtualButton.setEnabled(newEnabled);
+    }
+
+    public IVirtualButton getVideoAdClickButton() {
+        return videoAdClickButton;
     }
 
     private static class VirtualButtonContainer implements IVirtualButtonContainer {

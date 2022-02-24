@@ -125,8 +125,8 @@ public class AdsLiveVastTests {
         Assert.assertNotNull(resourceLoader);
         Assert.assertEquals(resourceLoader.getClass(), NowtilusHlsLiveResourceLoader.class);
 
-        VastAdEntry entry1 = new VastAdEntry("id1", "title1", 0, 1000, new HashMap<>());
-        VastAdEntry entry2 = new VastAdEntry("id2", "title2", 1000, 2000, new HashMap<>());
+        VastAdEntry entry1 = new VastAdEntry("id1", "title1", 0, 1000, new HashMap<>(), null);
+        VastAdEntry entry2 = new VastAdEntry("id2", "title2", 1000, 2000, new HashMap<>(), null);
         Assert.assertNotEquals(entry1, entry2);
         Assert.assertEquals(entry1, entry1);
     }

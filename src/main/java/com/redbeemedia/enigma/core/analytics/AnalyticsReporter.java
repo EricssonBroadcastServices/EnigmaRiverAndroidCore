@@ -48,13 +48,15 @@ public class AnalyticsReporter implements IAnalyticsReporter {
     }
 
     @Override
-    public void deviceInfo() {
+    public void deviceInfo(String cdnProvider) {
         event(AnalyticsEvents.DEVICE_INFO, (builder, eventType) -> {
             IDeviceInfo deviceInfo = EnigmaRiverContext.getDeviceInfo();
 
             builder.addData(eventType.DEVICE_ID, deviceInfo.getDeviceId());
             builder.addData(eventType.DEVICE_MODEL, deviceInfo.getModel());
             builder.addData(eventType.OS, deviceInfo.getOS());
+            builder.addData(eventType.APP_TYPE, deviceInfo.getAppType());
+            builder.addData(eventType.CDN_VENDOR, cdnProvider);
             builder.addData(eventType.OS_VERSION, deviceInfo.getOSVersion());
             builder.addData(eventType.MANUFACTURER, deviceInfo.getManufacturer());
             builder.addData(eventType.IS_ROOTED, deviceInfo.isDeviceRooted());

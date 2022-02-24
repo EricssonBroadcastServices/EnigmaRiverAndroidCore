@@ -490,8 +490,9 @@ public class InternalPlaybackSessionTest {
             }
         });
         args.setAnalyticsReporter(new MockAnalyticsReporter() {
+
             @Override
-            public void deviceInfo() {
+            public void deviceInfo(String cdnProvider) {
                 eventLog.append("[DeviceInfo]");
             }
 

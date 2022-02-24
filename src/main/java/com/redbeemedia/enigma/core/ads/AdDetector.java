@@ -44,6 +44,7 @@ public class AdDetector extends BaseTimelineListener implements IAdDetector, ITi
     private List<AdBreak> adBreaks;
     private List<Long> contentBreaks;
     private ITimelinePosition jumpOnOriginalScrubTime = null;
+    private VastAdEntry currentAdEntry;
 
     public AdDetector(IHttpHandler httpHandler, ITimeline timeline, ITimelinePositionFactory timelinePositionFactory) {
         this(httpHandler, timeline, timelinePositionFactory, null);
@@ -169,7 +170,7 @@ public class AdDetector extends BaseTimelineListener implements IAdDetector, ITi
 
         if(entry != null) {
             AdBreak adBreak = adIncludedTimeline.getAdBreakIfPositionIsBetweenTheAd(timelinePositionFactory.newPosition(currentPosition));
-            sendImpression(entry.getImpression(), adBreak);
+            sendImpression(entry, adBreak);
         }
 
         callListeners(entry, entry == null ? null : entry.getEventType(currentPosition));
@@ -187,10 +188,11 @@ public class AdDetector extends BaseTimelineListener implements IAdDetector, ITi
         for(WeakReference<IAdStateListener> reference : nullReferences) { listeners.remove(reference); }
     }
 
-    private void sendImpression(VastImpression impression, AdBreak adBreak) {
+    private void sendImpression(VastAdEntry entry, AdBreak adBreak) {
+        VastImpression impression = entry.getImpression();
         if(impression != null && !impression.isSent()) {
-            //TODO: Remove this log output before release
             android.util.Log.d(TAG, "Sending impression: " + impression.type);
+            sendAdEvents(entry, adBreak, impression);
             SimpleHttpCall apiCall = new SimpleHttpCall("GET");
             for(URL url : impression.getUrls()) {
                 try {
@@ -201,10 +203,42 @@ public class AdDetector extends BaseTimelineListener implements IAdDetector, ITi
                     Log.w("SSAI", e);
                 }
             }
-            if(impression.type == AdEventType.Complete){
-                adBreak.setAdShown(true);
+        }
+    }
+
+    public void sendVideoAdClickImpression() {
+        VastAdEntry currentAdEntry = getCurrentAdEntry();
+        if (currentAdEntry != null) {
+            Log.d(TAG, "*** Sending video click impression *** ");
+            SimpleHttpCall apiCall = new SimpleHttpCall("GET");
+            VideoClicks videoClicks = currentAdEntry.getVideoClicks();
+            if (videoClicks != null) {
+                for (URL url : videoClicks.getClickTrackingUrls()) {
+                    try {
+                        httpHandler.doHttp(url, apiCall, null);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Log.w("SSAI", e);
+                    }
+                }
             }
         }
+    }
+
+    /**
+     * @param entry
+     * @param adBreak
+     * @param impression
+     */
+    private void sendAdEvents(VastAdEntry entry, AdBreak adBreak, VastImpression impression) {
+        currentAdEntry = entry;
+        if(impression.type == AdEventType.Complete){
+            adBreak.setAdShown(true);
+            // virtual button listens to it, so clean it up
+            currentAdEntry = null;
+        }
+        // after setting currentAdEntry value, send event to notify the virtual buttons
+        adIncludedTimeline.sendAdEvent(entry, impression.type);
     }
 
     @Override
@@ -248,5 +282,9 @@ public class AdDetector extends BaseTimelineListener implements IAdDetector, ITi
     @Override
     public void setLiveDelay(Duration liveDelay) {
         this.liveDelay = liveDelay;
+    }
+
+    public VastAdEntry getCurrentAdEntry() {
+        return currentAdEntry;
     }
 }

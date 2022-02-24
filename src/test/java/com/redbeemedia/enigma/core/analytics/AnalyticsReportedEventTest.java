@@ -84,7 +84,7 @@ public class AnalyticsReportedEventTest<E extends IAnalyticsEventType> {
         if(eventType == AnalyticsEvents.ERROR) {
             return reporter -> reporter.playbackError(new UnexpectedError("MockError"));
         } else if(eventType == AnalyticsEvents.DEVICE_INFO) {
-            return reporter -> reporter.deviceInfo();
+            return reporter -> reporter.deviceInfo("MockCDN");
         } else if(eventType == AnalyticsEvents.CREATED) {
             return reporter -> reporter.playbackCreated("mockAsset");
         } else if(eventType == AnalyticsEvents.HANDSHAKE_STARTED) {
