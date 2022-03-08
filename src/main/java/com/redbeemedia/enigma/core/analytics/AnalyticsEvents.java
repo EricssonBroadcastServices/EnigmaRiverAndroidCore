@@ -62,6 +62,8 @@ package com.redbeemedia.enigma.core.analytics;
         public final IEventProperty<AnalyticsDeviceInfoEvent, String> OS_VERSION = mandatory("OSVersion");
         public final IEventProperty<AnalyticsDeviceInfoEvent, String> MANUFACTURER = mandatory("Manufacturer");
         public final IEventProperty<AnalyticsDeviceInfoEvent, Boolean> IS_ROOTED = mandatory("IsRooted");
+        public final IEventProperty<AnalyticsDeviceInfoEvent, String> VERSION = mandatory("Version");
+        public final IEventProperty<AnalyticsDeviceInfoEvent, String> TECHNOLOGY = mandatory("Technology");
         public final IEventProperty<AnalyticsDeviceInfoEvent, String> WIDEVINE_SECURITY_LEVEL = mandatory("WidevineSecurityLevel");
     }
 

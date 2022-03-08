@@ -60,6 +60,8 @@ public class AnalyticsReporter implements IAnalyticsReporter {
             builder.addData(eventType.OS_VERSION, deviceInfo.getOSVersion());
             builder.addData(eventType.MANUFACTURER, deviceInfo.getManufacturer());
             builder.addData(eventType.IS_ROOTED, deviceInfo.isDeviceRooted());
+            builder.addData(eventType.TECHNOLOGY, "ExoPlayer");
+            builder.addData(eventType.VERSION, EnigmaRiverContext.getVersion());
             builder.addData(eventType.WIDEVINE_SECURITY_LEVEL, deviceInfo.getWidevineDrmSecurityLevel());
         });
     }
