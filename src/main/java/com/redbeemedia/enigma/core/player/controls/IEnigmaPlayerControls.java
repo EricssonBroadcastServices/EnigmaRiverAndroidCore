@@ -28,6 +28,8 @@ public interface IEnigmaPlayerControls {
     void setSubtitleTrack(ISubtitleTrack track, IControlResultHandler resultHandler);
     void setAudioTrack(IAudioTrack track);
     void setAudioTrack(IAudioTrack track, IControlResultHandler resultHandler);
+    void setVideoTrack(IVideoTrack track);
+    void setVideoTrack(IVideoTrack track, IControlResultHandler resultHandler);
     void setMaxVideoTrackDimensions(int width, int height);
     void setMaxVideoTrackDimensions(int width, int height, IControlResultHandler resultHandler);
     void setMaxVideoTrackDimensions(IVideoTrack videoTrack);

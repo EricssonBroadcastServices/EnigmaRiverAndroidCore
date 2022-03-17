@@ -68,6 +68,11 @@ public abstract class AbstractEnigmaPlayerControls implements IEnigmaPlayerContr
     }
 
     @Override
+    public void setVideoTrack(IVideoTrack track) {
+        setVideoTrack(track, getDefaultResultHandler());
+    }
+
+    @Override
     public void setMaxVideoTrackDimensions(int width, int height) {
         setMaxVideoTrackDimensions(width, height, getDefaultResultHandler());
     }

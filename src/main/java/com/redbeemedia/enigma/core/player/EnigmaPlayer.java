@@ -977,6 +977,13 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         }
 
         @Override
+        public void setVideoTrack(IVideoTrack track, IControlResultHandler resultHandler) {
+            setTrack(track, resultHandler,
+                    IPlayerImplementationControls::setVideoTrack,
+                    IInternalPlaybackSession::setSelectedVideoTrack);
+        }
+
+        @Override
         public void setMaxVideoTrackDimensions(int width, int height, IControlResultHandler resultHandler) {
             ControlResultHandlerAdapter controlResultHandler = wrapResultHandler(resultHandler);
             try {

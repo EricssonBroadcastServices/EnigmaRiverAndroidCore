@@ -3,6 +3,7 @@ package com.redbeemedia.enigma.core.player;
 import com.redbeemedia.enigma.core.audio.IAudioTrack;
 import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
 import com.redbeemedia.enigma.core.time.Duration;
+import com.redbeemedia.enigma.core.video.IVideoTrack;
 
 /**
  * <h3>NOTE</h3>
@@ -17,6 +18,7 @@ public interface IPlayerImplementationControls {
     void setVolume(float volume, IPlayerImplementationControlResultHandler resultHandler);
     void setSubtitleTrack(ISubtitleTrack track, IPlayerImplementationControlResultHandler resultHandler);
     void setAudioTrack(IAudioTrack track, IPlayerImplementationControlResultHandler resultHandler);
+    void setVideoTrack(IVideoTrack track, final IPlayerImplementationControlResultHandler resultHandler);
     void setMaxVideoTrackDimensions(int width, int height, IPlayerImplementationControlResultHandler controlResultHandler);
 
     interface ISeekPosition {

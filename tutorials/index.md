@@ -7,6 +7,7 @@ The following tutorials will show you various ways Enigma River Android SDK can 
 ## Jump to...
 <span style="margin-left: 10px"></span>-&gt; [Basics series](#basics-series) <br>
 <span style="margin-left: 10px"></span>-&gt; [Custom UI controls series](#custom-ui-controls-series) <br>
+<span style="margin-left: 10px"></span>-&gt; [Video tracks](#video-tracks) <br>
 <span style="margin-left: 10px"></span>-&gt; [Audio and subtitles series](#audio-and-subtitles-series) <br>
 <span style="margin-left: 10px"></span>-&gt; [Chromecast integration series](#chromecast-integration-series) <br>
 <span style="margin-left: 10px"></span>-&gt; [Downloads and offline playback series](#downloads-and-offline-playback-series) <br>
@@ -47,6 +48,19 @@ At the end, you should have a running Android application that will:
 [Custom timeline](custom_ui/timeline.md)<br/>
 [Spinner and Live Indicator](custom_ui/spinner_and_live.md)<br/>
 [Custom UI app](custom_ui/custom_ui_app.md)<br/>
+
+### Video tracks
+###### Purpose
+The purpose of this series is to teach you to build a custom UI that will keep track video tracks with Enigma Android Player.
+###### What will you learn
+At the end, you should have a running Android application that will:
+* Authenticate to Redbee Media OTT backend.
+* Play media assets from RedBee Media OTT.
+* Change video tracks.
+
+
+[Prerequisites](video_tracks/prerequisites.md)<br/>
+[Video tracks selection](video_tracks/video_tracks.md)<br/>
 
 ### Audio and subtitles series
 ###### Purpose
