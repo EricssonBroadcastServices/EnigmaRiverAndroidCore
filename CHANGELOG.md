@@ -1,6 +1,5 @@
 # CHANGELOG
-* `3.4.4` Release - [3.4.4](#3.4.4) &nbsp; - &nbsp; 2022-03-21
-* `3.4.3` Release - [3.4.3](#3.4.3) &nbsp; - &nbsp; 2022-03-17
+* `3.4.3` Release - [3.4.3](#3.4.3) &nbsp; - &nbsp; 2022-03-21
 * `3.4.2` Release - [3.4.2](#3.4.2) &nbsp; - &nbsp; 2022-03-08
 * `3.4.1` Release - [3.4.1](#3.4.1) &nbsp; - &nbsp; 2022-02-24
 * `3.4.0` Release - [3.4.0](#3.4.0) &nbsp; - &nbsp; 2022-02-01
@@ -22,20 +21,15 @@
 * `3.1.7` Release - [3.1.7](#3.1.7) &nbsp; - &nbsp; 2020-12-04
 * `3.1.6` Release - [3.1.6](#3.1.6) &nbsp; - &nbsp; 2020-11-13
 
-# <a name="3.4.4"></a> 3.4.4
-#### Features
-`
-DevEnigmaRiverAndroidCast
-`
-* EMP-17885 - Make startTime optional in Cast: avoid crash and upgrade Chromecast library.
-
 # <a name="3.4.3"></a> 3.4.3
 #### Features
 `
 DevEnigmaRiverAndroidCore
 DevEnigmaRiverAndroidExoPlayerIntegration
 DevEnigmaRiverAndroidExperimentalLowLatency
+DevEnigmaRiverAndroidCast
 `
+* EMP-17885 - Make startTime optional in Cast and Upgrade Chromecast library.
 * EMP-17859 - Fix for Subtitles tracks.
 * EMP-17511 - Add an API to allow video track selection.
 
