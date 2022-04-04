@@ -25,9 +25,13 @@ public interface IEnigmaPlayerControls {
     void setVolume(float volume);
     void setVolume(float volume, IControlResultHandler resultHandler);
     void setSubtitleTrack(ISubtitleTrack track);
+    void setSubtitleTrack(String trackId);
     void setSubtitleTrack(ISubtitleTrack track, IControlResultHandler resultHandler);
+    void setSubtitleTrack(String trackId, IControlResultHandler resultHandler);
     void setAudioTrack(IAudioTrack track);
+    void setAudioTrack(String trackId);
     void setAudioTrack(IAudioTrack track, IControlResultHandler resultHandler);
+    void setAudioTrack(String trackId, IControlResultHandler resultHandler);
     void setVideoTrack(IVideoTrack track);
     void setVideoTrack(IVideoTrack track, IControlResultHandler resultHandler);
     void setMaxVideoTrackDimensions(int width, int height);

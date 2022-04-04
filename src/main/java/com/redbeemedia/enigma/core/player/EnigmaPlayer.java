@@ -970,10 +970,32 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         }
 
         @Override
+        public void setSubtitleTrack(String trackId, IControlResultHandler resultHandler) {
+            IInternalPlaybackSession value = currentPlaybackSession.value;
+            if (value != null) {
+                ISubtitleTrack subtitleTrack = value.getSubtitleTrack(trackId);
+                if (subtitleTrack != null) {
+                    setSubtitleTrack(subtitleTrack, resultHandler);
+                }
+            }
+        }
+
+        @Override
         public void setAudioTrack(IAudioTrack track, IControlResultHandler resultHandler) {
             setTrack(track, resultHandler,
                     IPlayerImplementationControls::setAudioTrack,
                     IInternalPlaybackSession::setSelectedAudioTrack);
+        }
+
+        @Override
+        public void setAudioTrack(String trackId, IControlResultHandler resultHandler) {
+            IInternalPlaybackSession value = currentPlaybackSession.value;
+            if (value != null) {
+                IAudioTrack audioTrack = value.getAudioTrack(trackId);
+                if (audioTrack != null) {
+                    setAudioTrack(audioTrack, resultHandler);
+                }
+            }
         }
 
         @Override

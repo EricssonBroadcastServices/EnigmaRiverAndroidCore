@@ -105,6 +105,18 @@ import org.json.JSONObject;
                     }
                 }
             } break;
+            case OFFSET: {
+                if (playFrom instanceof IPlaybackProperties.PlayFromOffset) {
+                    IPlaybackProperties.PlayFromOffset playFromOffset = (IPlaybackProperties.PlayFromOffset) (playFrom);
+                    Duration offsetToPlay = playFromOffset.getOffset();
+                    if (offsetToPlay.inUnits(Duration.Unit.MILLISECONDS) > 0) {
+                        IPlayerImplementationControls.TimelineRelativePosition seekPosition = new IPlayerImplementationControls.TimelineRelativePosition(offsetToPlay.inWholeUnits(Duration.Unit.MILLISECONDS));
+                        playerImplementationControls.seekTo(seekPosition, new SeekToControlResultHandler());
+                        applicable = true;
+                    }
+                }
+            }
+            break;
             case LIVE_EDGE: {
                 JsonStreamInfo streamInfo = getStreamInfo();
                 if(streamInfo.isLiveStream()) {

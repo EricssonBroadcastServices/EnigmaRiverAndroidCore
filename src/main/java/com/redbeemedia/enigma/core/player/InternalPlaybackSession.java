@@ -287,6 +287,26 @@ import java.util.List;
     }
 
     @Override
+    public void setSelectedSubtitleTrack(String trackId) {
+        ISubtitleTrack selectedSubtitleTrack = getSubtitleTrack(trackId);
+        if(selectedSubtitleTrack != null){
+            setSelectedSubtitleTrack(selectedSubtitleTrack);
+        }
+    }
+
+    @Nullable
+    public ISubtitleTrack getSubtitleTrack(String trackId) {
+        ISubtitleTrack selectedSubtitleTrack = null;
+        for(ISubtitleTrack subtitleTrack : getSubtitleTracks()){
+            if(subtitleTrack.getTrackId().equalsIgnoreCase(trackId)){
+                selectedSubtitleTrack = subtitleTrack;
+                break;
+            }
+        }
+        return selectedSubtitleTrack;
+    }
+
+    @Override
     public List<IAudioTrack> getAudioTracks() {
         return getUnmodifiableViewOf(audioTracks);
     }
@@ -299,6 +319,26 @@ import java.util.List;
     @Override
     public void setSelectedAudioTrack(IAudioTrack track) {
         OpenContainerUtil.setValueSynchronized(selectedAudioTrack, track, collector::onSelectedAudioTrackChanged);
+    }
+
+    @Override
+    public void setSelectedAudioTrack(String trackId) {
+        IAudioTrack selectedTrack = getAudioTrack(trackId);
+        if (selectedTrack != null) {
+            setSelectedAudioTrack(selectedTrack);
+        }
+    }
+
+    @Nullable
+    public IAudioTrack getAudioTrack(String trackId) {
+        IAudioTrack selectedTrack = null;
+        for (IAudioTrack track : getAudioTracks()) {
+            if (track.getTrackId().equalsIgnoreCase(trackId)) {
+                selectedTrack = track;
+                break;
+            }
+        }
+        return selectedTrack;
     }
 
     @Override
@@ -325,6 +365,26 @@ import java.util.List;
             }
             collector.onSelectedVideoTrackChanged(oldValue, newValue);
         });
+    }
+
+    @Override
+    public void setSelectedVideoTrack(String trackId) {
+        IVideoTrack selectedTrack = getVideoTrack(trackId);
+        if (selectedTrack != null) {
+            setSelectedVideoTrack(selectedTrack);
+        }
+    }
+
+    @Nullable
+    private IVideoTrack getVideoTrack(String trackId) {
+        IVideoTrack selectedTrack = null;
+        for (IVideoTrack track : getVideoTracks()) {
+            if (track.getTrackId().equalsIgnoreCase(trackId)) {
+                selectedTrack = track;
+                break;
+            }
+        }
+        return selectedTrack;
     }
 
     @Override

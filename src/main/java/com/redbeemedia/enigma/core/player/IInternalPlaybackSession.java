@@ -27,8 +27,13 @@ import java.util.Collection;
     void setSeekLiveAllowed(boolean allowed);
     void setTracks(Collection<? extends IPlayerImplementationTrack> tracks);
     void setSelectedSubtitleTrack(ISubtitleTrack track);
+    void setSelectedSubtitleTrack(String trackId);
+    ISubtitleTrack getSubtitleTrack(String trackId);
     void setSelectedAudioTrack(IAudioTrack track);
+    void setSelectedAudioTrack(String trackId);
+    IAudioTrack getAudioTrack(String trackId);
     void setSelectedVideoTrack(IVideoTrack track);
+    void setSelectedVideoTrack(String trackId);
 
     void fireEndReached();
     void fireSeekCompleted();

@@ -1,4 +1,5 @@
 # CHANGELOG
+* `3.4.4` Release - [3.4.4](#3.4.4) &nbsp; - &nbsp; 2022-04-04
 * `3.4.3` Release - [3.4.3](#3.4.3) &nbsp; - &nbsp; 2022-03-21
 * `3.4.2` Release - [3.4.2](#3.4.2) &nbsp; - &nbsp; 2022-03-08
 * `3.4.1` Release - [3.4.1](#3.4.1) &nbsp; - &nbsp; 2022-02-24
@@ -20,6 +21,16 @@
 * `3.1.8` Release - [3.1.8](#3.1.8) &nbsp; - &nbsp; 2020-12-11
 * `3.1.7` Release - [3.1.7](#3.1.7) &nbsp; - &nbsp; 2020-12-04
 * `3.1.6` Release - [3.1.6](#3.1.6) &nbsp; - &nbsp; 2020-11-13
+
+# <a name="3.4.4"></a> 3.4.4
+#### Features
+`
+DevEnigmaRiverAndroidCore
+DevEnigmaRiverAndroidExoPlayerIntegration
+`
+* EMP-17883 - Stream breaks on 10min inactivity.
+* EMP-17864 - Select audioTrack & subtitle track by Id.
+
 
 # <a name="3.4.3"></a> 3.4.3
 #### Features

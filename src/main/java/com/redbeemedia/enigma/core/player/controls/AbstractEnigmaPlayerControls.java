@@ -63,8 +63,18 @@ public abstract class AbstractEnigmaPlayerControls implements IEnigmaPlayerContr
     }
 
     @Override
+    public void setSubtitleTrack(String trackId) {
+        setSubtitleTrack(trackId, getDefaultResultHandler());
+    }
+
+    @Override
     public void setAudioTrack(IAudioTrack track) {
         setAudioTrack(track, getDefaultResultHandler());
+    }
+
+    @Override
+    public void setAudioTrack(String trackId) {
+        setAudioTrack(trackId, getDefaultResultHandler());
     }
 
     @Override

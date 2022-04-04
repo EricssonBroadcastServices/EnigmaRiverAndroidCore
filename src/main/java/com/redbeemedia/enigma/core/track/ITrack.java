@@ -5,4 +5,5 @@ package com.redbeemedia.enigma.core.track;
  * <p>Implementing or extending this interface is not part of the public API.</p>
  */
 public interface ITrack {
+    String getTrackId();
 }
