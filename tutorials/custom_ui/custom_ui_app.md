@@ -83,7 +83,7 @@ enigmaPlayer.addListener(new BaseEnigmaPlayerListener(){
 ```
 
 ## Add the live indicator
-Lastly we have our live indicator to add, as a default
+We have our live indicator to add, as a default
 `android.widget.TextView`:
 
 ```java
@@ -120,10 +120,35 @@ private void updateIsLive(boolean isLive){
 }
 ```
 
+## Customize subtitle view
+One can customize the exo subtitle view. Fetch subtitle view instance from engimaPlayer
+
+`com.google.android.exoplayer2.ui.SubtitleView`:
+
+```java
+...
+        
+enigmaPlayer.getPlayerSubtitleView()
+...
+        
+# Change color by following ways :
+        
+CaptionStyleCompat captionStyleCompat = new CaptionStyleCompat(DEFAULT.foregroundColor,
+                 Color.BLUE,
+                 DEFAULT.windowColor,
+                 DEFAULT.edgeType,
+                 DEFAULT.edgeColor,
+                 DEFAULT.typeface);
+ enigmaPlayer.getPlayerSubtitleView().setStyle(captionStyleCompat);
+ 
+ // set size
+enigmaPlayer.getPlayerSubtitleView().setFixedTextSize(Dimension.PX,30);
+```
+
 **And that's all there is to it**!
 
 This is what our finished app looks like:
-[customUiApp](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.4.4/customcontrols)<br
+[customUiApp](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.4.5-BETA-1/customcontrols)<br
 />
 
 

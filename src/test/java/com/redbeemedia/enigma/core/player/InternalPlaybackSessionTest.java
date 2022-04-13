@@ -2,6 +2,7 @@ package com.redbeemedia.enigma.core.player;
 
 import android.os.Handler;
 
+import com.google.android.exoplayer2.ui.SubtitleView;
 import com.redbeemedia.enigma.core.ads.AdDetector;
 import com.redbeemedia.enigma.core.ads.ExposureAdMetadata;
 import com.redbeemedia.enigma.core.ads.IAdDetector;
@@ -667,6 +668,11 @@ public class InternalPlaybackSessionTest {
         @Override
         public boolean isCurrentStreamTypeAudioOnly() {
             return false;
+        }
+
+        @Override
+        public SubtitleView getPlayerSubtitleView() {
+            return null;
         }
     }
 

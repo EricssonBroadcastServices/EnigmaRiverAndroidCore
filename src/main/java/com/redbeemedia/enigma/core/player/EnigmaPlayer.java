@@ -6,6 +6,7 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import com.google.android.exoplayer2.ui.SubtitleView;
 import com.redbeemedia.enigma.core.activity.AbstractActivityLifecycleListener;
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleListener;
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleManager;
@@ -498,6 +499,11 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         return false;
     }
 
+    @Override
+    public SubtitleView getPlayerSubtitleView() {
+        return playerImplementation.getPlayerSubtitleView();
+    }
+
     private class EnigmaPlayerEnvironment implements IEnigmaPlayerEnvironment, IDrmProvider {
         private IMediaFormatSupportSpec formatSupportSpec = new DefaultFormatSupportSpec();
         private DefaultTimelinePositionFactory timelinePositionFactory = new DefaultTimelinePositionFactory();
@@ -970,7 +976,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         }
 
         @Override
-        public void setSubtitleTrack(String trackId, IControlResultHandler resultHandler) {
+        public void setSubtitleTrackById(String trackId, IControlResultHandler resultHandler) {
             IInternalPlaybackSession value = currentPlaybackSession.value;
             if (value != null) {
                 ISubtitleTrack subtitleTrack = value.getSubtitleTrack(trackId);
@@ -988,7 +994,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         }
 
         @Override
-        public void setAudioTrack(String trackId, IControlResultHandler resultHandler) {
+        public void setAudioTrackById(String trackId, IControlResultHandler resultHandler) {
             IInternalPlaybackSession value = currentPlaybackSession.value;
             if (value != null) {
                 IAudioTrack audioTrack = value.getAudioTrack(trackId);

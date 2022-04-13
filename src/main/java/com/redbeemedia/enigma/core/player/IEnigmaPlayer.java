@@ -2,6 +2,7 @@ package com.redbeemedia.enigma.core.player;
 
 import android.os.Handler;
 
+import com.google.android.exoplayer2.ui.SubtitleView;
 import com.redbeemedia.enigma.core.ads.IAdDetector;
 import com.redbeemedia.enigma.core.analytics.IAnalyticsReporter;
 import com.redbeemedia.enigma.core.marker.IMarkerPointsDetector;
@@ -48,8 +49,27 @@ public interface IEnigmaPlayer {
     boolean isStickyPlayer();
 
     /**
-     * returns 'true' if the asset is being played and current asset is audio-only
-     * @return
+     *
+     * @return 'true' if the asset is being played and current asset is audio-only
      */
     boolean isCurrentStreamTypeAudioOnly();
+
+    /**
+     * Return subtitle view from exoplayer PlayerView.
+     * It can be used to format subtitle view like font, size, position etc
+     *
+     * // change color
+     * CaptionStyleCompat captionStyleCompat = new CaptionStyleCompat(DEFAULT.foregroundColor,
+     *                 Color.BLUE,
+     *                 DEFAULT.windowColor,
+     *                 DEFAULT.edgeType,
+     *                 DEFAULT.edgeColor,
+     *                 DEFAULT.typeface);
+     * enigmaPlayer.getPlayerSubtitleView().setStyle(captionStyleCompat);
+     * // set size
+     * enigmaPlayer.getPlayerSubtitleView().setFixedTextSize(Dimension.PX,30);
+     *
+     * @return SubtitleView
+     */
+    SubtitleView getPlayerSubtitleView();
 }

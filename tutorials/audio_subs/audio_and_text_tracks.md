@@ -87,8 +87,16 @@ public void selectSubtitleTrack(ISubtitleTrack subtitleTrack) {
     enigmaPlayer.getControls().setSubtitleTrack(subtitleTrack);
 }
 
+public void selectSubtitleTrack(String trackId) {
+        enigmaPlayer.getControls().setSubtitleTrackById(trackId);
+}
+
 public void selectAudioTrack(IAudioTrack audioTrack) {
     enigmaPlayer.getControls().setAudioTrack(audioTrack);
+}
+
+public void selectAudioTrack(String trackId) {
+        enigmaPlayer.getControls().setSubtitleTrackById(trackId);
 }
 ```
 
@@ -107,7 +115,8 @@ This is only allowed for subtitle tracks. A request to `setAudioTrack(null)` wil
 
 ### Working example
 Here is a working example project using what is described in this tutorial:
-[audioAndSubtitles](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.4.4/audioAndSubtitles)<br />
+[audioAndSubtitles](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.4.5-BETA-1/audioAndSubtitles)<br />
+
 
 
 ___
