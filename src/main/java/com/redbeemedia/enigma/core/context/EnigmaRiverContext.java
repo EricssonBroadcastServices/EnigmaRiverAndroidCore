@@ -109,9 +109,14 @@ public final class EnigmaRiverContext {
         return initializedContext.networkMonitor;
     }
 
+    public static String getAppName() {
+        assertInitialized();
+        return initializedContext.appName;
+    }
+
     //Version if the core library
     public static String getVersion() {
-        return "r3.4.5-BETA-1";
+        return "r3.4.5-BETA-2";
     }
 
     private static void assertInitialized() {
@@ -124,6 +129,7 @@ public final class EnigmaRiverContext {
         private IHttpHandler httpHandler = null;
         private String exposureBaseUrl = null;
         private String analyticsUrl = null;
+        private String appName = "";
         private IDeviceInfo deviceInfo = null;
         private IActivityLifecycleManagerFactory activityLifecycleManagerFactory = new DefaultActivityLifecycleManagerFactory();
         private ITaskFactoryProvider taskFactoryProvider = new DefaultTaskFactoryProvider(new DefaultTaskFactory());
@@ -175,6 +181,11 @@ public final class EnigmaRiverContext {
             return this;
         }
 
+        public EnigmaRiverContextInitialization setAppName(final String appName) {
+            this.appName = appName;
+            return this;
+        }
+
         public EnigmaRiverContextInitialization setAdInsertionFactory(IAdInsertionFactory adInsertionFactory) {
             this.adInsertionFactory = adInsertionFactory;
             return this;
@@ -183,6 +194,10 @@ public final class EnigmaRiverContext {
         public EnigmaRiverContextInitialization setActivityLifecycleManagerFactory(IActivityLifecycleManagerFactory activityLifecycleManagerFactory) {
             this.activityLifecycleManagerFactory = activityLifecycleManagerFactory;
             return this;
+        }
+
+        public String getAppName() {
+            return this.appName;
         }
 
         public IActivityLifecycleManager getActivityLifecycleManager(Application application) {
@@ -252,6 +267,7 @@ public final class EnigmaRiverContext {
     private static class EnigmaRiverInitializedContext {
         private final UrlPath exposureBaseUrl;
         private final UrlPath analyticsUrl;
+        private final String appName;
         private final IHttpHandler httpHandler;
         private final IDeviceInfo deviceInfo;
         private final IActivityLifecycleManager activityLifecycleManager;
@@ -271,6 +287,7 @@ public final class EnigmaRiverContext {
                 this.analyticsUrl = analyticsUrl != null ? new UrlPath(analyticsUrl) : null;
                 this.httpHandler = initialization.getHttpHandler();
                 this.deviceInfo = initialization.getDeviceInfo(application);
+                this.appName = initialization.appName;
                 this.activityLifecycleManager = initialization.getActivityLifecycleManager(application);
                 this.taskFactoryProvider = initialization.getTaskFactoryProvider();
                 this.epgLocator = initialization.getEpgLocator();

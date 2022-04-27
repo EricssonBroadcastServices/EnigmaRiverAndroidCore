@@ -28,7 +28,10 @@
 `
 DevEnigmaRiverAndroidCore
 DevEnigmaRiverAndroidExoPlayerIntegration
+DevEnigmaRiverAndroidDownload
 `
+* EMP-18016 - SDK download info support.
+* EMP-17956 - Add app name to analytics.
 * EMP -17985 - Fix for Set subtitle with null not working.
 * EMP -17510 - Api to expose exo-subtitles view.
 

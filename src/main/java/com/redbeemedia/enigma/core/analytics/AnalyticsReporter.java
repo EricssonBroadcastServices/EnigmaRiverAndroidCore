@@ -56,6 +56,7 @@ public class AnalyticsReporter implements IAnalyticsReporter {
             builder.addData(eventType.DEVICE_MODEL, deviceInfo.getModel());
             builder.addData(eventType.OS, deviceInfo.getOS());
             builder.addData(eventType.APP_TYPE, deviceInfo.getAppType());
+            builder.addData(eventType.APP_NAME, EnigmaRiverContext.getAppName());
             builder.addData(eventType.CDN_VENDOR, cdnProvider);
             builder.addData(eventType.OS_VERSION, deviceInfo.getOSVersion());
             builder.addData(eventType.MANUFACTURER, deviceInfo.getManufacturer());
