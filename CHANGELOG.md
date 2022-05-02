@@ -30,7 +30,7 @@ DevEnigmaRiverAndroidCore
 DevEnigmaRiverAndroidExoPlayerIntegration
 DevEnigmaRiverAndroidDownload
 `
-* EMP-18035- MediaCodec for Android A20
+* EMP-18035- MediaCodec error for devices
 * EMP-18016 - SDK download info support.
 * EMP-17956 - Add app name to analytics.
 * EMP -17985 - Fix for Set subtitle with null not working.
