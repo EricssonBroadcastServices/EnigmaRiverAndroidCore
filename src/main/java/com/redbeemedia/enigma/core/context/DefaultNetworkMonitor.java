@@ -83,6 +83,9 @@ import com.redbeemedia.enigma.core.util.OpenContainerUtil;
     }
 
     private boolean checkInternetAvailable(ConnectivityManager connectivityManager) {
+        if (connectivityManager == null) {
+            return false;
+        }
         if(Build.VERSION.SDK_INT >= 21) {
             boolean currentlyConnected = false;
             Network[] allNetworks = connectivityManager.getAllNetworks();

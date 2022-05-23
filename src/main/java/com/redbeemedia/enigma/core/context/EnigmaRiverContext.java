@@ -45,6 +45,21 @@ public final class EnigmaRiverContext {
         }
     }
 
+    public static synchronized void updateInitialization(EnigmaRiverContextInitialization requestedContext) {
+        if (requestedContext.exposureBaseUrl != null) {
+            initializedContext.exposureBaseUrl = new UrlPath(requestedContext.exposureBaseUrl);
+        }
+        if (requestedContext.deviceInfo != null) {
+            initializedContext.deviceInfo = requestedContext.deviceInfo;
+        }
+        if (requestedContext.analyticsUrl != null) {
+            initializedContext.analyticsUrl = new UrlPath(requestedContext.analyticsUrl);
+        }
+        if (requestedContext.appName != null) {
+            initializedContext.appName = requestedContext.appName;
+        }
+    }
+
     /**
      * For unit tests.
      *
@@ -116,7 +131,7 @@ public final class EnigmaRiverContext {
 
     //Version if the core library
     public static String getVersion() {
-        return "r3.4.5";
+        return "r3.4.6-BETA-1";
     }
 
     private static void assertInitialized() {
@@ -265,11 +280,15 @@ public final class EnigmaRiverContext {
     }
 
     private static class EnigmaRiverInitializedContext {
-        private final UrlPath exposureBaseUrl;
-        private final UrlPath analyticsUrl;
-        private final String appName;
+        // it can be re-initialized
+        private UrlPath exposureBaseUrl;
+        // it can be re-initialized
+        private UrlPath analyticsUrl;
+        // it can be re-initialized
+        private String appName;
+        // it can be re-initialized
+        private IDeviceInfo deviceInfo;
         private final IHttpHandler httpHandler;
-        private final IDeviceInfo deviceInfo;
         private final IActivityLifecycleManager activityLifecycleManager;
         private final ITaskFactoryProvider taskFactoryProvider;
         private final IEpgLocator epgLocator;

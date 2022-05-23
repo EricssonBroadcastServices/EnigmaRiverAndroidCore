@@ -48,4 +48,8 @@ public class AdBreak {
     public ITimelinePosition getEnd() {
         return start.add(duration);
     }
+
+    public List<VastAdEntry> getAds() {
+        return ads;
+    }
 }
