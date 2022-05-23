@@ -10,6 +10,11 @@ This instance can be reused or recreated as a matter of preference.
 
 ```java
 public interface IEnigmaDownload {
+    // simple method to return boolean if the asset if expired
+    void isExpired(String assetId, ISession session, IResultHandler<Boolean> resultHandler);
+    // method to return expiry time
+    void getExpiryTime(String assetId, ISession session, IResultHandler<Long> resultHandler);
+    
     void getDownloadableInfo(String assetId, ISession session, IResultHandler<IDownloadableInfo> resultHandler);
     void getDownloadableInfo(String assetId, ISession session, IResultHandler<IDownloadableInfo> resultHandler, Handler handler);
 

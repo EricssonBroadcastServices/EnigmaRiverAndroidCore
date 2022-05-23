@@ -18,17 +18,22 @@ this module in your project, add the following to your `build.gradle`:
 ...
 dependencies {
     ...
-    implementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exposureUtils:r3.4.6-BETA-1'
+    implementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exposureUtils:r3.4.6-BETA-2'
     ...
 }
 ...
 ```
 
-Once you have `exposureUtils` you can use `EnigmaDownloadHelper.isAvailableToDownload` to check if
+Once you have `exposureUtils` you can use `EnigmaDownload.isAvailableToDownload` to check if
 an asset is available to download.
+
+`EnigmaDownloadHelper.isAvailableToDownload` is deprecated, instead use `EnigmaDownload.isAvailableToDownload`
+
+return `true` is it can be downloadable otherwise return `false`
+
 ```java
-long nowUtcMillis = System.currentTimeMillis();
-boolean availableToDownload = EnigmaDownloadHelper.isAvailableToDownload(apiAsset, nowUtcMillis, userAvailabilityKeys)
+public EnigmaDownload(IBusinessUnit businessUnit)
+EnigmaDownload.isAvailableToDownload(String assetId, Session session, IResultHandler<Boolean> resultHandler){
 ```
 
 ExposureUtils also provides classes and methods to interact with exposure backend.
@@ -77,7 +82,7 @@ exposure.doRequest(new GetAllAssetsRequest(new BaseExposureResultHandler<ApiAsse
 ## Lightweight option
 
 If you don't want to include `exposureUtils` in your project we recommend you copy the file
-[EnigmaDownloadHelper.java](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidExposureUtils/blob/r3.4.6-BETA-1/src/main/java/com/redbeemedia/enigma/exposureutils/download/EnigmaDownloadHelper.java)
+[EnigmaDownloadHelper.java](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidExposureUtils/blob/r3.4.6-BETA-2/src/main/java/com/redbeemedia/enigma/exposureutils/download/EnigmaDownloadHelper.java)
 into your project and edit it appropriately.
 
 

@@ -142,6 +142,33 @@ private TimelinePositionFormat timelinePositionFormat =
 ```
 
 
+## IAdIncludedTimeline
+
+Helper functions for timeline position with ads
+
+```java
+public interface IAdIncludedTimeline extends ITimeline, ITimelineListener {
+
+    /** Returns the duration of all completed ads prior to current position. */
+    Duration getPastAdDuration();
+
+    /** Returns the current ad break (or null if not playing an ad break). The start time of the ad break is transposed.*/
+    @Nullable AdBreak getCurrentAdBreak();
+
+    /** If `active`, the timeline will take ad information into account. */
+    void setIsActive(boolean isActive);
+
+    /** Returns true if `setIsActive` has been invoked and if ads has been detected. */
+    boolean isActive();
+
+    /** Returns the transposed ad breaks for this timeline as points in the timeline. */
+    @Nullable List<ITimelinePosition> getAdBreaksPositions();
+
+    /** Returns the ad breaks for this timeline  */
+    @Nullable List<AdBreak> getAdBreaks();
+}
+```
+
 
 
 ___
