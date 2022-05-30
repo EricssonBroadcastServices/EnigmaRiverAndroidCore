@@ -26,4 +26,8 @@ public class BaseEnigmaPlayerListener implements IEnigmaPlayerListener {
     @Override
     public void onProgramChanged(IProgram from, IProgram to) {
     }
+
+    @Override
+    public void sendPlaybackStartedEvent() {
+    }
 }

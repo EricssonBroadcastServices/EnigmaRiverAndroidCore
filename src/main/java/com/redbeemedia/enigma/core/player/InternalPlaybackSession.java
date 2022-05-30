@@ -170,6 +170,8 @@ import java.util.List;
         }
         analyticsReporter.deviceInfo(playbackSessionInfo.getCdnProvider());
         analyticsReporter.playbackCreated(playbackSessionInfo.getAssetId());
+        analyticsReporter.playbackHandshakeStarted(playbackSessionInfo.getAssetId());
+        playerListener.sendPlaybackStartedEvent();
         heartbeatRepeater.setEnabled(true);
         enigmaPlayer.addListener(playerListener);
         componentsHandler.fireOnStart(new IInternalPlaybackSessionListener.OnStartArgs(this, enigmaPlayer, communicationChannel));
@@ -593,9 +595,7 @@ import java.util.List;
 
         @Override
         public void onStateChanged(EnigmaPlayerState from, EnigmaPlayerState to) {
-            if(to == EnigmaPlayerState.LOADING) {
-                analyticsReporter.playbackHandshakeStarted(playbackSessionInfo.getAssetId());
-            } else if(to == EnigmaPlayerState.LOADED) {
+            if (to == EnigmaPlayerState.LOADED) {
                 analyticsReporter.playbackPlayerReady(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo),
                         playbackSessionInfo.getPlayerTechnologyName(),
                         playbackSessionInfo.getPlayerTechnologyVersion());
@@ -605,21 +605,7 @@ import java.util.List;
                         analyticsReporter.playbackResumed(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
                     }
                 } else {
-                    hasStartedAtLeastOnce = true;
-                    long playbackOffset = getCurrentPlaybackOffset(playbackSessionInfo, streamInfo);
-                    String playMode = streamInfo.getPlayMode();
-                    String mediaLocator = playbackSessionInfo.getMediaLocator();
-                    Long referenceTime = streamInfo.isLiveStream() ? streamInfo.getStart(Duration.Unit.MILLISECONDS) : null;
-                    IVideoTrack videoTrack = OpenContainerUtil.getValueSynchronized(selectedVideoTrack);
-                    Integer bitrate = null;
-                    if(videoTrack != null) {
-                        int videoTrackBitrate = videoTrack.getBitrate();
-                        if(videoTrackBitrate != -1) {
-                            bitrate = videoTrackBitrate;
-                        }
-                    }
-                    String programId = playbackSessionInfo.getCurrentProgramId();
-                    analyticsReporter.playbackStarted(playbackOffset, playMode, mediaLocator, referenceTime, bitrate, programId);
+                    sendPlaybackStartedEvent();
                 }
             } else if(to == EnigmaPlayerState.PAUSED) {
                 if(hasStartedAtLeastOnce) {
@@ -632,6 +618,24 @@ import java.util.List;
             if(from == EnigmaPlayerState.BUFFERING) {
                 analyticsReporter.playbackBufferingStopped(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
             }
+        }
+
+        public void sendPlaybackStartedEvent() {
+            hasStartedAtLeastOnce = true;
+            long playbackOffset = getCurrentPlaybackOffset(playbackSessionInfo, streamInfo);
+            String playMode = streamInfo.getPlayMode();
+            String mediaLocator = playbackSessionInfo.getMediaLocator();
+            Long referenceTime = streamInfo.isLiveStream() ? streamInfo.getStart(Duration.Unit.MILLISECONDS) : null;
+            IVideoTrack videoTrack = OpenContainerUtil.getValueSynchronized(selectedVideoTrack);
+            Integer bitrate = null;
+            if(videoTrack != null) {
+                int videoTrackBitrate = videoTrack.getBitrate();
+                if(videoTrackBitrate != -1) {
+                    bitrate = videoTrackBitrate;
+                }
+            }
+            String programId = playbackSessionInfo.getCurrentProgramId();
+            analyticsReporter.playbackStarted(playbackOffset, playMode, mediaLocator, referenceTime, bitrate, programId);
         }
 
         @Override

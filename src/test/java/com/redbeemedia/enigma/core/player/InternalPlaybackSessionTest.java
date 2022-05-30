@@ -286,9 +286,8 @@ public class InternalPlaybackSessionTest {
         int expectedEvents = 0;
         timeProvider.addTime(100);
         stateMachine.setState(EnigmaPlayerState.LOADING);
-        expectedEvents++;
         Assert.assertEquals(expectedEvents,analyticsEvents.size());
-        Assert.assertEquals("Playback.HandshakeStarted",analyticsEvents.get(expectedEvents-1).getString("EventType"));
+
 
         timeProvider.addTime(200);
         stateMachine.setState(EnigmaPlayerState.LOADED);
@@ -454,26 +453,26 @@ public class InternalPlaybackSessionTest {
         };
         internalPlaybackSession.onStart(enigmaPlayer);
 
-        Assert.assertEquals("[Playback.Created]", eventLog.toString());
+        Assert.assertEquals("[Playback.Created][Playback.Started]", eventLog.toString());
 
         internalPlaybackSession.setSelectedVideoTrack(new MockVideoTrack(72634));
 
-        Assert.assertEquals("[Playback.Created]", eventLog.toString());
+        Assert.assertEquals("[Playback.Created][Playback.Started]", eventLog.toString());
 
         for(IEnigmaPlayerListener playerListener : playerListeners) {
             playerListener.onStateChanged(EnigmaPlayerState.LOADED, EnigmaPlayerState.PLAYING);
         }
 
-        Assert.assertEquals("[Playback.Created][Playback.Started, 72634]", eventLog.toString());
+        Assert.assertEquals("[Playback.Created][Playback.Started]", eventLog.toString());
 
         internalPlaybackSession.setSelectedVideoTrack(new MockVideoTrack(99352));
-        Assert.assertEquals("[Playback.Created][Playback.Started, 72634][Playback.BitrateChanged, 99352]", eventLog.toString());
+        Assert.assertEquals("[Playback.Created][Playback.Started][Playback.BitrateChanged, 99352]", eventLog.toString());
 
         internalPlaybackSession.setSelectedVideoTrack(new MockVideoTrack(99352));
-        Assert.assertEquals("[Playback.Created][Playback.Started, 72634][Playback.BitrateChanged, 99352]", eventLog.toString());
+        Assert.assertEquals("[Playback.Created][Playback.Started][Playback.BitrateChanged, 99352]", eventLog.toString());
 
         internalPlaybackSession.setSelectedVideoTrack(new MockVideoTrack(123));
-        Assert.assertEquals("[Playback.Created][Playback.Started, 72634][Playback.BitrateChanged, 99352][Playback.BitrateChanged, 123]", eventLog.toString());
+        Assert.assertEquals("[Playback.Created][Playback.Started][Playback.BitrateChanged, 99352][Playback.BitrateChanged, 123]", eventLog.toString());
     }
 
 
@@ -541,12 +540,11 @@ public class InternalPlaybackSessionTest {
         Assert.assertEquals(expectedEventLog.toString(), eventLog.toString());
 
         internalPlaybackSession.onStart(mockEnigmaPlayer);
-        expectedEventLog.append("[DeviceInfo][PlaybackCreated(testBasicAnalyticsEventsAsset)]");
+        expectedEventLog.append("[DeviceInfo][PlaybackCreated(testBasicAnalyticsEventsAsset)][PlaybackHandshake(testBasicAnalyticsEventsAsset)]");
 
         Assert.assertEquals(expectedEventLog.toString(), eventLog.toString());
 
         stateMachine.setState(EnigmaPlayerState.LOADING);
-        expectedEventLog.append("[PlaybackHandshake(testBasicAnalyticsEventsAsset)]");
 
         Assert.assertEquals(expectedEventLog.toString(), eventLog.toString());
 

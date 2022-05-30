@@ -19,6 +19,9 @@ If no ad insertion parameters are required, `IAdInsertionParameters#createParame
 
 Please note that each parameter in `IAdInsertionParameters` set to `null` will not be sent to the server.
 
+`IAdInsertionParameters` accept any custom key(s) and value(s) and append those key/value to play request. 
+`IAdInsertionParameters` interface accepts Map<String,String> where one can pass custom key(s)/value(s).
+
 ### Example configuration
 
 ```java

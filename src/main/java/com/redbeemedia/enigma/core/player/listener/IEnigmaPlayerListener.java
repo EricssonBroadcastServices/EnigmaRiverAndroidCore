@@ -23,4 +23,6 @@ public interface IEnigmaPlayerListener extends IInternalListener {
     void onPlaybackSessionChanged(IPlaybackSession from, IPlaybackSession to);
 
     void onProgramChanged(IProgram from, IProgram to);
+
+    void sendPlaybackStartedEvent();
 }

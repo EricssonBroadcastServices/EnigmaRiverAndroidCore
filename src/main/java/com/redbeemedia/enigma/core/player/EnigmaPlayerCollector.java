@@ -36,4 +36,9 @@ import com.redbeemedia.enigma.core.util.Collector;
     public void onProgramChanged(IProgram from, IProgram to) {
         forEach(listener -> listener.onProgramChanged(from, to));
     }
+
+    @Override
+    public void sendPlaybackStartedEvent() {
+        forEach(IEnigmaPlayerListener::sendPlaybackStartedEvent);
+    }
 }
