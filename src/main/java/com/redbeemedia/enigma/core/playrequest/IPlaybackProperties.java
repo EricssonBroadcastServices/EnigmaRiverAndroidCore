@@ -17,6 +17,7 @@ import java.util.Objects;
 public interface IPlaybackProperties {
     PlayFrom getPlayFrom();
     IMediaFormatSelector getMediaFormatSelector();
+    MaterialProfile getMaterialProfile();
 
     @Nullable
     AdobePrimetime getAdobePrimetime();

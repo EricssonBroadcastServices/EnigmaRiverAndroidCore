@@ -12,6 +12,7 @@ public final class PlaybackProperties implements IPlaybackProperties {
     private IMediaFormatSelector mediaFormatSelector = null;
     private AdobePrimetime primetimeToken;
     private boolean analyticsEnabled = true;
+    private MaterialProfile materialProfile;
 
     public PlaybackProperties() {
         this.playFrom = PlayFrom.PLAYER_DEFAULT;
@@ -33,6 +34,15 @@ public final class PlaybackProperties implements IPlaybackProperties {
     @Override
     @Nullable public IMediaFormatSelector getMediaFormatSelector() {
         return mediaFormatSelector;
+    }
+
+    @Override
+    public MaterialProfile getMaterialProfile() {
+        return this.materialProfile;
+    }
+
+    public void setMaterialProfile(MaterialProfile materialProfile) {
+        this.materialProfile = materialProfile;
     }
 
     @Nullable

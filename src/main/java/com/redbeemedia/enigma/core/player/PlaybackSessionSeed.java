@@ -8,6 +8,7 @@ import com.redbeemedia.enigma.core.playrequest.AdobePrimetime;
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
 import com.redbeemedia.enigma.core.playrequest.IPlayResultHandler;
 import com.redbeemedia.enigma.core.playrequest.IPlaybackProperties;
+import com.redbeemedia.enigma.core.playrequest.MaterialProfile;
 import com.redbeemedia.enigma.core.playrequest.PlayRequest;
 import com.redbeemedia.enigma.core.playrequest.PlaybackProperties;
 import com.redbeemedia.enigma.core.time.Duration;
@@ -73,6 +74,11 @@ import java.util.concurrent.TimeoutException;
         @Override
         public IMediaFormatSelector getMediaFormatSelector() {
             return wrapped.getMediaFormatSelector();
+        }
+
+        @Override
+        public MaterialProfile getMaterialProfile() {
+            return wrapped.getMaterialProfile();
         }
 
         @Nullable

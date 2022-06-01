@@ -1,5 +1,7 @@
 package com.redbeemedia.enigma.core.player;
 
+import static com.redbeemedia.enigma.core.playrequest.MaterialProfile.PARAM_KEY;
+
 import android.util.Log;
 
 import com.redbeemedia.enigma.core.BuildConfig;
@@ -45,6 +47,7 @@ import com.redbeemedia.enigma.core.player.controls.IControlResultHandler;
 import com.redbeemedia.enigma.core.playrequest.AdobePrimetime;
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
 import com.redbeemedia.enigma.core.playrequest.IPlayResultHandler;
+import com.redbeemedia.enigma.core.playrequest.MaterialProfile;
 import com.redbeemedia.enigma.core.restriction.IContractRestrictions;
 import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.task.ITask;
@@ -178,6 +181,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
                 path = path.appendQueryStringParameters(adInsertionParameters.getParameters());
             }
             path = appendSupportedFormatsAndDRMs(path);
+
+            MaterialProfile materialProfile = playRequest.getPlaybackProperties().getMaterialProfile();
+            if (materialProfile != null) {
+                path = path.append(PARAM_KEY + materialProfile.name());
+            }
+
             url = path.toURL();
 
         } catch (MalformedURLException e) {
@@ -739,7 +748,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
             return internalPlaybackSessionListener;
         }
 
-        /** Returns an analytics reporter that does not send any data. */
+        /**
+         * Returns an analytics reporter that does not send any data.
+         */
         static Analytics silentAnalitycs() {
             return new Analytics(
                     new SilentAnalyticsReporter(), new IInternalPlaybackSessionListener() {
