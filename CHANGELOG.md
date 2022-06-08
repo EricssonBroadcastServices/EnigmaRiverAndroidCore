@@ -30,7 +30,10 @@
 DevEnigmaRiverAndroidCore
 DevEnigmaRiverAndroidExoPlayerIntegration
 DevEnigmaRiverAndroidDownload
+DevEnigmaRiverAndroidExoPlayerDownload
 `
+* EMP-18204- Download API for users
+* EMP-18161- Add support for materialProfile
 * EMP-18002- 10min inactivity issue
 * EMP-18242- Concurrent Stream issue
 * EMP-18125- Add support for custom key
