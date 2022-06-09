@@ -32,6 +32,7 @@ DevEnigmaRiverAndroidExoPlayerIntegration
 DevEnigmaRiverAndroidDownload
 DevEnigmaRiverAndroidExoPlayerDownload
 `
+* EMP-18311 - Subtitle issue
 * EMP-18204- Download API for users
 * EMP-18161- Add support for materialProfile
 * EMP-18002- 10min inactivity issue
