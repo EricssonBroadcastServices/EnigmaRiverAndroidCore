@@ -17,18 +17,27 @@ public interface IEnigmaDownload {
     
     void getDownloadableInfo(String assetId, ISession session, IResultHandler<IDownloadableInfo> resultHandler);
     void getDownloadableInfo(String assetId, ISession session, IResultHandler<IDownloadableInfo> resultHandler, Handler handler);
-
+    
     void startAssetDownload(context, DownloadStartRequest request, IDownloadStartResultHandler resultHandler);
     void startAssetDownload(context, DownloadStartRequest request, IDownloadStartResultHandler resultHandler, Handler handler);
 
     void getDownloadedAssets(IResultHandler<List<DownloadedPlayable>> resultHandler);
     void getDownloadedAssets(IResultHandler<List<DownloadedPlayable>> resultHandler, Handler handler);
 
+    // return downloads asset for this session token
+    void getDownloadedAssets(ISession session, IResultHandler<List<DownloadedPlayable>> resultHandler);
+    void getDownloadedAssets(ISession session, IResultHandler<List<DownloadedPlayable>> resultHandler, Handler handler);
+
     void removeDownloadedAsset(DownloadedPlayable downloadedPlayable, IResultHandler<Void> resultHandler);
     void removeDownloadedAsset(DownloadedPlayable downloadedPlayable, IResultHandler<Void> resultHandler, Handler handler);
 
     void getDownloadsInProgress(IResultHandler<List<IAssetDownload>> resultHandler);
     void getDownloadsInProgress(IResultHandler<List<IAssetDownload>> resultHandler, Handler handler);
+
+    // return downloads in progress asset for this session token
+    void getDownloadsInProgress(ISession session, IResultHandler<List<IAssetDownload>> resultHandler);
+    void getDownloadsInProgress(ISession session, IResultHandler<List<IAssetDownload>> resultHandler, Handler handler);
+
 }
 ```
 

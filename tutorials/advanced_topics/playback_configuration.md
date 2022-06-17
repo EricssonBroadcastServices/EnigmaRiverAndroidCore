@@ -1,4 +1,26 @@
 # Playback Configuration
+# Material Profile parameter
+If application developers want to play a specific material variant, they can pass `materialProfile` when starting the playback.
+(eg. for a specific asset, the "default" material contains a full length movie, and a "TRAILER" material might contain only an extract: a virtual subclip generated using the VOD to VOD flow)
+
+```java
+IPlayable playable = new AssetPlayable("my_asset_id");
+
+PlaybackProperties properties = new PlaybackProperties();
+
+// Disable analytics
+properties.setMaterialProfile(MaterialProfile.EXTRACT);
+
+// Create a play request
+IPlayRequest playRequest = new PlayRequest(playable, properties, new BasePlayResultHandler() {
+    // ...
+});
+
+// Start playback
+this.enigmaPlayer.play(playRequest);
+
+```
+
 # Disable Analytics
 If the analytics reporting is irrelevant for some reason, this can be disabled by setting a configuration flag in the `PlaybackProperties` object.
 

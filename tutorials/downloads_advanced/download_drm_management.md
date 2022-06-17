@@ -21,6 +21,13 @@ if(drmLicence != null) {
 }
 ```
 
+## Play token expiry date
+You can access play token expiry timestamp from
+```java
+long playTokenExpiration = downloadedPlayable.getPlayTokenExpiration();
+}
+```
+
 ### Handling DRM licence expiration
 If a DRM licence expiration is detected the Enigma River Android SDK will send a `DrmKeysExpiredError`.
 There are two places where you as an app developer should be ready to handle this.
@@ -80,7 +87,7 @@ drmLicence.renew(session, new BaseDrmLicenceRenewResultHandler() {
 
 ## Further reading
 To see this in action please refer to the tutorial app
-[downloads](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.4.6-BETA-6/downloads).
+[downloads](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.4.6-BETA-7/downloads).
 
 
 ___
