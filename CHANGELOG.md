@@ -32,8 +32,8 @@ DevEnigmaRiverAndroidExoPlayerIntegration
 DevEnigmaRiverAndroidDownload
 DevEnigmaRiverAndroidExoPlayerDownload
 `
-* EMP-18333- Fixed expiry offline date 
 * EMP-18204- Changed userid to a session token
+* EMP-18333- Fixed expiry offline date
 * EMP-18311- Subtitle issue
 * EMP-18161- Add support for materialProfile
 * EMP-18002- 10min inactivity issue

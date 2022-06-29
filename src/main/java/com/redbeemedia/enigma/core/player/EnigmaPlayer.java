@@ -286,6 +286,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
     @Override
     public void release() {
+        Log.d("DEBUG","******* Enigma player release() method is being called");
         if(released) {
             return;
         }
@@ -392,6 +393,8 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     }
 
     private void replacePlaybackSession(IInternalPlaybackSession playbackSession) {
+        Log.d("DEBUG","******** Enigma player replacePlaybackSession() method is being called playbackSession:" + playbackSession);
+
         isReplacingPlaybackSession = true;
         IInternalPlaybackSession oldSession = null;
         try {
@@ -1419,6 +1422,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
         @Override
         public void onExpirePlaybackSession(PlaybackSessionSeed seed) {
+            Log.d("DEBUG","****** Session is being set null");
             OpenContainerUtil.setValueSynchronized(playbackSessionSeed, seed, null);
             replacePlaybackSession(null);
         }

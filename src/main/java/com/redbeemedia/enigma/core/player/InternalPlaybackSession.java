@@ -1,6 +1,7 @@
 package com.redbeemedia.enigma.core.player;
 
 import android.os.Handler;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -731,6 +732,7 @@ import java.util.List;
                     gracePeriodEndTask = taskFactory.newTask(new Runnable() {
                         @Override
                         public void run() {
+                            Log.d("DEBUG","****** InternalPlaybackSession onBackgrounded() method is being called and setting session null");
                             analyticsReporter.playbackGracePeriodEnded(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
                             communicationChannel.onExpirePlaybackSession(new PlaybackSessionSeed(playbackSessionInfo));
                         }
