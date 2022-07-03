@@ -103,6 +103,9 @@ import com.redbeemedia.enigma.core.util.IInternalListener;
 
     private void activityPaused() {
         resumedCounter--;
+        if (resumedCounter < 0) {
+            resumedCounter = 0;
+        }
         if (resumedCounter == 0) {
             handler.postDelayed(delayedPauseRunnable, TIMEOUT_MS.inWholeUnits(Duration.Unit.MILLISECONDS));
         }

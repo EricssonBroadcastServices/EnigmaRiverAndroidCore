@@ -32,11 +32,11 @@ DevEnigmaRiverAndroidExoPlayerIntegration
 DevEnigmaRiverAndroidDownload
 DevEnigmaRiverAndroidExoPlayerDownload
 `
+* EMP-18002- 10min inactivity issue
 * EMP-18204- Changed userid to a session token
 * EMP-18333- Fixed expiry offline date
 * EMP-18311- Subtitle issue
 * EMP-18161- Add support for materialProfile
-* EMP-18002- 10min inactivity issue
 * EMP-18242- Concurrent Stream issue
 * EMP-18125- Add support for custom key
 * EMP-18196- Added API for the expiration date
