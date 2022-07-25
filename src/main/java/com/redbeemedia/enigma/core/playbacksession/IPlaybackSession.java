@@ -20,6 +20,7 @@ public interface IPlaybackSession {
     boolean isSeekToLiveAllowed();
     boolean isSeekAllowed();
     boolean isSeekInLiveAllowed();
+    String getPlaybackSessionId();
 
     /**
      * Garuaneed to not be <code>null</code>.

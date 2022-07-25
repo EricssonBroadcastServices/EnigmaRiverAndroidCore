@@ -437,6 +437,11 @@ import java.util.List;
     }
 
     @Override
+    public String getPlaybackSessionId() {
+        return playbackSessionInfo.getPlaybackSessionId();
+    }
+
+    @Override
     public boolean isSeekToLiveAllowed() {
         return isSeekAllowed() && streamInfo.isLiveStream();
     }

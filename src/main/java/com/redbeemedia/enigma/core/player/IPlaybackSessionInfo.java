@@ -7,6 +7,7 @@ import com.redbeemedia.enigma.core.time.Duration;
 /*package-protected*/ interface IPlaybackSessionInfo {
     Duration getCurrentPlaybackOffset();
     String getAssetId();
+    String getPlaybackSessionId();
     IPlayable getPlayable();
     String getMediaLocator();
     String getPlayerTechnologyName();

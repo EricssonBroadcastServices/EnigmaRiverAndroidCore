@@ -158,9 +158,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
             }
 
             if (!EnigmaRiverContext.getNetworkMonitor().hasInternetAccess()) {
-                IN_PROGRESS.set(false);
-                getStartActionResultHandler().onError(new NoInternetConnectionError());
-                return;
+                // retry again in 5 seconds
+                try {
+                    Thread.sleep(5100);
+                } catch (InterruptedException e) {
+                    getStartActionResultHandler().onError(new NoInternetConnectionError());
+                    IN_PROGRESS.set(false);
+                    return;
+                }
+                if (!EnigmaRiverContext.getNetworkMonitor().hasInternetAccess()) {
+                    IN_PROGRESS.set(false);
+                    getStartActionResultHandler().onError(new NoInternetConnectionError());
+                    return;
+                }
             }
 
             if(!timeProvider.isReady(Duration.seconds(30))) {
@@ -264,7 +274,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
                         cdnProvider = cdnObject.optString("provider", "");
                     }
 
-                    IPlaybackSessionInfo playbackSessionInfo = playerConnector.getPlaybackSessionInfo(manifestUrl, cdnProvider);
+                    IPlaybackSessionInfo playbackSessionInfo = playerConnector.getPlaybackSessionInfo(manifestUrl, cdnProvider, playbackSessionId);
                     final JSONObject adsInfoJson = jsonObject.optJSONObject("ads");
                     final ExposureAdMetadata adsInfo = new ExposureAdMetadata(
                             adsInfoJson,
@@ -502,7 +512,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
     @Override
     public void startUsingDownloadData(Object downloadData) {
         try {
-            IPlaybackSessionInfo playbackSessionInfo = playerConnector.getPlaybackSessionInfo("mockManifest.mpd",null);
+            IPlaybackSessionInfo playbackSessionInfo = playerConnector.getPlaybackSessionInfo("mockManifest.mpd",null, null);
             IContractRestrictions contractRestrictions = new EmptyContractRestrictions();
             IInternalPlaybackSession playbackSession = newPlaybackSession(new InternalPlaybackSession.ConstructorArgs(
                     new DownloadStreamInfo(),
@@ -544,7 +554,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
             return;
         }
 
-        IPlaybackSessionInfo playbackSessionInfo = playerConnector.getPlaybackSessionInfo(url.toString(),null);
+        IPlaybackSessionInfo playbackSessionInfo = playerConnector.getPlaybackSessionInfo(url.toString(),null, null);
         IInternalPlaybackSession playbackSession = newPlaybackSession(new InternalPlaybackSession.ConstructorArgs(
                 new UrlPlayableStreamInfo(),
                 null,

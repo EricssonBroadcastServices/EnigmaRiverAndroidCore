@@ -32,6 +32,8 @@ DevEnigmaRiverAndroidExoPlayerIntegration
 DevEnigmaRiverAndroidDownload
 DevEnigmaRiverAndroidExoPlayerDownload
 `
+* EMP-18466 - Expose playback sessionId
+* EMP-18467 - Support for PlaybackProperty (OFFSET) for offline assets
 * EMP-18002- 10min inactivity issue
 * EMP-18204- Changed userid to a session token
 * EMP-18333- Fixed expiry offline date
