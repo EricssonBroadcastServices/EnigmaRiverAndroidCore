@@ -167,9 +167,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
                     return;
                 }
                 if (!EnigmaRiverContext.getNetworkMonitor().hasInternetAccess()) {
-                    IN_PROGRESS.set(false);
-                    getStartActionResultHandler().onError(new NoInternetConnectionError());
-                    return;
+                    Log.w("WARN","Cannot access network");
                 }
             }
 
