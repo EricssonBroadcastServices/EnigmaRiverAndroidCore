@@ -532,9 +532,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
             playerImplementationControls.load(loadRequest, new PlayResultControlResultHandler(getStartActionResultHandler()) {
                 @Override
                 public void onDone() {
-                    playerImplementationControls.start(new PlayResultControlResultHandler(getStartActionResultHandler()) {
+                    playerImplementationControls.load(loadRequest, new StartPlaybackControlResultHandler(getStartActionResultHandler(), null, playRequest.getPlaybackProperties().getPlayFrom(), playerImplementationControls, adDetector) {
                         @Override
-                        public void onDone() {
+                        protected void onLogDebug(String message) {
+                            Log.d(TAG, message);
                         }
                     });
                 }
