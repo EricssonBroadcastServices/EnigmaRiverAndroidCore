@@ -740,8 +740,12 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                 IInternalPlaybackSession playbackSession = currentPlaybackSession.value;
                 boolean hasPlaybackSessionSeed = hasPlaybackSessionSeed();
                 ControlLogic.IValidationResults<Void> validationResults = ControlLogic.validateStart(currentState, playbackSession, hasPlaybackSessionSeed);
+                Log.d("PAUSE","***Start playback is being called");
+
                 if(validationResults.isSuccess()) {
                     if(playbackSession != null) {
+                        Log.d("PAUSE","***Start playback is being called playbackSession!=null");
+
                         environment.playerImplementationControls.start(controlResultHandler);
                         controlResultHandler.runWhenDone(() -> {
                             stateMachine.setState(EnigmaPlayerState.PLAYING);
@@ -749,6 +753,8 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                         });
                         return;
                     } else {
+                        Log.d("PAUSE","***Start playback is being called playbackSession=null");
+
                         PlaybackSessionSeed seed = null;
                         synchronized (playbackSessionSeed) {
                             if(playbackSessionSeed.value != null) {
@@ -756,7 +762,9 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                                 playbackSessionSeed.value = null;
                             }
                         }
+                        Log.d("PAUSE","***Start playback is being called playbackSession=null" + seed);
                         if(seed != null) {
+                            Log.d("PAUSE","***Start playback is being called playing" );
                             EnigmaPlayer.this.play(seed.createPlayRequest(new BasePlayResultHandler() {
                                 @Override
                                 public void onStarted(IPlaybackSession playbackSession) {
@@ -790,17 +798,23 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                 EnigmaPlayerState currentState = stateMachine.getState();
                 IPlaybackSession playbackSession = currentPlaybackSession.value;
                 ControlLogic.IValidationResults<Void> validationResults = ControlLogic.validatePause(currentState, playbackSession);
+                //TODO
+                Log.d("PAUSE","***Pause is being called, is valid call: " + validationResults.isSuccess());
                 if(validationResults.isSuccess()) {
+                    Log.d("PAUSE","***Pause is being called");
                     environment.playerImplementationControls.pause(controlResultHandler);
                     controlResultHandler.runWhenDone(() -> {
                         stateMachine.setState(EnigmaPlayerState.PAUSED);
                         setPlayingFromLive(false);
                     });
                 } else {
+                    Log.d("PAUSE","***Pause rejected ");
+
                     ((ControlLogic.IFailedValidationResults) validationResults).triggerCallback(controlResultHandler);
                     return;
                 }
             } catch (RuntimeException e) {
+                Log.d("PAUSE","***Pause thrown error: " + e.getMessage());
                 controlResultHandler.onError(new UnexpectedError(e));
                 return;
             }

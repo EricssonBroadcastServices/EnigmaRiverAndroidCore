@@ -358,7 +358,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
                             nextStep.continueProcess(null);
                         }
                     } else {
-                        onError(new NoSupportedMediaFormatsError("Could not find a media format supported by the current player implementation."));
+                        String format = "";
+                        boolean isDrmSupported = false;
+                        for (int i = 0; i < formats.length(); ++i) {
+                            JSONObject mediaFormat = formats.getJSONObject(i);
+                            format = (String) mediaFormat.optString("format","null");
+                            Object drm = mediaFormat.opt("drm");
+                            if (drm != null) {
+                                isDrmSupported = true;
+                            }
+                            break;
+                        }
+                        onError(new NoSupportedMediaFormatsError("Could not find a media format supported by the current player implementation. Requested format:" + format + ", isDRM:" + isDrmSupported));
                     }
                 } finally {
                     IN_PROGRESS.set(false);
