@@ -2,6 +2,8 @@ package com.redbeemedia.enigma.core.player.timeline;
 
 import android.os.Handler;
 
+import com.google.android.exoplayer2.metadata.Metadata;
+import com.google.android.exoplayer2.source.hls.playlist.HlsMediaPlaylist;
 import com.redbeemedia.enigma.core.util.HandlerWrapper;
 import com.redbeemedia.enigma.core.util.OpenContainer;
 import com.redbeemedia.enigma.core.util.OpenContainerUtil;
@@ -57,6 +59,16 @@ public class SimpleTimeline implements ITimeline {
     @Override
     public boolean getVisibility() {
         return OpenContainerUtil.getValueSynchronized(visibility);
+    }
+
+    @Override
+    public void onDashMetadata(Metadata metadata) {
+        collector.onDashMetadata(metadata);
+    }
+
+    @Override
+    public void onHlsMetadata(HlsMediaPlaylist metadata) {
+        collector.onHlsMetadata(metadata);
     }
 
     public void setBounds(ITimelinePosition start, ITimelinePosition end) {

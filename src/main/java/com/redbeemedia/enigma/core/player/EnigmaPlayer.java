@@ -6,6 +6,8 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import com.google.android.exoplayer2.metadata.Metadata;
+import com.google.android.exoplayer2.source.hls.playlist.HlsMediaPlaylist;
 import com.google.android.exoplayer2.ui.SubtitleView;
 import com.redbeemedia.enigma.core.activity.AbstractActivityLifecycleListener;
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleListener;
@@ -1295,6 +1297,14 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         @Override
         public boolean getVisibility() {
             return timeline.getVisibility();
+        }
+
+        @Override
+        public void onDashMetadata(Metadata metadata) {
+        }
+
+        @Override
+        public void onHlsMetadata(HlsMediaPlaylist metadata) {
         }
 
         @Override

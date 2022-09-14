@@ -1,5 +1,7 @@
 package com.redbeemedia.enigma.core.player.timeline;
 
+import com.google.android.exoplayer2.metadata.Metadata;
+import com.google.android.exoplayer2.source.hls.playlist.HlsMediaPlaylist;
 import com.redbeemedia.enigma.core.ads.AdEventType;
 import com.redbeemedia.enigma.core.ads.VastAdEntry;
 import com.redbeemedia.enigma.core.util.Collector;
@@ -38,5 +40,15 @@ public class TimelineListenerCollector extends Collector<ITimelineListener> impl
     @Override
     public void onAdEvent(VastAdEntry entry, AdEventType eventType) {
         forEach(listener -> listener.onAdEvent(entry, eventType));
+    }
+
+    @Override
+    public void onDashMetadata(Metadata metadata) {
+        forEach(listener -> listener.onDashMetadata(metadata));
+    }
+
+    @Override
+    public void onHlsMetadata(HlsMediaPlaylist metadata) {
+        forEach(listener -> listener.onHlsMetadata(metadata));
     }
 }

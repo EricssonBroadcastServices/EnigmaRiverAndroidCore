@@ -4,6 +4,8 @@ import android.os.Handler;
 
 import androidx.annotation.Nullable;
 
+import com.google.android.exoplayer2.metadata.Metadata;
+import com.google.android.exoplayer2.source.hls.playlist.HlsMediaPlaylist;
 import com.redbeemedia.enigma.core.player.timeline.BaseTimelineListener;
 import com.redbeemedia.enigma.core.player.timeline.ITimeline;
 import com.redbeemedia.enigma.core.player.timeline.ITimelineListener;
@@ -163,6 +165,16 @@ public class AdIncludedTimeline extends BaseTimelineListener implements IAdInclu
     @Override
     public void onLivePositionChanged(ITimelinePosition timelinePosition) {
         collector.onLivePositionChanged(timelinePosition);
+    }
+
+    @Override
+    public void onDashMetadata(Metadata metadata) {
+        collector.onDashMetadata(metadata);
+    }
+
+    @Override
+    public void onHlsMetadata(HlsMediaPlaylist metadata) {
+        collector.onHlsMetadata(metadata);
     }
 
     public Duration getPastAdDuration(ITimelinePosition actualPosition) {

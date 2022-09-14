@@ -30,9 +30,11 @@
 `
 DevEnigmaRiverAndroidCore
 DevEnigmaRiverAndroidDownload
+DevEnigmaRiverAndroidExoPlayerIntegration
 `
-* EMP-18520- download in progress asset
-* EMP-18524- improved error message
+* EMP-18532- Expose stream metadata
+* EMP-18520- Download in progress asset API
+* EMP-18524- Improved error message
 
 # <a name="3.4.6"></a> 3.4.6
 #### Features

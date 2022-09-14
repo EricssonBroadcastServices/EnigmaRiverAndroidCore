@@ -1,5 +1,9 @@
 package com.redbeemedia.enigma.core.player;
 
+import androidx.annotation.NonNull;
+
+import com.google.android.exoplayer2.metadata.Metadata;
+import com.google.android.exoplayer2.source.hls.playlist.HlsMediaPlaylist;
 import com.redbeemedia.enigma.core.analytics.AnalyticsPlayResponseData;
 import com.redbeemedia.enigma.core.analytics.MockAnalyticsReporter;
 import com.redbeemedia.enigma.core.audio.IAudioTrack;
@@ -31,6 +35,7 @@ import com.redbeemedia.enigma.core.player.controls.AssertiveControlResultHandler
 import com.redbeemedia.enigma.core.player.controls.IControlResultHandler;
 import com.redbeemedia.enigma.core.player.listener.BaseEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
+import com.redbeemedia.enigma.core.player.timeline.BaseTimelineListener;
 import com.redbeemedia.enigma.core.player.timeline.ITimelinePosition;
 import com.redbeemedia.enigma.core.player.track.IPlayerImplementationTrack;
 import com.redbeemedia.enigma.core.player.track.MockPlayerImplementationTrack;
@@ -74,6 +79,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -136,6 +142,115 @@ public class EnigmaPlayerTest {
         Assert.assertFalse(onErrorCalled.isTrue());
         Assert.assertTrue(loadCalled.isTrue());
         Assert.assertTrue(startCalled.isTrue());
+    }
+
+    @Test
+    public void testPlayerOnMetaDataEvent() throws JSONException {
+        MockHttpHandler mockHttpHandler = new MockHttpHandler();
+        // duplicate one for content/Asset request : for markerpoints
+        queuePlayResponse(mockHttpHandler, new MockPlayResponse());
+        queuePlayResponse(mockHttpHandler, new MockPlayResponse());
+        queuePlayResponse(mockHttpHandler, new MockPlayResponse());
+        queuePlayResponse(mockHttpHandler, new MockPlayResponse());
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(mockHttpHandler));
+
+        final Flag dashEventCalled = new Flag();
+        final Flag startCalled = new Flag();
+        final Flag onErrorCalled = new Flag();
+        final Flag useWithCalled = new Flag();
+        IPlayerImplementation impl = new MockPlayerImplementation() ;
+
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayerWithMockedTimeProvider(new MockSession(), impl);
+        Metadata metadata = new Metadata();
+
+        enigmaPlayer.getTimeline().addListener(new BaseTimelineListener() {
+            @Override
+            public void onDashMetadata(Metadata metadata) {
+                dashEventCalled.setFlag();
+            }
+        });
+        enigmaPlayer.getTimeline().onDashMetadata(metadata);
+        enigmaPlayer.play(new MockPlayRequest().setPlayable(new MockPlayable("123") {
+            @Override
+            public void useWith(IPlayableHandler playableHandler) {
+                useWithCalled.setFlag();
+                super.useWith(playableHandler);
+            }
+        }).setResultHandler(new MockPlayResultHandler() {
+            @Override
+            public void onError(EnigmaError error) {
+                onErrorCalled.setFlag();
+                error.printStackTrace();
+                throw new RuntimeException(error.getClass().getSimpleName()+": "+error.getErrorCode());
+            }
+        }));
+        dashEventCalled.assertSet();
+    }
+
+    @Test
+    public void testPlayerOnHlsMetaDataEvent() throws JSONException {
+        MockHttpHandler mockHttpHandler = new MockHttpHandler();
+        // duplicate one for content/Asset request : for markerpoints
+        queuePlayResponse(mockHttpHandler, new MockPlayResponse());
+        queuePlayResponse(mockHttpHandler, new MockPlayResponse());
+        queuePlayResponse(mockHttpHandler, new MockPlayResponse());
+        queuePlayResponse(mockHttpHandler, new MockPlayResponse());
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(mockHttpHandler));
+
+        final Flag dashEventCalled = new Flag();
+        final Flag onErrorCalled = new Flag();
+        final Flag useWithCalled = new Flag();
+        IPlayerImplementation impl = new MockPlayerImplementation() ;
+
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayerWithMockedTimeProvider(new MockSession(), impl);
+        HlsMediaPlaylist metadata = mockHlsMediaPlaylist();
+
+        enigmaPlayer.getTimeline().addListener(new BaseTimelineListener() {
+            @Override
+            public void onHlsMetadata(HlsMediaPlaylist metadata) {
+                dashEventCalled.setFlag();
+            }
+        });
+        enigmaPlayer.getTimeline().onHlsMetadata(metadata);
+        enigmaPlayer.play(new MockPlayRequest().setPlayable(new MockPlayable("123") {
+            @Override
+            public void useWith(IPlayableHandler playableHandler) {
+                useWithCalled.setFlag();
+                super.useWith(playableHandler);
+            }
+        }).setResultHandler(new MockPlayResultHandler() {
+            @Override
+            public void onError(EnigmaError error) {
+                onErrorCalled.setFlag();
+                error.printStackTrace();
+                throw new RuntimeException(error.getClass().getSimpleName()+": "+error.getErrorCode());
+            }
+        }));
+        dashEventCalled.assertSet();
+    }
+
+    @NonNull
+    private HlsMediaPlaylist mockHlsMediaPlaylist() {
+        return new HlsMediaPlaylist(HlsMediaPlaylist.PLAYLIST_TYPE_EVENT,
+                "baseUri",
+                new ArrayList<>(),
+                -1,
+                true,
+                -1,
+                false,
+                1,
+                1,
+                1,
+                1,
+                1,
+                false,
+                false,
+                false,
+                null,
+                new ArrayList<>(),
+                new ArrayList<>(),
+                null,
+                new HashMap<>());
     }
 
     private static JSONObject createFormatJson(String mediaLocator, String format, String drmKey, Long liveDelay) throws JSONException {

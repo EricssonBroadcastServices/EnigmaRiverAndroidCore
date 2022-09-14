@@ -2,6 +2,9 @@ package com.redbeemedia.enigma.core.player.timeline;
 
 import android.os.Handler;
 
+import com.google.android.exoplayer2.metadata.Metadata;
+import com.google.android.exoplayer2.source.hls.playlist.HlsMediaPlaylist;
+
 /**
  * Represents the timeline associated with an ongoing playback.
  */
@@ -53,4 +56,14 @@ public interface ITimeline {
      * @return true if the timeline is expected to be visible.
      */
     boolean getVisibility();
+
+    /**
+     * @returns Metadata which includes eventStreams data
+     */
+    void onDashMetadata(Metadata metadata);
+
+    /**
+     * @returns Metadata which includes eventStreams data
+     */
+    void onHlsMetadata(HlsMediaPlaylist metadata);
 }
