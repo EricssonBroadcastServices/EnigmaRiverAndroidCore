@@ -28,10 +28,12 @@
 # <a name="3.4.7"></a> 3.4.7
 #### Features
 `
+DevEnigmaRiverAndroidCast
 DevEnigmaRiverAndroidCore
 DevEnigmaRiverAndroidDownload
 DevEnigmaRiverAndroidExoPlayerIntegration
 `
+* EMP-18697- Issue to change subtitles and audio languages
 * EMP-18532- Expose stream metadata
 * EMP-18520- Download in progress asset API
 * EMP-18524- Improved error message
