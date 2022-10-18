@@ -44,7 +44,17 @@ timeline.addListener(new BaseTimelineListener() {
     public void onVisibilityChanged(boolean visible) {
         //Recommended visibility value changed
     }
-});
+
+    @Override
+    public void onDashMetadata(Metadata metadata){
+        // handle Dash metadata event
+    }
+
+
+    @Override
+    public void onHlsMetadata(metadata: HlsMediaPlaylist?) {
+        // handle Hls metadata event
+    }
 ```
 
 
@@ -108,6 +118,36 @@ public void seekToExample(IEnigmaPlayer player) {
 }
 ```
 
+
+### Metadata eventStreams listener
+To get EventStream events listen to Timeline listener
+```java
+IEnigmaPlayer player = ...;
+ITimeline timeline = player.getTimeline();
+timeline.addListener(new BaseTimelineListener() {
+    
+    @Override
+    public void onDashMetadata(Metadata metadata){
+        // handle meta data event
+        for (i in 0 until metadata!!.length()) {
+            val entry = metadata[i]
+            println(String((entry as EventMessage).messageData))
+            println((metadata[0] as EventMessage).schemeIdUri)
+        }
+    });
+
+    @Override
+    public void onHlsMetadata(metadata: HlsMediaPlaylist?) {
+        for (tag in metadata!!.tags) {
+            if (tag.lowercase(Locale.ROOT).contains("X-COM-DAICONNECT-TRACK".toLowerCase(Locale.ROOT))) {
+                // We only interested in DAICONNECT-TRACK
+                val base64 =
+                tag.split("X-COM-DAICONNECT-TRACK=\"").toTypedArray()[1].replace("\"","")
+                var encodedString: String? = String(Base64.getDecoder().decode(base64))
+            }
+        }
+    }
+```
 
 ### TimelinePositionFormat
 
