@@ -242,6 +242,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
                 try{
                 String requestId = jsonObject.optString("requestId");
                 String playToken = jsonObject.optString("playToken");
+                String assetId = jsonObject.optString("assetId");
                 JSONArray formats = jsonObject.getJSONArray("formats");
                 JSONArray spritesJson = jsonObject.optJSONArray("sprites");
                 boolean audioOnly = jsonObject.optBoolean("audioOnly",false);
@@ -272,7 +273,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
                         cdnProvider = cdnObject.optString("provider", "");
                     }
 
-                    IPlaybackSessionInfo playbackSessionInfo = playerConnector.getPlaybackSessionInfo(manifestUrl, cdnProvider, playbackSessionId);
+                    IPlaybackSessionInfo playbackSessionInfo = playerConnector.getPlaybackSessionInfo(assetId, manifestUrl, cdnProvider, playbackSessionId);
                     final JSONObject adsInfoJson = jsonObject.optJSONObject("ads");
                     final ExposureAdMetadata adsInfo = new ExposureAdMetadata(
                             adsInfoJson,
@@ -521,7 +522,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
     @Override
     public void startUsingDownloadData(Object downloadData) {
         try {
-            IPlaybackSessionInfo playbackSessionInfo = playerConnector.getPlaybackSessionInfo("mockManifest.mpd",null, null);
+            IPlaybackSessionInfo playbackSessionInfo = playerConnector.getPlaybackSessionInfo(null, "mockManifest.mpd", null, null);
             IContractRestrictions contractRestrictions = new EmptyContractRestrictions();
             IInternalPlaybackSession playbackSession = newPlaybackSession(new InternalPlaybackSession.ConstructorArgs(
                     new DownloadStreamInfo(),
@@ -564,7 +565,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
             return;
         }
 
-        IPlaybackSessionInfo playbackSessionInfo = playerConnector.getPlaybackSessionInfo(url.toString(),null, null);
+        IPlaybackSessionInfo playbackSessionInfo = playerConnector.getPlaybackSessionInfo(null, url.toString(), null, null);
         IInternalPlaybackSession playbackSession = newPlaybackSession(new InternalPlaybackSession.ConstructorArgs(
                 new UrlPlayableStreamInfo(),
                 null,
