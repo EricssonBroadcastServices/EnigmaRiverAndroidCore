@@ -87,7 +87,7 @@ drmLicence.renew(session, new BaseDrmLicenceRenewResultHandler() {
 
 ## Further reading
 To see this in action please refer to the tutorial app
-[downloads](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/3.4.8-BETA-1/downloads).
+[downloads](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/3.4.8-BETA-2/downloads).
 
 
 ___

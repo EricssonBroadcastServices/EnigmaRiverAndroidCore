@@ -40,15 +40,15 @@ repositories {
 ...
 dependencies {
     ...
-    implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:core:3.4.8-BETA-1"
-    implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exoplayerintegration:3.4.8-BETA-1"
+    implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:core:3.4.8-BETA-2"
+    implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exoplayerintegration:3.4.8-BETA-2"
 }
 ...
 ```
 
 There is also an optional utility module that provides native (Java) objects for accessing additional endpoints of the exposure REST-api. You can add include it by also adding the following dependency:
 ```gradle
-implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exposureUtils:3.4.8-BETA-1"
+implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exposureUtils:3.4.8-BETA-2"
 ```
 
 
