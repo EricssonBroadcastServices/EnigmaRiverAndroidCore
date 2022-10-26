@@ -31,8 +31,12 @@
 `
 DevEnigmaRiverAndroidCore
 DevEnigmaRiverAndroidExoPlayerIntegration
+DevEnigmaRiverAndroidInternalTestUtils
 `
 * EMP-18822- Added media session connector
+* EMP-18761- Can't change the audio language
+* EMP-18709- Language selection not working
+* EMP-18707- Added internal assetId returned in the play response for analytics
 
 # <a name="3.4.7"></a> 3.4.7
 #### Features

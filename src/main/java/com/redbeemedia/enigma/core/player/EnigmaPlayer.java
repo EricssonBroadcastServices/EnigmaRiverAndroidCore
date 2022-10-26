@@ -366,12 +366,19 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             }
 
             @Override
-            public IPlaybackSessionInfo getPlaybackSessionInfo(String manifestUrl, String cdnProvider, String playbackSessionId) {
+            public IPlaybackSessionInfo getPlaybackSessionInfo(String assetId,String manifestUrl, String cdnProvider, String playbackSessionId) {
                 IPlaybackTechnologyIdentifier technologyIdentifier = environment.playerImplementationInternals.getTechnologyIdentifier();
-                String assetId = "N/A";
-                IPlayable playable = playRequest.getPlayable();
-                if(playable instanceof IAssetPlayable) {
-                    assetId = ((IAssetPlayable) playable).getAssetId();
+                if (assetId == null || assetId.isEmpty())
+                {
+                    IPlayable playable = playRequest.getPlayable();
+                    if (playable instanceof IAssetPlayable)
+                    {
+                        assetId = ((IAssetPlayable) playable).getAssetId();
+                    }
+                    else
+                    {
+                        assetId = "N/A";
+                    }
                 }
                 return new EnigmaPlayer.PlaybackSessionInfo(playRequest.getPlayable(), assetId, manifestUrl, technologyIdentifier, playRequest.getPlaybackProperties(), cdnProvider, playbackSessionId);
             }
