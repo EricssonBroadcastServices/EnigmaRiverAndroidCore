@@ -492,6 +492,9 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     @Override
     public void setStickyPlayer(boolean isStickyPlayer) {
         this.isStickyPlayer.set(isStickyPlayer);
+        if (this.currentPlaybackSession.value != null) {
+            this.currentPlaybackSession.value.setStickySession();
+        }
     }
 
     @Override
@@ -1044,10 +1047,12 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
         // The frequency (in ms) of the time line updating.
         private final long UPDATE_INTERVAL = 1000 / 30;
+
+        // Aligned wih JS player for both linear assets abd live events to 90 seconds
         // The minimum time window required (in minutes) for the timeline to be visible during  playback of linear assets.
-        private final Duration CHANNEL_VISIBILITY_WINDOW = Duration.minutes(30);
+        private final Duration CHANNEL_VISIBILITY_WINDOW = Duration.seconds(90);
         // The minimum time window required (in minutes) for the timeline to be visible during  playback of live events.
-        private final Duration LIVE_EVENT_VISIBILITY_WINDOW = Duration.minutes(2);
+        private final Duration LIVE_EVENT_VISIBILITY_WINDOW = Duration.seconds(90);
 
         private final OpenContainer<IInternalPlaybackSession> lastSignaledPlaybackSession = new OpenContainer<>(null);
         private final ProgramTracker programTracker = new ProgramTracker().addListener(new ProgramTracker.IProgramChangedListener() {

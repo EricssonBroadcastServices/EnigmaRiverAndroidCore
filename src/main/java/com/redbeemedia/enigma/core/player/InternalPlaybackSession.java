@@ -203,6 +203,11 @@ import java.util.List;
     }
 
     @Override
+    public void setStickySession() {
+        appForegroundMonitor.setStickyPlayer(true);
+    }
+
+    @Override
     public IStreamInfo getStreamInfo() {
         return streamInfo;
     }
@@ -713,6 +718,7 @@ import java.util.List;
         private final Duration GRACE_PERIOD = Duration.minutes(10);
 
         private final ITaskFactory taskFactory;
+        private boolean isStickyPlayer;
         private final OpenContainer<Boolean> inForeground = new OpenContainer<>(true);
         private ITask gracePeriodEndTask = null;
 
@@ -737,9 +743,12 @@ import java.util.List;
                     gracePeriodEndTask = taskFactory.newTask(new Runnable() {
                         @Override
                         public void run() {
-                            Log.d("DEBUG","****** InternalPlaybackSession onBackgrounded() method is being called and setting session null");
-                            analyticsReporter.playbackGracePeriodEnded(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
-                            communicationChannel.onExpirePlaybackSession(new PlaybackSessionSeed(playbackSessionInfo));
+                            // Don't do session clearing for stickyPlayer
+                            if(!isStickyPlayer) {
+                                Log.d("DEBUG","****** InternalPlaybackSession onBackgrounded() method is being called and setting session null");
+                                analyticsReporter.playbackGracePeriodEnded(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
+                                communicationChannel.onExpirePlaybackSession(new PlaybackSessionSeed(playbackSessionInfo));
+                            }
                         }
                     });
                     gracePeriodEndTask.startDelayed(GRACE_PERIOD.inWholeUnits(Duration.Unit.MILLISECONDS));
@@ -767,6 +776,10 @@ import java.util.List;
         public void onPlaybackSessionStop() {
             this.stopListening();
             cancelOngoingGracePeriod(500);
+        }
+
+        public void setStickyPlayer(boolean stickyPlayer) {
+            this.isStickyPlayer = stickyPlayer;
         }
     }
 

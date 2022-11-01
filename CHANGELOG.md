@@ -1,4 +1,5 @@
 # CHANGELOG
+* `3.4.9` Release - [3.4.9](#3.4.9) &nbsp; - &nbsp; 2022-11-01
 * `3.4.8` Release - [3.4.8](#3.4.8) &nbsp; - &nbsp; 2022-10-25
 * `3.4.7` Release - [3.4.7](#3.4.7) &nbsp; - &nbsp; 2022-08-09
 * `3.4.6` Release - [3.4.6](#3.4.6) &nbsp; - &nbsp; 2022-05-23
@@ -25,6 +26,15 @@
 * `3.1.8` Release - [3.1.8](#3.1.8) &nbsp; - &nbsp; 2020-12-11
 * `3.1.7` Release - [3.1.7](#3.1.7) &nbsp; - &nbsp; 2020-12-04
 * `3.1.6` Release - [3.1.6](#3.1.6) &nbsp; - &nbsp; 2020-11-13
+
+# <a name="3.4.9"></a> 3.4.9
+#### Features
+`
+DevEnigmaRiverAndroidCore
+DevEnigmaRiverAndroidInternalTestUtils
+`
+* EMP-18865- Fixed live radio issue : Crashes after 10 mins
+* EMP-18828- Buffer seek time for channels and live set to 90 secs
 
 # <a name="3.4.8"></a> 3.4.8
 #### Features

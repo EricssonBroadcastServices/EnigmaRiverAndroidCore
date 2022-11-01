@@ -14,6 +14,7 @@ import java.util.Collection;
 /*package-protected*/ interface IInternalPlaybackSession extends IPlaybackSession {
     void onStart(IEnigmaPlayer enigmaPlayer);
     void onStop(IEnigmaPlayer enigmaPlayer);
+    void setStickySession();
 
     IStreamInfo getStreamInfo();
     IAnalyticsReporter getAnalyticsReporter();
