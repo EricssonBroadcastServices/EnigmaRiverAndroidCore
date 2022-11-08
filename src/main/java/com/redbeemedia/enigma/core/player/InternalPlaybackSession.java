@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /*package-protected*/ class InternalPlaybackSession implements IInternalPlaybackSession {
     private static final long HEARTBEAT_RATE_MILLIS = 60L * 1000L;
@@ -204,6 +205,7 @@ import java.util.List;
 
     @Override
     public void setStickySession() {
+        Log.d("STICKY","******* Session setStickyPlayer is set to true");
         appForegroundMonitor.setStickyPlayer(true);
     }
 
@@ -718,7 +720,7 @@ import java.util.List;
         private final Duration GRACE_PERIOD = Duration.minutes(10);
 
         private final ITaskFactory taskFactory;
-        private boolean isStickyPlayer;
+        private AtomicBoolean isStickyPlayer = new AtomicBoolean(false);
         private final OpenContainer<Boolean> inForeground = new OpenContainer<>(true);
         private ITask gracePeriodEndTask = null;
 
@@ -744,8 +746,9 @@ import java.util.List;
                         @Override
                         public void run() {
                             // Don't do session clearing for stickyPlayer
-                            if(!isStickyPlayer) {
-                                Log.d("DEBUG","****** InternalPlaybackSession onBackgrounded() method is being called and setting session null");
+                            Log.d("STICKY","******* AppForegroundMonitor current value:" + isStickyPlayer.get());
+                            if(!isStickyPlayer.get()) {
+                                Log.d("STICKY","****** InternalPlaybackSession onBackgrounded() method is being called and setting session null");
                                 analyticsReporter.playbackGracePeriodEnded(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
                                 communicationChannel.onExpirePlaybackSession(new PlaybackSessionSeed(playbackSessionInfo));
                             }
@@ -779,7 +782,8 @@ import java.util.List;
         }
 
         public void setStickyPlayer(boolean stickyPlayer) {
-            this.isStickyPlayer = stickyPlayer;
+            this.isStickyPlayer.set(stickyPlayer);
+            Log.d("STICKY","******* AppForegroundMonitor setStickyPlayer new value:" + this.isStickyPlayer.get());
         }
     }
 

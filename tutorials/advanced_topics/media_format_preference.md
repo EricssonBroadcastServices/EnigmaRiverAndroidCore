@@ -178,6 +178,17 @@ downloadStartRequest.setMediaFormatSelector(new IMediaFormatSelector() {
 enigmaDownload.startAssetDownload(context downloadStartRequest, resultHandler);
 ```
 
+## Forcing DRM L3 securityLevel
+
+ExoPlayerTech initialization provides an option that would allow you to force L3 DRM when creating the player (under the hood we would use ExoPlayer FrameworkMediaDrm setPropertyString("securityLevel", "L3") ). 
+But that should only be done on devices where this is really necessary, so app-developer would have to maintain such a list and you need to implement some logic around that in the frontend.
+
+
+```java
+boolean useDrmSecurityLevelL3 = true;
+new ExoPlayerTech(this, getString(R.string.app_name), useDrmSecurityLevelL3)
+
+```
 
 
 ___

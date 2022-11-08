@@ -288,7 +288,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
     @Override
     public void release() {
-        Log.d("DEBUG","******* Enigma player release() method is being called");
+        Log.d("STICKY","******* Enigma player release() method is being called");
         if(released) {
             return;
         }
