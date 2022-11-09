@@ -35,7 +35,7 @@ DevEnigmaRiverAndroidCore
 DevEnigmaRiverAndroidExoPlayerIntegration
 `
 * EMP-18907- Expose Media Drm L3 settings
-* EMP-18907- Expose internal player instance
+* EMP-18907- Expose internal player instance for MUX integration
 
 # <a name="3.4.9"></a> 3.4.9
 #### Features
