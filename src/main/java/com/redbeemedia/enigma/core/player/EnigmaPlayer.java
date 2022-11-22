@@ -452,6 +452,10 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         ITimelinePosition startPosition = environment.playerImplementationInternals.getCurrentStartBound();
         ITimelinePosition endPos = environment.playerImplementationInternals.getCurrentEndBound();
         IInternalPlaybackSession playbackSession = currentPlaybackSession.value;
+        if (playbackSession == null) {
+            throw new RuntimeException("PlaybackSession is null. Either playbackSession is not initialized," +
+                    "or session is expired/cleared because of inactivity.");
+        }
         if(timelinePosition != null && endPos != null) {
             long seconds = endPos.subtract(timelinePosition).inWholeUnits(Duration.Unit.SECONDS);
             setPlayingFromLive(seconds < 60 && stateMachine.getState() == EnigmaPlayerState.PLAYING);

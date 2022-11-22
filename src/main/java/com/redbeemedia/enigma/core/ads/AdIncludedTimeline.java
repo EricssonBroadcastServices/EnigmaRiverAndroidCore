@@ -274,18 +274,20 @@ public class AdIncludedTimeline extends BaseTimelineListener implements IAdInclu
     }
 
     public AdBreak getLastAdBreakBetweenPositions(ITimelinePosition positionOne, ITimelinePosition positionTwo) {
-        if (positionOne == null || positionTwo == null) {
+        if (positionOne == null || positionTwo == null || adDetector == null) {
             return null;
         }
 
         AdBreak currentFoundAdBreak = null;
-        for (AdBreak adBreak : adDetector.getAdBreaks()) {
-            if (adBreak.start.beforeOrEqual(positionOne)) {
-                if (adBreak.start.afterOrEqual(positionTwo)) {
-                    return adBreak;
+        if (adDetector.getAdBreaks() != null) {
+            for (AdBreak adBreak : adDetector.getAdBreaks()) {
+                if (adBreak.start.beforeOrEqual(positionOne)) {
+                    if (adBreak.start.afterOrEqual(positionTwo)) {
+                        return adBreak;
+                    }
+                } else if (adBreak.start.beforeOrEqual(positionTwo)) {
+                    currentFoundAdBreak = adBreak;
                 }
-            } else if (adBreak.start.beforeOrEqual(positionTwo)) {
-                currentFoundAdBreak = adBreak;
             }
         }
         return currentFoundAdBreak;
