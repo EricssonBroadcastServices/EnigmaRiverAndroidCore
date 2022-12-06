@@ -1,4 +1,5 @@
 # CHANGELOG
+* `3.4.12`Release - [3.4.12](#3.4.12)&nbsp; - &nbsp; 2022-12-06
 * `3.4.11`Release - [3.4.11](#3.4.11)&nbsp; - &nbsp; 2022-11-22
 * `3.4.10`Release - [3.4.10](#3.4.10)&nbsp; - &nbsp; 2022-11-08
 * `3.4.9` Release - [3.4.9](#3.4.9) &nbsp; - &nbsp; 2022-11-01
@@ -28,6 +29,16 @@
 * `3.1.8` Release - [3.1.8](#3.1.8) &nbsp; - &nbsp; 2020-12-11
 * `3.1.7` Release - [3.1.7](#3.1.7) &nbsp; - &nbsp; 2020-12-04
 * `3.1.6` Release - [3.1.6](#3.1.6) &nbsp; - &nbsp; 2020-11-13
+
+# <a name="3.4.12"></a> 3.4.12
+#### Features
+`
+DevEnigmaRiverAndroidCore
+DevEnigmaRiverAndroidTutorialApp
+DevEnigmaRiverAndroidDownload
+DevEnigmaRiverAndroidExoPlayerDownload
+`
+* EMP-18997- Support download of MP3 audio only assets
 
 # <a name="3.4.11"></a> 3.4.11
 #### Features

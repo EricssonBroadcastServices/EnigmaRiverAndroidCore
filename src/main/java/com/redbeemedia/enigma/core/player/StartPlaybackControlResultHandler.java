@@ -59,6 +59,17 @@ import org.json.JSONObject;
     private boolean seekToPreference(IPlaybackProperties.PlayFrom.PlayFromPreference preference) {
         boolean applicable = false;
         switch (preference) {
+            case LIVE_EDGE: {
+                JsonStreamInfo streamInfo = getStreamInfo();
+                if (streamInfo != null && streamInfo.isLiveStream())
+                {
+                    playerImplementationControls.seekTo(IPlayerImplementationControls.ISeekPosition.LIVE_EDGE, new SeekToControlResultHandler());
+                    applicable = true;
+                    break;
+                }
+                // LIVE_EDGE is the default, if streamInfo is unavailable (eg. when playing a downloaded asset)
+                // then fallback to BEGINNING
+            }
             case BEGINNING: {
                 playerImplementationControls.seekTo(IPlayerImplementationControls.ISeekPosition.TIMELINE_START, new SeekToControlResultHandler());
                 applicable = true;
@@ -117,13 +128,7 @@ import org.json.JSONObject;
                 }
             }
             break;
-            case LIVE_EDGE: {
-                JsonStreamInfo streamInfo = getStreamInfo();
-                if(streamInfo.isLiveStream()) {
-                    playerImplementationControls.seekTo(IPlayerImplementationControls.ISeekPosition.LIVE_EDGE, new SeekToControlResultHandler());
-                    applicable = true;
-                }
-            } break;
+
         }
         return applicable;
     }
