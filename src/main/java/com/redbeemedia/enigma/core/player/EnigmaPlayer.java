@@ -366,7 +366,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             }
 
             @Override
-            public IPlaybackSessionInfo getPlaybackSessionInfo(String assetId,String manifestUrl, String cdnProvider, String playbackSessionId) {
+            public IPlaybackSessionInfo getPlaybackSessionInfo(String assetId,String manifestUrl, String cdnProvider, String playbackSessionId, Integer duration) {
                 IPlaybackTechnologyIdentifier technologyIdentifier = environment.playerImplementationInternals.getTechnologyIdentifier();
                 if (assetId == null || assetId.isEmpty())
                 {
@@ -380,7 +380,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                         assetId = "N/A";
                     }
                 }
-                return new EnigmaPlayer.PlaybackSessionInfo(playRequest.getPlayable(), assetId, manifestUrl, technologyIdentifier, playRequest.getPlaybackProperties(), cdnProvider, playbackSessionId);
+                return new EnigmaPlayer.PlaybackSessionInfo(playRequest.getPlayable(), assetId, manifestUrl, technologyIdentifier, playRequest.getPlaybackProperties(), cdnProvider, playbackSessionId,duration);
             }
         };
     }
@@ -1368,8 +1368,9 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         private final String cdnProvider;
         private final IPlaybackTechnologyIdentifier tech;
         private final IPlaybackProperties playbackProperties;
+        private final Integer duration;
 
-        public PlaybackSessionInfo(IPlayable playable, String assetId, String mediaLocator, IPlaybackTechnologyIdentifier tech, IPlaybackProperties playbackProperties,String cdnProvider, String playbackSessionId) {
+        public PlaybackSessionInfo(IPlayable playable, String assetId, String mediaLocator, IPlaybackTechnologyIdentifier tech, IPlaybackProperties playbackProperties,String cdnProvider, String playbackSessionId, Integer duration) {
             this.playable = playable;
             this.assetId = assetId;
             this.mediaLocator = mediaLocator;
@@ -1377,6 +1378,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             this.playbackProperties = playbackProperties;
             this.cdnProvider = cdnProvider;
             this.playbackSessionId = playbackSessionId;
+            this.duration = duration;
         }
 
         @Override
@@ -1433,6 +1435,10 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
         public String getCdnProvider() {
             return cdnProvider;
+        }
+
+        public Integer getDuration() {
+            return duration;
         }
     }
 

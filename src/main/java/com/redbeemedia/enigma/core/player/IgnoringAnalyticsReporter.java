@@ -30,7 +30,7 @@ import com.redbeemedia.enigma.core.error.EnigmaError;
     }
 
     @Override
-    public void playbackStarted(long offsetTime, String playMode, String mediaLocator, Long referenceTime, Integer bitrate, String programId) {
+    public void playbackStarted(long offsetTime, String playMode, String mediaLocator, Long referenceTime, Integer bitrate, String programId, Integer duration) {
 
     }
 

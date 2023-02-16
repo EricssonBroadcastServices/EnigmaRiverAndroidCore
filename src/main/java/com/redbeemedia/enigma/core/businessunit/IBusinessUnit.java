@@ -9,4 +9,5 @@ public interface IBusinessUnit extends Parcelable {
     String getName();
     UrlPath getApiBaseUrl();
     UrlPath getApiBaseUrl(String apiVersion);
+    UrlPath createAnalyticsUrl(String analyticsUrl);
 }

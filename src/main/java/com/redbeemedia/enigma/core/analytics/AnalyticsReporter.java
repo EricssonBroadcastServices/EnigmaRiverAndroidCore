@@ -93,13 +93,14 @@ public class AnalyticsReporter implements IAnalyticsReporter {
     }
 
     @Override
-    public void playbackStarted(long offsetTime, String playMode, String mediaLocator, Long referenceTime, Integer bitrate, String programId) {
+    public void playbackStarted(long offsetTime, String playMode, String mediaLocator, Long referenceTime, Integer bitrate, String programId, Integer duration) {
         event(AnalyticsEvents.STARTED, (builder, eventType) -> {
             builder.addData(eventType.OFFSET_TIME, offsetTime);
             builder.addData(eventType.PLAY_MODE, playMode);
             builder.addData(eventType.MEDIA_LOCATOR, mediaLocator);
             builder.addData(eventType.REFERENCE_TIME, referenceTime);
             builder.addData(eventType.BITRATE, bitrate);
+            builder.addData(eventType.VIDEO_LENGTH, duration);
             builder.addData(eventType.PROGRAM_ID, programId);
         });
     }

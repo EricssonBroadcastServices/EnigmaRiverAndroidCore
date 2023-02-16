@@ -4,6 +4,7 @@ import com.redbeemedia.enigma.core.epg.IProgram;
 import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
+import com.redbeemedia.enigma.core.time.Duration;
 import com.redbeemedia.enigma.core.util.Collector;
 
 /*package-protected*/ class EnigmaPlayerCollector extends Collector<IEnigmaPlayerListener> implements IEnigmaPlayerListener {

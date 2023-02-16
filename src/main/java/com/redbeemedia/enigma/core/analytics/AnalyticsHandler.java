@@ -74,8 +74,17 @@ public class AnalyticsHandler implements IBufferingAnalyticsHandler {
         }
     }
 
+    static boolean shouldSendAnalytics(float analyticsPercentage) {
+        double randomValue = Math.random() * 100;  //0.0 to 99.9
+        return randomValue <= analyticsPercentage;
+    }
+
     @Override
     public synchronized void sendData() throws AnalyticsException, InterruptedException {
+        boolean sendAnalytics = shouldSendAnalytics(analyticsPlayResponseData.analyticsPercentage);
+        if (!sendAnalytics) {
+            return;
+        }
         final JSONArray currentEvents;
         synchronized (eventsLock) {
             if(events.length() == 0) {
@@ -168,7 +177,7 @@ public class AnalyticsHandler implements IBufferingAnalyticsHandler {
             UrlPath analyticsUrl = EnigmaRiverContext.getAnalyticsUrl();
             if (analyticsUrl == null) {
                 // return Base url
-                return EnigmaRiverContext.getExposureBaseUrl().append(uri).toURL();
+                return session.getBusinessUnit().createAnalyticsUrl(null).toURL();
             } else {
                 return analyticsUrl.append(uri).toURL();
             }
@@ -201,7 +210,10 @@ public class AnalyticsHandler implements IBufferingAnalyticsHandler {
                 while ((read = inputStream.read(buffer)) != -1) {
                     byteArrayOutputStream.write(buffer, 0, read);
                 }
-                data = new JSONObject(new String(byteArrayOutputStream.toByteArray(),StandardCharsets.UTF_8));
+                String dataResponse = new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8);
+                if (!dataResponse.isEmpty()) {
+                    data = new JSONObject(dataResponse);
+                }
                 onCallback();
             } catch (Exception e) {
                 onException(e);

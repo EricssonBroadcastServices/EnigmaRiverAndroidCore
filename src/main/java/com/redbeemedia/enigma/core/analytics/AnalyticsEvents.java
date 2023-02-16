@@ -108,6 +108,7 @@ package com.redbeemedia.enigma.core.analytics;
         public final IEventProperty<AnalyticsStartedEvent, String> MEDIA_LOCATOR = mandatory("MediaLocator");
         public final IEventProperty<AnalyticsStartedEvent, Long> REFERENCE_TIME = optional("ReferenceTime");
         public final IEventProperty<AnalyticsStartedEvent, Integer> BITRATE = optional("Bitrate");
+        public final IEventProperty<AnalyticsStartedEvent, Integer> VIDEO_LENGTH = optional("VideoLength");
         public final IEventProperty<AnalyticsStartedEvent, String> PROGRAM_ID = optional("ProgramId");
     }
 

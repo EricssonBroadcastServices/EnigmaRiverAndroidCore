@@ -15,4 +15,5 @@ import com.redbeemedia.enigma.core.time.Duration;
     String getCurrentProgramId();
     IPlaybackProperties getPlaybackProperties();
     String getCdnProvider();
+    Integer getDuration();
 }

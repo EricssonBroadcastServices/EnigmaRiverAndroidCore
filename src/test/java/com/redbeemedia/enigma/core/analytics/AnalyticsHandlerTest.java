@@ -1,11 +1,9 @@
 package com.redbeemedia.enigma.core.analytics;
 
-import com.redbeemedia.enigma.core.businessunit.IBusinessUnit;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
 import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.http.MockHttpHandler;
-import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.session.MockSession;
 import com.redbeemedia.enigma.core.testutil.Flag;
 import com.redbeemedia.enigma.core.time.MockTimeProvider;
@@ -16,14 +14,12 @@ import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.net.URL;
-
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 public class AnalyticsHandlerTest {
 
-    private final AnalyticsPlayResponseData mockAnalyticsResponse = new AnalyticsPlayResponseData(new JSONObject(), "mock");
+    private final AnalyticsPlayResponseData mockAnalyticsResponse = new AnalyticsPlayResponseData(new JSONObject(), "mock", null);
 
     @Test
     public void testEventBuffering() throws JSONException, InterruptedException, AnalyticsException {
@@ -115,7 +111,7 @@ public class AnalyticsHandlerTest {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(mockHttpHandler));
 
         AnalyticsHandler analyticsHandler = new AnalyticsHandler(new MockSession(),"pbs1", new MockTimeProvider(0), mockAnalyticsResponse);
-        assertThat(analyticsHandler.getSendUrl().toExternalForm(), is("https://mock.unittests.example.com/eventsink/send"));
+        assertThat(analyticsHandler.getSendUrl().toExternalForm(), is("https://eventsink.api.redbee.live/v2/customer/mockCu/businessunit/mockBu"));
     }
 
     @Test
@@ -137,7 +133,7 @@ public class AnalyticsHandlerTest {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(mockHttpHandler));
 
         AnalyticsHandler analyticsHandler = new AnalyticsHandler(new MockSession(),"pbs1", new MockTimeProvider(0), mockAnalyticsResponse);
-        assertThat(analyticsHandler.getInitUrl().toExternalForm(), is("https://mock.unittests.example.com/eventsink/init"));
+        assertThat(analyticsHandler.getInitUrl().toExternalForm(), is("https://eventsink.api.redbee.live/v2/customer/mockCu/businessunit/mockBu"));
     }
 
     @Test

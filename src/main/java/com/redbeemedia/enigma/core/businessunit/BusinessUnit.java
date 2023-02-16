@@ -12,6 +12,7 @@ public class BusinessUnit implements IBusinessUnit {
 
     private final String customerUnitName;
     private final String businessUnitName;
+    private final String DEFAULT_ANALYTICS_URL = "https://eventsink.api.redbee.live";
 
     public BusinessUnit(String customerUnitName, String businessUnitName) {
         this.customerUnitName = customerUnitName;
@@ -41,6 +42,14 @@ public class BusinessUnit implements IBusinessUnit {
     @Override
     public UrlPath getApiBaseUrl(String apiVersion) {
         return EnigmaRiverContext.getExposureBaseUrl().append(apiVersion).append("customer").append(customerUnitName).append("businessunit").append(businessUnitName);
+    }
+
+    @Override
+    public UrlPath createAnalyticsUrl(String analyticsUrl) {
+        if (analyticsUrl == null) {
+            analyticsUrl = DEFAULT_ANALYTICS_URL;
+        }
+        return new UrlPath(analyticsUrl).append("v2").append("customer").append(customerUnitName).append("businessunit").append(businessUnitName);
     }
 
     @Override

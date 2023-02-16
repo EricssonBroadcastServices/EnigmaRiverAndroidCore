@@ -173,7 +173,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
         analyticsReporter.deviceInfo(playbackSessionInfo.getCdnProvider());
         analyticsReporter.playbackCreated(playbackSessionInfo.getAssetId());
         analyticsReporter.playbackHandshakeStarted(playbackSessionInfo.getAssetId());
-        playerListener.sendPlaybackStartedEvent();
         heartbeatRepeater.setEnabled(true);
         enigmaPlayer.addListener(playerListener);
         componentsHandler.fireOnStart(new IInternalPlaybackSessionListener.OnStartArgs(this, enigmaPlayer, communicationChannel));
@@ -648,7 +647,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
                 }
             }
             String programId = playbackSessionInfo.getCurrentProgramId();
-            analyticsReporter.playbackStarted(playbackOffset, playMode, mediaLocator, referenceTime, bitrate, programId);
+            analyticsReporter.playbackStarted(playbackOffset, playMode, mediaLocator, referenceTime, bitrate, programId, playbackSessionInfo.getDuration());
         }
 
         @Override

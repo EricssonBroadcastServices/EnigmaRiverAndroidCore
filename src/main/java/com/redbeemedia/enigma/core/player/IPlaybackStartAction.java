@@ -22,7 +22,7 @@ import org.json.JSONObject;
     interface IEnigmaPlayerCallbacks {
         void setStateIfCurrentStartAction(IPlaybackStartAction action, EnigmaPlayerState state);
         void deliverPlaybackSession(IInternalPlaybackSession internalPlaybackSession);
-        IPlaybackSessionInfo getPlaybackSessionInfo(String assetId, String manifestUrl, String cdnProvider, String playbackSessionId);
+        IPlaybackSessionInfo getPlaybackSessionInfo(String assetId, String manifestUrl, String cdnProvider, String playbackSessionId, Integer duration);
 
         JSONObject getUsableMediaFormat(JSONArray formats) throws JSONException;
     }

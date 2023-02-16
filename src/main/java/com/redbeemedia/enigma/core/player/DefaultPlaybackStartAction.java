@@ -258,7 +258,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
                         drmInfo[0] = DrmInfoFactory.createWidevineDrmInfo(licenseUrl, playToken, requestId);
                     }
 
-                    final AnalyticsPlayResponseData analyticsInformation = new AnalyticsPlayResponseData(jsonObject, streamingTechnology);
+                    final AnalyticsPlayResponseData analyticsInformation = new AnalyticsPlayResponseData(jsonObject, streamingTechnology, session);
                     String manifestUrl = usableMediaFormat.getString("mediaLocator");
 
                     final Duration liveDelay = usableMediaFormat.has("liveDelay") ? Duration.millis(usableMediaFormat.getLong("liveDelay")) : null;
@@ -272,8 +272,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
                     if (cdnObject != null) {
                         cdnProvider = cdnObject.optString("provider", "");
                     }
-
-                    IPlaybackSessionInfo playbackSessionInfo = playerConnector.getPlaybackSessionInfo(assetId, manifestUrl, cdnProvider, playbackSessionId);
+                    Integer durationInMilliseconds = jsonObject.optInt("durationInMilliseconds", -1);
+                    IPlaybackSessionInfo playbackSessionInfo = playerConnector.getPlaybackSessionInfo(assetId, manifestUrl, cdnProvider, playbackSessionId, durationInMilliseconds);
                     final JSONObject adsInfoJson = jsonObject.optJSONObject("ads");
                     final ExposureAdMetadata adsInfo = new ExposureAdMetadata(
                             adsInfoJson,
@@ -522,7 +522,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
     @Override
     public void startUsingDownloadData(Object downloadData) {
         try {
-            IPlaybackSessionInfo playbackSessionInfo = playerConnector.getPlaybackSessionInfo(null, "mockManifest.mpd",null, null);
+            IPlaybackSessionInfo playbackSessionInfo = playerConnector.getPlaybackSessionInfo(null, "mockManifest.mpd",null, null,-1);
             IContractRestrictions contractRestrictions = new EmptyContractRestrictions();
             IInternalPlaybackSession playbackSession = newPlaybackSession(new InternalPlaybackSession.ConstructorArgs(
                     new DownloadStreamInfo(),
@@ -565,7 +565,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
             return;
         }
 
-        IPlaybackSessionInfo playbackSessionInfo = playerConnector.getPlaybackSessionInfo(null, url.toString(),null, null);
+        IPlaybackSessionInfo playbackSessionInfo = playerConnector.getPlaybackSessionInfo(null, url.toString(),null, null,-1);
         IInternalPlaybackSession playbackSession = newPlaybackSession(new InternalPlaybackSession.ConstructorArgs(
                 new UrlPlayableStreamInfo(),
                 null,

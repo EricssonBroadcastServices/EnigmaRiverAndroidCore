@@ -17,7 +17,7 @@ public interface IAnalyticsReporter {
 
     void playbackPlayerReady(long offsetTime, String playerImplementationTechnology, String playerImplementationTechnologyVersion);
 
-    void playbackStarted(long offsetTime, String playMode, String mediaLocator, Long referenceTime, Integer bitrate, String programId);
+    void playbackStarted(long offsetTime, String playMode, String mediaLocator, Long referenceTime, Integer bitrate, String programId, Integer duration);
 
     void playbackPaused(long offsetTime);
 
