@@ -152,3 +152,4 @@ The following tutorials provide in-depth information about different areas of in
 [Sprites API](advanced_topics/sprites.md)<br/>
 [Playback Configuration](advanced_topics/playback_configuration.md)<br/>
 [AUDIO ONLY 3.0](advanced_topics/audio_only.md)<br/>
+[Mux Integration](advanced_topics/mux_integration.md)<br/>
