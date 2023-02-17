@@ -6,7 +6,7 @@ Its possible to get access to exoplayer instance to integrate mux.
 For more details about integration : https://docs.mux.com/guides/data/monitor-exoplayer.
 
 ```java
-Player player = exoPlayer getInternalPlayer();
+Player player = exoPlayer.getInternalPlayer();
 ```
 
 
