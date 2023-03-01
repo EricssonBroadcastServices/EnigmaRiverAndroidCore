@@ -35,6 +35,24 @@ public class StreamProgramsTest {
     }
 
     @Test
+    public void testOffsetUsedForEntitlementCheck() {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
+
+        List<IProgram> programs = new ArrayList<>();
+        long currentTime = new Date().getTime();
+        IProgram program0 = new MockProgram("program0", currentTime, currentTime + (110 * 1000));
+        programs.add(program0);
+        IProgram program1 = new MockProgram("program1", currentTime + (120 * 1000), currentTime + (240 * 1000));
+        programs.add(program1);
+        IProgram program2 = new MockProgram("program2", currentTime + (241 * 1000), currentTime + (340 * 1000));
+        programs.add(program2);
+
+        StreamPrograms streamPrograms = new StreamPrograms(new MockEpgResponse(currentTime, currentTime + (340 * 1000), programs), true, 0L);
+
+        Assert.assertSame(program1, streamPrograms.getProgramForEntitlementCheck());
+    }
+
+    @Test
     public void testNeighbouringProgramNoGap() {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
 

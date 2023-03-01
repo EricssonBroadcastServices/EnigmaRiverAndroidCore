@@ -45,10 +45,12 @@ import java.util.List;
     private final EntitlementCollector entitlementCollector = new EntitlementCollector();
     private final List<ICachedEntitlementResponse> cachedEntitlementResponses = new ArrayList<>();
     private Duration lastCheckedOffset;
+    private final boolean entitlementCheck;
+
 
     private final OpenContainer<EntitlementData> currentEntitlementData = new OpenContainer<>(null);
 
-    public ProgramService(ISession session, IStreamInfo streamInfo, IStreamPrograms streamPrograms, IPlaybackSessionInfo playbackSessionInfo, IEntitlementProvider entitlementProvider, IPlaybackSession playbackSession, ITaskFactoryProvider taskFactoryProvider) {
+    public ProgramService(ISession session, IStreamInfo streamInfo, IStreamPrograms streamPrograms, IPlaybackSessionInfo playbackSessionInfo, IEntitlementProvider entitlementProvider, IPlaybackSession playbackSession, ITaskFactoryProvider taskFactoryProvider, boolean entitlementCheck) {
         this.session = session;
         this.streamInfo = streamInfo;
         this.streamPrograms = streamPrograms;
@@ -64,10 +66,13 @@ import java.util.List;
         });
         this.playerListener = new BaseEnigmaPlayerListener() {
             @Override
-            public void onProgramChanged(IProgram from, IProgram to) {
-                checkEntitlementForProgram(to);
+            public void checkEntitlement(IProgram toProgram) {
+                if (toProgram != null) {
+                    checkEntitlementForProgram(toProgram);
+                }
             }
         };
+        this.entitlementCheck = entitlementCheck;
     }
 
     @Override
@@ -128,18 +133,21 @@ import java.util.List;
     }
 
     protected void checkEntitlementForProgram(IProgram toProgram) {
-        if (streamPrograms != null) {
-            if (toProgram == null) {
-                toProgram = streamPrograms.getProgram();
-            }
-            AssetIdFallbackChain assetId = getAssetIdsToCheckForAt(toProgram);
-            if (assetId != null) {
-                checkEntitlement(assetId);
-            }
-        } else {
-            String channelId = streamInfo.getChannelId();
-            if (channelId != null) {
-                checkEntitlement(new AssetIdFallbackChain(channelId));
+        // https://tools.cloud.ebms.ericsson.net/confluence/display/INTDOC/Feature+-+Request+EPG+data+only+when+it+exists+and+distribute+entitlement+checks
+        if (this.entitlementCheck) {
+            if (streamPrograms != null) {
+                if (toProgram == null) {
+                    toProgram = streamPrograms.getProgram();
+                }
+                AssetIdFallbackChain assetId = getAssetIdsToCheckForAt(toProgram);
+                if (assetId != null) {
+                    checkEntitlement(assetId, toProgram.getStartUtcMillis());
+                }
+            } else {
+                String channelId = streamInfo.getChannelId();
+                if (channelId != null) {
+                    checkEntitlement(new AssetIdFallbackChain(channelId), toProgram.getStartUtcMillis());
+                }
             }
         }
     }
@@ -160,7 +168,7 @@ import java.util.List;
         }
     }
 
-    private void checkEntitlement(final AssetIdFallbackChain assetIds) {
+    private void checkEntitlement(final AssetIdFallbackChain assetIds, long programStartUtcMillis) {
         IEntitlementResponseHandler responseHandler = new IEntitlementResponseHandler() {
             @Override
             public void onResponse(EntitlementData entitlementData) {
@@ -191,7 +199,9 @@ import java.util.List;
         if(cachedResponse != null) {
             cachedResponse.use(responseHandler);
         } else {
-            entitlementProvider.checkEntitlement(new EntitlementRequest(session, assetIds.getAssetId()), responseHandler);
+            EntitlementRequest entitlementRequest = new EntitlementRequest(session, assetIds.getAssetId());
+            entitlementRequest.setTime(programStartUtcMillis + 1000);
+            entitlementProvider.checkEntitlement(entitlementRequest, responseHandler);
         }
     }
 

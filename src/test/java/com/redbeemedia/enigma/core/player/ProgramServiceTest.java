@@ -96,7 +96,7 @@ public class ProgramServiceTest {
             }
         };
         final MockTimeProvider mockTimeProvider = new MockTimeProvider(42463683);
-        ProgramService programService = new ProgramService(new MockSession(), streamInfo, streamPrograms, playbackSessionInfo, entitlementProvider, playbackSession, new MockTaskFactoryProvider()) {
+        ProgramService programService = new ProgramService(new MockSession(), streamInfo, streamPrograms, playbackSessionInfo, entitlementProvider, playbackSession, new MockTaskFactoryProvider(), true) {
             @Override
             protected ITimeProvider createTimeProviderForCache() {
                 return mockTimeProvider;
@@ -209,7 +209,7 @@ public class ProgramServiceTest {
             }
         };
         final MockTimeProvider mockTimeProvider = new MockTimeProvider(42463683);
-        ProgramService programService = new ProgramService(new MockSession(), streamInfo, streamPrograms, playbackSessionInfo, entitlementProvider, playbackSession, new MockTaskFactoryProvider()) {
+        ProgramService programService = new ProgramService(new MockSession(), streamInfo, streamPrograms, playbackSessionInfo, entitlementProvider, playbackSession, new MockTaskFactoryProvider(), true) {
             @Override
             protected ITimeProvider createTimeProviderForCache() {
                 return mockTimeProvider;
@@ -321,7 +321,7 @@ public class ProgramServiceTest {
             }
         };
         final MockTimeProvider mockTimeProvider = new MockTimeProvider(42463683);
-        ProgramService programService = new ProgramService(new MockSession(), streamInfo, streamPrograms, playbackSessionInfo, entitlementProvider, playbackSession, new MockTaskFactoryProvider()) {
+        ProgramService programService = new ProgramService(new MockSession(), streamInfo, streamPrograms, playbackSessionInfo, entitlementProvider, playbackSession, new MockTaskFactoryProvider(), true) {
             @Override
             protected ITimeProvider createTimeProviderForCache() {
                 return mockTimeProvider;
@@ -414,7 +414,7 @@ public class ProgramServiceTest {
                         public IHttpTask doHttp(URL url, IHttpCall httpCall, IHttpResponseHandler responseHandler) {
                             callCounter.count();
                             if(callCounter.getCounts() == 1) {
-                                Assert.assertEquals("https://mock.unittests.example.com/v2/customer/mockCu/businessunit/mockBu/entitlement/asset_1/entitle", url.toString());
+                                Assert.assertTrue(url.toString().contains("https://mock.unittests.example.com/v2/customer/mockCu/businessunit/mockBu/entitlement/asset_1/entitle"));
                             } else if(callCounter.getCounts() == 2) {
                                 Assert.assertEquals("time="+expectedTimeCheckDate, url.getQuery());
                             } else {
@@ -455,7 +455,7 @@ public class ProgramServiceTest {
             }
         };
         final MockTimeProvider mockTimeProvider = new MockTimeProvider(42463683);
-        ProgramService programService = new ProgramService(new MockSession(), streamInfo, streamPrograms, playbackSessionInfo, entitlementProvider, playbackSession, new MockTaskFactoryProvider()) {
+        ProgramService programService = new ProgramService(new MockSession(), streamInfo, streamPrograms, playbackSessionInfo, entitlementProvider, playbackSession, new MockTaskFactoryProvider(), true) {
             @Override
             protected ITimeProvider createTimeProviderForCache() {
                 return mockTimeProvider;

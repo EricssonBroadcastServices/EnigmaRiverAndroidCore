@@ -45,11 +45,18 @@ import java.util.List;
 
     @Override
     public IProgram getProgram() {
+        return getProgram(10000L);
+    }
+
+    @Override
+    public IProgram getProgramForEntitlementCheck() {
+        return getProgram(-120 * 1000);
+    }
+
+    private IProgram getProgram(long offset) {
         long utcMillis;
         if (isPlayingLive) {
-            // for live current UTC time, give a delay for 10 sec
-            long someDelay = 10000L;
-            utcMillis = new Date().getTime() - deviceUtcTimeDifference - someDelay ;
+            utcMillis = new Date().getTime() - deviceUtcTimeDifference - offset;
         } else {
             if (!this.sections.isEmpty()) {
                 utcMillis = this.sections.getFirstItem().getStartUtcMillis();

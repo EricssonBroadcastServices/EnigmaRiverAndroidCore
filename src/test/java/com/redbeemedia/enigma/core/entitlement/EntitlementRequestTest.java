@@ -3,7 +3,6 @@ package com.redbeemedia.enigma.core.entitlement;
 import com.redbeemedia.enigma.core.businessunit.BusinessUnit;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
-import com.redbeemedia.enigma.core.entitlement.EntitlementRequest;
 import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.http.IHttpHandler;
 import com.redbeemedia.enigma.core.http.MockHttpHandler;

@@ -1050,7 +1050,7 @@ public class EnigmaPlayerTest {
         Assert.assertEquals(expectedSeeks, seekPositions.size());
 
         //Start at program4
-        playerImplementation.position = 45000-1;
+        playerImplementation.position = 45000- 1100;
 
         { //Seek!
             AssertiveControlResultHandler controlResultHandler = new AssertiveControlResultHandler();
@@ -1900,17 +1900,19 @@ public class EnigmaPlayerTest {
             formatArray.put(createFormatJson(format.mediaLocator, format.format, format.drmKey, format.liveDelay));
         }
         response.put("formats", formatArray);
+        response.put("epg", playResponse.epg.toJsonObject());
 
         MockPlayResponse.MockStreamInfoData streamInfoData = playResponse.streamInfoData;
-        if(streamInfoData != null) {
+        if (streamInfoData != null) {
             response.put("streamInfo", streamInfoData.toJsonObject());
         }
         mockHttpHandler.queueResponse(new HttpStatus(200, "OK"), response.toString());
     }
 
     private static class MockPlayResponse {
-        public List<MockFormat> formats = new ArrayList<>(Arrays.asList(new MockFormat("https://media.example.com?format=HLS","HLS"), new MockFormat("https://media.example.com","DASH")));
+        public List<MockFormat> formats = new ArrayList<>(Arrays.asList(new MockFormat("https://media.example.com?format=HLS", "HLS"), new MockFormat("https://media.example.com", "DASH")));
         public MockStreamInfoData streamInfoData = new MockStreamInfoData();
+        public MockEpgData epg = new MockEpgData();
 
         public void addFormat(String mediaLocator, String format) {
             formats.add(new MockFormat(mediaLocator, format));
@@ -1972,6 +1974,16 @@ public class EnigmaPlayerTest {
                 if(this.channelId != null) {
                     streamInfo.put("channelId", this.channelId);
                 }
+                return streamInfo;
+            }
+        }
+
+        private static class MockEpgData {
+
+            public JSONObject toJsonObject() throws JSONException {
+                JSONObject streamInfo = new JSONObject();
+                streamInfo.put("entitlementCheck", true);
+                streamInfo.put("enabled", true);
                 return streamInfo;
             }
         }

@@ -249,6 +249,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
                 MediaType mediaType = audioOnly ? MediaType.AUDIO : MediaType.VIDEO;
                 JSONObject usableMediaFormat = playerConnector.getUsableMediaFormat(formats);
                 if (usableMediaFormat != null) {
+                    JSONObject epgObject = jsonObject.optJSONObject("epg");
+                    boolean epgEnabled = false;
+                    boolean entitlementCheck = false;
+                    if (epgObject != null) {
+                        epgEnabled = epgObject.optBoolean("enabled", false);
+                        entitlementCheck = epgObject.optBoolean("entitlementCheck", false);
+                    }
+
                     JSONObject drms = usableMediaFormat.optJSONObject("drm");
                     final IDrmInfo[] drmInfo = new IDrmInfo[]{null};
                     final String streamingTechnology = usableMediaFormat.optString("format");
@@ -298,6 +306,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
                     final Map<Integer, String> spriteUrls = parseSpriteUrls(spritesJson);
                     spriteRepository.setVTTUrls(spriteUrls, session);
 
+                    boolean finalEntitlementCheck = entitlementCheck;
                     IProcessStep<IStreamPrograms> nextStep = new ProcessStep<IStreamPrograms>() {
                         @Override
                         protected void execute(IStreamPrograms streamPrograms) {
@@ -319,7 +328,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
                                             adsInfo,
                                             adDetector));
                             playbackSession.addInternalListener(analytics.internalPlaybackSessionListener);
-                            playbackSession.addInternalListener(createProgramService(session, streamInfo, streamPrograms, playbackSessionInfo, newEntitlementProvider(), playbackSession, taskFactoryProvider));
+                            playbackSession.addInternalListener(createProgramService(session, streamInfo, streamPrograms, playbackSessionInfo, newEntitlementProvider(), playbackSession, taskFactoryProvider, finalEntitlementCheck));
 
                             playerConnector.deliverPlaybackSession(playbackSession);
 
@@ -338,7 +347,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
                         }
                     };
 
-                    if(streamInfo.hasStreamPrograms()) {
+                    if (streamInfo.hasStreamPrograms() && epgEnabled) {
                         long end = streamInfo.hasEnd() ? streamInfo.getEnd(Duration.Unit.MILLISECONDS) : (streamInfo.getStart(Duration.Unit.MILLISECONDS)+Duration.days(1).inWholeUnits(Duration.Unit.MILLISECONDS));
                         IEpgRequest request = new EpgRequest(streamInfo.getChannelId(), streamInfo.getStart(Duration.Unit.MILLISECONDS), end);
                         IEpg epg = createEpg(session.getBusinessUnit());
@@ -696,8 +705,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
         return new EntitlementProvider(EnigmaRiverContext.getHttpHandler());
     }
 
-    protected IInternalPlaybackSessionListener createProgramService(ISession session, IStreamInfo streamInfo, IStreamPrograms streamPrograms, IPlaybackSessionInfo playbackSessionInfo, IEntitlementProvider entitlementProvider, IPlaybackSession playbackSession, ITaskFactoryProvider taskFactoryProvider) {
-        return new ProgramService(session, streamInfo, streamPrograms, playbackSessionInfo, entitlementProvider, playbackSession, taskFactoryProvider);
+    protected IInternalPlaybackSessionListener createProgramService(ISession session, IStreamInfo streamInfo, IStreamPrograms streamPrograms, IPlaybackSessionInfo playbackSessionInfo, IEntitlementProvider entitlementProvider, IPlaybackSession playbackSession, ITaskFactoryProvider taskFactoryProvider, boolean entitlementCheck) {
+        return new ProgramService(session, streamInfo, streamPrograms, playbackSessionInfo, entitlementProvider, playbackSession, taskFactoryProvider, entitlementCheck);
     }
 
     protected IEpg createEpg(IBusinessUnit businessUnit) {

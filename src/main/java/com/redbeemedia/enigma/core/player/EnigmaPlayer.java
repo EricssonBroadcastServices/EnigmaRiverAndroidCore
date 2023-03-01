@@ -1133,6 +1133,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         public void init() {
             programTracker.addListener(environment.timelinePositionFactory);
             programTracker.addListener((oldProgram, newProgram) -> enigmaPlayerListeners.onProgramChanged(oldProgram, newProgram));
+            programTracker.addListener((newProgram) -> enigmaPlayerListeners.checkEntitlement(newProgram));
             programTracker.init(EnigmaPlayer.this);
             timeline.addListener(new BaseTimelineListener() {
                 @Override
@@ -1341,6 +1342,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                 currentStreamOffset = streamTimelinePosition.subtract(streamTimelineStart).inWholeUnits(Duration.Unit.MILLISECONDS);
                 if(oldOffset != currentStreamOffset) {
                     programTracker.onOffsetChanged(currentStreamOffset);
+                    programTracker.onOffsetChangedCheckEntitlement();
                 }
             }
         }

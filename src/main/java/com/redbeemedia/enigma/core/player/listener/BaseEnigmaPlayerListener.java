@@ -28,6 +28,11 @@ public class BaseEnigmaPlayerListener implements IEnigmaPlayerListener {
     }
 
     @Override
+    public void checkEntitlement(IProgram to) {
+
+    }
+
+    @Override
     public void sendPlaybackStartedEvent() {
     }
 }

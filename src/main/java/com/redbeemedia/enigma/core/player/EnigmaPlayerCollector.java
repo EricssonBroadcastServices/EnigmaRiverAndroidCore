@@ -39,6 +39,11 @@ import com.redbeemedia.enigma.core.util.Collector;
     }
 
     @Override
+    public void checkEntitlement(IProgram to) {
+        forEach(listener -> listener.checkEntitlement(to));
+    }
+
+    @Override
     public void sendPlaybackStartedEvent() {
         forEach(IEnigmaPlayerListener::sendPlaybackStartedEvent);
     }

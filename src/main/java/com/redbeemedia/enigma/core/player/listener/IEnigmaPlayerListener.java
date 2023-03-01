@@ -24,5 +24,7 @@ public interface IEnigmaPlayerListener extends IInternalListener {
 
     void onProgramChanged(IProgram from, IProgram to);
 
+    void checkEntitlement(IProgram to);
+
     void sendPlaybackStartedEvent();
 }
