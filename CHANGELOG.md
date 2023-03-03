@@ -1,4 +1,5 @@
 # CHANGELOG
+* `3.5.2 `Release - [3.5.2](#3.5.2)&nbsp; - &nbsp; 2023-03-03
 * `3.5.1 `Release - [3.5.1](#3.5.1)&nbsp; - &nbsp; 2023-03-01
 * `3.5.0 `Release - [3.5.0](#3.5.0)&nbsp; - &nbsp; 2023-02-16
 * `3.4.12`Release - [3.4.12](#3.4.12)&nbsp; - &nbsp; 2022-12-06
@@ -31,6 +32,14 @@
 * `3.1.8` Release - [3.1.8](#3.1.8) &nbsp; - &nbsp; 2020-12-11
 * `3.1.7` Release - [3.1.7](#3.1.7) &nbsp; - &nbsp; 2020-12-04
 * `3.1.6` Release - [3.1.6](#3.1.6) &nbsp; - &nbsp; 2020-11-13
+
+# <a name="3.5.2"></a> 3.5.2
+#### Features
+`
+DevEnigmaRiverAndroidCore
+`
+* EMP-19297 - Bugfix: Handled interrupted error on playback stop
+
 
 # <a name="3.5.1"></a> 3.5.1
 #### Features

@@ -644,7 +644,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
             public void onStop(OnStopArgs args) {
                 try {
                     analyticsHandlerTask.cancel(500);
-                } catch (TaskException e) {
+                } catch (Exception e) {
                     e.printStackTrace(); //Suppress
                 }
                 ITask sendRemainingDataTask = taskFactory.newTask(() -> {
@@ -656,7 +656,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
                 });
                 try {
                     sendRemainingDataTask.start();
-                } catch (TaskException e) {
+                } catch (Exception e) {
                     e.printStackTrace(); //Suppress
                 }
             }
