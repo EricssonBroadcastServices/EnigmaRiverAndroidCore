@@ -147,6 +147,7 @@ The following tutorials provide in-depth information about different areas of in
 [Live drift correction (ExoPlayer)](advanced_topics/drift_correction.md)<br/>
 [Overriding media format selection logic](advanced_topics/media_format_preference.md)<br/>
 [Marker points](advanced_topics/marker_points.md)<br/>
+[Add cast custom images on sender screen (Album Art)](advanced_topics/cast_custom_images.md)<br/>
 [Media Session](advanced_topics/media_session.md)<br/>
 [Ad Insertion](advanced_topics/ad_insertion.md)<br/>
 [Sprites API](advanced_topics/sprites.md)<br/>

@@ -41,7 +41,7 @@ DevEnigmaRiverAndroidReferenceapp
 DevEnigmaRiverAndroidCast
 `
 * EMP-19566 - Custom image for cast sender
-* EMP-19619 - Downgrade the Chromecast library
+* EMP-19619 - Downgrade the Chromecast library.
 
 # <a name="3.5.2"></a> 3.5.2
 #### Features

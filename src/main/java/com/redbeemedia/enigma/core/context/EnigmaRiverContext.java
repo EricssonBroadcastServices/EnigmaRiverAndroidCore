@@ -131,7 +131,7 @@ public final class EnigmaRiverContext {
 
     //Version if the core library
     public static String getVersion() {
-        return "r3.5.3-BETA-1";
+        return "r3.5.3";
     }
 
     private static void assertInitialized() {
