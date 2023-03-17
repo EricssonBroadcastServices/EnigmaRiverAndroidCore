@@ -141,7 +141,11 @@ import java.util.List;
                 }
                 AssetIdFallbackChain assetId = getAssetIdsToCheckForAt(toProgram);
                 if (assetId != null) {
-                    checkEntitlement(assetId, toProgram.getStartUtcMillis());
+                    if (toProgram == null) {
+                        checkEntitlement(assetId, -1);
+                    } else {
+                        checkEntitlement(assetId, toProgram.getStartUtcMillis());
+                    }
                 }
             } else {
                 String channelId = streamInfo.getChannelId();
@@ -200,7 +204,9 @@ import java.util.List;
             cachedResponse.use(responseHandler);
         } else {
             EntitlementRequest entitlementRequest = new EntitlementRequest(session, assetIds.getAssetId());
-            entitlementRequest.setTime(programStartUtcMillis + 1000);
+            if (programStartUtcMillis != -1) {
+                entitlementRequest.setTime(programStartUtcMillis + 1000);
+            }
             entitlementProvider.checkEntitlement(entitlementRequest, responseHandler);
         }
     }
