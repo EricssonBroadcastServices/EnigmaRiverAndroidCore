@@ -1062,21 +1062,17 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         private final ProgramTracker programTracker = new ProgramTracker().addListener(new ProgramTracker.IProgramChangedListener() {
             @Override
             public void onProgramChanged(IProgram oldProgram, IProgram newProgram) {
-                if(newProgram != null) {
+                if(newProgram!=null) {
                     IInternalPlaybackSession playbackSession = OpenContainerUtil.getValueSynchronized(currentPlaybackSession);
                     if(playbackSession != null) {
                         IStreamInfo streamInfo = playbackSession.getStreamInfo();
                         if(streamInfo.hasStart()) {
                             long streamStartUtcMillis = streamInfo.getStart(Duration.Unit.MILLISECONDS);
                             ITimelinePositionFactory positionFactory = environment.timelinePositionFactory;
-                            long startOffset = newProgram.getStartUtcMillis() - streamStartUtcMillis;
                             long endOffset = newProgram.getEndUtcMillis() - streamStartUtcMillis;
-                            ITimelinePosition start = positionFactory.newPosition(startOffset);
                             ITimelinePosition end = positionFactory.newPosition(endOffset);
                             timeline.setVisibility(!streamInfo.isLiveStream());
-                            if (start.getStart() < 0) {
-                                start = positionFactory.newPosition(0);
-                            }
+
                             // for Live stream display end equal to live position
                             if (isLiveStream()) {
                                 end = getLivePosition();
@@ -1085,15 +1081,9 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                                     end = positionFactory.newPosition(0);
                                 }
                             }
-                            if (oldProgram != null && isLiveStream()) {
-                                startOffset = oldProgram.getStartUtcMillis() - streamStartUtcMillis;
-                                start = positionFactory.newPosition(startOffset);
-                            }
-
                             if (isLiveStream()) {
-                                // dont use it for VOD, as duration should come from stream read by Player
                                 // for Live stream display end equal to live position
-                                EnigmaPlayerTimeline.this.onExposedTimelineBoundsChanged(start, end);
+                                EnigmaPlayerTimeline.this.onExposedTimelineBoundsChanged(streamTimelineStart, end);
                             }
                             hasProgram = true;
                         }
