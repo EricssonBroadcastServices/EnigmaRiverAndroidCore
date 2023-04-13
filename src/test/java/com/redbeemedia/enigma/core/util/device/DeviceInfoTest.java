@@ -11,7 +11,7 @@ public class DeviceInfoTest {
         FakeDeviceInfo fakeDeviceInfo = new FakeDeviceInfo();
         JSONObject jsonObject = DeviceInfo.getDeviceInfoJson(fakeDeviceInfo);
         //Only 'type' is currently required from the backend API
-        Assert.assertEquals(fakeDeviceInfo.getType(), jsonObject.getString("type"));
+        Assert.assertEquals(fakeDeviceInfo.getDeviceTypeLogin(), jsonObject.getString("type"));
     }
 
     private static class FakeDeviceInfo implements IDeviceInfo {
@@ -21,8 +21,13 @@ public class DeviceInfoTest {
         }
 
         @Override
-        public String getModel() {
+        public String getDeviceModelLogin() {
             return "fake_model";
+        }
+
+        @Override
+        public String getDeviceModelPlay() {
+            return null;
         }
 
         @Override
@@ -66,13 +71,28 @@ public class DeviceInfoTest {
         }
 
         @Override
-        public String getType() {
+        public String getDeviceTypeLogin() {
             return "JUNIT_TEST_DEVICE";
+        }
+
+        @Override
+        public String getDeviceTypePlay() {
+            return null;
         }
 
         @Override
         public String getAppType() {
             return "mock-app-type";
+        }
+
+        @Override
+        public String getGoogleAdId() {
+            return null;
+        }
+
+        @Override
+        public boolean isLimitedAdTracking() {
+            return false;
         }
     }
 }

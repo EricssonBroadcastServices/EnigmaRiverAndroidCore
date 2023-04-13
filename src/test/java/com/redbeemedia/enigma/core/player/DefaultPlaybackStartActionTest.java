@@ -2,6 +2,7 @@ package com.redbeemedia.enigma.core.player;
 
 import android.os.Parcel;
 
+import com.redbeemedia.enigma.core.ads.DeviceParameters;
 import com.redbeemedia.enigma.core.analytics.AnalyticsException;
 import com.redbeemedia.enigma.core.analytics.AnalyticsPlayResponseData;
 import com.redbeemedia.enigma.core.analytics.IBufferingAnalyticsHandler;
@@ -73,7 +74,7 @@ public class DefaultPlaybackStartActionTest {
             playResponse.putArray("formats").addObject()
                     .put("format", "DASH")
                     .put("mediaLocator", "http://example.com/manifest.mpd");
-            httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play"), playResponse.toString());
+            httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play.*"), playResponse.toString());
         }
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization()
                 .setHttpHandler(httpHandler)
@@ -141,6 +142,7 @@ public class DefaultPlaybackStartActionTest {
         playbackStartAction.start();
         testTaskFactory.letTimePass(100);
 
+        DefaultPlaybackStartAction.IN_PROGRESS.set(false);
         deliverPlaybackSessionCalled.assertOnce();
         analyticsOnStartCalled.assertOnce();
         analyticsOnStopCalled.assertNone();
@@ -161,7 +163,7 @@ public class DefaultPlaybackStartActionTest {
             playResponse.putArray("formats").addObject()
                     .put("format", "DASH")
                     .put("mediaLocator", "http://example.com/manifest.mpd");
-            httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play"), playResponse.toString());
+            httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play.*"), playResponse.toString());
         }
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization()
                 .setHttpHandler(httpHandler)
@@ -247,7 +249,7 @@ public class DefaultPlaybackStartActionTest {
             playResponse.putArray("formats").addObject()
                     .put("format", "DASH")
                     .put("mediaLocator", "http://example.com/manifest.mpd");
-            httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play"), playResponse.toString());
+            httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play.*"), playResponse.toString());
         }
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization()
                 .setHttpHandler(httpHandler)
@@ -313,6 +315,7 @@ public class DefaultPlaybackStartActionTest {
         createAnalyticsCalled.assertNone();
         Assert.assertEquals(0, addedListeners.size());
 
+        DefaultPlaybackStartAction.IN_PROGRESS.set(false);
         playbackStartAction.start();
         testTaskFactory.letTimePass(100);
 
@@ -362,8 +365,8 @@ public class DefaultPlaybackStartActionTest {
             playResponse.putArray("formats").addObject()
                     .put("format", "DASH")
                     .put("mediaLocator", "http://example.com/manifest.mpd");
-            httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play"), playResponse.toString());
-            httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play"), playResponse.toString());
+            httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play.*"), playResponse.toString());
+            httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play.*"), playResponse.toString());
         }
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization()
                 .setHttpHandler(httpHandler)
@@ -550,11 +553,11 @@ public class DefaultPlaybackStartActionTest {
         playbackStartAction.startUsingAssetId("foo");
         // Fetch the query from the request url
         query = new URL(new JSONObject(httpHandler.getLog().get(2)).getString("url")).getQuery();
-        Assert.assertNull(query);
+        Assert.assertEquals("deviceMake=manufacturer",query);
 
         httpHandler.clearLog();
 
-        DefaultAdInsertionParameters defaultAdInsertionParameters = new DefaultAdInsertionParameters("42", "65536", false, "wtf", null, "", false);
+        DefaultAdInsertionParameters defaultAdInsertionParameters = new DefaultAdInsertionParameters("42", "65536", false, "wtf", null, "");
 
         // Test with an `IAdInsertionParameters` returning a `DefaultAdInsertionParameters`
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization()
@@ -566,16 +569,22 @@ public class DefaultPlaybackStartActionTest {
                 })
         );
         // Execute the query
+        DefaultPlaybackStartAction.IN_PROGRESS.set(false);
+
         playbackStartAction.startUsingAssetId("foo");
         query = new URL(new JSONObject(httpHandler.getLog().get(2)).getString("url")).getQuery();
 
-        for (Map.Entry<String, ?> kvp : defaultAdInsertionParameters.getParameters().entrySet()) {
+        Map<String, String> parameters = (Map<String, String>)defaultAdInsertionParameters.getParameters();
+        Map<String, String> deviceParameters = (Map<String, String>)EnigmaRiverContext.getDeviceParameters().getParameters();
+        parameters.putAll(deviceParameters);
+
+        for (Map.Entry<String, ?> kvp : parameters.entrySet()) {
             if (kvp.getValue() != null) {
                 // Make sure each property is included
                 Assert.assertTrue(query.contains(kvp.getKey() + "=" + kvp.getValue()));
             } else {
                 // If property was null, it should not be included
-                Assert.assertFalse(query.contains(kvp.getKey()));
+                Assert.assertFalse(query.contains(kvp.getKey()+ "="));
             }
         }
     }

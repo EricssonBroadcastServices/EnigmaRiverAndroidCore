@@ -4,6 +4,7 @@ import android.app.Application;
 
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleManager;
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleManagerFactory;
+import com.redbeemedia.enigma.core.ads.DeviceParameters;
 import com.redbeemedia.enigma.core.ads.IAdInsertionFactory;
 import com.redbeemedia.enigma.core.context.exception.ContextInitializationException;
 import com.redbeemedia.enigma.core.epg.IEpgLocator;
@@ -100,6 +101,11 @@ public final class EnigmaRiverContext {
         return initializedContext.adInsertionFactory;
     }
 
+    public static DeviceParameters getDeviceParameters() {
+        assertInitialized();
+        return initializedContext.getDeviceParameters();
+    }
+
     /**
      * @deprecated Use {@link #getTaskFactoryProvider()} <br> Ex: {@code getTaskFactoryProvider().getTaskFactory()}
      */
@@ -131,7 +137,7 @@ public final class EnigmaRiverContext {
 
     //Version if the core library
     public static String getVersion() {
-        return "r3.5.5";
+        return "r3.6.0-BETA-1";
     }
 
     private static void assertInitialized() {
@@ -152,6 +158,7 @@ public final class EnigmaRiverContext {
         private INetworkMonitor networkMonitor = new DefaultNetworkMonitor();
         private final Map<String, IModuleInitializationSettings> moduleSettings = new HashMap<>();
         private IAdInsertionFactory adInsertionFactory;
+        private DeviceParameters deviceParameters;
 
         public EnigmaRiverContextInitialization(String exposureBaseUrl) {
             this.exposureBaseUrl = exposureBaseUrl;
@@ -206,9 +213,18 @@ public final class EnigmaRiverContext {
             return this;
         }
 
+        public EnigmaRiverContextInitialization setDeviceParameters(DeviceParameters parameters) {
+            this.deviceParameters = parameters;
+            return this;
+        }
+
         public EnigmaRiverContextInitialization setActivityLifecycleManagerFactory(IActivityLifecycleManagerFactory activityLifecycleManagerFactory) {
             this.activityLifecycleManagerFactory = activityLifecycleManagerFactory;
             return this;
+        }
+
+        public DeviceParameters getDeviceParameters() {
+            return deviceParameters;
         }
 
         public String getAppName() {
@@ -294,6 +310,7 @@ public final class EnigmaRiverContext {
         private final IEpgLocator epgLocator;
         private final INetworkMonitor networkMonitor;
         private final IAdInsertionFactory adInsertionFactory;
+        private final DeviceParameters deviceParameters;
 
         public EnigmaRiverInitializedContext(Application application, EnigmaRiverContextInitialization initialization) {
             try {
@@ -310,6 +327,11 @@ public final class EnigmaRiverContext {
                 this.activityLifecycleManager = initialization.getActivityLifecycleManager(application);
                 this.taskFactoryProvider = initialization.getTaskFactoryProvider();
                 this.epgLocator = initialization.getEpgLocator();
+                if (initialization.getDeviceParameters() == null) {
+                    this.deviceParameters = new DeviceParameters();
+                } else {
+                    this.deviceParameters = initialization.getDeviceParameters();
+                }
                 this.networkMonitor = initialization.getNetworkMonitor();
                 if (networkMonitor instanceof IDefaultNetworkMonitor) {
                     ((IDefaultNetworkMonitor) networkMonitor).start(application.getApplicationContext(), taskFactoryProvider);
@@ -319,6 +341,10 @@ public final class EnigmaRiverContext {
             } catch (Exception e) {
                 throw new ContextInitializationException(e);
             }
+        }
+
+        public DeviceParameters getDeviceParameters() {
+            return deviceParameters;
         }
     }
 }

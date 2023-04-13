@@ -36,6 +36,6 @@ public class AnonymousLoginRequestTest {
         JSONObject bodyJson = new JSONObject(new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8));
 
         Assert.assertEquals(deviceInfo.getDeviceId(), bodyJson.getString("deviceId"));
-        Assert.assertEquals(deviceInfo.getType(), bodyJson.getJSONObject("device").getString("type"));
+        Assert.assertEquals(deviceInfo.getDeviceTypeLogin(), bodyJson.getJSONObject("device").getString("type"));
     }
 }

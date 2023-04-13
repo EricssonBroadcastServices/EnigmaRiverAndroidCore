@@ -216,7 +216,7 @@ public class ContractRestrictionTest {
     @Test
     public void testMaxBitrate() throws JSONException {
         MockHttpHandler httpHandler = new MockHttpHandler();
-        httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play"), "{\"formats\": [{\"format\": \"DASH\", \"mediaLocator\": \"http://example.com/mock.mpd\"}]}");
+        httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play.*"), "{\"formats\": [{\"format\": \"DASH\", \"mediaLocator\": \"http://example.com/mock.mpd\"}]}");
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(httpHandler).setTaskFactoryProvider(new ExecuteImmediatelyTaskFactoryProvider()));
 
 
@@ -246,7 +246,7 @@ public class ContractRestrictionTest {
             JsonObjectBuilder contractRestrictions = playResponse.putObject("contractRestrictions");
             contractRestrictions.put("maxBitrate", 10000);
         }
-        httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play"), playResponse.toString());
+        httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play.*"), playResponse.toString());
         enigmaPlayer = new EnigmaPlayerWithMockedPlaybackSession(new MockSession(), new MockPlayerImplementation() {
             @Override
             public void load(ILoadRequest loadRequest, IPlayerImplementationControlResultHandler resultHandler) {
@@ -264,7 +264,7 @@ public class ContractRestrictionTest {
     @Test
     public void testMaxResolutionHeight() throws JSONException {
         MockHttpHandler httpHandler = new MockHttpHandler();
-        httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play"), "{\"formats\": [{\"format\": \"DASH\", \"mediaLocator\": \"http://example.com/mock.mpd\"}]}");
+        httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play.*"), "{\"formats\": [{\"format\": \"DASH\", \"mediaLocator\": \"http://example.com/mock.mpd\"}]}");
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setHttpHandler(httpHandler).setTaskFactoryProvider(new ExecuteImmediatelyTaskFactoryProvider()));
 
         final Counter loadCalled = new Counter();
@@ -279,6 +279,7 @@ public class ContractRestrictionTest {
             }
         });
         loadCalled.assertNone();
+        DefaultPlaybackStartAction.IN_PROGRESS.set(false);
         enigmaPlayer.play(new MockPlayRequest());
         loadCalled.assertCount(1);
 
@@ -291,7 +292,7 @@ public class ContractRestrictionTest {
             JsonObjectBuilder contractRestrictions = playResponse.putObject("contractRestrictions");
             contractRestrictions.put("maxResHeight", 720);
         }
-        httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play"), playResponse.toString());
+        httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play.*"), playResponse.toString());
         enigmaPlayer = new EnigmaPlayerWithMockedPlaybackSession(new MockSession(), new MockPlayerImplementation() {
             @Override
             public void load(ILoadRequest loadRequest, IPlayerImplementationControlResultHandler resultHandler) {

@@ -188,6 +188,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
             if (adInsertionParameters != null) {
                 path = path.appendQueryStringParameters(adInsertionParameters.getParameters());
             }
+            // device parameters
+            path = path.appendQueryStringParameters(EnigmaRiverContext.getDeviceParameters().getParameters());
             path = appendSupportedFormatsAndDRMs(path);
 
             MaterialProfile materialProfile = playRequest.getPlaybackProperties().getMaterialProfile();

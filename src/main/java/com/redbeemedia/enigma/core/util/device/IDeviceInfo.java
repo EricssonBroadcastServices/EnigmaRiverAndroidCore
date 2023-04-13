@@ -1,8 +1,6 @@
 package com.redbeemedia.enigma.core.util.device;
 
 public interface IDeviceInfo {
-    String getDeviceId();
-    String getModel();
     String getOS();
     String getOSVersion();
     String getManufacturer();
@@ -11,6 +9,14 @@ public interface IDeviceInfo {
     int getWidthPixels();
     int getHeightPixels();
     String getName();
-    String getType();
+    String getDeviceId();
+    String getDeviceModelLogin();
+    // example :  android-<tv/tablet/mobile>-SM-G970F
+    String getDeviceModelPlay();
+    String getDeviceTypeLogin();
+    // ctv / tablet / mobile
+    String getDeviceTypePlay();
     String getAppType();
+    String getGoogleAdId();
+    boolean isLimitedAdTracking();
 }
