@@ -199,7 +199,7 @@ public class DeviceInfo implements IDeviceInfo {
         if (isTv) {
             return "SMART_TV";
         }
-        return getTypeForTabletAndMobile();
+        return getTypeForTabletAndMobile().toUpperCase(Locale.ROOT);
     }
 
 
