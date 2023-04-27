@@ -1,4 +1,5 @@
 # CHANGELOG
+* `3.6.1 `Release - [3.6.1](#3.6.1)&nbsp; - &nbsp; 2023-04-27
 * `3.6.0 `Release - [3.6.0](#3.6.0)&nbsp; - &nbsp; 2023-04-13
 * `3.5.5 `Release - [3.5.5](#3.5.5)&nbsp; - &nbsp; 2023-03-30
 * `3.5.4 `Release - [3.5.4](#3.5.4)&nbsp; - &nbsp; 2023-03-17
@@ -36,6 +37,15 @@
 * `3.1.8` Release - [3.1.8](#3.1.8) &nbsp; - &nbsp; 2020-12-11
 * `3.1.7` Release - [3.1.7](#3.1.7) &nbsp; - &nbsp; 2020-12-04
 * `3.1.6` Release - [3.1.6](#3.1.6) &nbsp; - &nbsp; 2020-11-13
+
+# <a name="3.6.1"></a> 3.6.1
+#### Features
+`
+DevEnigmaRiverAndroidCore
+DevEnigmaRiverAndroidExoPlayerIntegration
+`
+* EMP-19837 - Handle Exoplayer errors
+* EMP-19649 - Handle updates to ad-insertion param
 
 # <a name="3.6.0"></a> 3.6.0
 #### Features

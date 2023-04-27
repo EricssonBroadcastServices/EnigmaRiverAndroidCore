@@ -56,6 +56,9 @@ public final class EnigmaRiverContext {
         if (requestedContext.analyticsUrl != null) {
             initializedContext.analyticsUrl = new UrlPath(requestedContext.analyticsUrl);
         }
+        if (requestedContext.adInsertionFactory != null) {
+            initializedContext.adInsertionFactory = requestedContext.adInsertionFactory;
+        }
         if (requestedContext.appName != null) {
             initializedContext.appName = requestedContext.appName;
         }
@@ -137,7 +140,7 @@ public final class EnigmaRiverContext {
 
     //Version if the core library
     public static String getVersion() {
-        return "r3.6.0";
+        return "r3.6.1-BETA-1";
     }
 
     private static void assertInitialized() {
@@ -304,12 +307,13 @@ public final class EnigmaRiverContext {
         private String appName;
         // it can be re-initialized
         private IDeviceInfo deviceInfo;
+        // it can be re-initialized
+        private IAdInsertionFactory adInsertionFactory;
         private final IHttpHandler httpHandler;
         private final IActivityLifecycleManager activityLifecycleManager;
         private final ITaskFactoryProvider taskFactoryProvider;
         private final IEpgLocator epgLocator;
         private final INetworkMonitor networkMonitor;
-        private final IAdInsertionFactory adInsertionFactory;
         private final DeviceParameters deviceParameters;
 
         public EnigmaRiverInitializedContext(Application application, EnigmaRiverContextInitialization initialization) {
