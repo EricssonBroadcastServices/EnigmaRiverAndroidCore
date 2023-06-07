@@ -43,7 +43,9 @@ import com.redbeemedia.enigma.core.video.IVideoTrack;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /*package-protected*/ class InternalPlaybackSession implements IInternalPlaybackSession {
@@ -83,6 +85,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
     private volatile int state = STATE_NEW;
 
     private final IEnigmaPlayerListener playerListener;
+
+    private IPlayerImplementationControls playerImplementationControls;
 
     public InternalPlaybackSession(ConstructorArgs constructorArgs) {
         this(constructorArgs.streamInfo,
@@ -592,6 +596,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
         private boolean hasStartedAtLeastOnce = false;
         private final OpenContainer<IVideoTrack> selectedVideoTrack;
         private boolean programTrackingLost = false;
+        private IPlayerImplementationControls playerImplementationControls;
 
         public EnigmaPlayerListenerForAnalytics(IAnalyticsReporter analyticsReporter, IPlaybackSessionInfo playbackSessionInfo, IStreamInfo streamInfo, OpenContainer<IVideoTrack> selectedVideoTrack) {
             this.analyticsReporter = analyticsReporter;
@@ -647,7 +652,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
                 }
             }
             String programId = playbackSessionInfo.getCurrentProgramId();
-            analyticsReporter.playbackStarted(playbackOffset, playMode, mediaLocator, referenceTime, bitrate, programId, playbackSessionInfo.getDuration());
+            Map<String, String> drmKeyStatusMap = new HashMap<>();
+            if (this.playerImplementationControls != null) {
+                drmKeyStatusMap = this.playerImplementationControls.getDrmKeyStatusMap();
+            }
+            String playbackDurationRemaining = drmKeyStatusMap.get("PlaybackDurationRemaining");
+            String renewAllowed = drmKeyStatusMap.get("RenewAllowed");
+            String licenseType = drmKeyStatusMap.get("LicenseType");
+            String licenseDurationRemaining = drmKeyStatusMap.get("LicenseDurationRemaining");
+            String playAllowed = drmKeyStatusMap.get("PlayAllowed");
+
+            analyticsReporter.playbackStarted(playbackOffset, playMode, mediaLocator, referenceTime, bitrate, programId, playbackSessionInfo.getDuration(),licenseDurationRemaining,renewAllowed,playbackDurationRemaining,licenseType,playAllowed);
         }
 
         @Override
@@ -670,6 +685,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
             } else if(eventType == AdEventType.Complete) {
                 analyticsReporter.playbackAdCompleted(currentAdd.getStartTime() + currentAdd.getDuration(), currentAdd.getId());
             }
+        }
+
+        public void setPlayerImplementationControls(IPlayerImplementationControls playerImplementationControls) {
+            this.playerImplementationControls = playerImplementationControls;
         }
     }
 
@@ -695,7 +714,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
         private void ifConnectionOpen(ICommunicationsChannelAction action) {
             ICommunicationsChannel activeChannel = OpenContainerUtil.getValueSynchronized(communicationsChannel);
-            if(activeChannel != null) {
+            if (activeChannel != null) {
                 action.onCommunicationsChannel(activeChannel);
             }
         }
@@ -800,5 +819,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
                 listeners.get(i).onStop(args);
             }
         }
+    }
+
+    public IPlayerImplementationControls getPlayerImplementationControls() {
+        return playerImplementationControls;
+    }
+
+    public void setPlayerImplementationControls(IPlayerImplementationControls playerImplementationControls) {
+        this.playerImplementationControls = playerImplementationControls;
+        this.playerListener.setPlayerImplementationControls(playerImplementationControls);
     }
 }

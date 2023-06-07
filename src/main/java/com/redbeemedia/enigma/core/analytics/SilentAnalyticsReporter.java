@@ -30,7 +30,7 @@ public class SilentAnalyticsReporter implements IAnalyticsReporter {
     }
 
     @Override
-    public void playbackStarted(long offsetTime, String playMode, String mediaLocator, Long referenceTime, Integer bitrate, String programId, Integer duration) {
+    public void playbackStarted(long offsetTime, String playMode, String mediaLocator, Long referenceTime, Integer bitrate, String programId, Integer duration, String drmLicenseDurationRemainingTime, String drmRenewAllowed, String drmPlaybackDurationRemaining, String drmLicenseType,String drmPlayAllowed) {
 
     }
 

@@ -150,7 +150,7 @@ import java.util.List;
             } else {
                 String channelId = streamInfo.getChannelId();
                 if (channelId != null) {
-                    checkEntitlement(new AssetIdFallbackChain(channelId), toProgram.getStartUtcMillis());
+                    checkEntitlement(new AssetIdFallbackChain(channelId), -1);
                 }
             }
         }

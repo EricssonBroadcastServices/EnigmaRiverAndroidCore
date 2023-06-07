@@ -92,7 +92,10 @@ public class AnalyticsReportedEventTest<E extends IAnalyticsEventType> {
         } else if (eventType == AnalyticsEvents.PLAYER_READY) {
             return reporter -> reporter.playbackPlayerReady(72442L, "MockTech", "1.0");
         } else if (eventType == AnalyticsEvents.STARTED) {
-            return reporter -> reporter.playbackStarted(35737L, "test", "http://mock.example.com/media/mock", null, null, null,575778);
+            return reporter -> reporter.playbackStarted(35737L, "test", "http://mock.example.com/media/mock",
+                    null, null, null,575778,
+                    "null", "null" ,
+                    "","null","null");
         } else if (eventType == AnalyticsEvents.PAUSED) {
             return reporter -> reporter.playbackPaused(37357L);
         } else if (eventType == AnalyticsEvents.RESUMED) {

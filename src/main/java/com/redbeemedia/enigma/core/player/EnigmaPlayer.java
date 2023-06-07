@@ -589,6 +589,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                                 }
                             }
                             stateMachine.setState(EnigmaPlayerState.PLAYING);
+                            environment.playerImplementationControls.getDrmKeyStatusMap();
                         }
 
                         @Override

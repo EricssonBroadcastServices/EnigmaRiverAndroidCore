@@ -93,7 +93,8 @@ public class AnalyticsReporter implements IAnalyticsReporter {
     }
 
     @Override
-    public void playbackStarted(long offsetTime, String playMode, String mediaLocator, Long referenceTime, Integer bitrate, String programId, Integer duration) {
+    public void playbackStarted(long offsetTime, String playMode, String mediaLocator, Long referenceTime, Integer bitrate, String programId, Integer duration,
+                                String drmLicenseDurationRemainingTime, String drmRenewAllowed, String drmPlaybackDurationRemaining, String drmLicenseType, String drmPlayAllowed) {
         event(AnalyticsEvents.STARTED, (builder, eventType) -> {
             builder.addData(eventType.OFFSET_TIME, offsetTime);
             builder.addData(eventType.PLAY_MODE, playMode);
@@ -102,6 +103,11 @@ public class AnalyticsReporter implements IAnalyticsReporter {
             builder.addData(eventType.BITRATE, bitrate);
             builder.addData(eventType.VIDEO_LENGTH, duration);
             builder.addData(eventType.PROGRAM_ID, programId);
+            builder.addData(eventType.DRM_LICENCSE_DURATION_REMAINING_TIME, drmLicenseDurationRemainingTime);
+            builder.addData(eventType.DRM_RENEW_ALLOWED, drmRenewAllowed);
+            builder.addData(eventType.DRM_PLAYBACK_DURATION_REMAINING, drmPlaybackDurationRemaining);
+            builder.addData(eventType.DRM_LICENSE_TYPE, drmLicenseType);
+            builder.addData(eventType.DRM_PLAY_ALLOWED, drmPlayAllowed);
         });
     }
 

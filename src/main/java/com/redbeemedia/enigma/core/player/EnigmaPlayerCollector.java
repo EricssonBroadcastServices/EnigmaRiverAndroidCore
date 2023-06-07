@@ -47,4 +47,9 @@ import com.redbeemedia.enigma.core.util.Collector;
     public void sendPlaybackStartedEvent() {
         forEach(IEnigmaPlayerListener::sendPlaybackStartedEvent);
     }
+
+    @Override
+    public void setPlayerImplementationControls(IPlayerImplementationControls playerImplementationControls) {
+
+    }
 }

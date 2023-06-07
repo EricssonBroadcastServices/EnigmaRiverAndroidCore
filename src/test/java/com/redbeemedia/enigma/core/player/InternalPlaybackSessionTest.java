@@ -279,6 +279,7 @@ public class InternalPlaybackSessionTest {
         MockPlaybackSessionInfo playbackSessionInfo = new MockPlaybackSessionInfo();
         OpenContainer<IVideoTrack> selectedVideoTrack = new OpenContainer<>(null);
         InternalPlaybackSession.EnigmaPlayerListenerForAnalytics analytics = new InternalPlaybackSession.EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, JsonStreamInfo.createForNull(), selectedVideoTrack);
+        analytics.setPlayerImplementationControls(new MockIPlayerImplementationControls());
 
         IStateMachine<EnigmaPlayerState> stateMachine = EnigmaStateMachineFactory.create();
         stateMachine.addListener((from, to) -> analytics.onStateChanged(from, to));
@@ -336,6 +337,7 @@ public class InternalPlaybackSessionTest {
         MockPlaybackSessionInfo playbackSessionInfo = new MockPlaybackSessionInfo();
         JsonStreamInfo streamInfo = new JsonStreamInfo(new JSONObject("{\"live\" : true, \"static\" : false, \"start\" : 8765432}"));
         InternalPlaybackSession.EnigmaPlayerListenerForAnalytics analytics = new InternalPlaybackSession.EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, streamInfo, new OpenContainer<>(null));
+        analytics.setPlayerImplementationControls(new MockIPlayerImplementationControls());
 
         analytics.onStateChanged(EnigmaPlayerState.LOADED, EnigmaPlayerState.PLAYING);
         Assert.assertEquals(1,analyticsEvents.size());
@@ -356,6 +358,7 @@ public class InternalPlaybackSessionTest {
         JsonStreamInfo streamInfo = new JsonStreamInfo(new JSONObject("{\"live\" : false, \"start\" : 8765432}"));
         InternalPlaybackSession.EnigmaPlayerListenerForAnalytics analytics = new InternalPlaybackSession.EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, streamInfo, new OpenContainer<>(null));
 
+        analytics.setPlayerImplementationControls(new MockIPlayerImplementationControls());
         analytics.onStateChanged(EnigmaPlayerState.LOADED, EnigmaPlayerState.PLAYING);
         Assert.assertEquals(1,analyticsEvents.size());
         JSONObject event = analyticsEvents.get(0);
@@ -458,6 +461,7 @@ public class InternalPlaybackSessionTest {
         internalPlaybackSession.setSelectedVideoTrack(new MockVideoTrack(72634));
 
         Assert.assertEquals("[Playback.Created]", eventLog.toString());
+        internalPlaybackSession.setPlayerImplementationControls(new MockIPlayerImplementationControls());
 
         for(IEnigmaPlayerListener playerListener : playerListeners) {
             playerListener.onStateChanged(EnigmaPlayerState.LOADED, EnigmaPlayerState.PLAYING);

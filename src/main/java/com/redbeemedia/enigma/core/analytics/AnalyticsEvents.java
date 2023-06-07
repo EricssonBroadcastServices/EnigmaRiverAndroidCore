@@ -110,6 +110,11 @@ package com.redbeemedia.enigma.core.analytics;
         public final IEventProperty<AnalyticsStartedEvent, Integer> BITRATE = optional("Bitrate");
         public final IEventProperty<AnalyticsStartedEvent, Integer> VIDEO_LENGTH = optional("VideoLength");
         public final IEventProperty<AnalyticsStartedEvent, String> PROGRAM_ID = optional("ProgramId");
+        public final IEventProperty<AnalyticsStartedEvent, String> DRM_LICENCSE_DURATION_REMAINING_TIME = optional("drmLicenseDurationRemainingTime");
+        public final IEventProperty<AnalyticsStartedEvent, String> DRM_RENEW_ALLOWED = optional("drmRenewAllowed");
+        public final IEventProperty<AnalyticsStartedEvent, String> DRM_PLAYBACK_DURATION_REMAINING = optional("drmPlaybackDurationRemaining");
+        public final IEventProperty<AnalyticsStartedEvent, String> DRM_LICENSE_TYPE = optional("drmLicenseType");
+        public final IEventProperty<AnalyticsStartedEvent, String> DRM_PLAY_ALLOWED = optional("drmPlayAllowed");
     }
 
     public static class AnalyticsPausedEvent implements IAnalyticsEventType {

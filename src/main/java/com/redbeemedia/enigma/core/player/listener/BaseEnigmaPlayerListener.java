@@ -4,6 +4,7 @@ import com.redbeemedia.enigma.core.epg.IProgram;
 import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.player.EnigmaPlayerState;
+import com.redbeemedia.enigma.core.player.IPlayerImplementationControls;
 
 public class BaseEnigmaPlayerListener implements IEnigmaPlayerListener {
     @Override
@@ -34,5 +35,10 @@ public class BaseEnigmaPlayerListener implements IEnigmaPlayerListener {
 
     @Override
     public void sendPlaybackStartedEvent() {
+    }
+
+    @Override
+    public void setPlayerImplementationControls(IPlayerImplementationControls playerImplementationControls) {
+
     }
 }

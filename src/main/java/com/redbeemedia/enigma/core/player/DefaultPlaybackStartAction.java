@@ -331,7 +331,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
                                             adDetector));
                             playbackSession.addInternalListener(analytics.internalPlaybackSessionListener);
                             playbackSession.addInternalListener(createProgramService(session, streamInfo, streamPrograms, playbackSessionInfo, newEntitlementProvider(), playbackSession, taskFactoryProvider, finalEntitlementCheck));
-
+                            playbackSession.setPlayerImplementationControls(playerImplementationControls);
                             playerConnector.deliverPlaybackSession(playbackSession);
 
                             setStateIfCurrentStartAction(EnigmaPlayerState.LOADING);
@@ -402,7 +402,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
         String drmBuilder = buildDrm(drms);
         Map<String, String> paramMap = new HashMap<>();
         if (!formatsBuilder.isEmpty()) {
-            Log.w(TAG, "No supported formats");
             paramMap.put(SUPPORTED_FORMATS, formatsBuilder);
         }
         if (!drmBuilder.trim().isEmpty()) {

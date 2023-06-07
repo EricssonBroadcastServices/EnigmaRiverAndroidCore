@@ -40,4 +40,6 @@ import java.util.Collection;
     void fireSeekCompleted();
 
     void addInternalListener(IInternalPlaybackSessionListener listener);
+
+    void setPlayerImplementationControls(IPlayerImplementationControls playerImplementationControls);
 }

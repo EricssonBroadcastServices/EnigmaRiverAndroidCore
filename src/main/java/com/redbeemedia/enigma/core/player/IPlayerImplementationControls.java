@@ -5,6 +5,8 @@ import com.redbeemedia.enigma.core.subtitle.ISubtitleTrack;
 import com.redbeemedia.enigma.core.time.Duration;
 import com.redbeemedia.enigma.core.video.IVideoTrack;
 
+import java.util.Map;
+
 /**
  * <h3>NOTE</h3>
  * <p>This interface is not part of the public API.</p>
@@ -20,6 +22,7 @@ public interface IPlayerImplementationControls {
     void setAudioTrack(IAudioTrack track, IPlayerImplementationControlResultHandler resultHandler);
     void setVideoTrack(IVideoTrack track, final IPlayerImplementationControlResultHandler resultHandler);
     void setMaxVideoTrackDimensions(int width, int height, IPlayerImplementationControlResultHandler controlResultHandler);
+    Map<String,String> getDrmKeyStatusMap();
 
     interface ISeekPosition {
         public static ISeekPosition TIMELINE_START = new ISeekPosition() {

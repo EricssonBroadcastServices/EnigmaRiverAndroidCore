@@ -4,6 +4,7 @@ import com.redbeemedia.enigma.core.epg.IProgram;
 import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.player.EnigmaPlayerState;
+import com.redbeemedia.enigma.core.player.IPlayerImplementationControls;
 import com.redbeemedia.enigma.core.util.IInternalListener;
 
 public interface IEnigmaPlayerListener extends IInternalListener {
@@ -27,4 +28,6 @@ public interface IEnigmaPlayerListener extends IInternalListener {
     void checkEntitlement(IProgram to);
 
     void sendPlaybackStartedEvent();
+
+    void setPlayerImplementationControls(IPlayerImplementationControls playerImplementationControls);
 }
