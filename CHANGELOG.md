@@ -1,4 +1,5 @@
 # CHANGELOG
+* `3.6.3 `Release - [3.6.3](#3.6.3)&nbsp; - &nbsp; 2023-06-07
 * `3.6.2 `Release - [3.6.2](#3.6.2)&nbsp; - &nbsp; 2023-06-05
 * `3.6.1 `Release - [3.6.1](#3.6.1)&nbsp; - &nbsp; 2023-04-27
 * `3.6.0 `Release - [3.6.0](#3.6.0)&nbsp; - &nbsp; 2023-04-13
@@ -38,6 +39,13 @@
 * `3.1.8` Release - [3.1.8](#3.1.8) &nbsp; - &nbsp; 2020-12-11
 * `3.1.7` Release - [3.1.7](#3.1.7) &nbsp; - &nbsp; 2020-12-04
 * `3.1.6` Release - [3.1.6](#3.1.6) &nbsp; - &nbsp; 2020-11-13
+
+# <a name="3.6.3"></a> 3.6.3
+#### Features
+`
+DevEnigmaRiverAndroidExoPlayerIntegration
+`
+* EMP-18744 - Drm keys expired error
 
 # <a name="3.6.2"></a> 3.6.2
 #### Features
