@@ -23,7 +23,7 @@ optional module called `EnigmaRiverAndroidExposureUtils` that handles the conver
 backend Json objects to native java object. To use this module, app developers need to add it as a
 dependency in their gradle build file:
 ```
-implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exposureUtils:r3.6.4-BETA-4"
+implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exposureUtils:r3.6.4"
 ```
 Performing the same call as in the example from the old SDK above is done by
 ```
