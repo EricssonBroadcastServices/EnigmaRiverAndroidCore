@@ -87,7 +87,7 @@ drmLicence.renew(session, new BaseDrmLicenceRenewResultHandler() {
 
 ## Further reading
 To see this in action please refer to the tutorial app
-[downloads](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.6.4/downloads).
+[downloads](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.6.5/downloads).
 
 
 ___
@@ -95,3 +95,4 @@ ___
 &bull; Working with DRM protected offline content (current)<br/>
 [AssetDownloadState](asset_download_state.md)<br/>
 [Only download on wifi networks](set_download_requirements.md)<br/>
+[AssetQueueDownload](asset_queue_download.md)<br/>

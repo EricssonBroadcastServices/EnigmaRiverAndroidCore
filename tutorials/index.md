@@ -121,6 +121,7 @@ The purpose of this series is to provide some additional tutorials on how to ach
 [Working with DRM protected offline content](downloads_advanced/download_drm_management.md)<br/>
 [AssetDownloadState](downloads_advanced/asset_download_state.md)<br/>
 [Only download on wifi networks](downloads_advanced/set_download_requirements.md)<br/>
+[AssetQueueDownload](downloads_advanced/asset_queue_download.md)<br/>
 
 ### Migration guide (Android SDK 2.0 -> Enigma River Android SDK)
 ###### Purpose

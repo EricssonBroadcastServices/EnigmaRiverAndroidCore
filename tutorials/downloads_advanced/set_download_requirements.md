@@ -43,3 +43,4 @@ ___
 [Working with DRM protected offline content](download_drm_management.md)<br/>
 [AssetDownloadState](asset_download_state.md)<br/>
 &bull; Only download on wifi networks (current)<br/>
+[AssetQueueDownload](asset_queue_download.md)<br/>
