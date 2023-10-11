@@ -34,5 +34,6 @@ ___
 [Table of Contents](../index.md)<br/>
 [Working with DRM protected offline content](download_drm_management.md)<br/>
 &bull; AssetDownloadState (current)<br/>
+[Offline Analytics events](offline_analytics.md)<br/>
 [Only download on wifi networks](set_download_requirements.md)<br/>
 [AssetQueueDownload](asset_queue_download.md)<br/>

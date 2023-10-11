@@ -1,4 +1,5 @@
 # CHANGELOG
+* `3.6.6 `Release - [3.6.6](#3.6.6)&nbsp; - &nbsp; 2023-10-11
 * `3.6.5 `Release - [3.6.5](#3.6.5)&nbsp; - &nbsp; 2023-09-22
 * `3.6.4 `Release - [3.6.4](#3.6.4)&nbsp; - &nbsp; 2023-08-04
 * `3.6.3 `Release - [3.6.3](#3.6.3)&nbsp; - &nbsp; 2023-06-07
@@ -41,6 +42,13 @@
 * `3.1.8` Release - [3.1.8](#3.1.8) &nbsp; - &nbsp; 2020-12-11
 * `3.1.7` Release - [3.1.7](#3.1.7) &nbsp; - &nbsp; 2020-12-04
 * `3.1.6` Release - [3.1.6](#3.1.6) &nbsp; - &nbsp; 2020-11-13
+
+# <a name="3.6.6"></a> 3.6.6
+#### Features
+`
+DevEnigmaRiverAndroidExoPlayerIntegration
+`
+* EMP-20650 - Player crash 5.1 when audio is selected
 
 # <a name="3.6.5"></a> 3.6.5
 #### Features

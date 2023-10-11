@@ -148,7 +148,7 @@ enigmaPlayer.getPlayerSubtitleView().setFixedTextSize(Dimension.PX,30);
 **And that's all there is to it**!
 
 This is what our finished app looks like:
-[customUiApp](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.6.5/customcontrols)<br
+[customUiApp](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.6.6/customcontrols)<br
 />
 
 
