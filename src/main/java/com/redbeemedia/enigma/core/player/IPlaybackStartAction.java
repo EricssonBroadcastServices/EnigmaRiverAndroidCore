@@ -3,6 +3,7 @@ package com.redbeemedia.enigma.core.player;
 import com.redbeemedia.enigma.core.ads.IAdDetector;
 import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.marker.IMarkerPointsDetector;
+import com.redbeemedia.enigma.core.player.timeline.ITimelinePosition;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -20,6 +21,9 @@ import org.json.JSONObject;
     void setMarkerPointsDetector(IMarkerPointsDetector markerPointsDetector);
 
     interface IEnigmaPlayerCallbacks {
+        EnigmaPlayerState getState();
+        ITimelinePosition getTimelineCurrentPosition();
+
         void setStateIfCurrentStartAction(IPlaybackStartAction action, EnigmaPlayerState state);
         void deliverPlaybackSession(IInternalPlaybackSession internalPlaybackSession);
         IPlaybackSessionInfo getPlaybackSessionInfo(String assetId, String manifestUrl, String cdnProvider, String playbackSessionId, Integer duration);

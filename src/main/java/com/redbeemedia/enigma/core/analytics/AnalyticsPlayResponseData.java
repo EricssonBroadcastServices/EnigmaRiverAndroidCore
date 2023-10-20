@@ -38,8 +38,9 @@ public class AnalyticsPlayResponseData {
         postIntervalSeconds = initialized ? analytics.optInt("postInterval", FALLBACK_POST_FREQUENCY_S) : FALLBACK_POST_FREQUENCY_S;
 
         this.streamingTechnology = streamingTechnology;
-        if (analytics != null) {
-            String analyticsBaseUrl = analytics.optString("baseUrl");
+        String analyticsBaseUrl = initialized ? analytics.optString("baseUrl") : "";
+
+        if (analytics != null && !analyticsBaseUrl.isEmpty()) {
             String exposureBaseUrl = EnigmaRiverContext.getExposureBaseUrl().toString();
             EnigmaRiverContext.EnigmaRiverContextInitialization init = new EnigmaRiverContext.EnigmaRiverContextInitialization(exposureBaseUrl);
             UrlPath analyticsUrl = session.getBusinessUnit().createAnalyticsUrl(analyticsBaseUrl);

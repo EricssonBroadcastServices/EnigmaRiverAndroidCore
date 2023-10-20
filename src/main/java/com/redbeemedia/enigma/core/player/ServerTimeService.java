@@ -101,7 +101,8 @@ import java.net.URL;
     @Override
     public synchronized long getTime() {
         if(localStartTime == null) {
-            return fallbackTimeProvider.getTime();
+            // System time, when its offline
+            return System.currentTimeMillis();
         }
         return this.serverStartTime + (getLocalTimeMillis() - this.localStartTime);
     }
@@ -112,7 +113,7 @@ import java.net.URL;
 
             @Override
             protected void onSuccess(JSONObject response) throws JSONException {
-                if(response.has(EPOCH_MILLIS)) {
+                if (response.has(EPOCH_MILLIS)) {
                     serverStartTime = response.optLong(EPOCH_MILLIS);
                     localStartTime = getLocalTimeMillis();
                     getFirstSyncRepeater.setEnabled(false);
@@ -192,5 +193,13 @@ import java.net.URL;
 
     protected long getLocalTimeMillis() {
         return SystemClock.uptimeMillis();
+    }
+
+    public Long getLocalStartTime() {
+        return localStartTime;
+    }
+
+    public long getServerStartTime() {
+        return serverStartTime;
     }
 }

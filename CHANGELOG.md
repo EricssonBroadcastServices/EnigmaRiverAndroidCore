@@ -1,4 +1,5 @@
 # CHANGELOG
+* `3.7.0 `Release - [3.7.0](#3.7.0)&nbsp; - &nbsp; 2023-10-20
 * `3.6.6 `Release - [3.6.6](#3.6.6)&nbsp; - &nbsp; 2023-10-11
 * `3.6.5 `Release - [3.6.5](#3.6.5)&nbsp; - &nbsp; 2023-09-22
 * `3.6.4 `Release - [3.6.4](#3.6.4)&nbsp; - &nbsp; 2023-08-04
@@ -42,6 +43,17 @@
 * `3.1.8` Release - [3.1.8](#3.1.8) &nbsp; - &nbsp; 2020-12-11
 * `3.1.7` Release - [3.1.7](#3.1.7) &nbsp; - &nbsp; 2020-12-04
 * `3.1.6` Release - [3.1.6](#3.1.6) &nbsp; - &nbsp; 2020-11-13
+
+# <a name="3.7.0"></a> 3.7.0
+#### Features
+`
+DevEnigmaRiverAndroidCore
+DevEnigmaRiverAndroidDownload
+DevEnigmaRiverAndroidExoPlayerDownload
+`
+* EMP-20040- Analytics support for offline playback
+* EMP-20587- re-evaluate entitlement on downloaded assets
+* EMP-20652 - Use zero-based time for offset time in analytics
 
 # <a name="3.6.6"></a> 3.6.6
 #### Features

@@ -21,7 +21,10 @@ import java.util.Collection;
     IStreamPrograms getStreamPrograms();
     IPlaybackSessionInfo getPlaybackSessionInfo();
     IDrmInfo getDrmInfo();
-    /** Returns ad related information (or `null` if no ad information was detected). */
+
+    /**
+     * Returns ad related information (or `null` if no ad information was detected).
+     */
     IAdMetadata getAdsMetadata();
     IEnigmaPlayerConnection getPlayerConnection();
     void setPlayingFromLive(boolean live);
@@ -42,4 +45,8 @@ import java.util.Collection;
     void addInternalListener(IInternalPlaybackSessionListener listener);
 
     void setPlayerImplementationControls(IPlayerImplementationControls playerImplementationControls);
+
+    void setSessionResumed(boolean sessionResumed);
+
+    boolean isSessionResumed();
 }

@@ -82,11 +82,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
     private static final int STATE_STARTED = 1;
     private static final int STATE_END_REACHED = 2;
     private static final int STATE_DEAD = 3;
+    private final Duration gracePeriod;
     private volatile int state = STATE_NEW;
 
     private final IEnigmaPlayerListener playerListener;
 
     private IPlayerImplementationControls playerImplementationControls;
+    private boolean sessionResumed;
 
     public InternalPlaybackSession(ConstructorArgs constructorArgs) {
         this(constructorArgs.streamInfo,
@@ -97,20 +99,26 @@ import java.util.concurrent.atomic.AtomicBoolean;
                 constructorArgs.analyticsReporter,
                 constructorArgs.spriteRepository,
                 constructorArgs.adsInfo,
-                constructorArgs.adDetector);
+                constructorArgs.adDetector,
+                constructorArgs.sessionResumed,
+                constructorArgs.gracePeriod);
+
     }
 
-    public InternalPlaybackSession(IStreamInfo streamInfo, IStreamPrograms streamPrograms, IPlaybackSessionInfo playbackSessionInfo, IContractRestrictions contractRestrictions, IDrmInfo drmInfo, IAnalyticsReporter analyticsReporter, ISpriteRepository spriteRepository, IAdMetadata adsInfo, IAdDetector adDetector) {
+    public InternalPlaybackSession(IStreamInfo streamInfo, IStreamPrograms streamPrograms, IPlaybackSessionInfo playbackSessionInfo, IContractRestrictions contractRestrictions, IDrmInfo drmInfo, IAnalyticsReporter analyticsReporter, ISpriteRepository spriteRepository, IAdMetadata adsInfo, IAdDetector adDetector, boolean sessionResumed,Duration gracePeriod) {
         this.playbackSessionInfo = playbackSessionInfo;
         this.streamInfo = streamInfo;
         this.streamPrograms = streamPrograms;
         this.drmInfo = drmInfo;
         this.contractRestrictions = new OpenContainer<>(contractRestrictions);
         this.analyticsReporter = analyticsReporter;
-        EnigmaPlayerListenerForAnalytics playerListener = new EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, streamInfo, selectedVideoTrack);
-        this.playerListener = playerListener;
+        this.gracePeriod = gracePeriod;
+
         this.heartbeatRepeater = new Repeater(getTaskFactory(HEARTBEAT_REPEATER), HEARTBEAT_RATE_MILLIS, new HeartbeatRunnable());
-        this.appForegroundMonitor = new AppForegroundMonitor(getTaskFactory(APP_FOREGROUND_MONITOR));
+        this.appForegroundMonitor = new AppForegroundMonitor(getTaskFactory(APP_FOREGROUND_MONITOR), playerImplementationControls,gracePeriod);
+        this.sessionResumed = sessionResumed;
+        EnigmaPlayerListenerForAnalytics playerListener = new EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, streamInfo, selectedVideoTrack, this.appForegroundMonitor, this.sessionResumed);
+        this.playerListener = playerListener;
         this.adsInfo = adsInfo;
         this.spriteRepository = spriteRepository;
 
@@ -484,6 +492,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
         collector.removeListener(listener);
     }
 
+    @Override
+    public boolean isSessionResumed() {
+        return sessionResumed;
+    }
+
     private static class ListenerCollector extends Collector<IPlaybackSessionListener> implements IPlaybackSessionListener {
         public ListenerCollector() {
             super(IPlaybackSessionListener.class);
@@ -550,6 +563,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
         public final IAdMetadata adsInfo;
         public final ISpriteRepository spriteRepository;
         public final IAdDetector adDetector;
+        public final boolean sessionResumed;
+        public final Duration gracePeriod;
 
         public ConstructorArgs(IStreamInfo streamInfo,
                                IStreamPrograms streamPrograms,
@@ -559,7 +574,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
                                IAnalyticsReporter analyticsReporter,
                                ISpriteRepository spriteRepository,
                                IAdMetadata adsInfo,
-                               IAdDetector adDetector) {
+                               IAdDetector adDetector,
+                               boolean sessionResumed,
+                               Duration gracePeriod) {
 
             this.streamInfo = streamInfo;
             this.streamPrograms = streamPrograms;
@@ -570,6 +587,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
             this.adsInfo = adsInfo;
             this.adDetector = adDetector;
             this.spriteRepository = spriteRepository;
+            this.sessionResumed = sessionResumed;
+            this.gracePeriod = gracePeriod;
         }
     }
 
@@ -597,12 +616,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
         private final OpenContainer<IVideoTrack> selectedVideoTrack;
         private boolean programTrackingLost = false;
         private IPlayerImplementationControls playerImplementationControls;
+        private AppForegroundMonitor appForegroundMonitor;
+        private boolean sessionResumed;
 
-        public EnigmaPlayerListenerForAnalytics(IAnalyticsReporter analyticsReporter, IPlaybackSessionInfo playbackSessionInfo, IStreamInfo streamInfo, OpenContainer<IVideoTrack> selectedVideoTrack) {
+        public EnigmaPlayerListenerForAnalytics(IAnalyticsReporter analyticsReporter, IPlaybackSessionInfo playbackSessionInfo, IStreamInfo streamInfo, OpenContainer<IVideoTrack> selectedVideoTrack, AppForegroundMonitor appForegroundMonitor, boolean sessionResumed) {
             this.analyticsReporter = analyticsReporter;
             this.playbackSessionInfo = playbackSessionInfo;
             this.streamInfo = streamInfo;
             this.selectedVideoTrack = selectedVideoTrack;
+            this.appForegroundMonitor = appForegroundMonitor;
+            this.sessionResumed = sessionResumed;
         }
 
         @Override
@@ -612,10 +635,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
         @Override
         public void onStateChanged(EnigmaPlayerState from, EnigmaPlayerState to) {
-            if (to == EnigmaPlayerState.LOADED) {
-                analyticsReporter.playbackPlayerReady(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo),
-                        playbackSessionInfo.getPlayerTechnologyName(),
-                        playbackSessionInfo.getPlayerTechnologyVersion());
+            if (to == EnigmaPlayerState.LOADED && !sessionResumed) {
+                if (from != EnigmaPlayerState.PAUSED) {
+                    analyticsReporter.playbackPlayerReady(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo),
+                            playbackSessionInfo.getPlayerTechnologyName(),
+                            playbackSessionInfo.getPlayerTechnologyVersion());
+                }
             } else if(to == EnigmaPlayerState.PLAYING) {
                 if(hasStartedAtLeastOnce) {
                     if(from != EnigmaPlayerState.BUFFERING) {
@@ -689,13 +714,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
         public void setPlayerImplementationControls(IPlayerImplementationControls playerImplementationControls) {
             this.playerImplementationControls = playerImplementationControls;
+            if (this.appForegroundMonitor != null) {
+                this.appForegroundMonitor.setPlayerImplementationControls(playerImplementationControls);
+            }
         }
     }
 
     private static long getCurrentPlaybackOffset(IPlaybackSessionInfo playbackSessionInfo, IStreamInfo streamInfo) {
         long playbackOffset = playbackSessionInfo.getCurrentPlaybackOffset().inWholeUnits(Duration.Unit.MILLISECONDS);
+        // We will only report from 0 for offset time : EMP-20652
         long startUtcMillis = streamInfo.hasStart() ? streamInfo.getStart(Duration.Unit.MILLISECONDS) : 0;
-        long sum = playbackOffset+startUtcMillis;
+        long sum = playbackOffset; //+startUtcMillis;
         return sum;
     }
 
@@ -734,16 +763,28 @@ import java.util.concurrent.atomic.AtomicBoolean;
         }
     }
 
-    private class AppForegroundMonitor extends AppForegroundListener {
-        private final Duration GRACE_PERIOD = Duration.minutes(10);
+    class AppForegroundMonitor extends AppForegroundListener {
 
         private final ITaskFactory taskFactory;
         private AtomicBoolean isStickyPlayer = new AtomicBoolean(false);
         private final OpenContainer<Boolean> inForeground = new OpenContainer<>(true);
         private ITask gracePeriodEndTask = null;
+        private IPlayerImplementationControls playerImplementationControls;
+        private final Duration customGracePeriod;
 
-        public AppForegroundMonitor(ITaskFactory taskFactory) {
+        public AppForegroundMonitor(ITaskFactory taskFactory, IPlayerImplementationControls playerImplementationControls, Duration gracePeriod) {
             this.taskFactory = taskFactory;
+            this.playerImplementationControls = playerImplementationControls;
+            if (gracePeriod == null) {
+                // in online we have 10 minutes grace period
+                this.customGracePeriod = Duration.minutes(10);
+            } else {
+                this.customGracePeriod = gracePeriod;
+            }
+        }
+
+        public void setPlayerImplementationControls(IPlayerImplementationControls playerImplementationControls) {
+            this.playerImplementationControls = playerImplementationControls;
         }
 
         @Override
@@ -772,8 +813,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
                             }
                         }
                     });
-                    gracePeriodEndTask.startDelayed(GRACE_PERIOD.inWholeUnits(Duration.Unit.MILLISECONDS));
+                    if (this.playerImplementationControls != null) {
+                        this.playerImplementationControls.pause(new BasePlayerImplementationControlResultHandler());
+                    }
+                    gracePeriodEndTask.startDelayed(customGracePeriod.inWholeUnits(Duration.Unit.MILLISECONDS));
                 } catch (Exception e) {
+                    Log.e("Error","onBackgrounded error",e);
                     analyticsReporter.playbackError(new UnexpectedError(e));
                 }
             }));
@@ -801,7 +846,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
         public void setStickyPlayer(boolean stickyPlayer) {
             this.isStickyPlayer.set(stickyPlayer);
-            Log.d("STICKY","******* AppForegroundMonitor setStickyPlayer new value:" + this.isStickyPlayer.get());
+            Log.d("STICKY", "******* AppForegroundMonitor setStickyPlayer new value:" + this.isStickyPlayer.get());
         }
     }
 
@@ -829,4 +874,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
         this.playerImplementationControls = playerImplementationControls;
         this.playerListener.setPlayerImplementationControls(playerImplementationControls);
     }
+
+    public void setSessionResumed(boolean sessionResumed) {
+        this.sessionResumed = sessionResumed;
+    }
+
 }

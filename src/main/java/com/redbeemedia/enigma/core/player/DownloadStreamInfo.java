@@ -34,7 +34,7 @@ import com.redbeemedia.enigma.core.time.Duration;
 
     @Override
     public String getPlayMode() {
-        return "VOD";
+        return "offline";
     }
 
     @Override

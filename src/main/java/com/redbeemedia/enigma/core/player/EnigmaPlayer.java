@@ -131,16 +131,16 @@ public class EnigmaPlayer implements IEnigmaPlayer {
     private volatile boolean released = false;
     private volatile boolean isSeekBusy = false;
     private final AtomicBoolean isStickyPlayer = new AtomicBoolean(false);
+    private static BackgroundAnalyticsWorker BACKGROUND_ANALYTICS_WORKER = new BackgroundAnalyticsWorker();
 
     /**
+     * @param session              the default session to use for PlayRequest
+     * @param playerImplementation
      * @param session              the default session to use for PlayRequest
      * @param playerImplementation
      * @deprecated Use {@link #EnigmaPlayer(IBusinessUnit, IPlayerImplementation)} instead
      * and supply the session in the
      * {@link com.redbeemedia.enigma.core.playrequest.PlayRequest PlayRequest} constructor.
-     *
-     * @param session the default session to use for PlayRequest
-     * @param playerImplementation
      */
     @Deprecated
     public EnigmaPlayer(ISession session, IPlayerImplementation playerImplementation) {
@@ -211,6 +211,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
     @Override
     public void play(IPlayRequest playRequest) {
+        setupBackgroundWorker(playRequest);
         IPlaybackStartAction playbackStartAction;
         synchronized (currentPlaybackStartAction) {
             if(currentPlaybackStartAction.value != null) {
@@ -235,6 +236,21 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             playbackStartAction = currentPlaybackStartAction.value;
         }
         playbackStartAction.start();
+    }
+
+    private void setupBackgroundWorker(IPlayRequest playRequest) {
+        // we need only one instance
+        if (!BackgroundAnalyticsWorker.IS_STARTED.get()) {
+            if (playRequest.getSession() != null) {
+                try {
+                    BACKGROUND_ANALYTICS_WORKER.setupHandler(playRequest.getSession(), timeProvider);
+                    BACKGROUND_ANALYTICS_WORKER.start();
+                } catch (Exception e) {
+                    Log.w("Offline_analytics", "Error running background service:" + e);
+                    BackgroundAnalyticsWorker.IS_STARTED.set(false);
+                }
+            }
+        }
     }
 
     @Override
@@ -288,8 +304,8 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
     @Override
     public void release() {
-        Log.d("STICKY","******* Enigma player release() method is being called");
-        if(released) {
+        Log.d("DEBUG", "******* Enigma player release() method is being called");
+        if (released) {
             return;
         }
 
@@ -348,6 +364,16 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             }
 
             @Override
+            public EnigmaPlayerState getState(){
+                return stateMachine.getState();
+            }
+
+            @Override
+            public ITimelinePosition getTimelineCurrentPosition(){
+                return timeline.getCurrentPosition();
+            }
+
+            @Override
             public void setStateIfCurrentStartAction(IPlaybackStartAction action, EnigmaPlayerState newState) {
                 synchronized (currentPlaybackStartAction) {
                     if(currentPlaybackStartAction.value == action) {
@@ -366,21 +392,17 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             }
 
             @Override
-            public IPlaybackSessionInfo getPlaybackSessionInfo(String assetId,String manifestUrl, String cdnProvider, String playbackSessionId, Integer duration) {
+            public IPlaybackSessionInfo getPlaybackSessionInfo(String assetId, String manifestUrl, String cdnProvider, String playbackSessionId, Integer duration) {
                 IPlaybackTechnologyIdentifier technologyIdentifier = environment.playerImplementationInternals.getTechnologyIdentifier();
-                if (assetId == null || assetId.isEmpty())
-                {
+                if (assetId == null || assetId.isEmpty()){
                     IPlayable playable = playRequest.getPlayable();
-                    if (playable instanceof IAssetPlayable)
-                    {
+                    if (playable instanceof IAssetPlayable){
                         assetId = ((IAssetPlayable) playable).getAssetId();
-                    }
-                    else
-                    {
+                    } else{
                         assetId = "N/A";
                     }
                 }
-                return new EnigmaPlayer.PlaybackSessionInfo(playRequest.getPlayable(), assetId, manifestUrl, technologyIdentifier, playRequest.getPlaybackProperties(), cdnProvider, playbackSessionId,duration);
+                return new EnigmaPlayer.PlaybackSessionInfo(playRequest.getPlayable(), assetId, manifestUrl, technologyIdentifier, playRequest.getPlaybackProperties(), cdnProvider, playbackSessionId, duration);
             }
         };
     }
@@ -394,7 +416,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                                                           IPlayerImplementationControls playerImplementationControls,
                                                           IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection,
                                                           ISpriteRepository spriteRepository) {
-        return new DefaultPlaybackStartAction(session, businessUnit, timeProvider, playRequest, callbackHandler,taskFactoryProvider, playerImplementationControls, playerConnection, spriteRepository, environment.formatSupportSpec.getSupportedFormats());
+        return new DefaultPlaybackStartAction(session, businessUnit, timeProvider, playRequest, callbackHandler, taskFactoryProvider, playerImplementationControls, playerConnection, spriteRepository, environment.formatSupportSpec.getSupportedFormats());
     }
 
     protected ITaskFactoryProvider getTaskFactoryProvider() {
@@ -573,7 +595,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                         @Override
                         public void onLoadCompleted() {
                             synchronized (currentPlaybackStartAction) {
-                                if(currentPlaybackStartAction.value != null) {
+                                if (currentPlaybackStartAction.value != null) {
                                     stateMachine.setState(EnigmaPlayerState.LOADED);
                                     environment.playerImplementationControls.start(new BasePlayerImplementationControlResultHandler());
                                 }
@@ -583,7 +605,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                         @Override
                         public void onPlaybackStarted() {
                             synchronized (currentPlaybackStartAction) {
-                                if(currentPlaybackStartAction.value != null) {
+                                if (currentPlaybackStartAction.value != null) {
                                     currentPlaybackStartAction.value.onStarted(currentPlaybackSession.value);
                                     currentPlaybackStartAction.value = null;
                                 }
@@ -619,7 +641,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                         @Override
                         public void onStreamEnded() {
                             IInternalPlaybackSession playbackSession = currentPlaybackSession.value;
-                            if(playbackSession != null) {
+                            if (playbackSession != null) {
                                 playbackSession.fireEndReached();
                             }
                             replacePlaybackSession(null);
@@ -874,7 +896,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
                                 AdBreak adBreak = adIncludedTimeline.getLastAdBreakBetweenPositions(beforeTimeIncludingAds, afterTimeIncludingAds);
 
-                                if (adBreak !=null && !adBreak.isAdShown()) {
+                                if (adBreak != null && !adBreak.isAdShown()) {
                                     newPosition = adBreak.getStart().getStart();
                                     adBreak.setAdShown(true);
                                     adsDetector.value.setAdPlaying(true);
@@ -1139,11 +1161,11 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                         if (adsDetector.value != null) {
 
                             // if ad is not being played
-                            if(adsDetector.value.isAdPlaying()){
+                            if (adsDetector.value.isAdPlaying()) {
                                 return;
                             }
 
-                                IAdIncludedTimeline timeline = adsDetector.value.getTimeline();
+                            IAdIncludedTimeline timeline = adsDetector.value.getTimeline();
                             if (timeline instanceof AdIncludedTimeline) {
                                 AdIncludedTimeline adIncludedTimeline = (AdIncludedTimeline) timeline;
                                 // See if we started playing right on top of an ad
@@ -1245,7 +1267,9 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
         @Override
         public ITimelinePosition getLivePosition() {
-            if(stateMachine.getState() != EnigmaPlayerState.PLAYING || isReplacingPlaybackSession) { return null; }
+            if (stateMachine.getState() != EnigmaPlayerState.PLAYING || isReplacingPlaybackSession) {
+                return null;
+            }
 
             IInternalPlaybackSession session = OpenContainerUtil.getValueSynchronized(currentPlaybackSession);
 
@@ -1318,20 +1342,20 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             streamTimelineStart = start;
             streamTimelineEnd = end;
             updateStreamOffset();
-            if(!hasProgram) {
+            if (!hasProgram) {
                 EnigmaPlayerTimeline.this.onExposedTimelineBoundsChanged(streamTimelineStart, streamTimelineEnd);
             }
-            if(start != null && end != null) {
+            if (start != null && end != null) {
                 updateTimelineVisibility();
                 updatePlayingFromLive();
             }
         }
 
         private void updateStreamOffset() {
-            if(streamTimelineStart != null && streamTimelinePosition != null) {
+            if (streamTimelineStart != null && streamTimelinePosition != null) {
                 long oldOffset = currentStreamOffset;
                 currentStreamOffset = streamTimelinePosition.subtract(streamTimelineStart).inWholeUnits(Duration.Unit.MILLISECONDS);
-                if(oldOffset != currentStreamOffset) {
+                if (oldOffset != currentStreamOffset) {
                     programTracker.onOffsetChanged(currentStreamOffset);
                     programTracker.onOffsetChangedCheckEntitlement();
                 }
@@ -1363,7 +1387,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         private final IPlaybackProperties playbackProperties;
         private final Integer duration;
 
-        public PlaybackSessionInfo(IPlayable playable, String assetId, String mediaLocator, IPlaybackTechnologyIdentifier tech, IPlaybackProperties playbackProperties,String cdnProvider, String playbackSessionId, Integer duration) {
+        public PlaybackSessionInfo(IPlayable playable, String assetId, String mediaLocator, IPlaybackTechnologyIdentifier tech, IPlaybackProperties playbackProperties, String cdnProvider, String playbackSessionId, Integer duration) {
             this.playable = playable;
             this.assetId = assetId;
             this.mediaLocator = mediaLocator;
@@ -1376,7 +1400,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
         @Override
         public Duration getCurrentPlaybackOffset() {
-            if(released) { return Duration.millis(0); }
+            //if(released) { return Duration.millis(0); }
             ITimelinePosition currentPosition = getTimeline().getCurrentPosition();
             ITimelinePosition startBound = getTimeline().getCurrentStartBound();
             if(startBound == null) {

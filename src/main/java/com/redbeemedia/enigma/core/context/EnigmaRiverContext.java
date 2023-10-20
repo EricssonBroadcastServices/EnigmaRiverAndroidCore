@@ -6,6 +6,7 @@ import com.redbeemedia.enigma.core.activity.IActivityLifecycleManager;
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleManagerFactory;
 import com.redbeemedia.enigma.core.ads.DeviceParameters;
 import com.redbeemedia.enigma.core.ads.IAdInsertionFactory;
+import com.redbeemedia.enigma.core.analytics.EnigmaStorageManager;
 import com.redbeemedia.enigma.core.context.exception.ContextInitializationException;
 import com.redbeemedia.enigma.core.epg.IEpgLocator;
 import com.redbeemedia.enigma.core.http.DefaultHttpHandler;
@@ -84,6 +85,11 @@ public final class EnigmaRiverContext {
         return initializedContext.exposureBaseUrl;
     }
 
+    public static EnigmaStorageManager getEnigmaStorageManager() {
+        assertInitialized();
+        return initializedContext.storageManager;
+    }
+
     public static IHttpHandler getHttpHandler() {
         assertInitialized();
         return initializedContext.httpHandler;
@@ -140,7 +146,7 @@ public final class EnigmaRiverContext {
 
     //Version if the core library
     public static String getVersion() {
-        return "r3.6.6";
+        return "r3.7.0-BETA-1";
     }
 
     private static void assertInitialized() {
@@ -162,6 +168,7 @@ public final class EnigmaRiverContext {
         private final Map<String, IModuleInitializationSettings> moduleSettings = new HashMap<>();
         private IAdInsertionFactory adInsertionFactory;
         private DeviceParameters deviceParameters;
+        private EnigmaStorageManager storageManager;
 
         public EnigmaRiverContextInitialization(String exposureBaseUrl) {
             this.exposureBaseUrl = exposureBaseUrl;
@@ -296,11 +303,24 @@ public final class EnigmaRiverContext {
             this.analyticsUrl = analyticsUrl;
             return this;
         }
+
+        public EnigmaStorageManager getStorageManager(Application application) {
+            if (storageManager == null) {
+                storageManager = new EnigmaStorageManager(application);
+            }
+            return storageManager;
+        }
+
+        public EnigmaRiverContextInitialization setStorageManager(EnigmaStorageManager storageManager) {
+            this.storageManager = storageManager;
+            return this;
+        }
     }
 
     private static class EnigmaRiverInitializedContext {
         // it can be re-initialized
         private UrlPath exposureBaseUrl;
+        private EnigmaStorageManager storageManager;
         // it can be re-initialized
         private UrlPath analyticsUrl;
         // it can be re-initialized
@@ -331,6 +351,7 @@ public final class EnigmaRiverContext {
                 this.activityLifecycleManager = initialization.getActivityLifecycleManager(application);
                 this.taskFactoryProvider = initialization.getTaskFactoryProvider();
                 this.epgLocator = initialization.getEpgLocator();
+                this.storageManager = initialization.getStorageManager(application);
                 if (initialization.getDeviceParameters() == null) {
                     this.deviceParameters = new DeviceParameters();
                 } else {

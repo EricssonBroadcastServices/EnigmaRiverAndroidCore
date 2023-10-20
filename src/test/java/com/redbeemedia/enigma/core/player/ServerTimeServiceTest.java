@@ -61,6 +61,15 @@ public class ServerTimeServiceTest {
             }
 
             @Override
+            public long getTime(){
+                if (getLocalStartTime() == null) {
+                    // System time, when its offline
+                    return newFallbackTimeProvider().getTime();
+                }
+                return this.getServerStartTime() + (getLocalTimeMillis() - this.getLocalStartTime());
+            }
+
+            @Override
             protected long getLocalTimeMillis() {
                 return currentTimeMillis[0];
             }
@@ -104,6 +113,14 @@ public class ServerTimeServiceTest {
             @Override
             protected ITimeProvider newFallbackTimeProvider() {
                 return mockTimeProvider;
+            }
+            @Override
+            public long getTime(){
+                if (getLocalStartTime() == null) {
+                    // System time, when its offline
+                    return mockTimeProvider.getTime();
+                }
+                return this.getServerStartTime() + (getLocalTimeMillis() - this.getLocalStartTime());
             }
 
             @Override

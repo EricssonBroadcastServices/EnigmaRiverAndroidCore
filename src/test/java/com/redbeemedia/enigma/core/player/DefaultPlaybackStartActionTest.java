@@ -2,7 +2,9 @@ package com.redbeemedia.enigma.core.player;
 
 import android.os.Parcel;
 
-import com.redbeemedia.enigma.core.ads.DeviceParameters;
+import com.redbeemedia.enigma.core.ads.DefaultAdInsertionParameters;
+import com.redbeemedia.enigma.core.ads.IAdInsertionFactory;
+import com.redbeemedia.enigma.core.ads.IAdInsertionParameters;
 import com.redbeemedia.enigma.core.analytics.AnalyticsException;
 import com.redbeemedia.enigma.core.analytics.AnalyticsPlayResponseData;
 import com.redbeemedia.enigma.core.analytics.IBufferingAnalyticsHandler;
@@ -11,20 +13,19 @@ import com.redbeemedia.enigma.core.analytics.MockAnalyticsReporter;
 import com.redbeemedia.enigma.core.businessunit.BusinessUnit;
 import com.redbeemedia.enigma.core.businessunit.IBusinessUnit;
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
+import com.redbeemedia.enigma.core.context.MockEngimaStoreManager;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
 import com.redbeemedia.enigma.core.entitlement.IEntitlementProvider;
 import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.http.MockHttpHandler;
+import com.redbeemedia.enigma.core.playable.IAssetPlayable;
 import com.redbeemedia.enigma.core.playable.IPlayable;
 import com.redbeemedia.enigma.core.playable.IPlayableHandler;
 import com.redbeemedia.enigma.core.playable.MockPlayable;
 import com.redbeemedia.enigma.core.playable.UrlPlayable;
 import com.redbeemedia.enigma.core.playbacksession.IPlaybackSession;
 import com.redbeemedia.enigma.core.playrequest.BasePlayResultHandler;
-import com.redbeemedia.enigma.core.ads.DefaultAdInsertionParameters;
-import com.redbeemedia.enigma.core.ads.IAdInsertionFactory;
-import com.redbeemedia.enigma.core.ads.IAdInsertionParameters;
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
 import com.redbeemedia.enigma.core.playrequest.IPlayResultHandler;
 import com.redbeemedia.enigma.core.playrequest.MockPlayRequest;
@@ -61,6 +62,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 public class DefaultPlaybackStartActionTest {
@@ -120,7 +122,7 @@ public class DefaultPlaybackStartActionTest {
                 new SpriteDataMock.MockSpriteRepository(),
                 new HashSet<>()) {
             @Override
-            protected Analytics createAnalytics(ISession session, String playbackSessionId, ITimeProvider timeProvider, ITaskFactory taskFactory, AnalyticsPlayResponseData analyticsPlayResponseData) {
+            protected Analytics createAnalytics(ITimeProvider timeProvider, ITaskFactory taskFactory, AnalyticsPlayResponseData analyticsPlayResponseData, IBufferingAnalyticsHandler analyticsHandler, int updateFrequency) {
                 return new Analytics(new MockAnalyticsReporter(), new IInternalPlaybackSessionListener() {
                     @Override
                     public void onStart(OnStartArgs args) {
@@ -201,7 +203,7 @@ public class DefaultPlaybackStartActionTest {
                 new SpriteDataMock.MockSpriteRepository(),
                 new HashSet<>()) {
             @Override
-            protected IBufferingAnalyticsHandler newAnalyticsHandler(ISession session, String playbackSessionId, ITimeProvider timeProvider, AnalyticsPlayResponseData analyticsPlayResponseData) {
+            protected IBufferingAnalyticsHandler newOnlineAnalyticsHandler(String assetId, ISession session, String playbackSessionId, ITimeProvider timeProvider, AnalyticsPlayResponseData analyticsPlayResponseData) {
                 return new MockAnalyticsHandler() {
                     @Override
                     public void sendData() throws AnalyticsException, InterruptedException {
@@ -294,9 +296,9 @@ public class DefaultPlaybackStartActionTest {
             }
 
             @Override
-            protected Analytics createAnalytics(ISession session, String playbackSessionId, ITimeProvider timeProvider, ITaskFactory taskFactory, AnalyticsPlayResponseData analyticsPlayResponseData) {
+            protected Analytics createAnalytics(ITimeProvider timeProvider, ITaskFactory taskFactory, AnalyticsPlayResponseData analyticsPlayResponseData, IBufferingAnalyticsHandler analyticsHandler, int updateFrequency) {
                 createAnalyticsCalled.count();
-                Analytics analytics = super.createAnalytics(session, playbackSessionId, timeProvider, taskFactory, analyticsPlayResponseData);
+                Analytics analytics = super.createAnalytics(timeProvider, taskFactory, analyticsPlayResponseData,analyticsHandler,updateFrequency);
                 analyticsListener[0] =  analytics.getInternalPlaybackSessionListener();
                 return analytics;
             }
@@ -340,10 +342,15 @@ public class DefaultPlaybackStartActionTest {
 
     @Test
     public void testOnStartedCalledOnceForDownloadPlayable() {
-        testOnStartCalledOnce(new IPlayable() {
+        testOnStartCalledOnce(new IAssetPlayable() {
+            @Override
+            public String getAssetId() {
+                return "mock-asset-id";
+            }
+
             @Override
             public void useWith(IPlayableHandler playableHandler) {
-                playableHandler.startUsingDownloadData(new Object());
+                playableHandler.startUsingDownloadData(new Object(), String.valueOf(UUID.randomUUID()),"","",-1);
             }
 
             @Override
@@ -368,9 +375,11 @@ public class DefaultPlaybackStartActionTest {
             httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play.*"), playResponse.toString());
             httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play.*"), playResponse.toString());
         }
+        MockEngimaStoreManager mockEngimaStoreManager = new MockEngimaStoreManager(null);
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization()
                 .setHttpHandler(httpHandler)
                 .setTaskFactoryProvider(testTaskFactoryProvider)
+                .setStorageManager(mockEngimaStoreManager)
         );
 
         final Counter onStartedCalled = new Counter();
@@ -403,7 +412,7 @@ public class DefaultPlaybackStartActionTest {
                         spriteRepository,
                         new HashSet<>()) {
                     @Override
-                    protected Analytics createAnalytics(ISession session, String playbackSessionId, ITimeProvider timeProvider, ITaskFactory taskFactory, AnalyticsPlayResponseData analyticsPlayResponseData) {
+                    protected Analytics createAnalytics(ITimeProvider timeProvider, ITaskFactory taskFactory, AnalyticsPlayResponseData analyticsPlayResponseData, IBufferingAnalyticsHandler analyticsHandler, int updateFrequency) {
                         return new Analytics(new IgnoringAnalyticsReporter(), new MockInternalPlaybackSessionListener());
                     }
 

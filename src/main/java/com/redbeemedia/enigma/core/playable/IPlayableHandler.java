@@ -9,5 +9,5 @@ import java.net.URL;
 public interface IPlayableHandler {
     void startUsingAssetId(String assetId);
     void startUsingUrl(URL url);
-    void startUsingDownloadData(Object downloadData);
+    void startUsingDownloadData(Object downloadData, String playSessionId, String analyticsBaseUrl,String cdnProvider,int duration);
 }

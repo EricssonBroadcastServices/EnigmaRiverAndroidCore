@@ -4,9 +4,7 @@ import android.os.Handler;
 
 import com.google.android.exoplayer2.ui.SubtitleView;
 import com.redbeemedia.enigma.core.ads.AdDetector;
-import com.redbeemedia.enigma.core.ads.ExposureAdMetadata;
 import com.redbeemedia.enigma.core.ads.IAdDetector;
-import com.redbeemedia.enigma.core.ads.IAdMetadata;
 import com.redbeemedia.enigma.core.analytics.AnalyticsReporter;
 import com.redbeemedia.enigma.core.analytics.IAnalyticsReporter;
 import com.redbeemedia.enigma.core.analytics.MockAnalyticsHandler;
@@ -14,7 +12,6 @@ import com.redbeemedia.enigma.core.analytics.MockAnalyticsReporter;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
 import com.redbeemedia.enigma.core.error.EnigmaError;
-import com.redbeemedia.enigma.core.format.EnigmaMediaFormat;
 import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.http.MockHttpHandler;
 import com.redbeemedia.enigma.core.marker.IMarkerPointsDetector;
@@ -58,6 +55,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 public class InternalPlaybackSessionTest {
+    private InternalPlaybackSession.AppForegroundMonitor appForegroundMonitor;
+    private boolean sessionResumed;
+
     @Test
     public void testLifecycle() {
         MockHttpHandler mockHttpHandler = new MockHttpHandler();
@@ -278,7 +278,7 @@ public class InternalPlaybackSessionTest {
         AnalyticsReporter analyticsReporter = new AnalyticsReporter(timeProvider, jsonObject -> analyticsEvents.add(jsonObject),0l);
         MockPlaybackSessionInfo playbackSessionInfo = new MockPlaybackSessionInfo();
         OpenContainer<IVideoTrack> selectedVideoTrack = new OpenContainer<>(null);
-        InternalPlaybackSession.EnigmaPlayerListenerForAnalytics analytics = new InternalPlaybackSession.EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, JsonStreamInfo.createForNull(), selectedVideoTrack);
+        InternalPlaybackSession.EnigmaPlayerListenerForAnalytics analytics = new InternalPlaybackSession.EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, JsonStreamInfo.createForNull(), selectedVideoTrack, this.appForegroundMonitor, this.sessionResumed);
         analytics.setPlayerImplementationControls(new MockIPlayerImplementationControls());
 
         IStateMachine<EnigmaPlayerState> stateMachine = EnigmaStateMachineFactory.create();
@@ -336,7 +336,7 @@ public class InternalPlaybackSessionTest {
         AnalyticsReporter analyticsReporter = new AnalyticsReporter(timeProvider, jsonObject -> analyticsEvents.add(jsonObject),0l);
         MockPlaybackSessionInfo playbackSessionInfo = new MockPlaybackSessionInfo();
         JsonStreamInfo streamInfo = new JsonStreamInfo(new JSONObject("{\"live\" : true, \"static\" : false, \"start\" : 8765432}"));
-        InternalPlaybackSession.EnigmaPlayerListenerForAnalytics analytics = new InternalPlaybackSession.EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, streamInfo, new OpenContainer<>(null));
+        InternalPlaybackSession.EnigmaPlayerListenerForAnalytics analytics = new InternalPlaybackSession.EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, streamInfo, new OpenContainer<>(null), this.appForegroundMonitor, this.sessionResumed);
         analytics.setPlayerImplementationControls(new MockIPlayerImplementationControls());
 
         analytics.onStateChanged(EnigmaPlayerState.LOADED, EnigmaPlayerState.PLAYING);
@@ -356,7 +356,7 @@ public class InternalPlaybackSessionTest {
         AnalyticsReporter analyticsReporter = new AnalyticsReporter(timeProvider, jsonObject -> analyticsEvents.add(jsonObject),0l);
         MockPlaybackSessionInfo playbackSessionInfo = new MockPlaybackSessionInfo();
         JsonStreamInfo streamInfo = new JsonStreamInfo(new JSONObject("{\"live\" : false, \"start\" : 8765432}"));
-        InternalPlaybackSession.EnigmaPlayerListenerForAnalytics analytics = new InternalPlaybackSession.EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, streamInfo, new OpenContainer<>(null));
+        InternalPlaybackSession.EnigmaPlayerListenerForAnalytics analytics = new InternalPlaybackSession.EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, streamInfo, new OpenContainer<>(null), this.appForegroundMonitor, this.sessionResumed);
 
         analytics.setPlayerImplementationControls(new MockIPlayerImplementationControls());
         analytics.onStateChanged(EnigmaPlayerState.LOADED, EnigmaPlayerState.PLAYING);

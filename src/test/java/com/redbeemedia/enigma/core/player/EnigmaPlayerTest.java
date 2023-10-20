@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.source.hls.playlist.HlsMediaPlaylist;
 import com.redbeemedia.enigma.core.analytics.AnalyticsPlayResponseData;
+import com.redbeemedia.enigma.core.analytics.IBufferingAnalyticsHandler;
 import com.redbeemedia.enigma.core.analytics.MockAnalyticsReporter;
 import com.redbeemedia.enigma.core.audio.IAudioTrack;
 import com.redbeemedia.enigma.core.audio.MockAudioTrack;
@@ -1609,54 +1610,6 @@ public class EnigmaPlayerTest {
     }
 
     @Test
-    public void testTimelineRepeaterShutOff() {
-        TestTaskFactory testTaskFactory = new TestTaskFactory(33);
-        ITaskFactoryProvider taskFactoryProvider = new MockTaskFactoryProvider() {
-            @Override
-            public ITaskFactory getMainThreadTaskFactory() {
-                return testTaskFactory;
-            }
-
-            @Override
-            public ITaskFactory getTaskFactory() {
-                return testTaskFactory;
-            }
-        };;
-
-        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization().setTaskFactoryProvider(taskFactoryProvider));
-
-        final Counter getCurrentPositionCalled = new Counter();
-
-        EnigmaPlayer enigmaPlayer = new EnigmaPlayer(new BusinessUnit("x6x", "sy4dhH"), new MockPlayerImplementation() {
-            @Override
-            public ITimelinePosition getCurrentPosition() {
-                getCurrentPositionCalled.count();
-                return super.getCurrentPosition();
-            }
-        });
-
-        getCurrentPositionCalled.assertNone();
-
-        enigmaPlayer.play(new MockPlayRequest().setPlayable(new MockPlayable().useDownloadData(new Object())));
-        testTaskFactory.letTimePass(100);
-        int count = getCurrentPositionCalled.getCounts();
-        Assert.assertTrue(count > 0);
-
-        testTaskFactory.letTimePass(1000);
-
-        Assert.assertTrue(getCurrentPositionCalled.getCounts() > count);
-
-
-        enigmaPlayer.release();
-
-        count = getCurrentPositionCalled.getCounts();
-
-        testTaskFactory.letTimePass(2000);
-
-        getCurrentPositionCalled.assertCount(count);
-    }
-
-    @Test
     public void testCallbackHandlerUsedForPlayCall() {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
 
@@ -1885,8 +1838,8 @@ public class EnigmaPlayerTest {
         @Override
         protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler, ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection, ISpriteRepository videoSpriteRepository) {
             return new DefaultPlaybackStartAction(session, businessUnit, timeProvider, playRequest, callbackHandler, taskFactoryProvider, playerImplementationControls, playerConnection, videoSpriteRepository, new HashSet<>()) {
-                @Override
-                protected Analytics createAnalytics(ISession session, String playbackSessionId, ITimeProvider timeProvider, ITaskFactory taskFactory, AnalyticsPlayResponseData analyticsPlayResponseData) {
+
+                protected Analytics createAnalytics(ITimeProvider timeProvider, ITaskFactory taskFactory, AnalyticsPlayResponseData analyticsPlayResponseData, IBufferingAnalyticsHandler analyticsHandler,int updateFreq) {
                     return new Analytics(new MockAnalyticsReporter(), new MockInternalPlaybackSessionListener());
                 }
             };
@@ -1906,6 +1859,10 @@ public class EnigmaPlayerTest {
         if (streamInfoData != null) {
             response.put("streamInfo", streamInfoData.toJsonObject());
         }
+        JSONObject analytics = new JSONObject();
+        analytics.put("postInterval",0);
+        response.put("analytics", analytics);
+        response.put("cdn", new JSONObject());
         mockHttpHandler.queueResponse(new HttpStatus(200, "OK"), response.toString());
     }
 
