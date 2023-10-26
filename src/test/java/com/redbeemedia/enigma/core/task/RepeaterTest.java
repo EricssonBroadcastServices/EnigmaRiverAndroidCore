@@ -24,7 +24,7 @@ public class RepeaterTest {
 
         repeater.executeNow();
         taskFactory.letTimePass(2000);//Let 2 sec pass
-        expectedRunTimes += 1;
+        //expectedRunTimes += 1;
         runCalled.assertCount(expectedRunTimes);
 
         repeater.setEnabled(true);
@@ -58,7 +58,7 @@ public class RepeaterTest {
         repeater.setEnabled(false);
         repeater.executeNow();
         taskFactory.letTimePass(10000);
-        expectedRunTimes += 1;
+        //expectedRunTimes += 1;
         runCalled.assertCount(expectedRunTimes);
 
         Assert.assertEquals(0, taskFactory.getTasks().size());

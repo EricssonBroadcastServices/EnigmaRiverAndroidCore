@@ -1,4 +1,5 @@
 # CHANGELOG
+* `3.7.1 `Release - [3.7.1](#3.7.1)&nbsp; - &nbsp; 2023-10-26
 * `3.7.0 `Release - [3.7.0](#3.7.0)&nbsp; - &nbsp; 2023-10-20
 * `3.6.6 `Release - [3.6.6](#3.6.6)&nbsp; - &nbsp; 2023-10-11
 * `3.6.5 `Release - [3.6.5](#3.6.5)&nbsp; - &nbsp; 2023-09-22
@@ -43,6 +44,15 @@
 * `3.1.8` Release - [3.1.8](#3.1.8) &nbsp; - &nbsp; 2020-12-11
 * `3.1.7` Release - [3.1.7](#3.1.7) &nbsp; - &nbsp; 2020-12-04
 * `3.1.6` Release - [3.1.6](#3.1.6) &nbsp; - &nbsp; 2020-11-13
+
+# <a name="3.7.1"></a> 3.7.1
+#### Features
+`
+DevEnigmaRiverAndroidCore
+DevEnigmaRiverAndroidExoPlayerIntegration
+`
+* EMP-20831 - Exclude Exoplayer-robolectricutils
+* EMP-20426 -Issue with player events for some ad-replaced live streams
 
 # <a name="3.7.0"></a> 3.7.0
 #### Features

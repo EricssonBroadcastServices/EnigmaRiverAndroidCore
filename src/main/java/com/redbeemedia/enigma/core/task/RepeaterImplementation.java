@@ -41,6 +41,9 @@ package com.redbeemedia.enigma.core.task;
                 e.printStackTrace();
             }
         }
+        if (!enabled) {
+            return;
+        }
 
         runnable.run();
 
