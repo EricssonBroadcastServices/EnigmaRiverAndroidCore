@@ -43,11 +43,11 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.json:json:20080701'
     implementation ('com.github.EricssonBroadcastServices:ExoPlayer:2.17.2') {
-        exclude group: 'com.github.EricssonBroadcastServices.ExoPlayer', module: 'exoplayer-robolectricutils'
+        exclude module: 'exoplayer-robolectricutils'
     }
     if(findProject(':internalTestUtils') != null) {
         testImplementation project(":internalTestUtils")
     } else {
-        testImplementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:internalTestUtils:r3.7.2-BETA-4'
+        testImplementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:internalTestUtils:r3.7.2-BETA-5'
     }
 }
