@@ -42,12 +42,12 @@ dependencies {
     implementation 'com.google.android.gms:play-services-ads-identifier:18.0.1'
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.json:json:20080701'
-    api ('com.github.EricssonBroadcastServices:ExoPlayer:2.17.2') {
+    implementation ('com.github.EricssonBroadcastServices:ExoPlayer:2.17.2') {
         exclude group: 'com.github.EricssonBroadcastServices.ExoPlayer', module: 'exoplayer-robolectricutils'
     }
     if(findProject(':internalTestUtils') != null) {
         testImplementation project(":internalTestUtils")
     } else {
-        testImplementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:internalTestUtils:r3.7.2-BETA-3'
+        testImplementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:internalTestUtils:r3.7.2-BETA-4'
     }
 }
