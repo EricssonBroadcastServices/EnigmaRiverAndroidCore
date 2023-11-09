@@ -6,16 +6,15 @@ import com.redbeemedia.enigma.core.format.EnigmaMediaFormat;
 import com.redbeemedia.enigma.core.format.IMediaFormatSelector;
 import com.redbeemedia.enigma.core.format.SimpleMediaFormatSelector;
 
-
-public final class PlaybackProperties implements IPlaybackProperties {
-    private PlayFrom playFrom;
+public class PlaybackProperties implements IPlaybackProperties {
+    protected PlayFrom playFrom;
     private IMediaFormatSelector mediaFormatSelector = null;
     private AdobePrimetime primetimeToken;
     private boolean analyticsEnabled = true;
     private MaterialProfile materialProfile;
 
     public PlaybackProperties() {
-        this.playFrom = PlayFrom.PLAYER_DEFAULT;
+       this.playFrom = PlayFrom.PLAYER_DEFAULT;
     }
 
     @Override
@@ -89,3 +88,5 @@ public final class PlaybackProperties implements IPlaybackProperties {
         return obj.playFrom == this.playFrom;
     }
 }
+
+

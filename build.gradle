@@ -46,10 +46,7 @@ dependencies {
     if(findProject(':internalTestUtils') != null) {
         testImplementation project(":internalTestUtils")
     } else {
-        testImplementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:internalTestUtils:r3.7.2-BETA-7'
+        testImplementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:internalTestUtils:r3.7.2-BETA-8'
     }
-    api 'com.github.EricssonBroadcastServices:ExoPlayer:2.17.2'
-    compileOnly ('com.github.EricssonBroadcastServices:ExoPlayer:2.17.2') {
-        exclude(group : "com.github.EricssonBroadcastServices", module : "exoplayer-robolectricutils")
-    }
+    api 'com.github.EricssonBroadcastServices.ExoPlayer:exoplayer:2.17.2'
 }

@@ -548,6 +548,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
             EnigmaPlayerState state = playerConnector.getState();
             boolean sessionResumed = state == EnigmaPlayerState.PAUSED;
             IPlaybackProperties.PlayFrom playFrom = playRequest.getPlaybackProperties().getPlayFrom();
+            if (playFrom.getPreferences().contains(IPlaybackProperties.PlayFrom.PlayFromPreference.BOOKMARK)
+                    || playFrom.getPreferences().contains(IPlaybackProperties.PlayFrom.PlayFromPreference.LIVE_EDGE)) {
+                // then throw an exception, as live or bookmark is not supported for offlines
+                throw new IllegalArgumentException("Offline playback does not support BOOKMARK or LIVE_EDGE." +
+                        " Only BEGINNING or OFFSET is supported.");
+            }
+
             byte[] analyticsBaseUrlBytes = analyticsBaseUrl.getBytes(StandardCharsets.UTF_8);
             EnigmaRiverContext.getEnigmaStorageManager().store(OFFLINE_ANALYTICS_URL, analyticsBaseUrlBytes);
 
