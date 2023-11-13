@@ -1,5 +1,5 @@
 # CHANGELOG
-
+* `3.7.2 `Release - [3.7.2](#3.7.2)&nbsp; - &nbsp; 2023-11-13
 * `3.7.1 `Release - [3.7.1](#3.7.1)&nbsp; - &nbsp; 2023-10-26
 * `3.7.0 `Release - [3.7.0](#3.7.0)&nbsp; - &nbsp; 2023-10-20
 * `3.6.6 `Release - [3.6.6](#3.6.6)&nbsp; - &nbsp; 2023-10-11
@@ -46,6 +46,13 @@
 * `3.1.7` Release - [3.1.7](#3.1.7) &nbsp; - &nbsp; 2020-12-04
 * `3.1.6` Release - [3.1.6](#3.1.6) &nbsp; - &nbsp; 2020-11-13
 
+# <a name="3.7.2"></a> 3.7.2
+#### Features
+`
+DevEnigmaRiverAndroidCore
+DevEnigmaRiverAndroidExoPlayerIntegration
+`
+* EMP-20831 - Exclude Exoplayer-robolectricutils
 
 # <a name="3.7.1"></a> 3.7.1
 #### Features
