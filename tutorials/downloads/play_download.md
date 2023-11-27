@@ -1,29 +1,10 @@
 ### Downloads and offline playback series
 # Start playback of a downloaded asset
-To play a downloaded asset, simply use a valid `DownloadedPlayable` in the `OfflinePlayRequest`
+To play a downloaded asset, simply use a valid `DownloadedPlayable` in the `PlayRequest`
 to `IEnigmaPlayer#play` and start playback as described in [Your first app](../basics/your_first_app.md).
 
 ```java
 IPlayRequest playRequest = new PlayRequest(session, downloadPlayable, new BasePlayResultHandler() {
-    @Override
-    public void onError(EnigmaError error) {
-        // ... handle error ... //
-    }
-});
-enigmaPlayer.play(playRequest);
-```
-
-#PlaybackProperties 
-
-You can customize playback properties using OfflinePlaybackProperties. 
-For downloaded assets, you can choose to start playback from the beginning (PlayFromPreference.BEGINNING) or from a specific offset (PlayFromPreference.OFFSET). 
-In your application, it's advisable to store the playhead position locally and resume playback from there using IPlaybackProperties.PlayFrom.OFFSET(duration).
-
-```java
-IPlaybackProperties.PlayFromOffset offset = IPlaybackProperties.PlayFrom.OFFSET(Duration.seconds(50));
-OfflinePlaybackProperties playbackProperties = new OfflinePlaybackProperties();
-playbackProperties.setPlayFrom(offset);
-IPlayRequest playRequest = new PlayRequest(session, downloadPlayable, playbackProperties, new BasePlayResultHandler() {
     @Override
     public void onError(EnigmaError error) {
         // ... handle error ... //
