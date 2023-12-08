@@ -648,6 +648,16 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                             stateMachine.setState(EnigmaPlayerState.IDLE);
                         }
 
+                        @Override
+                        public void onPlaybackStopped() {
+                            IInternalPlaybackSession playbackSession = currentPlaybackSession.value;
+                            if (playbackSession != null) {
+                                playbackSession.onStop(EnigmaPlayer.this);
+                            }
+                            replacePlaybackSession(null);
+                            stateMachine.setState(EnigmaPlayerState.IDLE);
+                        }
+
                         private <T> void propagateToCurrentPlaybackSession(T arg, IInternalPlaybackSessionsMethod<T> playbackSessionsMethod) {
                             if(isReplacingPlaybackSession) { return; }
 

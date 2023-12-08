@@ -21,6 +21,7 @@ public interface IPlayerImplementationListener {
     void onTimelineBoundsChanged(ITimelinePosition start, ITimelinePosition end);
     void onPositionChanged();
     void onStreamEnded();
+    void onPlaybackStopped() ;
     void onPlaybackPaused();
     void onPlaybackBuffering();
     void onTracksChanged(Collection<? extends  IPlayerImplementationTrack> tracks);
