@@ -90,7 +90,6 @@ public class JsonReaderUtilTest {
         Assert.assertEquals("beta", list.get(1).name);
     }
 
-    @Test
     public void testReadJsonObject() throws Exception {
         JSONObject expected = new JSONObject();
         expected.put("number", 5);

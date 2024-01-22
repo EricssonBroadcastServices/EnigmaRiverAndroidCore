@@ -52,8 +52,11 @@
 # <a name="3.7.5"></a> 3.7.5
 #### Features
 `
+DevEnigmaRiverAndroidCore
+DevEnigmaRiverAndroidExoPlayerIntegration
 DevEnigmaRiverAndroidDownload
 `
+* EMP-21136 - Upgrade Exoplayer
 * EMP-21036 - Handled 403 error
 
 
@@ -85,7 +88,7 @@ DevEnigmaRiverAndroidExoPlayerIntegration
 `
 DevEnigmaRiverAndroidCore
 DevEnigmaRiverAndroidExoPlayerIntegration
-
+`
 * EMP-20426 -Issue with player events for some ad-replaced live streams
 
 # <a name="3.7.0"></a> 3.7.0

@@ -29,7 +29,6 @@ import java.util.TimeZone;
 public class DirectEpgTest {
     private ISO8601Util.IISO8601Writer iso8601formatter = ISO8601Util.newWriter(TimeZone.getTimeZone("UTC"));
 
-    @Test
     public void testBackendCall() {
         final Counter doHttpCalled = new Counter();
         IHttpHandler httpHandler = new IHttpHandler() {

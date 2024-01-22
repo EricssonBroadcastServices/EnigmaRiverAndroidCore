@@ -1,12 +1,12 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdk 33
+    compileSdk 34
     buildToolsVersion '33.0.1'
 
     defaultConfig {
         minSdkVersion 19
-        targetSdkVersion 33
+        targetSdkVersion 34
         versionCode 1
         versionName "1.0"
 
@@ -43,10 +43,11 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.json:json:20080701'
 
+
     if(findProject(':internalTestUtils') != null) {
         testImplementation project(":internalTestUtils")
     } else {
-        testImplementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:internalTestUtils:r3.7.5-BETA-1'
+        testImplementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:internalTestUtils:r3.7.5-BETA-2'
     }
-    api 'com.github.EricssonBroadcastServices.ExoPlayer:exoplayer:2.17.2'
+    api 'com.github.EricssonBroadcastServices:ExoPlayer:2.19.1'
 }
