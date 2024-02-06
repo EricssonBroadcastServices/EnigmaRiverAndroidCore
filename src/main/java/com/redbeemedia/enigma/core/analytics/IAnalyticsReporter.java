@@ -43,7 +43,7 @@ public interface IAnalyticsReporter {
 
     void playbackScrubbedTo(long offsetTime);
 
-    void playbackProgramChanged(long offsetTime, String programId);
+    void playbackProgramChanged(long offsetTime, String programId, String programAssetId);
 
     void playbackAdStarted(long offsetTime, String adId);
 

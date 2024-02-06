@@ -695,10 +695,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
             if(from != null || programTrackingLost) {
                 programTrackingLost = (to == null);
                 String programId = null;
+                String assetId = null;
                 if(to != null) {
                     programId = to.getProgramId();
+                    assetId = to.getAssetId();
                 }
-                analyticsReporter.playbackProgramChanged(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo), programId);
+                analyticsReporter.playbackProgramChanged(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo), programId, assetId);
             }
         }
 

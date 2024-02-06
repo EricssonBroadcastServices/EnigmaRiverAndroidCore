@@ -95,7 +95,7 @@ import com.redbeemedia.enigma.core.error.EnigmaError;
     }
 
     @Override
-    public void playbackProgramChanged(long offsetTime, String programId) {
+    public void playbackProgramChanged(long offsetTime, String programId, String programAssetId) {
 
     }
 

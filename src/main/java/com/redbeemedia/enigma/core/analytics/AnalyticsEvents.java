@@ -225,13 +225,13 @@ package com.redbeemedia.enigma.core.analytics;
 
     public static class AnalyticsProgramChangedEvent extends AbstractOffsetTimeAnalyticsEvent {
         public final IEventProperty<AnalyticsProgramChangedEvent, String> PROGRAM_ID = mandatory("ProgramId");
+        public final IEventProperty<AnalyticsProgramChangedEvent, String> PROGRAM_ASSET_ID = mandatory("ProgramAssetId");
 
         @Override
         public String getName() {
             return "Playback.ProgramChanged";
         }
     }
-
     public static class AnalyticsAdEvent implements IAnalyticsEventType {
         private final String eventName;
         AnalyticsAdEvent(String eventName) { this.eventName = eventName; }

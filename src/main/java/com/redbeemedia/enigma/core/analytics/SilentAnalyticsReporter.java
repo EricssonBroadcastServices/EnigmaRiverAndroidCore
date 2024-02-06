@@ -95,7 +95,7 @@ public class SilentAnalyticsReporter implements IAnalyticsReporter {
     }
 
     @Override
-    public void playbackProgramChanged(long offsetTime, String programId) {
+    public void playbackProgramChanged(long offsetTime, String programId, String programAssetId) {
 
     }
 

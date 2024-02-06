@@ -129,7 +129,7 @@ public class AnalyticsReportedEventTest<E extends IAnalyticsEventType> {
         } else if (eventType == AnalyticsEvents.AD_FAILED) {
             return reporter -> reporter.playbackAdFailed(246246L);
         } else if (eventType == AnalyticsEvents.PROGRAM_CHANGED) {
-            return reporter -> reporter.playbackProgramChanged(8346L, "MockProgram");
+            return reporter -> reporter.playbackProgramChanged(8346L, "MockProgram", "MockAssetId");
         } else if (eventType == AnalyticsEvents.AD_STARTED) {
             return reporter -> reporter.playbackAdStarted(12345L, "started_test_ad");
         } else if (eventType == AnalyticsEvents.AD_COMPLETED) {

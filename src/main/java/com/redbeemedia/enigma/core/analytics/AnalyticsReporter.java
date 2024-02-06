@@ -197,10 +197,11 @@ public class AnalyticsReporter implements IAnalyticsReporter {
     }
 
     @Override
-    public void playbackProgramChanged(long offsetTime, String programId) {
+    public void playbackProgramChanged(long offsetTime, String programId, String programAssetId) {
         event(AnalyticsEvents.PROGRAM_CHANGED, (builder, eventType) -> {
             builder.addData(eventType.OFFSET_TIME, offsetTime);
             builder.addData(eventType.PROGRAM_ID, programId);
+            builder.addData(eventType.PROGRAM_ASSET_ID, programAssetId);
         });
     }
 
