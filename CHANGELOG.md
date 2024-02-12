@@ -56,6 +56,7 @@
 DevEnigmaRiverAndroidCore
 `
 * EMP-21065 - Added program assetId to playback program changed
+* EMP-21162 - The player does not pause automatically when the app is in the background
 
 # <a name="3.7.5"></a> 3.7.5
 #### Features

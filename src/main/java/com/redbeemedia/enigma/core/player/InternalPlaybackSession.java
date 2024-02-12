@@ -815,7 +815,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
                             }
                         }
                     });
-                    if (this.playerImplementationControls != null) {
+                    if (this.playerImplementationControls != null && !isStickyPlayer.get()) {
                         this.playerImplementationControls.pause(new BasePlayerImplementationControlResultHandler());
                     }
                     gracePeriodEndTask.startDelayed(customGracePeriod.inWholeUnits(Duration.Unit.MILLISECONDS));
