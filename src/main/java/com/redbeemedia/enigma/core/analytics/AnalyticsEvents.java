@@ -265,6 +265,7 @@ package com.redbeemedia.enigma.core.analytics;
         }
     }
 
+
     public static class AnalyticsAdFailed extends AbstractOffsetTimeAnalyticsEvent {
         @Override
         public String getName() {
