@@ -57,8 +57,6 @@ package com.redbeemedia.enigma.core.analytics;
         public final IEventProperty<AnalyticsDeviceInfoEvent, String> DEVICE_ID = mandatory("DeviceId");
         public final IEventProperty<AnalyticsDeviceInfoEvent, String> DEVICE_MODEL = mandatory("DeviceModel");
         public final IEventProperty<AnalyticsDeviceInfoEvent, String> OS = mandatory("OS");
-        public final IEventProperty<AnalyticsDeviceInfoEvent, String> APP_TYPE = mandatory("AppType");
-        public final IEventProperty<AnalyticsDeviceInfoEvent, String> APP_NAME = mandatory("AppName");
         public final IEventProperty<AnalyticsDeviceInfoEvent, String> CDN_VENDOR = mandatory("CDNVendor");
         public final IEventProperty<AnalyticsDeviceInfoEvent, String> OS_VERSION = mandatory("OSVersion");
         public final IEventProperty<AnalyticsDeviceInfoEvent, String> MANUFACTURER = mandatory("Manufacturer");
@@ -78,6 +76,9 @@ package com.redbeemedia.enigma.core.analytics;
         public final IEventProperty<AnalyticsCreatedEvent, String> PLAYER = mandatory("Player");
         public final IEventProperty<AnalyticsCreatedEvent, String> VERSION = mandatory("Version");
         public final IEventProperty<AnalyticsCreatedEvent, String> ASSET_ID = optional("AssetId");
+        public final IEventProperty<AnalyticsCreatedEvent, String> APP_TYPE = mandatory("AppType");
+        public final IEventProperty<AnalyticsCreatedEvent, String> APP_NAME = mandatory("AppName");
+        public final IEventProperty<AnalyticsCreatedEvent, String> APP_VERSION = mandatory("AppVersion");
     }
 
     public static class AnalyticsHandshakeStartedEvent implements IAnalyticsEventType {

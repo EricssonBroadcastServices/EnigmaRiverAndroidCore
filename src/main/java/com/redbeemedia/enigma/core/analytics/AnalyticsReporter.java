@@ -55,8 +55,6 @@ public class AnalyticsReporter implements IAnalyticsReporter {
             builder.addData(eventType.DEVICE_ID, deviceInfo.getDeviceId());
             builder.addData(eventType.DEVICE_MODEL, deviceInfo.getDeviceModelLogin());
             builder.addData(eventType.OS, deviceInfo.getOS());
-            builder.addData(eventType.APP_TYPE, deviceInfo.getAppType());
-            builder.addData(eventType.APP_NAME, EnigmaRiverContext.getAppName());
             builder.addData(eventType.CDN_VENDOR, cdnProvider);
             builder.addData(eventType.OS_VERSION, deviceInfo.getOSVersion());
             builder.addData(eventType.MANUFACTURER, deviceInfo.getManufacturer());
@@ -73,6 +71,9 @@ public class AnalyticsReporter implements IAnalyticsReporter {
             builder.addData(eventType.PLAYER, "EnigmaRiver.Android");
             builder.addData(eventType.VERSION, EnigmaRiverContext.getVersion());
             builder.addData(eventType.ASSET_ID, assetId);
+            builder.addData(eventType.APP_NAME, EnigmaRiverContext.getAppName());
+            builder.addData(eventType.APP_VERSION, EnigmaRiverContext.getAppVersion());
+            builder.addData(eventType.APP_TYPE, EnigmaRiverContext.getAppType().toString());
         });
     }
 

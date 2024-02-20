@@ -220,13 +220,6 @@ public class DeviceInfo implements IDeviceInfo {
     }
 
     @Override
-    public String getAppType() {
-        if (isTv) {
-            return "android_tv";
-        } else return "android";
-    }
-
-    @Override
     public String getGoogleAdId() {
         return googleAdId;
     }

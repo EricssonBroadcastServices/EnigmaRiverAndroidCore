@@ -204,9 +204,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
         }
         heartbeatRepeater.setEnabled(false);
         if(aborted) {
-            if(enigmaPlayer.getAdDetector().isAdPlaying()){
-                analyticsReporter.playbackAdFailed(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
-            }
             analyticsReporter.playbackAborted(getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
         }
         enigmaPlayer.removeListener(playerListener);

@@ -81,11 +81,6 @@ public class DeviceInfoTest {
         }
 
         @Override
-        public String getAppType() {
-            return "mock-app-type";
-        }
-
-        @Override
         public String getGoogleAdId() {
             return null;
         }

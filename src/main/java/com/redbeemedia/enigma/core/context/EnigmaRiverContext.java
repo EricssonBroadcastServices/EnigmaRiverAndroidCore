@@ -2,6 +2,8 @@ package com.redbeemedia.enigma.core.context;
 
 import android.app.Application;
 
+import androidx.annotation.VisibleForTesting;
+
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleManager;
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleManagerFactory;
 import com.redbeemedia.enigma.core.ads.DeviceParameters;
@@ -15,6 +17,7 @@ import com.redbeemedia.enigma.core.network.IDefaultNetworkMonitor;
 import com.redbeemedia.enigma.core.network.INetworkMonitor;
 import com.redbeemedia.enigma.core.task.ITaskFactory;
 import com.redbeemedia.enigma.core.task.ITaskFactoryProvider;
+import com.redbeemedia.enigma.core.util.ApplicationDetailProvider;
 import com.redbeemedia.enigma.core.util.UrlPath;
 import com.redbeemedia.enigma.core.util.device.DeviceInfo;
 import com.redbeemedia.enigma.core.util.device.IDeviceInfo;
@@ -60,19 +63,18 @@ public final class EnigmaRiverContext {
         if (requestedContext.adInsertionFactory != null) {
             initializedContext.adInsertionFactory = requestedContext.adInsertionFactory;
         }
-        if (requestedContext.appName != null) {
-            initializedContext.appName = requestedContext.appName;
-        }
+        initializedContext.appName = requestedContext.getAppName();
+        initializedContext.appVersion = requestedContext.getAppVersion();
     }
 
-    /**
-     * For unit tests.
-     *
-     * @param initialization
-     */
-    /*package-protected*/
+    @VisibleForTesting
     static synchronized void resetInitialization(EnigmaRiverContextInitialization initialization) {
         initializedContext = new EnigmaRiverInitializedContext(null, initialization);
+    }
+
+    @VisibleForTesting
+    static synchronized void releaseContext() {
+        initializedContext = null;
     }
 
     public static UrlPath getAnalyticsUrl() {
@@ -141,12 +143,21 @@ public final class EnigmaRiverContext {
 
     public static String getAppName() {
         assertInitialized();
-        return initializedContext.appName;
+        return initializedContext.getAppName();
     }
 
+    public static String getAppVersion() {
+        assertInitialized();
+        return initializedContext.getAppVersion();
+    }
+
+    public static AppType getAppType() {
+        assertInitialized();
+        return initializedContext.getAppType();
+    }
     //Version if the core library
     public static String getVersion() {
-        return "r3.7.7";
+        return "r3.7.8-BETA-1";
     }
 
     private static void assertInitialized() {
@@ -159,7 +170,8 @@ public final class EnigmaRiverContext {
         private IHttpHandler httpHandler = null;
         private String exposureBaseUrl = null;
         private String analyticsUrl = null;
-        private String appName = "";
+        private String appName = null;
+        private String appVersion = null;
         private IDeviceInfo deviceInfo = null;
         private IActivityLifecycleManagerFactory activityLifecycleManagerFactory = new DefaultActivityLifecycleManagerFactory();
         private ITaskFactoryProvider taskFactoryProvider = new DefaultTaskFactoryProvider(new DefaultTaskFactory());
@@ -218,6 +230,11 @@ public final class EnigmaRiverContext {
             return this;
         }
 
+        public EnigmaRiverContextInitialization setAppVersion(final String appVersion) {
+            this.appVersion = appVersion;
+            return this;
+        }
+
         public EnigmaRiverContextInitialization setAdInsertionFactory(IAdInsertionFactory adInsertionFactory) {
             this.adInsertionFactory = adInsertionFactory;
             return this;
@@ -239,6 +256,10 @@ public final class EnigmaRiverContext {
 
         public String getAppName() {
             return this.appName;
+        }
+
+        public String getAppVersion() {
+            return this.appVersion;
         }
 
         public IActivityLifecycleManager getActivityLifecycleManager(Application application) {
@@ -326,6 +347,8 @@ public final class EnigmaRiverContext {
         // it can be re-initialized
         private String appName;
         // it can be re-initialized
+        private String appVersion;
+        // it can be re-initialized
         private IDeviceInfo deviceInfo;
         // it can be re-initialized
         private IAdInsertionFactory adInsertionFactory;
@@ -335,6 +358,7 @@ public final class EnigmaRiverContext {
         private final IEpgLocator epgLocator;
         private final INetworkMonitor networkMonitor;
         private final DeviceParameters deviceParameters;
+        private final ApplicationDetailProvider applicationDetailProvider;
 
         public EnigmaRiverInitializedContext(Application application, EnigmaRiverContextInitialization initialization) {
             try {
@@ -347,7 +371,8 @@ public final class EnigmaRiverContext {
                 this.analyticsUrl = analyticsUrl != null ? new UrlPath(analyticsUrl) : null;
                 this.httpHandler = initialization.getHttpHandler();
                 this.deviceInfo = initialization.getDeviceInfo(application);
-                this.appName = initialization.appName;
+                this.appName = initialization.getAppName();
+                this.appVersion = initialization.getAppVersion();
                 this.activityLifecycleManager = initialization.getActivityLifecycleManager(application);
                 this.taskFactoryProvider = initialization.getTaskFactoryProvider();
                 this.epgLocator = initialization.getEpgLocator();
@@ -362,10 +387,23 @@ public final class EnigmaRiverContext {
                     ((IDefaultNetworkMonitor) networkMonitor).start(application.getApplicationContext(), taskFactoryProvider);
                 }
                 this.adInsertionFactory = initialization.getAdInsertionFactory();
+                this.applicationDetailProvider = new ApplicationDetailProvider(application);
                 ProcessLifecycleHandler.get().initialize(application);
             } catch (Exception e) {
                 throw new ContextInitializationException(e);
             }
+        }
+
+        public String getAppName() {
+            return appName != null ? appName : applicationDetailProvider.getEmbeddedAppName();
+        }
+
+        public String getAppVersion() {
+            return appVersion != null ? appVersion : applicationDetailProvider.getEmbeddedAppVersion();
+        }
+
+        public AppType getAppType() {
+            return AppType.getDefault();
         }
 
         public DeviceParameters getDeviceParameters() {

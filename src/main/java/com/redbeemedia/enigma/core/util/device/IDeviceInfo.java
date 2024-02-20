@@ -16,7 +16,6 @@ public interface IDeviceInfo {
     String getDeviceTypeLogin();
     // ctv / tablet / mobile
     String getDeviceTypePlay();
-    String getAppType();
     String getGoogleAdId();
     boolean isLimitedAdTracking();
 }
