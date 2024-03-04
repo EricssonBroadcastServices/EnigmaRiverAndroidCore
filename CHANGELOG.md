@@ -1,4 +1,7 @@
 # CHANGELOG
+* `3.7.9 `Release - [3.7.9](#3.7.9)&nbsp; - &nbsp; 2024-03-04
+* `3.7.8 `Release - [3.7.8](#3.7.8)&nbsp; - &nbsp; 2024-02-20
+* `3.7.7 `Release - [3.7.7](#3.7.7)&nbsp; - &nbsp; 2024-02-16
 * `3.7.6 `Release - [3.7.6](#3.7.6)&nbsp; - &nbsp; 2024-02-05
 * `3.7.5 `Release - [3.7.5](#3.7.5)&nbsp; - &nbsp; 2023-12-22
 * `3.7.4 `Release - [3.7.4](#3.7.4)&nbsp; - &nbsp; 2023-12-08
@@ -50,6 +53,29 @@
 * `3.1.7` Release - [3.1.7](#3.1.7) &nbsp; - &nbsp; 2020-12-04
 * `3.1.6` Release - [3.1.6](#3.1.6) &nbsp; - &nbsp; 2020-11-13
 
+# <a name="3.7.9"></a> 3.7.9
+#### Features
+`
+EnigmaRiverAndroidExoPlayerIntegration
+`
+* EMP-21263 - Changing audio track not working properly
+
+# <a name="3.7.8"></a> 3.7.8
+#### Features
+`
+DevEnigmaRiverAndroidCore
+DevEnigmaRiverAndroidInternalTestUtils
+`
+* EMP-21166 - Remove invalid Playback.AdFailed
+* EMP-21155 - Align analytics properties for apps and device models
+
+# <a name="3.7.7"></a> 3.7.7
+#### Features
+`
+DevEnigmaRiverAndroidTutorialApps
+`
+* Updated tutorial apps 
+
 # <a name="3.7.6"></a> 3.7.6
 #### Features
 `
@@ -67,7 +93,6 @@ DevEnigmaRiverAndroidDownload
 `
 * EMP-21136 - Upgrade Exoplayer
 * EMP-21036 - Handled 403 error
-
 
 # <a name="3.7.4"></a> 3.7.4
 #### Features
@@ -98,6 +123,7 @@ DevEnigmaRiverAndroidExoPlayerIntegration
 DevEnigmaRiverAndroidCore
 DevEnigmaRiverAndroidExoPlayerIntegration
 `
+* EMP-20831 - Exclude Exoplayer-robolectricutils
 * EMP-20426 -Issue with player events for some ad-replaced live streams
 
 # <a name="3.7.0"></a> 3.7.0
@@ -126,6 +152,7 @@ DevEnigmaRiverAndroidExoPlayerIntegration
 `
 * EMP-20503 - Resume download queue
 * EMP-20314 - Seek VBR content with constant bitrate
+
 
 # <a name="3.6.4"></a> 3.6.4
 #### Features
