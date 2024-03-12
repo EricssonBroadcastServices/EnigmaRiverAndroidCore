@@ -2,6 +2,7 @@ package com.redbeemedia.enigma.core.http;
 
 import android.os.AsyncTask;
 
+import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.util.OpenContainer;
 import com.redbeemedia.enigma.core.util.OpenContainerUtil;
 
@@ -85,6 +86,14 @@ public class DefaultHttpHandler implements IHttpHandler {
             OpenContainerUtil.setValueSynchronized(executingThread, Thread.currentThread(), null);
             try {
                 final HttpURLConnection connection = ((HttpURLConnection) url.openConnection());
+                connection.setRequestProperty(
+                        "User-agent",
+                        EnigmaRiverContext.getAppName()
+                                + "/"
+                                + EnigmaRiverContext.getAppVersion()
+                                + " "
+                                + System.getProperty("http.agent")
+                );
                 connection.setConnectTimeout(getDefaultConnectTimeout());
                 connection.setReadTimeout(getDefaultReadTimeout());
                 connection.setDoInput(true);

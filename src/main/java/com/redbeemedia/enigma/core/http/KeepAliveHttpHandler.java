@@ -2,6 +2,7 @@ package com.redbeemedia.enigma.core.http;
 
 import android.os.Process;
 
+import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.util.OpenContainer;
 import com.redbeemedia.enigma.core.util.OpenContainerUtil;
 
@@ -129,7 +130,14 @@ public class KeepAliveHttpHandler implements IHttpHandler {
 
             try {
                 final HttpURLConnection urlConnection = (HttpURLConnection) mURL.openConnection();
-
+                urlConnection.setRequestProperty(
+                        "User-agent",
+                        EnigmaRiverContext.getAppName()
+                                + "/"
+                                + EnigmaRiverContext.getAppVersion()
+                                + " "
+                                + System.getProperty("http.agent")
+                );
                 final String method = mCall.getRequestMethod();
 
                 urlConnection.setRequestMethod(method);

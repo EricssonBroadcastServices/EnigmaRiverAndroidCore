@@ -9,4 +9,5 @@ import com.redbeemedia.enigma.core.track.ITrack;
 public interface ISubtitleTrack extends ITrack {
     String getLabel();
     String getCode();
+    boolean isForcedSubtitle();
 }
