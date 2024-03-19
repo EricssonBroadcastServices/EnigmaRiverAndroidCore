@@ -916,6 +916,7 @@ public class EnigmaPlayer implements IEnigmaPlayer {
                                 }
                             }
                             environment.playerImplementationControls.seekTo(new IPlayerImplementationControls.TimelineRelativePosition(newPosition), controlResultHandler);
+                            timeline.updateTimelinePosition(environment.timelinePositionFactory.newPosition(newPosition));
                             controlResultHandler.runWhenDone(() -> {
                                 afterSeekToSuccess(playbackSession);
                             });
@@ -1084,6 +1085,10 @@ public class EnigmaPlayer implements IEnigmaPlayer {
 
         // The frequency (in ms) of the time line updating.
         private final long UPDATE_INTERVAL = 1000 / 30;
+
+        public void updateTimelinePosition(ITimelinePosition newPosition){
+            timeline.setCurrentPosition(newPosition);
+        }
 
         // Aligned wih JS player for both linear assets abd live events to 90 seconds
         // The minimum time window required (in minutes) for the timeline to be visible during  playback of linear assets.

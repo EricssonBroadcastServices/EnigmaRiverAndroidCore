@@ -1,4 +1,6 @@
 # CHANGELOG
+* `3.7.11 `Release - [3.7.11](#3.7.10)&nbsp; - &nbsp; 2024-03-19
+* `3.7.10 `Release - [3.7.10](#3.7.10)&nbsp; - &nbsp; 2024-03-12
 * `3.7.9 `Release - [3.7.9](#3.7.9)&nbsp; - &nbsp; 2024-03-04
 * `3.7.8 `Release - [3.7.8](#3.7.8)&nbsp; - &nbsp; 2024-02-20
 * `3.7.7 `Release - [3.7.7](#3.7.7)&nbsp; - &nbsp; 2024-02-16
@@ -52,6 +54,24 @@
 * `3.1.8` Release - [3.1.8](#3.1.8) &nbsp; - &nbsp; 2020-12-11
 * `3.1.7` Release - [3.1.7](#3.1.7) &nbsp; - &nbsp; 2020-12-04
 * `3.1.6` Release - [3.1.6](#3.1.6) &nbsp; - &nbsp; 2020-11-13
+
+# <a name="3.7.11"></a> 3.7.11
+#### Features
+`
+EnigmaRiverAndroidCore
+`
+* EMP-21116 - Change in Enigma Player v3.7.2 event compared to v3.6.4
+
+# <a name="3.7.10"></a> 3.7.10
+#### Features
+`
+EnigmaRiverAndroidInternalTestUtils
+EnigmaRiverAndroidExperimentalLowLatency
+EnigmaRiverAndroidExoPlayerIntegration
+EnigmaRiverAndroidCore
+`
+* EMP-21285 - Add isForced parameter for subtitle track
+* EMP-21231 - Custom user-agent
 
 # <a name="3.7.9"></a> 3.7.9
 #### Features
