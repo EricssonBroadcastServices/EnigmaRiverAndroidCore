@@ -33,6 +33,9 @@ public class AnalyticsHandler extends AbstractAnalyticsHandler {
             currentEvents = events;
             events = new JSONArray();
         }
+        if(playbackSessionId == null){
+            return;
+        }
         try {
             JSONObject envelope = new JSONObject();
             try {

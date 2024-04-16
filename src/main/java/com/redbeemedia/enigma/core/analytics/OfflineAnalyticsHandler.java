@@ -43,6 +43,8 @@ public class OfflineAnalyticsHandler extends AbstractAnalyticsHandler {
     private final List<String> validOfflineEventNames = new ArrayList<>();
     public static final int UPDATE_FREQUENCY_5_MIN = 5 * 60 * 1000;
 
+    private static final Object sendDataLock = new Object();
+
     public OfflineAnalyticsHandler(String assetId, ISession session, String playbackSessionId, ITimeProvider timeProvider, AnalyticsPlayResponseData analyticsPlayResponseData, String analyticsBaseUrl) {
         super(session, playbackSessionId, timeProvider, analyticsPlayResponseData);
         this.assetId = assetId;
@@ -66,21 +68,23 @@ public class OfflineAnalyticsHandler extends AbstractAnalyticsHandler {
     2. AnalyticsReporter, sendData when user playback the asset
      */
     @Override
-    public synchronized void sendData() {
-        if (!setupAnalyticsUrl()) {
-            return;
-        }
-        // Store the events
-        JSONObject allOfflineAssetIdEventsBucket = storeAndGetEvents();
-        try {
-            // If network, then try to send data
-            if (EnigmaRiverContext.getNetworkMonitor().hasInternetAccess() && allOfflineAssetIdEventsBucket != null) {
-                sendEventsToServer(allOfflineAssetIdEventsBucket);
-                updateEventsInStorage(allOfflineAssetIdEventsBucket);
+    public void sendData() {
+        synchronized (sendDataLock){
+            if (!setupAnalyticsUrl()) {
+                return;
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
-            Log.e("INFO", "Error while sending Offline events", e);
+            // Store the events
+            JSONObject allOfflineAssetIdEventsBucket = storeAndGetEvents();
+            try {
+                // If network, then try to send data
+                if (EnigmaRiverContext.getNetworkMonitor().hasInternetAccess() && allOfflineAssetIdEventsBucket != null) {
+                    sendEventsToServer(allOfflineAssetIdEventsBucket);
+                    updateEventsInStorage(allOfflineAssetIdEventsBucket);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+                Log.e("INFO", "Error while sending Offline events", e);
+            }
         }
 
     }
@@ -175,6 +179,9 @@ public class OfflineAnalyticsHandler extends AbstractAnalyticsHandler {
             List<String> sentPlaybackSessionIds = new ArrayList<>();
             while (playbackSessionIdkeys.hasNext()) {
                 String thisPlaybackSessionId = playbackSessionIdkeys.next();
+                if(thisPlaybackSessionId.isEmpty()){
+                    continue;
+                }
                 JSONArray thisPlaySessionIdEvents = thisPlaybackSessionIdMap.getJSONArray(thisPlaybackSessionId);
                 int totalEventsLength = thisPlaySessionIdEvents.length() - 1;
                 if (totalEventsLength <= 0) {

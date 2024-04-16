@@ -1,5 +1,7 @@
 # CHANGELOG
-* `3.7.11 `Release - [3.7.11](#3.7.10)&nbsp; - &nbsp; 2024-03-19
+* `3.7.13 `Release - [3.7.13](#3.7.13)&nbsp; - &nbsp; 2024-04-16
+* `3.7.12 `Release - [3.7.12](#3.7.12)&nbsp; - &nbsp; 2024-04-03
+* `3.7.11 `Release - [3.7.11](#3.7.11)&nbsp; - &nbsp; 2024-03-19
 * `3.7.10 `Release - [3.7.10](#3.7.10)&nbsp; - &nbsp; 2024-03-12
 * `3.7.9 `Release - [3.7.9](#3.7.9)&nbsp; - &nbsp; 2024-03-04
 * `3.7.8 `Release - [3.7.8](#3.7.8)&nbsp; - &nbsp; 2024-02-20
@@ -54,6 +56,24 @@
 * `3.1.8` Release - [3.1.8](#3.1.8) &nbsp; - &nbsp; 2020-12-11
 * `3.1.7` Release - [3.1.7](#3.1.7) &nbsp; - &nbsp; 2020-12-04
 * `3.1.6` Release - [3.1.6](#3.1.6) &nbsp; - &nbsp; 2020-11-13
+
+# <a name="3.7.13"></a> 3.7.13
+#### Features
+`
+EnigmaRiverAndroidCore
+`
+* EMP-21066 - Offline analytics with corrupt sessionIds
+* EMP-21114 - Duplicate offline analytics events
+
+# <a name="3.7.12"></a> 3.7.12
+#### Features
+`
+EnigmaRiverAndroidExoPlayerIntegration
+EnigmaRiverAndroidExoPlayerDownload
+`
+* EMP-21275 - Crash fix during asset download
+* EMP-21375 - Lack of notification fix during asset download 
+* EMP-21250 - Unexpected runtime error fix on Google Pixel 4 5G
 
 # <a name="3.7.11"></a> 3.7.11
 #### Features
