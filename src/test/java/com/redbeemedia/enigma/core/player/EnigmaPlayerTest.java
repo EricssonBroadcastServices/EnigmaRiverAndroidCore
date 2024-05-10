@@ -2,8 +2,6 @@ package com.redbeemedia.enigma.core.player;
 
 import androidx.annotation.NonNull;
 
-import com.google.android.exoplayer2.metadata.Metadata;
-import com.google.android.exoplayer2.source.hls.playlist.HlsMediaPlaylist;
 import com.redbeemedia.enigma.core.analytics.AnalyticsPlayResponseData;
 import com.redbeemedia.enigma.core.analytics.IBufferingAnalyticsHandler;
 import com.redbeemedia.enigma.core.analytics.MockAnalyticsReporter;
@@ -37,6 +35,8 @@ import com.redbeemedia.enigma.core.player.controls.IControlResultHandler;
 import com.redbeemedia.enigma.core.player.listener.BaseEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.timeline.BaseTimelineListener;
+import com.redbeemedia.enigma.core.player.timeline.EnigmaMetadata;
+import com.redbeemedia.enigma.core.player.timeline.EnigmaHlsMediaPlaylist;
 import com.redbeemedia.enigma.core.player.timeline.ITimelinePosition;
 import com.redbeemedia.enigma.core.player.track.IPlayerImplementationTrack;
 import com.redbeemedia.enigma.core.player.track.MockPlayerImplementationTrack;
@@ -56,9 +56,7 @@ import com.redbeemedia.enigma.core.task.ITask;
 import com.redbeemedia.enigma.core.task.ITaskFactory;
 import com.redbeemedia.enigma.core.task.ITaskFactoryProvider;
 import com.redbeemedia.enigma.core.task.MainThreadTaskFactory;
-import com.redbeemedia.enigma.core.task.MockTaskFactoryProvider;
 import com.redbeemedia.enigma.core.task.TaskException;
-import com.redbeemedia.enigma.core.task.TestTaskFactory;
 import com.redbeemedia.enigma.core.testutil.Counter;
 import com.redbeemedia.enigma.core.testutil.Flag;
 import com.redbeemedia.enigma.core.testutil.InstanceOfMatcher;
@@ -80,7 +78,6 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -162,11 +159,11 @@ public class EnigmaPlayerTest {
         IPlayerImplementation impl = new MockPlayerImplementation() ;
 
         EnigmaPlayer enigmaPlayer = new EnigmaPlayerWithMockedTimeProvider(new MockSession(), impl);
-        Metadata metadata = new Metadata();
+        EnigmaMetadata metadata = new EnigmaMetadata(0, null);
 
         enigmaPlayer.getTimeline().addListener(new BaseTimelineListener() {
             @Override
-            public void onDashMetadata(Metadata metadata) {
+            public void onDashMetadata(EnigmaMetadata metadata) {
                 dashEventCalled.setFlag();
             }
         });
@@ -201,14 +198,14 @@ public class EnigmaPlayerTest {
         final Flag dashEventCalled = new Flag();
         final Flag onErrorCalled = new Flag();
         final Flag useWithCalled = new Flag();
-        IPlayerImplementation impl = new MockPlayerImplementation() ;
+        IPlayerImplementation impl = new MockPlayerImplementation();
 
         EnigmaPlayer enigmaPlayer = new EnigmaPlayerWithMockedTimeProvider(new MockSession(), impl);
-        HlsMediaPlaylist metadata = mockHlsMediaPlaylist();
+        EnigmaHlsMediaPlaylist metadata = mockHlsMediaPlaylist();
 
         enigmaPlayer.getTimeline().addListener(new BaseTimelineListener() {
             @Override
-            public void onHlsMetadata(HlsMediaPlaylist metadata) {
+            public void onHlsMetadata(EnigmaHlsMediaPlaylist metadata) {
                 dashEventCalled.setFlag();
             }
         });
@@ -231,8 +228,8 @@ public class EnigmaPlayerTest {
     }
 
     @NonNull
-    private HlsMediaPlaylist mockHlsMediaPlaylist() {
-        return new HlsMediaPlaylist(HlsMediaPlaylist.PLAYLIST_TYPE_EVENT,
+    private EnigmaHlsMediaPlaylist mockHlsMediaPlaylist() {
+        return new EnigmaHlsMediaPlaylist(EnigmaHlsMediaPlaylist.PLAYLIST_TYPE_EVENT,
                 "baseUri",
                 new ArrayList<>(),
                 -1,
@@ -247,11 +244,11 @@ public class EnigmaPlayerTest {
                 false,
                 false,
                 false,
-                null,
+                0,
+                false,
                 new ArrayList<>(),
-                new ArrayList<>(),
-                null,
-                new HashMap<>());
+                new ArrayList<>()
+        );
     }
 
     private static JSONObject createFormatJson(String mediaLocator, String format, String drmKey, Long liveDelay) throws JSONException {

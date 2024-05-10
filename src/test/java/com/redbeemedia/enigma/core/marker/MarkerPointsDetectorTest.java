@@ -4,8 +4,8 @@ import android.os.Handler;
 
 import androidx.annotation.NonNull;
 
-import com.google.android.exoplayer2.metadata.Metadata;
-import com.google.android.exoplayer2.source.hls.playlist.HlsMediaPlaylist;
+import com.redbeemedia.enigma.core.player.timeline.EnigmaMetadata;
+import com.redbeemedia.enigma.core.player.timeline.EnigmaHlsMediaPlaylist;
 import com.redbeemedia.enigma.core.player.DefaultTimelinePositionFactoryTest;
 import com.redbeemedia.enigma.core.player.timeline.ITimeline;
 import com.redbeemedia.enigma.core.player.timeline.ITimelineListener;
@@ -146,11 +146,11 @@ public class MarkerPointsDetectorTest {
             }
 
             @Override
-            public void onDashMetadata(Metadata metadata) {
+            public void onDashMetadata(EnigmaMetadata metadata) {
             }
 
             @Override
-            public void onHlsMetadata(HlsMediaPlaylist metadata) {
+            public void onHlsMetadata(EnigmaHlsMediaPlaylist metadata) {
             }
         });
     }

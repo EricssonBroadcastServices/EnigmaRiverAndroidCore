@@ -2,8 +2,6 @@ package com.redbeemedia.enigma.core.player.timeline;
 
 import android.os.Handler;
 
-import com.google.android.exoplayer2.metadata.Metadata;
-import com.google.android.exoplayer2.source.hls.playlist.HlsMediaPlaylist;
 import com.redbeemedia.enigma.core.util.HandlerWrapper;
 import com.redbeemedia.enigma.core.util.OpenContainer;
 import com.redbeemedia.enigma.core.util.OpenContainerUtil;
@@ -62,12 +60,12 @@ public class SimpleTimeline implements ITimeline {
     }
 
     @Override
-    public void onDashMetadata(Metadata metadata) {
+    public void onDashMetadata(EnigmaMetadata metadata) {
         collector.onDashMetadata(metadata);
     }
 
     @Override
-    public void onHlsMetadata(HlsMediaPlaylist metadata) {
+    public void onHlsMetadata(EnigmaHlsMediaPlaylist metadata) {
         collector.onHlsMetadata(metadata);
     }
 

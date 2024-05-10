@@ -6,9 +6,6 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
-import com.google.android.exoplayer2.metadata.Metadata;
-import com.google.android.exoplayer2.source.hls.playlist.HlsMediaPlaylist;
-import com.google.android.exoplayer2.ui.SubtitleView;
 import com.redbeemedia.enigma.core.activity.AbstractActivityLifecycleListener;
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleListener;
 import com.redbeemedia.enigma.core.activity.IActivityLifecycleManager;
@@ -50,6 +47,8 @@ import com.redbeemedia.enigma.core.player.controls.IEnigmaPlayerControls;
 import com.redbeemedia.enigma.core.player.listener.BaseEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.listener.IEnigmaPlayerListener;
 import com.redbeemedia.enigma.core.player.timeline.BaseTimelineListener;
+import com.redbeemedia.enigma.core.player.timeline.EnigmaMetadata;
+import com.redbeemedia.enigma.core.player.timeline.EnigmaHlsMediaPlaylist;
 import com.redbeemedia.enigma.core.player.timeline.ITimeline;
 import com.redbeemedia.enigma.core.player.timeline.ITimelineListener;
 import com.redbeemedia.enigma.core.player.timeline.ITimelinePosition;
@@ -535,11 +534,6 @@ public class EnigmaPlayer implements IEnigmaPlayer {
             return valueSynchronized.getStreamInfo().getMediaType() == MediaType.AUDIO;
         }
         return false;
-    }
-
-    @Override
-    public SubtitleView getPlayerSubtitleView() {
-        return playerImplementation.getPlayerSubtitleView();
     }
 
     private class EnigmaPlayerEnvironment implements IEnigmaPlayerEnvironment, IDrmProvider {
@@ -1331,11 +1325,11 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         }
 
         @Override
-        public void onDashMetadata(Metadata metadata) {
+        public void onDashMetadata(EnigmaMetadata metadata) {
         }
 
         @Override
-        public void onHlsMetadata(HlsMediaPlaylist metadata) {
+        public void onHlsMetadata(EnigmaHlsMediaPlaylist metadata) {
         }
 
         @Override

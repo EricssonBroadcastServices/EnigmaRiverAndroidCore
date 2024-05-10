@@ -1,7 +1,5 @@
 package com.redbeemedia.enigma.core.player.timeline;
 
-import com.google.android.exoplayer2.metadata.Metadata;
-import com.google.android.exoplayer2.source.hls.playlist.HlsMediaPlaylist;
 import com.redbeemedia.enigma.core.ads.AdEventType;
 import com.redbeemedia.enigma.core.ads.VastAdEntry;
 import com.redbeemedia.enigma.core.util.IInternalListener;
@@ -21,6 +19,6 @@ public interface ITimelineListener extends IInternalListener {
     void onBoundsChanged(ITimelinePosition start, ITimelinePosition end);
     void onLivePositionChanged(ITimelinePosition timelinePosition);
     void onAdEvent(VastAdEntry entry, AdEventType eventType);
-    void onDashMetadata(Metadata metadata);
-    void onHlsMetadata(HlsMediaPlaylist metadata);
+    void onDashMetadata(EnigmaMetadata metadata);
+    void onHlsMetadata(EnigmaHlsMediaPlaylist metadata);
 }
