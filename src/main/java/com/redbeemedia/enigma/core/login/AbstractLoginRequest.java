@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+//
+// SPDX-License-Identifier: MIT
+
 package com.redbeemedia.enigma.core.login;
 
 import com.redbeemedia.enigma.core.businessunit.IBusinessUnit;
@@ -13,11 +17,13 @@ import org.json.JSONObject;
 import java.net.MalformedURLException;
 
 /*package-protected*/ abstract class AbstractLoginRequest implements ILoginRequest {
+    private final String apiVersion;
     private final String path;
     private final String requestMethod;
     private final ILoginResultHandler resultHandler;
 
-    public AbstractLoginRequest(String path, String requestMethod,ILoginResultHandler resultHandler) {
+    public AbstractLoginRequest(String apiVersion, String path, String requestMethod,ILoginResultHandler resultHandler) {
+        this.apiVersion = apiVersion;
         this.path = path;
         this.requestMethod = requestMethod;
         this.resultHandler = resultHandler;
@@ -30,7 +36,7 @@ import java.net.MalformedURLException;
 
     @Override
     public UrlPath getTargetUrl(IBusinessUnit businessUnit) throws MalformedURLException {
-        return getTargetUrl(businessUnit.getApiBaseUrl());
+        return getTargetUrl(businessUnit.getApiBaseUrl(apiVersion));
     }
 
     @Override

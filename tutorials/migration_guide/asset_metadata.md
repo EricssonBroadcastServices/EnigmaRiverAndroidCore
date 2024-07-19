@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+
+SPDX-License-Identifier: MIT
+-->
+
 ### Migration guide (Android SDK 2.0 -> Enigma River Android SDK)
 # Changes to asset metadata retrieval
 ## Before
@@ -23,7 +29,7 @@ optional module called `EnigmaRiverAndroidExposureUtils` that handles the conver
 backend Json objects to native java object. To use this module, app developers need to add it as a
 dependency in their gradle build file:
 ```
-implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exposureUtils:r3.7.14"
+implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exposureUtils:r3.7.15"
 ```
 Performing the same call as in the example from the old SDK above is done by
 ```

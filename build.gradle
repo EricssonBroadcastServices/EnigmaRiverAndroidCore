@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+//
+// SPDX-License-Identifier: MIT
+
 apply plugin: 'com.android.library'
 
 android {
@@ -47,6 +51,6 @@ dependencies {
     if(findProject(':internalTestUtils') != null) {
         testImplementation project(":internalTestUtils")
     } else {
-        testImplementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:internalTestUtils:r3.7.14'
+        testImplementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:internalTestUtils:r3.7.15'
     }
 }

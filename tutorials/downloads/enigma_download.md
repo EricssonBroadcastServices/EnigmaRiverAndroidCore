@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+
+SPDX-License-Identifier: MIT
+-->
+
 ### Downloads and offline playback series
 # Using the download API
 To interact with the download API we need to create an `EnigmaDownload` instance.

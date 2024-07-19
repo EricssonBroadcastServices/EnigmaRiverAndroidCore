@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+//
+// SPDX-License-Identifier: MIT
+
 package com.redbeemedia.enigma.core.player;
 
 import static com.redbeemedia.enigma.core.analytics.OfflineAnalyticsHandler.OFFLINE_ANALYTICS_URL;

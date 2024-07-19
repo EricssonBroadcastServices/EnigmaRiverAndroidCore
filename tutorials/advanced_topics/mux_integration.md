@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+
+SPDX-License-Identifier: MIT
+-->
+
 # Mux Integration
 This tutorial describes how to do mux integration with SDK. 
 

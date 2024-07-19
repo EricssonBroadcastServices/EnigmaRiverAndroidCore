@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+
+SPDX-License-Identifier: MIT
+-->
+
 # Ad Insertion
 This tutorial describes how to facilitate and configure server-side ad insertion (SSAI) during playback. 
 

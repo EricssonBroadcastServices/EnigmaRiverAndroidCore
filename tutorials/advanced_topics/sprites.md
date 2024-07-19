@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+
+SPDX-License-Identifier: MIT
+-->
+
 # Sprites API
 Sprites are thumbnails representing the content of a segment of the timeline. This optional implementation provides an interface to request a sprite image for a certain absolute position on the timeline. In order for sprites to be enabled, the asset has to be configured accordingly.
 

@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+
+SPDX-License-Identifier: MIT
+-->
+
 ### Additional topics for download and offline playback series
 # Working with DRM protected offline content
 ## Limitations
@@ -87,7 +93,7 @@ drmLicence.renew(session, new BaseDrmLicenceRenewResultHandler() {
 
 ## Further reading
 To see this in action please refer to the tutorial app
-[downloads](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.7.14/downloads).
+[downloads](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.7.15/downloads).
 
 
 ___

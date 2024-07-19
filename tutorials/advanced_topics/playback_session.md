@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+
+SPDX-License-Identifier: MIT
+-->
+
 # Playback Session
 While playing a stream the EnigmaPlayer has a "PlaybackSession". Each EnigmaPlayer only has at most
 one PlaybackSession at a time.

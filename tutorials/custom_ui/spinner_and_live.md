@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+
+SPDX-License-Identifier: MIT
+-->
+
 ### Custom UI controls series
 # Spinner and Live Indicator
 In this chapter we will show you how you can integrate with Enigma

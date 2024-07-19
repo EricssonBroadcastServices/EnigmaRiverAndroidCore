@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+//
+// SPDX-License-Identifier: MIT
+
 package com.redbeemedia.enigma.core.login;
 
 import com.redbeemedia.enigma.core.businessunit.IBusinessUnit;
@@ -16,7 +20,7 @@ public class UserLoginRequest extends AbstractLoginRequest implements ILoginRequ
     private String password;
 
     public UserLoginRequest(String username, String password, ILoginResultHandler resultHandler) {
-        super("auth/login", "POST", resultHandler);
+        super("v3", "auth/login", "POST", resultHandler);
         this.username = username;
         this.password = password;
     }

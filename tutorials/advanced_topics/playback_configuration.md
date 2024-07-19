@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+
+SPDX-License-Identifier: MIT
+-->
+
 # Playback Configuration
 # Material Profile parameter
 If application developers want to play a specific material variant, they can pass `materialProfile` when starting the playback.

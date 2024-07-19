@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<!--
+SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+
+SPDX-License-Identifier: MIT
+-->
+
 <VAST version="3.0">
     <Ad id="9497e9f234805b96df4edc57613ee8ec-3c4ca.64e56.4324" sequence="1">
         <InLine>

@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+
+SPDX-License-Identifier: MIT
+-->
+
 ### Chromecast integration series
 # Integrating Red Bee OTT cast support
 Before integrating the Enigma River Android cast-module please make sure
@@ -17,7 +23,7 @@ The first thing needed in order to add cast functionality to your app is to add 
 ...
 dependencies {
     ...
-    implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:cast:r3.7.14"
+    implementation "com.github.EricssonBroadcastServices.EnigmaRiverAndroid:cast:r3.7.15"
     ...
 }
 ...

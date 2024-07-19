@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+
+SPDX-License-Identifier: MIT
+-->
+
 ### Downloads and offline playback series
 # Remove downloaded assets
 To remove a downloaded asset, simply use `IEnigmaDownload#removeDownloadedAsset` with a valid

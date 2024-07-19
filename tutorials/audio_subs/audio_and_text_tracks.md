@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+
+SPDX-License-Identifier: MIT
+-->
+
 ### Audio and subtitles series
 # Audio and subtitle selection
 ## Keeping track of tracks
@@ -115,7 +121,7 @@ This is only allowed for subtitle tracks. A request to `setAudioTrack(null)` wil
 
 ### Working example
 Here is a working example project using what is described in this tutorial:
-[audioAndSubtitles](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.7.14/audioAndSubtitles)<br />
+[audioAndSubtitles](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.7.15/audioAndSubtitles)<br />
 
 
 

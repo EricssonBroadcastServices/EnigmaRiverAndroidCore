@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+
+SPDX-License-Identifier: MIT
+-->
+
 ### Custom UI controls series
 # Basics: play, pause and seeking
 This tutorial will teach you how to integrate your custom UI buttons to EnigmaPlayer.

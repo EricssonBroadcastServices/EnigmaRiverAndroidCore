@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+
+SPDX-License-Identifier: MIT
+-->
+
 # RTBF - AUDIO ONLY 3.0
 This tutorial describes how to facilitate and configure sticky player and background player for
 audio only streams.

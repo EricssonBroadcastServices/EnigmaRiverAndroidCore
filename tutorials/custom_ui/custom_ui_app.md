@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+
+SPDX-License-Identifier: MIT
+-->
+
 ### Custom UI controls series
 # Custom UI app
 ## Putting it all together
@@ -148,7 +154,7 @@ enigmaPlayer.getPlayerSubtitleView().setFixedTextSize(Dimension.PX,30);
 **And that's all there is to it**!
 
 This is what our finished app looks like:
-[customUiApp](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.7.14/customcontrols)<br
+[customUiApp](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.7.15/customcontrols)<br
 />
 
 

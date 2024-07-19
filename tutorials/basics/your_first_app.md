@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+
+SPDX-License-Identifier: MIT
+-->
+
 ### Basics series
 # Your first app
 In this tutorial we will create a very simple app using the SDK.
@@ -334,7 +340,7 @@ import com.redbeemedia.enigma.core.error.NoSupportedMediaFormatsError;
 # And that's all there is to it!
 
 This is what our finished app looks like:
-[yourFirstApp](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.7.14/yourFirstApp)<br />
+[yourFirstApp](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.7.15/yourFirstApp)<br />
 
 
 ___

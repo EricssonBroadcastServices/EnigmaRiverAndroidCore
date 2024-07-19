@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+
+SPDX-License-Identifier: MIT
+-->
+
 ### Downloads and offline playback series
 # Check if an asset is downloadable
 To check if an asset is available for download, two things are needed:
@@ -18,7 +24,7 @@ this module in your project, add the following to your `build.gradle`:
 ...
 dependencies {
     ...
-    implementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exposureUtils:r3.7.14'
+    implementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exposureUtils:r3.7.15'
     ...
 }
 ...
@@ -82,7 +88,7 @@ exposure.doRequest(new GetAllAssetsRequest(new BaseExposureResultHandler<ApiAsse
 ## Lightweight option
 
 If you don't want to include `exposureUtils` in your project we recommend you copy the file
-[EnigmaDownloadHelper.java](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidExposureUtils/blob/r3.7.14/src/main/java/com/redbeemedia/enigma/exposureutils/download/EnigmaDownloadHelper.java)
+[EnigmaDownloadHelper.java](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidExposureUtils/blob/r3.7.15/src/main/java/com/redbeemedia/enigma/exposureutils/download/EnigmaDownloadHelper.java)
 into your project and edit it appropriately.
 
 

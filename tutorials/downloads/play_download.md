@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+
+SPDX-License-Identifier: MIT
+-->
+
 ### Downloads and offline playback series
 # Start playback of a downloaded asset
 To play a downloaded asset, simply use a valid `DownloadedPlayable` in the `PlayRequest`

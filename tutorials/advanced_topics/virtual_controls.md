@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+
+SPDX-License-Identifier: MIT
+-->
+
 # Virtual controls
 When implementing a custom UI the app developer need to know when to show/hide a button and when to display the button as 'enabled'.
 These properties might depend on many things such as:

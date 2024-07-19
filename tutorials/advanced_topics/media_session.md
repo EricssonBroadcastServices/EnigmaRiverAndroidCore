@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+
+SPDX-License-Identifier: MIT
+-->
+
 # Media Session
 This tutorial describes how to configure media session connector.
 Media sessions are an integral link between the Android platform and media apps. Not only does it inform Android that media is playing—so that it can forward media actions into the correct session—but it also informs the platform what is playing and how it can be controlled.

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+//
+// SPDX-License-Identifier: MIT
+
 package com.redbeemedia.enigma.core.context;
 
 import android.app.Application;
@@ -157,7 +161,7 @@ public final class EnigmaRiverContext {
     }
     //Version if the core library
     public static String getVersion() {
-        return "r3.7.14";
+        return "r3.7.15";
     }
 
     private static void assertInitialized() {

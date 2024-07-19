@@ -1,0 +1,8 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: EricssonBroadcastServices/EnigmaRiverAndroidCore
+Upstream-Contact: Red Bee Media Ltd <https://www.redbeemedia.com/>
+Source: https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidCore
+
+Files: gradle/* gradlew gradlew.bat
+Copyright: (C) 2007-2023 Gradle, Inc.
+License: Apache-2.0

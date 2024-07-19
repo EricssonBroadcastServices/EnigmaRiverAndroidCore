@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+
+SPDX-License-Identifier: MIT
+-->
+
 ### Basics series
 # Introduction
 The Enigma River Android SDK provides a simple framework for app developers that facilitates communication with the Red Bee Media OTT backend. It takes away the burden of writing a lot of boilerplate code from the app developer. For example: making http calls, parsing the response and creating native objects. It simplifies the integration of a video player that plays streams from the backend, so that the app developer can focus on making awesome apps!

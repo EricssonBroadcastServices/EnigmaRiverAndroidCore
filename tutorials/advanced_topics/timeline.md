@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+
+SPDX-License-Identifier: MIT
+-->
+
 # Timeline API
 The timeline API is used for implementing/integrating a custom timeline UI element.
 It can be accessed using `IEnigmaPlayer#getTimeline`.

@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+
+SPDX-License-Identifier: MIT
+-->
+
 ### Additional topics for download and offline playback series
 # AssetQueueDownload
 ![stateDiagram](../images/Download-queue.png "Download Assets from Queue")

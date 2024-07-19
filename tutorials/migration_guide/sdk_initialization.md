@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+
+SPDX-License-Identifier: MIT
+-->
+
 ### Migration guide (Android SDK 2.0 -> Enigma River Android SDK)
 # Changes to SDK initialization
 ## Before

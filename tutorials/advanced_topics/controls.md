@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+
+SPDX-License-Identifier: MIT
+-->
+
 # Controlling EnigmaPlayer programmatically
 There are two main ways one usually interacts with a video player. One is by starting up a stream
 (which in our case is done using `IEnigmaPlayer#play(IPlayRequest)`). The other way is

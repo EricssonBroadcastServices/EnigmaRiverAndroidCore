@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+//
+// SPDX-License-Identifier: MIT
+
 package com.redbeemedia.enigma.core.login;
 
 import org.json.JSONException;
@@ -9,7 +13,7 @@ import java.nio.charset.StandardCharsets;
 
 public class AnonymousLoginRequest extends AbstractLoginRequest implements ILoginRequest {
     public AnonymousLoginRequest(ILoginResultHandler resultHandler) {
-        super("auth/anonymous", "POST", resultHandler);
+        super("v2", "auth/anonymous", "POST", resultHandler);
     }
 
     @Override

@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+
+SPDX-License-Identifier: MIT
+-->
+
 # Table of Contents
 
 The following tutorials will show you various ways Enigma River Android SDK can be utilized, and described advanced topics.
