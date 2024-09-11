@@ -1,10 +1,8 @@
-<!--
-SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
-
-SPDX-License-Identifier: CC-BY-SA-4.0
--->
-
 # CHANGELOG
+* `3.7.17 `Release - [3.7.17](#3.7.17)&nbsp; - &nbsp; 2024-09-11
+* `3.7.16 `Release - [3.7.16](#3.7.16)&nbsp; - &nbsp; 2024-07-19
+* `3.7.15 `Release - [3.7.15](#3.7.15)&nbsp; - &nbsp; 2024-07-19
+* `3.7.14 `Release - [3.7.14](#3.7.14)&nbsp; - &nbsp; 2024-05-10
 * `3.7.13 `Release - [3.7.13](#3.7.13)&nbsp; - &nbsp; 2024-04-16
 * `3.7.12 `Release - [3.7.12](#3.7.12)&nbsp; - &nbsp; 2024-04-03
 * `3.7.11 `Release - [3.7.11](#3.7.11)&nbsp; - &nbsp; 2024-03-19
@@ -63,6 +61,41 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 * `3.1.7` Release - [3.1.7](#3.1.7) &nbsp; - &nbsp; 2020-12-04
 * `3.1.6` Release - [3.1.6](#3.1.6) &nbsp; - &nbsp; 2020-11-13
 
+# <a name="3.7.17"></a> 3.7.17
+#### Features
+`
+EnigmaRiverAndroidExoPlayerDownload
+`
+* update ExoPlayer to prevent download service crash on Android 14
+
+# <a name="3.7.16"></a> 3.7.16
+#### Features
+`
+EnigmaRiverAndroidExoPlayerDownload
+`
+* Notification priority fix
+
+
+# <a name="3.7.15"></a> 3.7.15
+#### Features
+`
+EnigmaRiverAndroidCore
+EnigmaRiverAndroidExoPlayerIntegration
+`
+* EMP-21400 - Add EnigmaEventMessage class
+
+
+# <a name="3.7.14"></a> 3.7.14
+#### Features
+`
+EnigmaRiverAndroidCore
+EnigmaRiverAndroidInternalTestUtils
+EnigmaRiverAndroidExperimentalLowLatency
+EnigmaRiverAndroidExoPlayerIntegration
+EnigmaRiverAndroidDownload
+`
+* EMP-21400 - Remove abstract Enigma Player dependency on ExoPlayer
+
 # <a name="3.7.13"></a> 3.7.13
 #### Features
 `
@@ -78,7 +111,7 @@ EnigmaRiverAndroidExoPlayerIntegration
 EnigmaRiverAndroidExoPlayerDownload
 `
 * EMP-21275 - Crash fix during asset download
-* EMP-21375 - Lack of notification fix during asset download 
+* EMP-21375 - Lack of notification fix during asset download
 * EMP-21250 - Unexpected runtime error fix on Google Pixel 4 5G
 
 # <a name="3.7.11"></a> 3.7.11
@@ -120,7 +153,7 @@ DevEnigmaRiverAndroidInternalTestUtils
 `
 DevEnigmaRiverAndroidTutorialApps
 `
-* Updated tutorial apps 
+* Updated tutorial apps
 
 # <a name="3.7.6"></a> 3.7.6
 #### Features
@@ -362,7 +395,7 @@ DevEnigmaRiverAndroidCore
 DevEnigmaRiverAndroidExoPlayerIntegration
 DevEnigmaRiverAndroidDownload
 DevEnigmaRiverAndroidExoPlayerDownload
-` 
+`
 * EMP-18467- Support for PlaybackProperty (OFFSET) for offline assets
 * EMP-18466- Expose playback sessionId
 * EMP-18002- 10min inactivity issue
@@ -578,11 +611,11 @@ the following changes are required.
 
 ```java
     playerView.getVideoSurfaceView().setOnClickListener(new View.OnClickListener(){
-@Override
-public void onClick(View v){
-        // Do something
-        }
-        });
+  @Override
+  public void onClick(View v){
+    // Do something
+  }
+});
 ```
 
 - If the Virtual Controls are used, the default exoplayer controls layout must explicitly defined in
