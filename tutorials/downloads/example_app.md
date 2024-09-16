@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 ### Downloads and offline playback series
 # Downloads app
 For a complete demonstration on how to use the download API you can check out the source code
-for the tutorial app called [downloads](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.7.17/downloads).
+for the tutorial app called [downloads](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.7.18-BETA-1/downloads).
 
 For further reading about downloads, see [Additional topics for download and offline playback series](../index.md#additional-topics-for-download-and-offline-playback-series)
 

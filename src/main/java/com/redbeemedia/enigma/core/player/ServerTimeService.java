@@ -184,7 +184,7 @@ import java.net.URL;
     }
 
     private void stop() {
-        repeater.setEnabled(false);
+        new Thread(() -> repeater.setEnabled(false)).start();
     }
 
     private URL getTimeSyncUrl() {
