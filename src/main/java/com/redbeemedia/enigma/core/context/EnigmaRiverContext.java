@@ -161,7 +161,7 @@ public final class EnigmaRiverContext {
     }
     //Version if the core library
     public static String getVersion() {
-        return "r3.7.18";
+        return "r3.7.19";
     }
 
     private static void assertInitialized() {
@@ -407,7 +407,11 @@ public final class EnigmaRiverContext {
         }
 
         public AppType getAppType() {
-            return AppType.getDefault();
+            boolean isTV = false;
+            try {
+                isTV = deviceInfo.isTV();
+            } catch (Exception ignored) {}
+            return AppType.getDefault(isTV);
         }
 
         public DeviceParameters getDeviceParameters() {

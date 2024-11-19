@@ -22,4 +22,5 @@ public interface IDeviceInfo {
     String getDeviceTypePlay();
     String getGoogleAdId();
     boolean isLimitedAdTracking();
+    boolean isTV();
 }

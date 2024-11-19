@@ -4,12 +4,9 @@
 
 package com.redbeemedia.enigma.core.context;
 
-import static java.lang.annotation.RetentionPolicy.SOURCE;
-import androidx.annotation.StringDef;
-import java.lang.annotation.Retention;
-
 public enum AppType {
-    APP("app");
+    APP("app"),
+    ANDROID_TV("android_tv");
 
     private final String value;
 
@@ -22,7 +19,11 @@ public enum AppType {
         return value;
     }
 
-    public static AppType getDefault() {
-        return APP;
+    public static AppType getDefault(Boolean isTV) {
+        if(isTV){
+            return ANDROID_TV;
+        } else {
+            return APP;
+        }
     }
 }

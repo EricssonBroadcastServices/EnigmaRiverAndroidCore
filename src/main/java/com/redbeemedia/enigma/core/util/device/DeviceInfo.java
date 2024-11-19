@@ -221,4 +221,9 @@ public class DeviceInfo implements IDeviceInfo {
     public boolean isLimitedAdTracking() {
         return limitedAdTracking;
     }
+
+    @Override
+    public boolean isTV() {
+        return isTv;
+    }
 }

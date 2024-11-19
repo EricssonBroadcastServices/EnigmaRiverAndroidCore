@@ -93,5 +93,10 @@ public class DeviceInfoTest {
         public boolean isLimitedAdTracking() {
             return false;
         }
+
+        @Override
+        public boolean isTV() {
+            return false;
+        }
     }
 }

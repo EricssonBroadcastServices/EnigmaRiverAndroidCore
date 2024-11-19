@@ -1,4 +1,12 @@
+<!--
+SPDX-FileCopyrightText: 2024 Red Bee Media Ltd <https://www.redbeemedia.com/>
+
+SPDX-License-Identifier: CC-BY-SA-4.0
+-->
+
 # CHANGELOG
+* `3.7.19 `Release - [3.7.19](#3.7.19)&nbsp; - &nbsp; 2024-11-19
+* `3.7.18 `Release - [3.7.18](#3.7.18)&nbsp; - &nbsp; 2024-09-16
 * `3.7.17 `Release - [3.7.17](#3.7.17)&nbsp; - &nbsp; 2024-09-11
 * `3.7.16 `Release - [3.7.16](#3.7.16)&nbsp; - &nbsp; 2024-07-19
 * `3.7.15 `Release - [3.7.15](#3.7.15)&nbsp; - &nbsp; 2024-07-19
@@ -60,6 +68,22 @@
 * `3.1.8` Release - [3.1.8](#3.1.8) &nbsp; - &nbsp; 2020-12-11
 * `3.1.7` Release - [3.1.7](#3.1.7) &nbsp; - &nbsp; 2020-12-04
 * `3.1.6` Release - [3.1.6](#3.1.6) &nbsp; - &nbsp; 2020-11-13
+
+# <a name="3.7.19"></a> 3.7.19
+#### Features
+`
+EnigmaRiverAndroidCore
+EnigmaRiverInternalTestUtils
+`
+* EMP-21910 - Change apptype value "app" to "android_tv"
+
+# <a name="3.7.18"></a> 3.7.18
+#### Features
+`
+EnigmaRiverAndroidCore
+`
+* EMP-21757 - Crashes and ANRs on Android mobile
+* EMP-21758 - Crashes and ANRs on Android TV
 
 # <a name="3.7.17"></a> 3.7.17
 #### Features
@@ -611,11 +635,11 @@ the following changes are required.
 
 ```java
     playerView.getVideoSurfaceView().setOnClickListener(new View.OnClickListener(){
-  @Override
-  public void onClick(View v){
-    // Do something
-  }
-});
+@Override
+public void onClick(View v){
+        // Do something
+        }
+        });
 ```
 
 - If the Virtual Controls are used, the default exoplayer controls layout must explicitly defined in

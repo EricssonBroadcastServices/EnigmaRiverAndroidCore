@@ -21,7 +21,7 @@ public class EnigmaRiverContextTest {
 
         Assert.assertEquals(EnigmaRiverContext.getAppName(), "");
         Assert.assertEquals(EnigmaRiverContext.getAppVersion(), "");
-        Assert.assertEquals(EnigmaRiverContext.getAppType(), AppType.getDefault());
+        Assert.assertEquals(EnigmaRiverContext.getAppType(), AppType.getDefault(false));
         Assert.assertEquals(EnigmaRiverContext.getExposureBaseUrl().toString(), "https://mock.unittests.example.com");
         Assert.assertNull(EnigmaRiverContext.getAnalyticsUrl());
         Assert.assertEquals(EnigmaRiverContext.getDeviceInfo().getDeviceId(), mockDeviceInfo.getDeviceId());
