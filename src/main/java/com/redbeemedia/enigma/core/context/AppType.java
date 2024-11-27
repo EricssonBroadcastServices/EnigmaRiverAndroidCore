@@ -5,8 +5,8 @@
 package com.redbeemedia.enigma.core.context;
 
 public enum AppType {
-    APP("app"),
-    ANDROID_TV("android_tv");
+    APP("android_app"),
+    ANDROID_TV("androidtv_app");
 
     private final String value;
 
