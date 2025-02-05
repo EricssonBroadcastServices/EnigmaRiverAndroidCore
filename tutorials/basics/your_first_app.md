@@ -340,7 +340,7 @@ import com.redbeemedia.enigma.core.error.NoSupportedMediaFormatsError;
 # And that's all there is to it!
 
 This is what our finished app looks like:
-[yourFirstApp](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.7.21-newjenkins/yourFirstApp)<br />
+[yourFirstApp](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidTutorialApps/tree/r3.7.22/yourFirstApp)<br />
 
 
 ___

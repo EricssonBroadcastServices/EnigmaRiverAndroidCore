@@ -24,7 +24,7 @@ this module in your project, add the following to your `build.gradle`:
 ...
 dependencies {
     ...
-    implementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exposureUtils:r3.7.21-newjenkins'
+    implementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:exposureUtils:r3.7.22'
     ...
 }
 ...
@@ -88,7 +88,7 @@ exposure.doRequest(new GetAllAssetsRequest(new BaseExposureResultHandler<ApiAsse
 ## Lightweight option
 
 If you don't want to include `exposureUtils` in your project we recommend you copy the file
-[EnigmaDownloadHelper.java](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidExposureUtils/blob/r3.7.21-newjenkins/src/main/java/com/redbeemedia/enigma/exposureutils/download/EnigmaDownloadHelper.java)
+[EnigmaDownloadHelper.java](https://github.com/EricssonBroadcastServices/EnigmaRiverAndroidExposureUtils/blob/r3.7.22/src/main/java/com/redbeemedia/enigma/exposureutils/download/EnigmaDownloadHelper.java)
 into your project and edit it appropriately.
 
 

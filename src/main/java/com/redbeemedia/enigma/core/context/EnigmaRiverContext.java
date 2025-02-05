@@ -161,7 +161,7 @@ public final class EnigmaRiverContext {
     }
     //Version if the core library
     public static String getVersion() {
-        return "r3.7.21-newjenkins";
+        return "r3.7.22";
     }
 
     private static void assertInitialized() {
