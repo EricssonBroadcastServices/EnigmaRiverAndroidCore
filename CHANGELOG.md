@@ -5,7 +5,9 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 -->
 
 # CHANGELOG
-* `3.7.21 `Release - [3.7.21](#3.7.20)&nbsp; - &nbsp; 2024-11-27
+* `3.7.23 `Release - [3.7.23](#3.7.23)&nbsp; - &nbsp; 2025-02-11
+* `3.7.22 `Release - [3.7.22](#3.7.22)&nbsp; - &nbsp; 2025-02-05
+* `3.7.21 `Release - [3.7.21](#3.7.21)&nbsp; - &nbsp; 2024-11-27
 * `3.7.19 `Release - [3.7.19](#3.7.19)&nbsp; - &nbsp; 2024-11-19
 * `3.7.18 `Release - [3.7.18](#3.7.18)&nbsp; - &nbsp; 2024-09-16
 * `3.7.17 `Release - [3.7.17](#3.7.17)&nbsp; - &nbsp; 2024-09-11
@@ -69,6 +71,14 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 * `3.1.8` Release - [3.1.8](#3.1.8) &nbsp; - &nbsp; 2020-12-11
 * `3.1.7` Release - [3.1.7](#3.1.7) &nbsp; - &nbsp; 2020-12-04
 * `3.1.6` Release - [3.1.6](#3.1.6) &nbsp; - &nbsp; 2020-11-13
+
+# <a name="3.7.23"></a> 3.7.23
+#### Features
+`
+EnigmaRiverAndroidCast
+`
+* EMP-22034 - Fix for PlaybackProperties null pointer exception
+  `
 
 # <a name="3.7.22"></a> 3.7.22
 #### Features
