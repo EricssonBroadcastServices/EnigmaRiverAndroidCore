@@ -11,8 +11,6 @@ android {
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 34
-        versionCode 1
-        versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -35,6 +33,7 @@ android {
         }
         unitTests.returnDefaultValues = true
     }
+    namespace 'com.redbeemedia.enigma.core'
 }
 
 repositories {
@@ -51,6 +50,6 @@ dependencies {
     if(findProject(':internalTestUtils') != null) {
         testImplementation project(":internalTestUtils")
     } else {
-        testImplementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:internalTestUtils:r3.7.23'
+        testImplementation 'com.github.EricssonBroadcastServices.EnigmaRiverAndroid:internalTestUtils:r3.7.24-BETA-1'
     }
 }
