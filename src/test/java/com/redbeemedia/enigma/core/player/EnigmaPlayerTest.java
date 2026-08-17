@@ -1840,7 +1840,8 @@ public class EnigmaPlayerTest {
         protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler, ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection, ISpriteRepository videoSpriteRepository) {
             return new DefaultPlaybackStartAction(session, businessUnit, timeProvider, playRequest, callbackHandler, taskFactoryProvider, playerImplementationControls, playerConnection, videoSpriteRepository, new HashSet<>()) {
 
-                protected Analytics createAnalytics(ITimeProvider timeProvider, ITaskFactory taskFactory, AnalyticsPlayResponseData analyticsPlayResponseData, IBufferingAnalyticsHandler analyticsHandler,int updateFreq) {
+                @Override
+                protected Analytics createAnalytics(ITimeProvider timeProvider, ITaskFactory taskFactory, IBufferingAnalyticsHandler analyticsHandler, int updateFrequency) {
                     return new Analytics(new MockAnalyticsReporter(), new MockInternalPlaybackSessionListener());
                 }
             };

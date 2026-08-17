@@ -6,7 +6,7 @@ package com.redbeemedia.enigma.core.player;
 
 import com.redbeemedia.enigma.core.util.IInternalListener;
 
-/*package-protected*/ interface IInternalPlaybackSessionListener extends IInternalListener {
+interface IInternalPlaybackSessionListener extends IInternalListener {
     void onStart(OnStartArgs args);
     void onStop(OnStopArgs args);
 

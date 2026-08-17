@@ -9,7 +9,7 @@ import com.redbeemedia.enigma.core.time.Duration;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/*package-protected*/ class JsonStreamInfo implements IStreamInfo {
+/*package-protected*/ public class JsonStreamInfo implements IStreamInfo {
     private boolean live;
     private boolean staticManifest;
     private boolean event;
@@ -144,8 +144,4 @@ import org.json.JSONObject;
     public MediaType getMediaType() {
         return mediaType;
     }
-}
-
-enum MediaType{
-    VIDEO, AUDIO;
 }

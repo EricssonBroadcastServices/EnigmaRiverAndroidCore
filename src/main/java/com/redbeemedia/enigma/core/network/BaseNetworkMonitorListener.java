@@ -13,4 +13,8 @@ public class BaseNetworkMonitorListener implements INetworkMonitorListener {
     @Override
     public void onInternetAccessChanged(boolean internetAccess) {
     }
+
+    @Override
+    public void onConnectionTypeChanged(String connectionType) {
+    }
 }

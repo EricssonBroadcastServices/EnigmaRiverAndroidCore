@@ -1518,6 +1518,6 @@ public class EnigmaPlayer implements IEnigmaPlayer {
         void call(IInternalPlaybackSession internalPlaybackSession, T arg);
     }
 
-    /*package-protected*/ static class EnigmaPlayerLifecycle extends Lifecycle<Void, Void> {
+    public static class EnigmaPlayerLifecycle extends Lifecycle<Void, Void> {
     }
 }

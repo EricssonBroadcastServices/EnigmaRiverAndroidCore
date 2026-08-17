@@ -7,6 +7,9 @@ package com.redbeemedia.enigma.core.analytics;
 import android.util.Log;
 import android.util.MockLog;
 
+import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
+import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
+import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
 import com.redbeemedia.enigma.core.error.ErrorCode;
 import com.redbeemedia.enigma.core.error.IllegalSeekPositionError;
 import com.redbeemedia.enigma.core.error.PlayerImplementationError;
@@ -29,6 +32,7 @@ public class AnalyticsReporterTest {
 
     @Before
     public void disableLogging() {
+        MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
         this.originalOutput = MockLog.getOut();
         MockLog.setOut(null);
     }
@@ -143,6 +147,76 @@ public class AnalyticsReporterTest {
 
         analyticsReporter.playbackPlayerReady(Duration.hours(100).inWholeUnits(Duration.Unit.MILLISECONDS), "MockTech", "1.0");
         onAnalyticsCalled.assertCount(2);
+    }
+
+    @Test
+    public void testPlayerTechnologyIsAddedWhenSet() throws JSONException {
+        final JSONObject[] events = new JSONObject[2];
+        AnalyticsReporter analyticsReporter = new AnalyticsReporter(new MockTimeProvider(1000), new IAnalyticsHandler() {
+            private int index = 0;
+
+            @Override
+            public void onAnalytics(JSONObject jsonObject) {
+                events[index++] = jsonObject;
+            }
+        }, 0l);
+
+        analyticsReporter.setPlayerTechnology("Bitmovin");
+        analyticsReporter.playbackCreated("mockAsset");
+        analyticsReporter.playbackHeartbeat(12345L);
+
+        Assert.assertEquals("Bitmovin", events[0].getString("PlayerTechnology"));
+        Assert.assertEquals("Bitmovin", events[1].getString("PlayerTechnology"));
+    }
+
+    @Test
+    public void testPlayerTechnologyIsSkippedWhenUnset() {
+        final JSONObject[] event = new JSONObject[1];
+        AnalyticsReporter analyticsReporter = new AnalyticsReporter(new MockTimeProvider(1000), new IAnalyticsHandler() {
+            @Override
+            public void onAnalytics(JSONObject jsonObject) {
+                event[0] = jsonObject;
+            }
+        }, 0l);
+
+        analyticsReporter.playbackHeartbeat(12345L);
+
+        Assert.assertFalse(event[0].has("PlayerTechnology"));
+    }
+
+    @Test
+    public void testDeviceInfoContainsSdkVersion() throws JSONException {
+        final JSONObject[] event = new JSONObject[1];
+        AnalyticsReporter analyticsReporter = new AnalyticsReporter(new MockTimeProvider(1000), new IAnalyticsHandler() {
+            @Override
+            public void onAnalytics(JSONObject jsonObject) {
+                event[0] = jsonObject;
+            }
+        }, 0l);
+
+        analyticsReporter.deviceInfo("MockCDN");
+
+        Assert.assertEquals("Device.Info", event[0].getString("EventType"));
+        Assert.assertEquals(EnigmaRiverContext.getVersion(), event[0].getString("Version"));
+        Assert.assertEquals(EnigmaRiverContext.getVersion(), event[0].getString("SdkVersion"));
+    }
+
+    @Test
+    public void testDeviceInfoUsesConfiguredSdkVersion() throws JSONException {
+        final JSONObject[] event = new JSONObject[1];
+        AnalyticsReporter analyticsReporter = new AnalyticsReporter(new MockTimeProvider(1000), new IAnalyticsHandler() {
+            @Override
+            public void onAnalytics(JSONObject jsonObject) {
+                event[0] = jsonObject;
+            }
+        }, 0l);
+
+        analyticsReporter.setSdkVersion("BitmovinPlayerSdk");
+        analyticsReporter.deviceInfo("MockCDN", "Bitmovin");
+
+        Assert.assertEquals("Device.Info", event[0].getString("EventType"));
+        Assert.assertEquals(EnigmaRiverContext.getVersion(), event[0].getString("Version"));
+        Assert.assertEquals("BitmovinPlayerSdk", event[0].getString("SdkVersion"));
     }
 
 }

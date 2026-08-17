@@ -30,13 +30,34 @@ package com.redbeemedia.enigma.core.analytics;
     public static final AnalyticsStartCasting START_CASTING = new AnalyticsStartCasting();
     public static final AnalyticsStopCasting STOP_CASTING = new AnalyticsStopCasting();
     public static final AnalyticsAdFailed AD_FAILED = new AnalyticsAdFailed();
+    public static final AnalyticsAdBreakFinished AD_BREAK_FINISHED = new AnalyticsAdBreakFinished();
+    public static final AnalyticsAdBreakStarted AD_BREAK_STARTED = new AnalyticsAdBreakStarted();
+    public static final AnalyticsAdSkipped AD_SKIPPED = new AnalyticsAdSkipped();
+    public static final AnalyticsAudioChanged AUDIO_CHANGED = new AnalyticsAudioChanged();
+    public static final AnalyticsAudioPlaybackQualityChanged AUDIO_PLAYBACK_QUALITY_CHANGED = new AnalyticsAudioPlaybackQualityChanged();
+    public static final AnalyticsCastStart CAST_START = new AnalyticsCastStart();
+    public static final AnalyticsDVRWindowExceeded DVR_WINDOW_EXCEEDED = new AnalyticsDVRWindowExceeded();
+    public static final AnalyticsDurationChanged DURATION_CHANGED = new AnalyticsDurationChanged();
+    public static final AnalyticsMuted MUTED = new AnalyticsMuted();
+    public static final AnalyticsPlay PLAY = new AnalyticsPlay();
+    public static final AnalyticsSeeked SEEKED = new AnalyticsSeeked();
+    public static final AnalyticsSourceLoaded SOURCE_LOADED = new AnalyticsSourceLoaded();
+    public static final AnalyticsTimeChanged TIME_CHANGED = new AnalyticsTimeChanged();
+    public static final AnalyticsTimeShifted TIME_SHIFTED = new AnalyticsTimeShifted();
+    public static final AnalyticsUnmuted UNMUTED = new AnalyticsUnmuted();
+    public static final AnalyticsWarning WARNING = new AnalyticsWarning();
+    public static final AnalyticsConnectionTypeChange CONNECTION_TYPE_CHANGE = new AnalyticsConnectionTypeChange();
 
-    private static <E extends IAnalyticsEventType,T> IEventProperty<E,T> mandatory(String name) {
+    private static <E extends IAnalyticsEventType, T> IEventProperty<E, T> mandatory(String name) {
         return EventProperty.newMandatoryProperty(name);
     }
 
-    private static <E extends IAnalyticsEventType,T> IEventProperty<E,T> optional(String name) {
+    private static <E extends IAnalyticsEventType, T> IEventProperty<E, T> optional(String name) {
         return EventProperty.newProperty(name, true);
+    }
+
+    public static <E extends IAnalyticsEventType> IEventProperty<E, String> playerTechnology() {
+        return optional("PlayerTechnology");
     }
 
     public static class AnalyticsErrorEvent implements IAnalyticsEventType {
@@ -48,9 +69,9 @@ package com.redbeemedia.enigma.core.analytics;
         public final IEventProperty<AnalyticsErrorEvent, Integer> CODE = mandatory("Code");
         public final IEventProperty<AnalyticsErrorEvent, String> MESSAGE = mandatory("Message");
         public final IEventProperty<AnalyticsErrorEvent, String> DETAILS = mandatory("Details");
-        public final IEventProperty<AnalyticsErrorEvent, String> UTC_TIME_DIFFERENCE = optional("deviceUTCtimedifference");
+        public final IEventProperty<AnalyticsErrorEvent, String> UTC_TIME_DIFFERENCE = optional(
+                "deviceUTCtimedifference");
     }
-
 
     public static class AnalyticsDeviceInfoEvent implements IAnalyticsEventType {
         @Override
@@ -66,10 +87,11 @@ package com.redbeemedia.enigma.core.analytics;
         public final IEventProperty<AnalyticsDeviceInfoEvent, String> MANUFACTURER = mandatory("Manufacturer");
         public final IEventProperty<AnalyticsDeviceInfoEvent, Boolean> IS_ROOTED = mandatory("IsRooted");
         public final IEventProperty<AnalyticsDeviceInfoEvent, String> VERSION = mandatory("Version");
+        public final IEventProperty<AnalyticsDeviceInfoEvent, String> SDK_VERSION = mandatory("SdkVersion");
         public final IEventProperty<AnalyticsDeviceInfoEvent, String> TECHNOLOGY = mandatory("Technology");
-        public final IEventProperty<AnalyticsDeviceInfoEvent, String> WIDEVINE_SECURITY_LEVEL = mandatory("WidevineSecurityLevel");
+        public final IEventProperty<AnalyticsDeviceInfoEvent, String> WIDEVINE_SECURITY_LEVEL = mandatory(
+                "WidevineSecurityLevel");
     }
-
 
     public static class AnalyticsCreatedEvent implements IAnalyticsEventType {
         @Override
@@ -90,6 +112,7 @@ package com.redbeemedia.enigma.core.analytics;
         public String getName() {
             return "Playback.HandshakeStarted";
         }
+
         public final IEventProperty<AnalyticsHandshakeStartedEvent, String> ASSET_ID = mandatory("AssetId");
     }
 
@@ -98,6 +121,7 @@ package com.redbeemedia.enigma.core.analytics;
         public String getName() {
             return "Playback.PlayerReady";
         }
+
         public final IEventProperty<AnalyticsPlayerReadyEvent, Long> OFFSET_TIME = mandatory("OffsetTime");
         public final IEventProperty<AnalyticsPlayerReadyEvent, String> TECHNOLOGY = mandatory("Technology");
         public final IEventProperty<AnalyticsPlayerReadyEvent, String> TECH_VERSION = mandatory("TechVersion");
@@ -108,6 +132,7 @@ package com.redbeemedia.enigma.core.analytics;
         public String getName() {
             return "Playback.Started";
         }
+
         public final IEventProperty<AnalyticsStartedEvent, Long> OFFSET_TIME = mandatory("OffsetTime");
         public final IEventProperty<AnalyticsStartedEvent, String> PLAY_MODE = mandatory("PlayMode");
         public final IEventProperty<AnalyticsStartedEvent, String> MEDIA_LOCATOR = mandatory("MediaLocator");
@@ -115,9 +140,11 @@ package com.redbeemedia.enigma.core.analytics;
         public final IEventProperty<AnalyticsStartedEvent, Integer> BITRATE = optional("Bitrate");
         public final IEventProperty<AnalyticsStartedEvent, Integer> VIDEO_LENGTH = optional("VideoLength");
         public final IEventProperty<AnalyticsStartedEvent, String> PROGRAM_ID = optional("ProgramId");
-        public final IEventProperty<AnalyticsStartedEvent, String> DRM_LICENCSE_DURATION_REMAINING_TIME = optional("drmLicenseDurationRemainingTime");
+        public final IEventProperty<AnalyticsStartedEvent, String> DRM_LICENCSE_DURATION_REMAINING_TIME = optional(
+                "drmLicenseDurationRemainingTime");
         public final IEventProperty<AnalyticsStartedEvent, String> DRM_RENEW_ALLOWED = optional("drmRenewAllowed");
-        public final IEventProperty<AnalyticsStartedEvent, String> DRM_PLAYBACK_DURATION_REMAINING = optional("drmPlaybackDurationRemaining");
+        public final IEventProperty<AnalyticsStartedEvent, String> DRM_PLAYBACK_DURATION_REMAINING = optional(
+                "drmPlaybackDurationRemaining");
         public final IEventProperty<AnalyticsStartedEvent, String> DRM_LICENSE_TYPE = optional("drmLicenseType");
         public final IEventProperty<AnalyticsStartedEvent, String> DRM_PLAY_ALLOWED = optional("drmPlayAllowed");
     }
@@ -127,6 +154,7 @@ package com.redbeemedia.enigma.core.analytics;
         public String getName() {
             return "Playback.Paused";
         }
+
         public final IEventProperty<AnalyticsPausedEvent, Long> OFFSET_TIME = mandatory("OffsetTime");
     }
 
@@ -135,6 +163,7 @@ package com.redbeemedia.enigma.core.analytics;
         public String getName() {
             return "Playback.Resumed";
         }
+
         public final IEventProperty<AnalyticsResumedEvent, Long> OFFSET_TIME = mandatory("OffsetTime");
     }
 
@@ -143,6 +172,7 @@ package com.redbeemedia.enigma.core.analytics;
         public String getName() {
             return "Playback.Completed";
         }
+
         public final IEventProperty<AnalyticsCompletedEvent, Long> OFFSET_TIME = mandatory("OffsetTime");
     }
 
@@ -151,6 +181,7 @@ package com.redbeemedia.enigma.core.analytics;
         public String getName() {
             return "Playback.Aborted";
         }
+
         public final IEventProperty<AnalyticsAbortedEvent, Long> OFFSET_TIME = mandatory("OffsetTime");
     }
 
@@ -159,15 +190,16 @@ package com.redbeemedia.enigma.core.analytics;
         public String getName() {
             return "Playback.Heartbeat";
         }
+
         public final IEventProperty<AnalyticsHeartbeatEvent, Long> OFFSET_TIME = mandatory("OffsetTime");
     }
-
 
     public static class AnalyticsAppBackgroundedEvent implements IAnalyticsEventType {
         @Override
         public String getName() {
             return "Playback.AppBackgrounded";
         }
+
         public final IEventProperty<AnalyticsAppBackgroundedEvent, Long> OFFSET_TIME = mandatory("OffsetTime");
     }
 
@@ -176,6 +208,7 @@ package com.redbeemedia.enigma.core.analytics;
         public String getName() {
             return "Playback.AppResumed";
         }
+
         public final IEventProperty<AnalyticsAppResumedEvent, Long> OFFSET_TIME = mandatory("OffsetTime");
     }
 
@@ -184,23 +217,24 @@ package com.redbeemedia.enigma.core.analytics;
         public String getName() {
             return "Playback.GracePeriodEnded";
         }
+
         public final IEventProperty<AnalyticsGracePeriodEndedEvent, Long> OFFSET_TIME = mandatory("OffsetTime");
     }
 
     public static boolean isTerminal(IAnalyticsEventType eventType) {
-        return     eventType instanceof AnalyticsErrorEvent
-                || eventType instanceof  AnalyticsCompletedEvent
-                || eventType instanceof  AnalyticsAbortedEvent
-                || eventType instanceof  AnalyticsGracePeriodEndedEvent
-                ;
+        return eventType instanceof AnalyticsErrorEvent
+                || eventType instanceof AnalyticsCompletedEvent
+                || eventType instanceof AnalyticsAbortedEvent
+                || eventType instanceof AnalyticsGracePeriodEndedEvent;
     }
 
-    /*package-protected*/ static abstract class AbstractOffsetTimeAnalyticsEvent implements IAnalyticsEventType {
+    /* package-protected */ static abstract class AbstractOffsetTimeAnalyticsEvent implements IAnalyticsEventType {
         public final IEventProperty<AbstractOffsetTimeAnalyticsEvent, Long> OFFSET_TIME = mandatory("OffsetTime");
     }
 
     public static class AnalyticsBitrateChangedEvent extends AbstractOffsetTimeAnalyticsEvent {
         public final IEventProperty<AnalyticsBitrateChangedEvent, Integer> BITRATE = mandatory("Bitrate");
+
         @Override
         public String getName() {
             return "Playback.BitrateChanged";
@@ -230,21 +264,27 @@ package com.redbeemedia.enigma.core.analytics;
 
     public static class AnalyticsProgramChangedEvent extends AbstractOffsetTimeAnalyticsEvent {
         public final IEventProperty<AnalyticsProgramChangedEvent, String> PROGRAM_ID = mandatory("ProgramId");
-        public final IEventProperty<AnalyticsProgramChangedEvent, String> PROGRAM_ASSET_ID = mandatory("ProgramAssetId");
+        public final IEventProperty<AnalyticsProgramChangedEvent, String> PROGRAM_ASSET_ID = mandatory(
+                "ProgramAssetId");
 
         @Override
         public String getName() {
             return "Playback.ProgramChanged";
         }
     }
+
     public static class AnalyticsAdEvent implements IAnalyticsEventType {
         private final String eventName;
-        AnalyticsAdEvent(String eventName) { this.eventName = eventName; }
+
+        AnalyticsAdEvent(String eventName) {
+            this.eventName = eventName;
+        }
 
         @Override
         public String getName() {
             return eventName;
         }
+
         public final IEventProperty<AnalyticsAdEvent, Long> OFFSET_TIME = mandatory("OffsetTime");
         public final IEventProperty<AnalyticsAdEvent, String> AD_MEDIA_ID = mandatory("AdMediaId");
     }
@@ -270,11 +310,150 @@ package com.redbeemedia.enigma.core.analytics;
         }
     }
 
-
     public static class AnalyticsAdFailed extends AbstractOffsetTimeAnalyticsEvent {
         @Override
         public String getName() {
             return "Playback.AdFailed";
+        }
+    }
+
+    public static class AnalyticsAdBreakFinished extends AbstractOffsetTimeAnalyticsEvent {
+        public final IEventProperty<AnalyticsAdBreakFinished, String> AD_BREAK_ID = optional("AdBreakId");
+
+        @Override
+        public String getName() {
+            return "Playback.AdBreakFinished";
+        }
+    }
+
+    public static class AnalyticsAdBreakStarted extends AbstractOffsetTimeAnalyticsEvent {
+        public final IEventProperty<AnalyticsAdBreakStarted, String> AD_BREAK_ID = optional("AdBreakId");
+
+        @Override
+        public String getName() {
+            return "Playback.AdBreakStarted";
+        }
+    }
+
+    public static class AnalyticsAdSkipped extends AbstractOffsetTimeAnalyticsEvent {
+        public final IEventProperty<AnalyticsAdSkipped, String> AD_MEDIA_ID = optional("AdMediaId");
+
+        @Override
+        public String getName() {
+            return "Playback.AdSkipped";
+        }
+    }
+
+    public static class AnalyticsAudioChanged extends AbstractOffsetTimeAnalyticsEvent {
+        public final IEventProperty<AnalyticsAudioChanged, String> AUDIO_TRACK_ID = optional("AudioTrackId");
+
+        @Override
+        public String getName() {
+            return "Playback.AudioChanged";
+        }
+    }
+
+    public static class AnalyticsAudioPlaybackQualityChanged extends AbstractOffsetTimeAnalyticsEvent {
+        public final IEventProperty<AnalyticsAudioPlaybackQualityChanged, Integer> BITRATE = optional("Bitrate");
+
+        @Override
+        public String getName() {
+            return "Playback.AudioPlaybackQualityChanged";
+        }
+    }
+
+    public static class AnalyticsCastStart extends AbstractOffsetTimeAnalyticsEvent {
+        @Override
+        public String getName() {
+            return "Playback.CastStart";
+        }
+    }
+
+    public static class AnalyticsDVRWindowExceeded extends AbstractOffsetTimeAnalyticsEvent {
+        @Override
+        public String getName() {
+            return "Playback.DVRWindowExceeded";
+        }
+    }
+
+    public static class AnalyticsDurationChanged extends AbstractOffsetTimeAnalyticsEvent {
+        public final IEventProperty<AnalyticsDurationChanged, Double> DURATION = optional("Duration");
+
+        @Override
+        public String getName() {
+            return "Playback.DurationChanged";
+        }
+    }
+
+    public static class AnalyticsMuted extends AbstractOffsetTimeAnalyticsEvent {
+        @Override
+        public String getName() {
+            return "Playback.Muted";
+        }
+    }
+
+    public static class AnalyticsPlay extends AbstractOffsetTimeAnalyticsEvent {
+        public final IEventProperty<AnalyticsPlay, Double> TIME = optional("Time");
+
+        @Override
+        public String getName() {
+            return "Playback.Play";
+        }
+    }
+
+    public static class AnalyticsSeeked extends AbstractOffsetTimeAnalyticsEvent {
+        @Override
+        public String getName() {
+            return "Playback.Seeked";
+        }
+    }
+
+    public static class AnalyticsSourceLoaded extends AbstractOffsetTimeAnalyticsEvent {
+        @Override
+        public String getName() {
+            return "Playback.SourceLoaded";
+        }
+    }
+
+    public static class AnalyticsTimeChanged extends AbstractOffsetTimeAnalyticsEvent {
+        public final IEventProperty<AnalyticsTimeChanged, Double> TIME = optional("Time");
+
+        @Override
+        public String getName() {
+            return "Playback.TimeChanged";
+        }
+    }
+
+    public static class AnalyticsTimeShifted extends AbstractOffsetTimeAnalyticsEvent {
+        @Override
+        public String getName() {
+            return "Playback.TimeShifted";
+        }
+    }
+
+    public static class AnalyticsUnmuted extends AbstractOffsetTimeAnalyticsEvent {
+        @Override
+        public String getName() {
+            return "Playback.Unmuted";
+        }
+    }
+
+    public static class AnalyticsWarning extends AbstractOffsetTimeAnalyticsEvent {
+        public final IEventProperty<AnalyticsWarning, Integer> CODE = optional("Code");
+        public final IEventProperty<AnalyticsWarning, String> MESSAGE = optional("Message");
+
+        @Override
+        public String getName() {
+            return "Playback.Warning";
+        }
+    }
+
+    public static class AnalyticsConnectionTypeChange extends AbstractOffsetTimeAnalyticsEvent {
+        public final IEventProperty<AnalyticsConnectionTypeChange, String> CONNECTION = mandatory("Connection");
+
+        @Override
+        public String getName() {
+            return "Playback.ConnectionTypeChange";
         }
     }
 }

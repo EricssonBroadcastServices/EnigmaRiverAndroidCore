@@ -22,7 +22,7 @@ public class AnalyticsPlayResponseData {
     public final String tag;
     public final int bucket;
     public final int postIntervalSeconds;
-    public final String streamingTechnology;
+    public String streamingTechnology;
     public final int analyticsPercentage;
 
     /** Will be true if sufficient data was provided. */

@@ -15,7 +15,7 @@ public abstract class PlaybackError extends EnigmaError {
         this(null, cause);
     }
 
-    /*package-protected*/ PlaybackError(String message) {
+    public PlaybackError(String message) {
         this(message, null);
     }
 

@@ -53,12 +53,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /*package-protected*/ class InternalPlaybackSession implements IInternalPlaybackSession {
-    private static final long HEARTBEAT_RATE_MILLIS = 60L * 1000L;
-
-    //Task ids
-    private static final String HEARTBEAT_REPEATER = "heartbeatRepeater";
-    private static final String APP_FOREGROUND_MONITOR = "appForegroundMonitor";
-
     private final ComponentsHandler componentsHandler = new ComponentsHandler();
     private final IAnalyticsReporter analyticsReporter;
     private final AppForegroundMonitor appForegroundMonitor;
@@ -117,9 +111,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
         this.contractRestrictions = new OpenContainer<>(contractRestrictions);
         this.analyticsReporter = analyticsReporter;
         this.gracePeriod = gracePeriod;
-
-        this.heartbeatRepeater = new Repeater(getTaskFactory(HEARTBEAT_REPEATER), HEARTBEAT_RATE_MILLIS, new HeartbeatRunnable());
-        this.appForegroundMonitor = new AppForegroundMonitor(getTaskFactory(APP_FOREGROUND_MONITOR), playerImplementationControls,gracePeriod);
+        this.heartbeatRepeater = new HeartbeatRepeater(getTaskFactoryProvider(), analyticsReporter, () -> getCurrentPlaybackOffset(playbackSessionInfo, streamInfo));
+        this.appForegroundMonitor = new AppForegroundMonitor(getTaskFactoryProvider().getMainThreadTaskFactory(), playerImplementationControls,gracePeriod);
         this.sessionResumed = sessionResumed;
         EnigmaPlayerListenerForAnalytics playerListener = new EnigmaPlayerListenerForAnalytics(analyticsReporter, playbackSessionInfo, streamInfo, selectedVideoTrack, this.appForegroundMonitor, this.sessionResumed);
         this.playerListener = playerListener;
@@ -134,17 +127,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
             }
         });
         if(adDetector != null) { adDetector.addListener(playerListener); }
-    }
-
-    private ITaskFactory getTaskFactory(String user) {
-        ITaskFactoryProvider taskFactoryProvider = getTaskFactoryProvider();
-        if(HEARTBEAT_REPEATER.equals(user)) {
-            return taskFactoryProvider.getMainThreadTaskFactory();
-        } else if(APP_FOREGROUND_MONITOR.equals(user)) {
-            return taskFactoryProvider.getMainThreadTaskFactory();
-        } else {
-            throw new IllegalArgumentException(user+" not handled");
-        }
     }
 
     protected ITaskFactoryProvider getTaskFactoryProvider() {
@@ -590,22 +572,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
             this.spriteRepository = spriteRepository;
             this.sessionResumed = sessionResumed;
             this.gracePeriod = gracePeriod;
-        }
-    }
-
-    private class HeartbeatRunnable implements Runnable {
-        private Long lastOffset = null;
-
-        @Override
-        public void run() {
-            try {
-                lastOffset = getCurrentPlaybackOffset(playbackSessionInfo, streamInfo);
-            } catch (Exception e) {
-                //Ignore
-            }
-            if(lastOffset != null) {
-                analyticsReporter.playbackHeartbeat(lastOffset.longValue());
-            }
         }
     }
 

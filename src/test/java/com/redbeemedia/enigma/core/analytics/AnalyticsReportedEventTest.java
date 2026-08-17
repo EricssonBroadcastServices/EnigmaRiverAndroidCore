@@ -138,6 +138,40 @@ public class AnalyticsReportedEventTest<E extends IAnalyticsEventType> {
             return reporter -> reporter.playbackAdStarted(12345L, "started_test_ad");
         } else if (eventType == AnalyticsEvents.AD_COMPLETED) {
             return reporter -> reporter.playbackAdCompleted(65536L, "completed_test_ad");
+        } else if (eventType == AnalyticsEvents.AD_BREAK_FINISHED) {
+            return reporter -> reporter.playbackAdBreakFinished(65536L, "finished_test_ad_break");
+        } else if (eventType == AnalyticsEvents.AD_BREAK_STARTED) {
+            return reporter -> reporter.playbackAdBreakStarted(65536L, "started_test_ad_break");
+        } else if (eventType == AnalyticsEvents.AD_SKIPPED) {
+            return reporter -> reporter.playbackAdSkipped(65536L, "skipped_test_ad");
+        } else if (eventType == AnalyticsEvents.AUDIO_CHANGED) {
+            return reporter -> reporter.playbackAudioChanged(65536L, "mock_audio_track");
+        } else if (eventType == AnalyticsEvents.AUDIO_PLAYBACK_QUALITY_CHANGED) {
+            return reporter -> reporter.playbackAudioPlaybackQualityChanged(65536L, 128);
+        } else if (eventType == AnalyticsEvents.CAST_START) {
+            return reporter -> reporter.playbackCastStart(65536L);
+        } else if (eventType == AnalyticsEvents.DVR_WINDOW_EXCEEDED) {
+            return reporter -> reporter.playbackDVRWindowExceeded(65536L);
+        } else if (eventType == AnalyticsEvents.DURATION_CHANGED) {
+            return reporter -> reporter.playbackDurationChanged(65536L, 120.0);
+        } else if (eventType == AnalyticsEvents.MUTED) {
+            return reporter -> reporter.playbackMuted(65536L);
+        } else if (eventType == AnalyticsEvents.PLAY) {
+            return reporter -> reporter.playbackPlay(65536L, 10.0);
+        } else if (eventType == AnalyticsEvents.SEEKED) {
+            return reporter -> reporter.playbackSeeked(65536L);
+        } else if (eventType == AnalyticsEvents.SOURCE_LOADED) {
+            return reporter -> reporter.playbackSourceLoaded(65536L);
+        } else if (eventType == AnalyticsEvents.TIME_CHANGED) {
+            return reporter -> reporter.playbackTimeChanged(65536L, 10.0);
+        } else if (eventType == AnalyticsEvents.TIME_SHIFTED) {
+            return reporter -> reporter.playbackTimeShifted(65536L);
+        } else if (eventType == AnalyticsEvents.UNMUTED) {
+            return reporter -> reporter.playbackUnmuted(65536L);
+        } else if (eventType == AnalyticsEvents.WARNING) {
+            return reporter -> reporter.playbackWarning(65536L, 123, "Mock warning");
+        } else if (eventType == AnalyticsEvents.CONNECTION_TYPE_CHANGE) {
+            return reporter -> reporter.playbackConnectionTypeChanged(65536L, "wifi");
         } else {
             return null;
         }

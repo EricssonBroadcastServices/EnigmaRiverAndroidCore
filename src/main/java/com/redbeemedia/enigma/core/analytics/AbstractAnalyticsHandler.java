@@ -60,6 +60,10 @@ public abstract class AbstractAnalyticsHandler implements IBufferingAnalyticsHan
     public abstract void sendData() throws AnalyticsException, InterruptedException;
     public abstract boolean shouldSendEvent(JSONObject jsonObject);
 
+    public AnalyticsPlayResponseData getAnalyticsPlayResponseData() {
+        return analyticsPlayResponseData;
+    }
+
     @Override
     public void onAnalytics(JSONObject jsonObject) {
         if(shouldSendEvent(jsonObject)) {

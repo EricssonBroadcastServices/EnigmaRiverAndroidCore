@@ -86,9 +86,7 @@ public class DefaultPlaybackStartActionTest {
                 .setHttpHandler(httpHandler)
                 .setTaskFactoryProvider(new MockTaskFactoryProvider()
                         .setTaskFactory(testTaskFactory)
-                        .setMainThreadTaskFactory(testTaskFactory)
-                )
-        );
+                        .setMainThreadTaskFactory(testTaskFactory)));
 
         MockPlayRequest playRequest = new MockPlayRequest();
         playRequest.setPlayable(new MockPlayable("MockyMockMock"));
@@ -125,19 +123,21 @@ public class DefaultPlaybackStartActionTest {
                 },
                 new SpriteDataMock.MockSpriteRepository(),
                 new HashSet<>()) {
+
             @Override
-            protected Analytics createAnalytics(ITimeProvider timeProvider, ITaskFactory taskFactory, AnalyticsPlayResponseData analyticsPlayResponseData, IBufferingAnalyticsHandler analyticsHandler, int updateFrequency) {
-                return new Analytics(new MockAnalyticsReporter(), new IInternalPlaybackSessionListener() {
+            protected IAnalyticsReportingTask newAnalyticsReportingTask(ITaskFactory taskFactory,
+                    IBufferingAnalyticsHandler analyticsHandler, int updateFrequency) {
+                return new IAnalyticsReportingTask() {
                     @Override
-                    public void onStart(OnStartArgs args) {
+                    public void start() {
                         analyticsOnStartCalled.count();
                     }
 
                     @Override
-                    public void onStop(OnStopArgs args) {
+                    public void stop() {
                         analyticsOnStopCalled.count();
                     }
-                });
+                };
             }
         };
 
@@ -175,9 +175,7 @@ public class DefaultPlaybackStartActionTest {
                 .setHttpHandler(httpHandler)
                 .setTaskFactoryProvider(new MockTaskFactoryProvider()
                         .setTaskFactory(testTaskFactory)
-                        .setMainThreadTaskFactory(testTaskFactory)
-                )
-        );
+                        .setMainThreadTaskFactory(testTaskFactory)));
 
         final Counter deliverPlaybackSessionCalled = new Counter();
         final Counter sendDataCalled = new Counter();
@@ -186,7 +184,7 @@ public class DefaultPlaybackStartActionTest {
         playRequest.setPlayable(new MockPlayable("MockyMockMock"));
 
         final MockEnigmaPlayer mockEnigmaPlayer = new MockEnigmaPlayer();
-        final IInternalPlaybackSession[] currentPlaybackSession = new IInternalPlaybackSession[]{null};
+        final IInternalPlaybackSession[] currentPlaybackSession = new IInternalPlaybackSession[] { null };
 
         DefaultPlaybackStartAction playbackStartAction = new DefaultPlaybackStartAction(
                 new MockSession(),
@@ -207,7 +205,9 @@ public class DefaultPlaybackStartActionTest {
                 new SpriteDataMock.MockSpriteRepository(),
                 new HashSet<>()) {
             @Override
-            protected IBufferingAnalyticsHandler newOnlineAnalyticsHandler(String assetId, ISession session, String playbackSessionId, ITimeProvider timeProvider, AnalyticsPlayResponseData analyticsPlayResponseData) {
+            protected IBufferingAnalyticsHandler newOnlineAnalyticsHandler(String assetId, ISession session,
+                    String playbackSessionId, ITimeProvider timeProvider,
+                    AnalyticsPlayResponseData analyticsPlayResponseData) {
                 return new MockAnalyticsHandler() {
                     @Override
                     public void sendData() throws AnalyticsException, InterruptedException {
@@ -217,8 +217,27 @@ public class DefaultPlaybackStartActionTest {
             }
 
             @Override
-            protected Runnable newAnalyticsHandlerRunnable(IBufferingAnalyticsHandler analyticsHandler, long sleepTime) {
-                return () -> {};
+            protected IAnalyticsReportingTask newAnalyticsReportingTask(ITaskFactory taskFactory,
+                    IBufferingAnalyticsHandler analyticsHandler, int updateFrequency) {
+                return new IAnalyticsReportingTask() {
+                    @Override
+                    public void start() {
+
+                    }
+
+                    @Override
+                    public void stop() {
+                        try {
+                            taskFactory.newTask(() -> {
+                                try {
+                                    analyticsHandler.sendData();
+                                } catch (Exception e) {
+                                }
+                            }).start();
+                        } catch (TaskException e) {
+                        }
+                    }
+                };
             }
         };
 
@@ -261,10 +280,7 @@ public class DefaultPlaybackStartActionTest {
                 .setHttpHandler(httpHandler)
                 .setTaskFactoryProvider(new MockTaskFactoryProvider()
                         .setTaskFactory(testTaskFactory)
-                        .setMainThreadTaskFactory(testTaskFactory)
-                )
-        );
-
+                        .setMainThreadTaskFactory(testTaskFactory)));
 
         MockPlayRequest playRequest = new MockPlayRequest();
         playRequest.setPlayable(new MockPlayable("MockyMockMock"));
@@ -273,8 +289,8 @@ public class DefaultPlaybackStartActionTest {
         final Counter createProgramServiceCalled = new Counter();
 
         final List<IInternalPlaybackSessionListener> addedListeners = new ArrayList<>();
-        final IInternalPlaybackSessionListener[] analyticsListener = new IInternalPlaybackSessionListener[]{null};
-        final IInternalPlaybackSessionListener[] programService = new IInternalPlaybackSessionListener[]{null};
+        final IInternalPlaybackSessionListener[] analyticsListener = new IInternalPlaybackSessionListener[] { null };
+        final IInternalPlaybackSessionListener[] programService = new IInternalPlaybackSessionListener[] { null };
 
         DefaultPlaybackStartAction playbackStartAction = new DefaultPlaybackStartAction(
                 new MockSession(),
@@ -288,7 +304,18 @@ public class DefaultPlaybackStartActionTest {
                 new SpriteDataMock.MockSpriteRepository(),
                 new HashSet<>()) {
             @Override
-            protected IInternalPlaybackSession newPlaybackSession(InternalPlaybackSession.ConstructorArgs constructorArgs) {
+            protected Analytics createAnalytics(ITimeProvider timeProvider, ITaskFactory taskFactory,
+                    IBufferingAnalyticsHandler analyticsHandler, int updateFrequency) {
+                createAnalyticsCalled.count();
+                Analytics analytics = super.createAnalytics(timeProvider, taskFactory, analyticsHandler,
+                        updateFrequency);
+                analyticsListener[0] = analytics.getInternalPlaybackSessionListener();
+                return analytics;
+            }
+
+            @Override
+            protected IInternalPlaybackSession newPlaybackSession(
+                    InternalPlaybackSession.ConstructorArgs constructorArgs) {
                 MockInternalPlaybackSession playbackSession = new MockInternalPlaybackSession(true) {
                     @Override
                     public void addInternalListener(IInternalPlaybackSessionListener listener) {
@@ -300,17 +327,13 @@ public class DefaultPlaybackStartActionTest {
             }
 
             @Override
-            protected Analytics createAnalytics(ITimeProvider timeProvider, ITaskFactory taskFactory, AnalyticsPlayResponseData analyticsPlayResponseData, IBufferingAnalyticsHandler analyticsHandler, int updateFrequency) {
-                createAnalyticsCalled.count();
-                Analytics analytics = super.createAnalytics(timeProvider, taskFactory, analyticsPlayResponseData,analyticsHandler,updateFrequency);
-                analyticsListener[0] =  analytics.getInternalPlaybackSessionListener();
-                return analytics;
-            }
-
-            @Override
-            protected IInternalPlaybackSessionListener createProgramService(ISession session, IStreamInfo streamInfo, IStreamPrograms streamPrograms, IPlaybackSessionInfo playbackSessionInfo, IEntitlementProvider entitlementProvider, IPlaybackSession playbackSession, ITaskFactoryProvider taskFactoryProvider, boolean finalEntitlementCheck) {
+            protected IInternalPlaybackSessionListener createProgramService(ISession session, IStreamInfo streamInfo,
+                    IStreamPrograms streamPrograms, IPlaybackSessionInfo playbackSessionInfo,
+                    IEntitlementProvider entitlementProvider, IPlaybackSession playbackSession,
+                    ITaskFactoryProvider taskFactoryProvider, boolean finalEntitlementCheck) {
                 createProgramServiceCalled.count();
-                programService[0] = super.createProgramService(session, streamInfo, streamPrograms, playbackSessionInfo, entitlementProvider, playbackSession, taskFactoryProvider, finalEntitlementCheck);
+                programService[0] = super.createProgramService(session, streamInfo, streamPrograms, playbackSessionInfo,
+                        entitlementProvider, playbackSession, taskFactoryProvider, finalEntitlementCheck);
                 return programService[0];
             }
         };
@@ -354,7 +377,7 @@ public class DefaultPlaybackStartActionTest {
 
             @Override
             public void useWith(IPlayableHandler playableHandler) {
-                playableHandler.startUsingDownloadData(new Object(), String.valueOf(UUID.randomUUID()),"","",-1);
+                playableHandler.startUsingDownloadData(new Object(), String.valueOf(UUID.randomUUID()), "", "", -1);
             }
 
             @Override
@@ -383,8 +406,7 @@ public class DefaultPlaybackStartActionTest {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization()
                 .setHttpHandler(httpHandler)
                 .setTaskFactoryProvider(testTaskFactoryProvider)
-                .setStorageManager(mockEngimaStoreManager)
-        );
+                .setStorageManager(mockEngimaStoreManager));
 
         final Counter onStartedCalled = new Counter();
 
@@ -401,9 +423,14 @@ public class DefaultPlaybackStartActionTest {
                 super.onStarted(playbackSession);
             }
         };
-        EnigmaPlayer enigmaPlayer = new EnigmaPlayerTest.EnigmaPlayerWithMockedTimeProvider(new MockSession(), new MockPlayerImplementation()) {
+        EnigmaPlayer enigmaPlayer = new EnigmaPlayerTest.EnigmaPlayerWithMockedTimeProvider(new MockSession(),
+                new MockPlayerImplementation()) {
             @Override
-            protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit, ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler, ITaskFactoryProvider taskFactoryProvider, IPlayerImplementationControls playerImplementationControls, IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection, ISpriteRepository spriteRepository) {
+            protected IPlaybackStartAction newPlaybackStartAction(ISession session, IBusinessUnit businessUnit,
+                    ITimeProvider timeProvider, IPlayRequest playRequest, IHandler callbackHandler,
+                    ITaskFactoryProvider taskFactoryProvider,
+                    IPlayerImplementationControls playerImplementationControls,
+                    IPlaybackStartAction.IEnigmaPlayerCallbacks playerConnection, ISpriteRepository spriteRepository) {
                 return new DefaultPlaybackStartAction(
                         session,
                         businessUnit,
@@ -416,12 +443,27 @@ public class DefaultPlaybackStartActionTest {
                         spriteRepository,
                         new HashSet<>()) {
                     @Override
-                    protected Analytics createAnalytics(ITimeProvider timeProvider, ITaskFactory taskFactory, AnalyticsPlayResponseData analyticsPlayResponseData, IBufferingAnalyticsHandler analyticsHandler, int updateFrequency) {
-                        return new Analytics(new IgnoringAnalyticsReporter(), new MockInternalPlaybackSessionListener());
+                    protected IAnalyticsReportingTask newAnalyticsReportingTask(ITaskFactory taskFactory,
+                            IBufferingAnalyticsHandler analyticsHandler, int updateFrequency) {
+                        return new IAnalyticsReportingTask() {
+                            @Override
+                            public void start() {
+
+                            }
+
+                            @Override
+                            public void stop() {
+
+                            }
+                        };
                     }
 
                     @Override
-                    protected IInternalPlaybackSessionListener createProgramService(ISession session, IStreamInfo streamInfo, IStreamPrograms streamPrograms, IPlaybackSessionInfo playbackSessionInfo, IEntitlementProvider entitlementProvider, IPlaybackSession playbackSession, ITaskFactoryProvider taskFactoryProvider, boolean finalEntitlementCheck) {
+                    protected IInternalPlaybackSessionListener createProgramService(ISession session,
+                            IStreamInfo streamInfo, IStreamPrograms streamPrograms,
+                            IPlaybackSessionInfo playbackSessionInfo, IEntitlementProvider entitlementProvider,
+                            IPlaybackSession playbackSession, ITaskFactoryProvider taskFactoryProvider,
+                            boolean finalEntitlementCheck) {
                         return new MockInternalPlaybackSessionListener();
                     }
                 };
@@ -440,8 +482,8 @@ public class DefaultPlaybackStartActionTest {
     public void testCorrectSessionSelected() {
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization());
 
-        ISession sessionFromEnigmaPlayer = new Session("mockID_1", new BusinessUnit("CU", "BU"),"123");
-        ISession playRequestSession = new Session("PlayMock", new BusinessUnit("PlayRequest", "Biz"),"123");
+        ISession sessionFromEnigmaPlayer = new Session("mockID_1", new BusinessUnit("CU", "BU"), "123");
+        ISession playRequestSession = new Session("PlayMock", new BusinessUnit("PlayRequest", "Biz"), "123");
 
         DefaultPlaybackStartAction playbackStartAction = new DefaultPlaybackStartAction(
                 sessionFromEnigmaPlayer,
@@ -455,7 +497,8 @@ public class DefaultPlaybackStartActionTest {
                 new SpriteDataMock.MockSpriteRepository(), new HashSet<>());
 
         ISession sessionValue = ReflectionUtil.getDeclaredField(playbackStartAction, ISession.class, "session");
-        IBusinessUnit businessUnitValue = ReflectionUtil.getDeclaredField(playbackStartAction, IBusinessUnit.class, "businessUnit");
+        IBusinessUnit businessUnitValue = ReflectionUtil.getDeclaredField(playbackStartAction, IBusinessUnit.class,
+                "businessUnit");
 
         Assert.assertSame(sessionFromEnigmaPlayer, sessionValue);
         Assert.assertSame(sessionFromEnigmaPlayer.getBusinessUnit(), businessUnitValue);
@@ -476,7 +519,6 @@ public class DefaultPlaybackStartActionTest {
 
         Assert.assertNull(sessionValue);
         Assert.assertSame(sessionFromEnigmaPlayer.getBusinessUnit(), businessUnitValue);
-
 
         playbackStartAction = new DefaultPlaybackStartAction(
                 null,
@@ -526,16 +568,16 @@ public class DefaultPlaybackStartActionTest {
             httpHandler.queueResponseOk(Pattern.compile(".*/entitlement/.*/play"), playResponse.toString());
         }
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization()
-                .setHttpHandler(httpHandler)
-        );
+                .setHttpHandler(httpHandler));
 
         MockPlayRequest playRequest = new MockPlayRequest();
         playRequest.setPlayable(new MockPlayable("MockyMockMock"));
         IAdInsertionParameters adParameters = new MockAdParameters();
 
         DefaultPlaybackStartAction playbackStartAction = new DefaultPlaybackStartAction(
-                new MockSession(), new MockSession().getBusinessUnit(), new MockTimeProvider(), playRequest,null,
-                EnigmaRiverContext.getTaskFactoryProvider(), new MockPlayerImplementation(), new MockPlaybackStartAction.MockEnigmaPlayerCallbacks(),
+                new MockSession(), new MockSession().getBusinessUnit(), new MockTimeProvider(), playRequest, null,
+                EnigmaRiverContext.getTaskFactoryProvider(), new MockPlayerImplementation(),
+                new MockPlaybackStartAction.MockEnigmaPlayerCallbacks(),
                 new SpriteDataMock.MockSpriteRepository(),
                 new HashSet<>()) {
             @Override
@@ -557,8 +599,9 @@ public class DefaultPlaybackStartActionTest {
 
         // DefaultPlaybackStartAction does not override `buildAdInsertionParameters`
         playbackStartAction = new DefaultPlaybackStartAction(
-                new MockSession(), new MockSession().getBusinessUnit(), new MockTimeProvider(), playRequest,null,
-                EnigmaRiverContext.getTaskFactoryProvider(), new MockPlayerImplementation(), new MockPlaybackStartAction.MockEnigmaPlayerCallbacks(),
+                new MockSession(), new MockSession().getBusinessUnit(), new MockTimeProvider(), playRequest, null,
+                EnigmaRiverContext.getTaskFactoryProvider(), new MockPlayerImplementation(),
+                new MockPlaybackStartAction.MockEnigmaPlayerCallbacks(),
                 new SpriteDataMock.MockSpriteRepository(),
                 new HashSet<>());
         DefaultPlaybackStartAction.IN_PROGRESS.set(false);
@@ -566,29 +609,31 @@ public class DefaultPlaybackStartActionTest {
         playbackStartAction.startUsingAssetId("foo");
         // Fetch the query from the request url
         query = new URL(new JSONObject(httpHandler.getLog().get(2)).getString("url")).getQuery();
-        Assert.assertEquals("deviceMake=manufacturer",query);
+        Assert.assertEquals("deviceMake=manufacturer", query);
 
         httpHandler.clearLog();
 
-        DefaultAdInsertionParameters defaultAdInsertionParameters = new DefaultAdInsertionParameters("42", "65536", false, "wtf", null, "");
+        DefaultAdInsertionParameters defaultAdInsertionParameters = new DefaultAdInsertionParameters("42", "65536",
+                false, "wtf", null, "");
 
-        // Test with an `IAdInsertionParameters` returning a `DefaultAdInsertionParameters`
+        // Test with an `IAdInsertionParameters` returning a
+        // `DefaultAdInsertionParameters`
         MockEnigmaRiverContext.resetInitialize(new MockEnigmaRiverContextInitialization()
                 .setHttpHandler(httpHandler).setAdInsertionFactory(new IAdInsertionFactory() {
                     @Override
                     public IAdInsertionParameters createParameters(IPlayRequest request) {
                         return defaultAdInsertionParameters;
                     }
-                })
-        );
+                }));
         // Execute the query
         DefaultPlaybackStartAction.IN_PROGRESS.set(false);
 
         playbackStartAction.startUsingAssetId("foo");
         query = new URL(new JSONObject(httpHandler.getLog().get(2)).getString("url")).getQuery();
 
-        Map<String, String> parameters = (Map<String, String>)defaultAdInsertionParameters.getParameters();
-        Map<String, String> deviceParameters = (Map<String, String>)EnigmaRiverContext.getDeviceParameters().getParameters();
+        Map<String, String> parameters = (Map<String, String>) defaultAdInsertionParameters.getParameters();
+        Map<String, String> deviceParameters = (Map<String, String>) EnigmaRiverContext.getDeviceParameters()
+                .getParameters();
         parameters.putAll(deviceParameters);
 
         for (Map.Entry<String, ?> kvp : parameters.entrySet()) {
@@ -597,7 +642,7 @@ public class DefaultPlaybackStartActionTest {
                 Assert.assertTrue(query.contains(kvp.getKey() + "=" + kvp.getValue()));
             } else {
                 // If property was null, it should not be included
-                Assert.assertFalse(query.contains(kvp.getKey()+ "="));
+                Assert.assertFalse(query.contains(kvp.getKey() + "="));
             }
         }
     }

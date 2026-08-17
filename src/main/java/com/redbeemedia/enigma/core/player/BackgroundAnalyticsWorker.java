@@ -43,7 +43,7 @@ public class BackgroundAnalyticsWorker extends Thread {
     }
 
     public void setupHandler(ISession session, ITimeProvider itimeProvider) {
-        AnalyticsPlayResponseData responseData = new AnalyticsPlayResponseData(new JSONObject(), "", null);
+        AnalyticsPlayResponseData responseData = new AnalyticsPlayResponseData(new JSONObject(), "", (ISession)null);
         handler = new OfflineAnalyticsHandler(session, itimeProvider, responseData);
     }
 }

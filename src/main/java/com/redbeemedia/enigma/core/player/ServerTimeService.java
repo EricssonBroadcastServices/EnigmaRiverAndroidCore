@@ -30,7 +30,7 @@ import org.json.JSONObject;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-/*package-protected*/ class ServerTimeService implements ITimeProvider {
+public class ServerTimeService implements ITimeProvider {
     private static final long REFRESH_INTERVAL = 60000 * 30;
     private static final long EXPOSURE_DOWN_INTERVAL = 1000;
 

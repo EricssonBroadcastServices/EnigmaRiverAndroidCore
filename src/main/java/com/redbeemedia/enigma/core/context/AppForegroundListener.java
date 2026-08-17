@@ -38,7 +38,7 @@ public abstract class AppForegroundListener {
 
     public abstract void onBackgrounded();
 
-    protected void startListening() {
+    public void startListening() {
         AndroidThreadUtil.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -50,7 +50,7 @@ public abstract class AppForegroundListener {
         });
     }
 
-    protected void stopListening() {
+    public void stopListening() {
         ProcessLifecycleHandler.get().removeListener(listener);
     }
 }

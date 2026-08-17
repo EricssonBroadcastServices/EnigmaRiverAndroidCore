@@ -8,6 +8,7 @@ import com.redbeemedia.enigma.core.context.MockEnigmaRiverContext;
 import com.redbeemedia.enigma.core.context.MockEnigmaRiverContextInitialization;
 import com.redbeemedia.enigma.core.http.HttpStatus;
 import com.redbeemedia.enigma.core.http.MockHttpHandler;
+import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.session.MockSession;
 import com.redbeemedia.enigma.core.testutil.Flag;
 import com.redbeemedia.enigma.core.time.MockTimeProvider;
@@ -23,7 +24,7 @@ import static org.junit.Assert.assertThat;
 
 public class AnalyticsHandlerTest {
 
-    private final AnalyticsPlayResponseData mockAnalyticsResponse = new AnalyticsPlayResponseData(new JSONObject(), "mock", null);
+    private final AnalyticsPlayResponseData mockAnalyticsResponse = new AnalyticsPlayResponseData(new JSONObject(), "mock", (ISession) null);
 
     @Test
     public void testEventBuffering() throws JSONException, InterruptedException, AnalyticsException {

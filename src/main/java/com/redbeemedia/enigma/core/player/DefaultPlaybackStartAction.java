@@ -6,24 +6,21 @@ package com.redbeemedia.enigma.core.player;
 
 import static com.redbeemedia.enigma.core.analytics.OfflineAnalyticsHandler.OFFLINE_ANALYTICS_URL;
 import static com.redbeemedia.enigma.core.analytics.OfflineAnalyticsHandler.UPDATE_FREQUENCY_5_MIN;
-import static com.redbeemedia.enigma.core.playrequest.MaterialProfile.PARAM_KEY;
+import static com.redbeemedia.enigma.core.player.AnalyticsUtil.setDeviceUtcTimeDifference;
 
 import android.util.Log;
 
-import com.redbeemedia.enigma.core.BuildConfig;
 import com.redbeemedia.enigma.core.ads.ExposureAdMetadata;
 import com.redbeemedia.enigma.core.ads.IAdDetector;
 import com.redbeemedia.enigma.core.ads.IAdInsertionFactory;
 import com.redbeemedia.enigma.core.ads.IAdInsertionParameters;
 import com.redbeemedia.enigma.core.ads.IAdResourceLoader;
-import com.redbeemedia.enigma.core.analytics.AnalyticsException;
 import com.redbeemedia.enigma.core.analytics.AnalyticsHandler;
 import com.redbeemedia.enigma.core.analytics.AnalyticsPlayResponseData;
 import com.redbeemedia.enigma.core.analytics.AnalyticsReporter;
 import com.redbeemedia.enigma.core.analytics.IAnalyticsReporter;
 import com.redbeemedia.enigma.core.analytics.IBufferingAnalyticsHandler;
 import com.redbeemedia.enigma.core.analytics.OfflineAnalyticsHandler;
-import com.redbeemedia.enigma.core.analytics.SilentAnalyticsReporter;
 import com.redbeemedia.enigma.core.businessunit.IBusinessUnit;
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
 import com.redbeemedia.enigma.core.drm.DrmInfoFactory;
@@ -45,8 +42,6 @@ import com.redbeemedia.enigma.core.error.UnexpectedError;
 import com.redbeemedia.enigma.core.format.EnigmaMediaFormat;
 import com.redbeemedia.enigma.core.http.AuthenticatedExposureApiCall;
 import com.redbeemedia.enigma.core.http.IHttpConnection;
-import com.redbeemedia.enigma.core.http.SimpleHttpCall;
-import com.redbeemedia.enigma.core.json.StringResponseHandler;
 import com.redbeemedia.enigma.core.marker.IMarkerPointsDetector;
 import com.redbeemedia.enigma.core.playable.IAssetPlayable;
 import com.redbeemedia.enigma.core.playable.IPlayable;
@@ -58,7 +53,6 @@ import com.redbeemedia.enigma.core.playrequest.AdobePrimetime;
 import com.redbeemedia.enigma.core.playrequest.IPlayRequest;
 import com.redbeemedia.enigma.core.playrequest.IPlayResultHandler;
 import com.redbeemedia.enigma.core.playrequest.IPlaybackProperties;
-import com.redbeemedia.enigma.core.playrequest.MaterialProfile;
 import com.redbeemedia.enigma.core.restriction.IContractRestrictions;
 import com.redbeemedia.enigma.core.session.ISession;
 import com.redbeemedia.enigma.core.task.ITask;
@@ -70,6 +64,8 @@ import com.redbeemedia.enigma.core.time.ITimeProvider;
 import com.redbeemedia.enigma.core.util.IHandler;
 import com.redbeemedia.enigma.core.util.ProxyCallback;
 import com.redbeemedia.enigma.core.util.UrlPath;
+import com.redbeemedia.enigma.core.util.function.IConsumer;
+import com.redbeemedia.enigma.core.util.function.IConsumerTwo;
 import com.redbeemedia.enigma.core.video.ISpriteRepository;
 
 import org.json.JSONArray;
@@ -79,9 +75,7 @@ import org.json.JSONObject;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -89,9 +83,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /*package-protected*/ class DefaultPlaybackStartAction implements IPlaybackStartAction, IPlayableHandler {
     private static final String TAG = "StartAction";
-    public static final String SUPPORTED_FORMATS = "supportedFormats";
-    public static final String SUPPORTED_DRMS = "supportedDrms";
-    public static final String URL_SERVER_TIME_PROVIDER = "https://time.akamai.com/";
 
     private final ISession session;
     private final IBusinessUnit businessUnit;
@@ -161,7 +152,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
             return;
         }
 
-        setDeviceUtcTimeDifference();
+        setDeviceUtcTimeDifference((onDeviceTime) -> deviceUtcTimeDifference = onDeviceTime);
         { //Check requirements
             if (session == null) {
                 IN_PROGRESS.set(false);
@@ -192,310 +183,205 @@ import java.util.concurrent.atomic.AtomicBoolean;
         // make cue-points request
         contentAssetRequest(assetId);
 
-        URL url;
-        try {
-            UrlPath path = session.getBusinessUnit().getApiBaseUrl("v2").append("entitlement").append(assetId).append("play");
-
-            IAdInsertionParameters adInsertionParameters = buildAdInsertionParameters(playRequest);
-            if (adInsertionParameters != null) {
-                path = path.appendQueryStringParameters(adInsertionParameters.getParameters());
-            }
-            // device parameters
-            path = path.appendQueryStringParameters(EnigmaRiverContext.getDeviceParameters().getParameters());
-            path = appendSupportedFormatsAndDRMs(path);
-
-            MaterialProfile materialProfile = playRequest.getPlaybackProperties().getMaterialProfile();
-            if (materialProfile != null) {
-                path = path.append(PARAM_KEY + materialProfile.name());
-            }
-
-            url = path.toURL();
-
-        } catch (MalformedURLException e) {
-            IN_PROGRESS.set(false);
-            getStartActionResultHandler().onError(new InvalidAssetError(assetId, new UnexpectedError(e)));
-            return;
+        IAdInsertionParameters adInsertionParameters = buildAdInsertionParameters(playRequest);
+        Map<String, ?> adParams = null;
+        if(adInsertionParameters != null) {
+            adParams = adInsertionParameters.getParameters();
         }
+
         AdobePrimetime adobePrimeTime = playRequest.getPlaybackProperties().getAdobePrimetime();
-        AuthenticatedExposureApiCall apiCall = new AuthenticatedExposureApiCall("GET", session) {
-            @Override
-            public void prepare(IHttpConnection connection) {
-                if (adobePrimeTime != null) {
-                    connection.setHeader(AdobePrimetime.HTTP_HEADER_KEY, adobePrimeTime.token);
-                }
-                super.prepare(connection);
-            }
-        };
+        String adobePrimeTimeToken = (adobePrimeTime != null) ? adobePrimeTime.token : null;
 
-        EnigmaRiverContext.getHttpHandler().doHttp(url, apiCall, new PlayResponseHandler(assetId) {
-            @Override
-            protected void onError(EnigmaError error) {
-                IN_PROGRESS.set(false);
-                getStartActionResultHandler().onError(error);
 
-                playerImplementationControls.stop(new IPlayerImplementationControlResultHandler() {
-                    @Override
-                    public void onRejected(IControlResultHandler.IRejectReason rejectReason) {
-                    }
+        PlayRequest pr = new PlayRequest(
+                session,
+                assetId,
+                adParams,
+                adobePrimeTimeToken,
+                supportedFormats,
+                playRequest.getPlaybackProperties().getMaterialProfile()
+        );
 
-                    @Override
-                    public void onCancelled() {
-                    }
+        try {
+            pr.call(
+                    (IConsumer<EnigmaError>) enigmaError -> {
+                        IN_PROGRESS.set(false);
+                        getStartActionResultHandler().onError(enigmaError);
 
-                    @Override
-                    public void onError(EnigmaError error) {
-                    }
-
-                    @Override
-                    public void onDone() {
-                        setStateIfCurrentStartAction(EnigmaPlayerState.IDLE);
-                    }
-                });
-            }
-
-            @Override
-            protected void onSuccess(JSONObject jsonObject) throws JSONException {
-                try {
-                    String requestId = jsonObject.optString("requestId");
-                    String playToken = jsonObject.optString("playToken");
-                    String assetId = jsonObject.optString("assetId");
-                    JSONArray formats = jsonObject.getJSONArray("formats");
-                    JSONArray spritesJson = jsonObject.optJSONArray("sprites");
-                    boolean audioOnly = jsonObject.optBoolean("audioOnly", false);
-                    MediaType mediaType = audioOnly ? MediaType.AUDIO : MediaType.VIDEO;
-                    JSONObject usableMediaFormat = playerConnector.getUsableMediaFormat(formats);
-                    if (usableMediaFormat != null) {
-                        JSONObject epgObject = jsonObject.optJSONObject("epg");
-                        boolean epgEnabled = false;
-                        boolean entitlementCheck = false;
-                        if (epgObject != null) {
-                            epgEnabled = epgObject.optBoolean("enabled", false);
-                            entitlementCheck = epgObject.optBoolean("entitlementCheck", false);
-                        }
-
-                        JSONObject drms = usableMediaFormat.optJSONObject("drm");
-                        final IDrmInfo[] drmInfo = new IDrmInfo[]{null};
-                        final String streamingTechnology = usableMediaFormat.optString("format");
-                        if ("DASH".equals(streamingTechnology) && drms != null) {
-                            JSONObject drmTypeInfo = drms.optJSONObject(EnigmaMediaFormat.DrmTechnology.WIDEVINE.getKey());
-                            String licenseUrl = drmTypeInfo.getString("licenseServerUrl");
-                            drmInfo[0] = DrmInfoFactory.createWidevineDrmInfo(licenseUrl, playToken, requestId);
-                        }
-
-                        final AnalyticsPlayResponseData analyticsInformation = new AnalyticsPlayResponseData(jsonObject, streamingTechnology, session);
-                        String manifestUrl = usableMediaFormat.getString("mediaLocator");
-
-                        final Duration liveDelay = usableMediaFormat.has("liveDelay") ? Duration.millis(usableMediaFormat.getLong("liveDelay")) : null;
-
-                        String playbackSessionId = jsonObject.optString("playSessionId", UUID.randomUUID().toString());
-                        JsonStreamInfo streamInfo = new JsonStreamInfo(jsonObject.optJSONObject("streamInfo"), mediaType);
-                        EnigmaContractRestrictions contractRestrictions = EnigmaContractRestrictions.createWithDefaults(jsonObject.optJSONObject("contractRestrictions"));
-
-                        JSONObject cdnObject = jsonObject.optJSONObject("cdn");
-                        String cdnProvider = null;
-                        if (cdnObject != null) {
-                            cdnProvider = cdnObject.optString("provider", "");
-                        }
-                        Integer durationInMilliseconds = jsonObject.optInt("durationInMilliseconds", -1);
-                        IPlaybackSessionInfo playbackSessionInfo = playerConnector.getPlaybackSessionInfo(assetId, manifestUrl, cdnProvider, playbackSessionId, durationInMilliseconds);
-                        final JSONObject adsInfoJson = jsonObject.optJSONObject("ads");
-                        final ExposureAdMetadata adsInfo = new ExposureAdMetadata(
-                                adsInfoJson,
-                                EnigmaMediaFormat.parseMediaFormat(usableMediaFormat).getStreamFormat(),
-                                streamInfo.isLiveStream());
-
-                        if (streamInfo.ssaiEnabled() && adDetector != null) {
-                            adDetector.setEnabled(true);
-                            adDetector.getTimeline().setIsActive(true);
-                            if (!streamInfo.isLiveStream()) {
-                                IAdResourceLoader adsLoader = adDetector.getFactory().createResourceLoader(adsInfo, adsInfoJson);
-                                if (adsLoader != null) {
-                                    adDetector.update(adsLoader, 0);
-                                }
-                            }
-                            adDetector.setLiveDelay(liveDelay);
-                        } else if (!streamInfo.ssaiEnabled() && adDetector != null) {
-                            adDetector.setEnabled(false);
-                            adDetector.setLiveDelay(liveDelay);
-                        }
-
-                        final Map<Integer, String> spriteUrls = parseSpriteUrls(spritesJson);
-                        spriteRepository.setVTTUrls(spriteUrls, session);
-
-                        boolean finalEntitlementCheck = entitlementCheck;
-                        IProcessStep<IStreamPrograms> nextStep = new ProcessStep<IStreamPrograms>() {
+                        playerImplementationControls.stop(new IPlayerImplementationControlResultHandler() {
                             @Override
-                            protected void execute(IStreamPrograms streamPrograms) {
-
-                                final IBufferingAnalyticsHandler analyticsHandler = newOnlineAnalyticsHandler(assetId, session, playbackSessionId, timeProvider, analyticsInformation);
-                                Analytics analytics = playRequest.getPlaybackProperties().enableAnalytics() ?
-                                        createAnalytics(timeProvider, taskFactoryProvider.getTaskFactory(), analyticsInformation, analyticsHandler, analyticsInformation.postIntervalSeconds * 1000) :
-                                        Analytics.silentAnalitycs();
-
-
-                                IInternalPlaybackSession playbackSession = newPlaybackSession(
-                                        new InternalPlaybackSession.ConstructorArgs(
-                                                streamInfo,
-                                                streamPrograms,
-                                                playbackSessionInfo,
-                                                contractRestrictions,
-                                                drmInfo[0],
-                                                analytics.analyticsReporter,
-                                                spriteRepository,
-                                                adsInfo,
-                                                adDetector, false,null));
-                                playbackSession.addInternalListener(analytics.internalPlaybackSessionListener);
-                                playbackSession.addInternalListener(createProgramService(session, streamInfo, streamPrograms, playbackSessionInfo, newEntitlementProvider(), playbackSession, taskFactoryProvider, finalEntitlementCheck));
-                                playbackSession.setPlayerImplementationControls(playerImplementationControls);
-                                playerConnector.deliverPlaybackSession(playbackSession);
-
-                                setStateIfCurrentStartAction(EnigmaPlayerState.LOADING);
-
-                                PlayerImplementationLoadRequest loadRequest = new PlayerImplementationLoadRequest.Stream(manifestUrl, contractRestrictions);
-                                if (liveDelay != null) {
-                                    loadRequest.setLiveDelay(liveDelay);
-                                }
-                                playerImplementationControls.load(loadRequest, new StartPlaybackControlResultHandler(getStartActionResultHandler(), jsonObject, playRequest.getPlaybackProperties().getPlayFrom(), playerImplementationControls, adDetector) {
-                                    @Override
-                                    protected void onLogDebug(String message) {
-                                        Log.d(TAG, message);
-                                    }
-                                });
+                            public void onRejected(IControlResultHandler.IRejectReason rejectReason) {
                             }
-                        };
 
-                        if (streamInfo.hasStreamPrograms() && epgEnabled) {
-                            long end = streamInfo.hasEnd() ? streamInfo.getEnd(Duration.Unit.MILLISECONDS) : (streamInfo.getStart(Duration.Unit.MILLISECONDS) + Duration.days(1).inWholeUnits(Duration.Unit.MILLISECONDS));
-                            IEpgRequest request = new EpgRequest(streamInfo.getChannelId(), streamInfo.getStart(Duration.Unit.MILLISECONDS), end);
-                            IEpg epg = createEpg(session.getBusinessUnit());
-                            epg.getPrograms(request, new IEpgResponseHandler() {
-                                @Override
-                                public void onSuccess(IEpgResponse epgResponse) {
-                                    nextStep.continueProcess(new StreamPrograms(epgResponse, streamInfo.isLiveStream(), deviceUtcTimeDifference));
+                            @Override
+                            public void onCancelled() {
+                            }
+
+                            @Override
+                            public void onError(EnigmaError error) {
+                            }
+
+                            @Override
+                            public void onDone() {
+                                setStateIfCurrentStartAction(EnigmaPlayerState.IDLE);
+                            }
+                        });
+                    },
+                    (IConsumerTwo<JSONObject, IConsumer<EnigmaError>>) (jsonObject, onError) -> {
+                        try {
+                            String requestId = jsonObject.optString("requestId");
+                            String playToken = jsonObject.optString("playToken");
+                            String assetId1 = jsonObject.optString("assetId");
+                            JSONArray formats = jsonObject.getJSONArray("formats");
+                            JSONArray spritesJson = jsonObject.optJSONArray("sprites");
+                            boolean audioOnly = jsonObject.optBoolean("audioOnly", false);
+                            MediaType mediaType = audioOnly ? MediaType.AUDIO : MediaType.VIDEO;
+                            JSONObject usableMediaFormat = playerConnector.getUsableMediaFormat(formats);
+                            if (usableMediaFormat != null) {
+                                JSONObject epgObject = jsonObject.optJSONObject("epg");
+                                boolean epgEnabled = false;
+                                boolean entitlementCheck = false;
+                                if (epgObject != null) {
+                                    epgEnabled = epgObject.optBoolean("enabled", false);
+                                    entitlementCheck = epgObject.optBoolean("entitlementCheck", false);
                                 }
 
-                                @Override
-                                public void onError(EnigmaError error) {
-                                    Log.d("EnigmaPlayer", "Could not fetch epg-data for " + streamInfo.getChannelId());
-                                    Log.d("EnigmaPlayer", error.getTrace());
+                                JSONObject drms = usableMediaFormat.optJSONObject("drm");
+                                final IDrmInfo[] drmInfo = new IDrmInfo[]{null};
+                                final String streamingTechnology = usableMediaFormat.optString("format");
+                                if ("DASH".equals(streamingTechnology) && drms != null) {
+                                    JSONObject drmTypeInfo = drms.optJSONObject(EnigmaMediaFormat.DrmTechnology.WIDEVINE.getKey());
+                                    String licenseUrl = drmTypeInfo.getString("licenseServerUrl");
+                                    drmInfo[0] = DrmInfoFactory.createWidevineDrmInfo(licenseUrl, playToken, requestId);
+                                }
+
+                                final AnalyticsPlayResponseData analyticsInformation = new AnalyticsPlayResponseData(jsonObject, streamingTechnology, session);
+                                String manifestUrl = usableMediaFormat.getString("mediaLocator");
+
+                                final Duration liveDelay = usableMediaFormat.has("liveDelay") ? Duration.millis(usableMediaFormat.getLong("liveDelay")) : null;
+
+                                String playbackSessionId = jsonObject.optString("playSessionId", UUID.randomUUID().toString());
+                                JsonStreamInfo streamInfo = new JsonStreamInfo(jsonObject.optJSONObject("streamInfo"), mediaType);
+                                EnigmaContractRestrictions contractRestrictions = EnigmaContractRestrictions.createWithDefaults(jsonObject.optJSONObject("contractRestrictions"));
+
+                                JSONObject cdnObject = jsonObject.optJSONObject("cdn");
+                                String cdnProvider = null;
+                                if (cdnObject != null) {
+                                    cdnProvider = cdnObject.optString("provider", "");
+                                }
+                                Integer durationInMilliseconds = jsonObject.optInt("durationInMilliseconds", -1);
+                                IPlaybackSessionInfo playbackSessionInfo = playerConnector.getPlaybackSessionInfo(assetId1, manifestUrl, cdnProvider, playbackSessionId, durationInMilliseconds);
+                                final JSONObject adsInfoJson = jsonObject.optJSONObject("ads");
+                                final ExposureAdMetadata adsInfo = new ExposureAdMetadata(
+                                        adsInfoJson,
+                                        EnigmaMediaFormat.parseMediaFormat(usableMediaFormat).getStreamFormat(),
+                                        streamInfo.isLiveStream());
+
+                                if (streamInfo.ssaiEnabled() && adDetector != null) {
+                                    adDetector.setEnabled(true);
+                                    adDetector.getTimeline().setIsActive(true);
+                                    if (!streamInfo.isLiveStream()) {
+                                        IAdResourceLoader adsLoader = adDetector.getFactory().createResourceLoader(adsInfo, adsInfoJson);
+                                        if (adsLoader != null) {
+                                            adDetector.update(adsLoader, 0);
+                                        }
+                                    }
+                                    adDetector.setLiveDelay(liveDelay);
+                                } else if (!streamInfo.ssaiEnabled() && adDetector != null) {
+                                    adDetector.setEnabled(false);
+                                    adDetector.setLiveDelay(liveDelay);
+                                }
+
+                                final Map<Integer, String> spriteUrls = parseSpriteUrls(spritesJson);
+                                spriteRepository.setVTTUrls(spriteUrls, session);
+
+                                boolean finalEntitlementCheck = entitlementCheck;
+                                IProcessStep<IStreamPrograms> nextStep = new ProcessStep<>() {
+                                    @Override
+                                    protected void execute(IStreamPrograms streamPrograms) {
+
+                                        final IBufferingAnalyticsHandler analyticsHandler = newOnlineAnalyticsHandler(assetId1, session, playbackSessionId, timeProvider, analyticsInformation);
+                                        Analytics analytics = playRequest.getPlaybackProperties().enableAnalytics() ?
+                                                createAnalytics(timeProvider, taskFactoryProvider.getTaskFactory(), analyticsHandler, analyticsInformation.postIntervalSeconds * 1000) :
+                                                Analytics.silentAnalitycs();
+
+
+                                        IInternalPlaybackSession playbackSession = newPlaybackSession(
+                                                new InternalPlaybackSession.ConstructorArgs(
+                                                        streamInfo,
+                                                        streamPrograms,
+                                                        playbackSessionInfo,
+                                                        contractRestrictions,
+                                                        drmInfo[0],
+                                                        analytics.getAnalyticsReporter(),
+                                                        spriteRepository,
+                                                        adsInfo,
+                                                        adDetector, false, null));
+                                        playbackSession.addInternalListener(analytics.getInternalPlaybackSessionListener());
+                                        playbackSession.addInternalListener(createProgramService(session, streamInfo, streamPrograms, playbackSessionInfo, newEntitlementProvider(), playbackSession, taskFactoryProvider, finalEntitlementCheck));
+                                        playbackSession.setPlayerImplementationControls(playerImplementationControls);
+                                        playerConnector.deliverPlaybackSession(playbackSession);
+
+                                        setStateIfCurrentStartAction(EnigmaPlayerState.LOADING);
+
+                                        PlayerImplementationLoadRequest loadRequest = new PlayerImplementationLoadRequest.Stream(manifestUrl, contractRestrictions);
+                                        if (liveDelay != null) {
+                                            loadRequest.setLiveDelay(liveDelay);
+                                        }
+                                        playerImplementationControls.load(loadRequest, new StartPlaybackControlResultHandler(getStartActionResultHandler(), jsonObject, playRequest.getPlaybackProperties().getPlayFrom(), playerImplementationControls, adDetector) {
+                                            @Override
+                                            protected void onLogDebug(String message) {
+                                                Log.d(TAG, message);
+                                            }
+                                        });
+                                    }
+                                };
+
+                                if (streamInfo.hasStreamPrograms() && epgEnabled) {
+                                    long end = streamInfo.hasEnd() ? streamInfo.getEnd(Duration.Unit.MILLISECONDS) : (streamInfo.getStart(Duration.Unit.MILLISECONDS) + Duration.days(1).inWholeUnits(Duration.Unit.MILLISECONDS));
+                                    IEpgRequest request = new EpgRequest(streamInfo.getChannelId(), streamInfo.getStart(Duration.Unit.MILLISECONDS), end);
+                                    IEpg epg = createEpg(session.getBusinessUnit());
+                                    epg.getPrograms(request, new IEpgResponseHandler() {
+                                        @Override
+                                        public void onSuccess(IEpgResponse epgResponse) {
+                                            nextStep.continueProcess(new StreamPrograms(epgResponse, streamInfo.isLiveStream(), deviceUtcTimeDifference));
+                                        }
+
+                                        @Override
+                                        public void onError(EnigmaError error) {
+                                            Log.d("EnigmaPlayer", "Could not fetch epg-data for " + streamInfo.getChannelId());
+                                            Log.d("EnigmaPlayer", error.getTrace());
+                                            nextStep.continueProcess(null);
+                                        }
+                                    });
+                                } else {
                                     nextStep.continueProcess(null);
                                 }
-                            });
-                        } else {
-                            nextStep.continueProcess(null);
-                        }
-                    } else {
-                        String format = "";
-                        boolean isDrmSupported = false;
-                        for (int i = 0; i < formats.length(); ++i) {
-                            JSONObject mediaFormat = formats.getJSONObject(i);
-                            format = (String) mediaFormat.optString("format", "null");
-                            Object drm = mediaFormat.opt("drm");
-                            if (drm != null) {
-                                isDrmSupported = true;
+                            } else {
+                                String format = "";
+                                boolean isDrmSupported = false;
+                                for (int i = 0; i < formats.length(); ++i) {
+                                    JSONObject mediaFormat = formats.getJSONObject(i);
+                                    format = mediaFormat.optString("format", "null");
+                                    Object drm = mediaFormat.opt("drm");
+                                    if (drm != null) {
+                                        isDrmSupported = true;
+                                    }
+                                    break;
+                                }
+                                onError.accept(new NoSupportedMediaFormatsError("Could not find a media format supported by the current player implementation. Requested format:" + format + ", isDRM:" + isDrmSupported));
                             }
-                            break;
+                        } catch (JSONException e) {
+                            throw new RuntimeException(e);
+                        } finally {
+                            IN_PROGRESS.set(false);
                         }
-                        onError(new NoSupportedMediaFormatsError("Could not find a media format supported by the current player implementation. Requested format:" + format + ", isDRM:" + isDrmSupported));
                     }
-                } finally {
-                    IN_PROGRESS.set(false);
-                }
-            }
-        });
-    }
-
-
-    private UrlPath appendSupportedFormatsAndDRMs(UrlPath path) {
-        Set<EnigmaMediaFormat.StreamFormat> formats = new HashSet<>();
-        Set<EnigmaMediaFormat.DrmTechnology> drms = new HashSet<>();
-        for (EnigmaMediaFormat mediaFormat : supportedFormats) {
-            formats.add(mediaFormat.getStreamFormat());
-            drms.add(mediaFormat.getDrmTechnology());
+            );
+        }  catch (MalformedURLException e) {
+            IN_PROGRESS.set(false);
+            getStartActionResultHandler().onError(new InvalidAssetError(assetId, new UnexpectedError(e)));
         }
-        String formatsBuilder = buildFormats(formats);
-        String drmBuilder = buildDrm(drms);
-        Map<String, String> paramMap = new HashMap<>();
-        if (!formatsBuilder.isEmpty()) {
-            paramMap.put(SUPPORTED_FORMATS, formatsBuilder);
-        }
-        if (!drmBuilder.trim().isEmpty()) {
-            paramMap.put(SUPPORTED_DRMS, drmBuilder);
-        }
-        if (!paramMap.isEmpty()) {
-            path = path.appendQueryStringParameters(paramMap);
-        }
-        return path;
-    }
-
-    private void setDeviceUtcTimeDifference() {
-        try {
-            UrlPath url = new UrlPath(URL_SERVER_TIME_PROVIDER);
-            SimpleHttpCall apiCall = new SimpleHttpCall("GET");
-            EnigmaRiverContext.getHttpHandler().doHttp(url.toURL(), apiCall, new StringResponseHandler() {
-
-                @Override
-                public void onError(EnigmaError error) {
-                    deviceUtcTimeDifference = 0L;
-                }
-
-                @Override
-                public void onSuccess(String serverUtcTimeStr) {
-                    try {
-                        long serverUtcTime = Long.parseLong(serverUtcTimeStr) * 1000;
-                        long deviceTime = new Date().getTime();
-                        long networkTime = 500L;
-                        deviceUtcTimeDifference = deviceTime - serverUtcTime - networkTime;
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        // ignore and set device time difference as 0
-                        deviceUtcTimeDifference = 0L;
-                    }
-                }
-            });
-        } catch (Exception e) {
-            e.printStackTrace();
-            // IGNORE
-        }
-    }
-
-    private String buildFormats(Set<EnigmaMediaFormat.StreamFormat> formats) {
-        StringBuilder formatsBuilder = new StringBuilder();
-        if (formats.contains(EnigmaMediaFormat.StreamFormat.DASH)) {
-            formatsBuilder.append("dash").append(",");
-        }
-        if (formats.contains(EnigmaMediaFormat.StreamFormat.HLS)) {
-            formatsBuilder.append("hls").append(",");
-        }
-        if (formats.contains(EnigmaMediaFormat.StreamFormat.MP3)) {
-            formatsBuilder.append("mp3").append(",");
-        }
-        if (formats.contains(EnigmaMediaFormat.StreamFormat.SMOOTHSTREAMING)) {
-            formatsBuilder.append("smoothstreaming").append(",");
-        }
-        return removeLastComma(formatsBuilder);
-    }
-
-    private String buildDrm(Set<EnigmaMediaFormat.DrmTechnology> drms) {
-        StringBuilder drmBuilder = new StringBuilder();
-        if (drms.contains(EnigmaMediaFormat.DrmTechnology.WIDEVINE)) {
-            drmBuilder.append("widevine").append(",");
-        }
-        if (drms.contains(EnigmaMediaFormat.DrmTechnology.PLAYREADY)) {
-            drmBuilder.append("playready").append(",");
-        }
-        if (drms.contains(EnigmaMediaFormat.DrmTechnology.FAIRPLAY)) {
-            drmBuilder.append("fairplay").append(",");
-        }
-        return removeLastComma(drmBuilder);
-    }
-
-    private String removeLastComma(StringBuilder drmBuilder) {
-        String drmBuilderStr = drmBuilder.toString();
-        if (drmBuilderStr.endsWith(",")) {
-            drmBuilderStr = drmBuilderStr.substring(0, drmBuilderStr.length() - 1);
-        }
-        return drmBuilderStr;
     }
 
     private void contentAssetRequest(String assetId) {
@@ -582,7 +468,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
             final AnalyticsPlayResponseData analyticsInformation = new AnalyticsPlayResponseData(offlineJsonObject, null, session);
             final IBufferingAnalyticsHandler analyticsHandler = newOfflineAnalyticsHandler(playbackSessionInfo.getAssetId(), session, playbackSessionInfo.getPlaybackSessionId(), timeProvider, analyticsInformation, analyticsBaseUrl);
 
-            Analytics analytics = createAnalytics(timeProvider, taskFactoryProvider.getTaskFactory(), analyticsInformation, analyticsHandler, UPDATE_FREQUENCY_5_MIN);
+            Analytics analytics = createAnalytics(timeProvider, taskFactoryProvider.getTaskFactory(), analyticsHandler, UPDATE_FREQUENCY_5_MIN);
 
             IInternalPlaybackSession playbackSession = newPlaybackSession(new InternalPlaybackSession.ConstructorArgs(
                     new DownloadStreamInfo(),
@@ -590,14 +476,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
                     playbackSessionInfo,
                     contractRestrictions,
                     null,
-                    analytics.analyticsReporter,
+                    analytics.getAnalyticsReporter(),
                     null,
                     null,
                     adDetector,
                     sessionResumed,
                     Duration.minutes(60)
             ));
-            playbackSession.addInternalListener(analytics.internalPlaybackSessionListener);
+            playbackSession.addInternalListener(analytics.getInternalPlaybackSessionListener());
             playbackSession.setPlayerImplementationControls(playerImplementationControls);
 
 
@@ -685,69 +571,23 @@ import java.util.concurrent.atomic.AtomicBoolean;
         getStartActionResultHandler().onError(error);
     }
 
-    protected Analytics createAnalytics(ITimeProvider timeProvider, ITaskFactory taskFactory, AnalyticsPlayResponseData analyticsInformation, IBufferingAnalyticsHandler analyticsHandler, int updateFrequency) {
-        final ITask analyticsHandlerTask = taskFactory.newTask(newAnalyticsHandlerRunnable(analyticsHandler, updateFrequency));
-
+    protected Analytics createAnalytics(ITimeProvider timeProvider, ITaskFactory taskFactory, IBufferingAnalyticsHandler analyticsHandler, int updateFrequency) {
+        IAnalyticsReportingTask reportingTask = newAnalyticsReportingTask(taskFactory, analyticsHandler, updateFrequency);
         return new Analytics(newAnalyticsReporter(timeProvider, analyticsHandler), new IInternalPlaybackSessionListener() {
             @Override
             public void onStart(OnStartArgs args) {
-                try {
-                    analyticsHandlerTask.start();
-                } catch (TaskException e) {
-                    throw new RuntimeException("Could not start analyticsHandlerTask", e);
-                }
+                reportingTask.start();
             }
 
             @Override
             public void onStop(OnStopArgs args) {
-                try {
-                    analyticsHandlerTask.cancel(500);
-                } catch (Exception e) {
-                    e.printStackTrace(); //Suppress
-                }
-                ITask sendRemainingDataTask = taskFactory.newTask(() -> {
-                    try {
-                        analyticsHandler.sendData(); //Try to send any remaining data.
-                    } catch (Exception e) {
-                        e.printStackTrace(); //Suppress
-                    }
-                });
-                try {
-                    sendRemainingDataTask.start();
-                } catch (Exception e) {
-                    e.printStackTrace(); //Suppress
-                }
+                reportingTask.stop();
             }
         });
     }
 
-    protected Runnable newAnalyticsHandlerRunnable(IBufferingAnalyticsHandler analyticsHandler, long updateFrequency) {
-        return new Runnable() {
-            @Override
-            public void run() {
-                while (!Thread.interrupted()) {
-                    try {
-                        try {
-                            analyticsHandler.sendData();
-                            Thread.sleep(updateFrequency);
-                        } catch (AnalyticsException e) {
-                            handleException(e);
-                            Thread.sleep(updateFrequency);
-                        }
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                }
-            }
-
-            private void handleException(Exception e) {
-                if (BuildConfig.DEBUG) {
-                    throw new RuntimeException(e);
-                } else {
-                    e.printStackTrace(); //Log
-                }
-            }
-        };
+    protected IAnalyticsReportingTask newAnalyticsReportingTask(ITaskFactory taskFactory, IBufferingAnalyticsHandler analyticsHandler, int updateFrequency) {
+        return new AnalyticsReportingTask(taskFactory, analyticsHandler, updateFrequency);
     }
 
     protected IBufferingAnalyticsHandler newOnlineAnalyticsHandler(String assetId, ISession session, String playbackSessionId, ITimeProvider timeProvider, AnalyticsPlayResponseData analyticsPlayResponseData) {
@@ -820,35 +660,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
         @Override
         public void onError(EnigmaError error) {
             playResultHandler.onError(error);
-        }
-    }
-
-    /*package-protected*/ static class Analytics {
-        private final IAnalyticsReporter analyticsReporter;
-        private final IInternalPlaybackSessionListener internalPlaybackSessionListener;
-
-        public Analytics(IAnalyticsReporter analyticsReporter, IInternalPlaybackSessionListener internalPlaybackSessionListener) {
-            this.analyticsReporter = analyticsReporter;
-            this.internalPlaybackSessionListener = internalPlaybackSessionListener;
-        }
-
-        public IAnalyticsReporter getAnalyticsReporter() {
-            return analyticsReporter;
-        }
-
-        public IInternalPlaybackSessionListener getInternalPlaybackSessionListener() {
-            return internalPlaybackSessionListener;
-        }
-
-        /**
-         * Returns an analytics reporter that does not send any data.
-         */
-        static Analytics silentAnalitycs() {
-            return new Analytics(
-                    new SilentAnalyticsReporter(), new IInternalPlaybackSessionListener() {
-                public void onStart(OnStartArgs args) { }
-                public void onStop(OnStopArgs args) {}
-            });
         }
     }
 }
