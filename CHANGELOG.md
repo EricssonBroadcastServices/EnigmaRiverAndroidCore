@@ -5,6 +5,8 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 -->
 
 # CHANGELOG
+* `3.8.3 `Release - [3.8.3](#3.8.3)&nbsp; - &nbsp; 2026-11-08
+* `3.8.2 `Release - [3.8.2](#3.8.2)&nbsp; - &nbsp; 2026-08-13
 * `3.7.23 `Release - [3.7.23](#3.7.23)&nbsp; - &nbsp; 2025-02-11
 * `3.7.22 `Release - [3.7.22](#3.7.22)&nbsp; - &nbsp; 2025-02-05
 * `3.7.21 `Release - [3.7.21](#3.7.21)&nbsp; - &nbsp; 2024-11-27
@@ -72,13 +74,37 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 * `3.1.7` Release - [3.1.7](#3.1.7) &nbsp; - &nbsp; 2020-12-04
 * `3.1.6` Release - [3.1.6](#3.1.6) &nbsp; - &nbsp; 2020-11-13
 
+# <a name="3.8.3"></a> 3.8.3
+#### Features
+`
+EnigmaRiverAndroidBitmovinAnalytics
+`
+* Minor release fixes
+
+# <a name="3.8.2"></a> 3.8.2
+#### Features
+`
+EnigmaRiverAndroidBitmovinAnalytics
+EnigmaRiverAndroidCore
+EnigmaRiverAndroidDownload
+EnigmaRiverAndroidReferenceApp
+`
+* EMP-22675 - Collect bitmovin player events from android
+* EMP-22938 - Universal external player analytics wrapper
+* EMP-22939 - Formats and supported DRM provider
+* EMP-22940 - Track and manifest URL provider
+* EMP-22941 - CSAI ads URL and timeline provider, impression sender
+* EMP-22942 - Implement DRM Session Manager wrapper
+* EMP-22943 - Add renderer handling for problematic codecs
+`
+
 # <a name="3.7.23"></a> 3.7.23
 #### Features
 `
 EnigmaRiverAndroidCast
 `
 * EMP-22034 - Fix for PlaybackProperties null pointer exception
-  `
+`
 
 # <a name="3.7.22"></a> 3.7.22
 #### Features
@@ -161,7 +187,7 @@ EnigmaRiverAndroidExoPlayerIntegration
 EnigmaRiverAndroidExoPlayerDownload
 `
 * EMP-21275 - Crash fix during asset download
-* EMP-21375 - Lack of notification fix during asset download
+* EMP-21375 - Lack of notification fix during asset download 
 * EMP-21250 - Unexpected runtime error fix on Google Pixel 4 5G
 
 # <a name="3.7.11"></a> 3.7.11
@@ -203,7 +229,7 @@ DevEnigmaRiverAndroidInternalTestUtils
 `
 DevEnigmaRiverAndroidTutorialApps
 `
-* Updated tutorial apps
+* Updated tutorial apps 
 
 # <a name="3.7.6"></a> 3.7.6
 #### Features
@@ -445,7 +471,7 @@ DevEnigmaRiverAndroidCore
 DevEnigmaRiverAndroidExoPlayerIntegration
 DevEnigmaRiverAndroidDownload
 DevEnigmaRiverAndroidExoPlayerDownload
-`
+` 
 * EMP-18467- Support for PlaybackProperty (OFFSET) for offline assets
 * EMP-18466- Expose playback sessionId
 * EMP-18002- 10min inactivity issue
@@ -661,11 +687,11 @@ the following changes are required.
 
 ```java
     playerView.getVideoSurfaceView().setOnClickListener(new View.OnClickListener(){
-    @Override
-    public void onClick(View v){
+@Override
+public void onClick(View v){
         // Do something
-    }
-});
+        }
+        });
 ```
 
 - If the Virtual Controls are used, the default exoplayer controls layout must explicitly defined in
