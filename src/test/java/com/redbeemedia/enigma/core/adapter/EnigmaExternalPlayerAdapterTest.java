@@ -6,6 +6,7 @@
 package com.redbeemedia.enigma.core.adapter;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -35,6 +36,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
 
+import java.util.Map;
 import java.util.regex.Pattern;
 
 public class EnigmaExternalPlayerAdapterTest {
@@ -229,6 +231,70 @@ public class EnigmaExternalPlayerAdapterTest {
         callback.assertNoError();
     }
 
+    @Test
+    public void preparePopulatesDrmAuthorizationAndRequestIdHeadersFromPlayResponse() throws JSONException {
+        MockHttpHandler httpHandler = resetContext();
+        String licenseUrl = "https://license.example.com/widevine";
+        JSONObject format = newDashWidevineFormat(MANIFEST_URL_DASH_WIDEVINE, licenseUrl, null);
+        queuePlayResponse(httpHandler, "test-play-token", "test-request-id", format);
+        queueAkamaiTimeResponse(httpHandler);
+
+        RecordingPrepareCallback callback = new RecordingPrepareCallback();
+        newAdapter().prepare(ASSET_ID, callback);
+
+        callback.assertPreparedOnce();
+        callback.assertNoError();
+        assertNotNull(callback.drmSession);
+        assertEquals(licenseUrl, callback.drmSession.getLicenseUrl());
+        Map<String, String> headers = callback.drmSession.getLicenseRequestHeaders();
+        assertEquals("Bearer test-play-token", headers.get("Authorization"));
+        assertEquals("test-request-id", headers.get("X-Request-Id"));
+        assertEquals(2, headers.size());
+    }
+
+    @Test
+    public void prepareMergesAndOverridesDrmHeadersFromProperties() throws JSONException {
+        MockHttpHandler httpHandler = resetContext();
+        String licenseUrl = "https://license.example.com/widevine";
+        JSONObject properties = new JSONObject();
+        properties.put("Authorization", "Bearer property-token");
+        properties.put("X-Custom-Header", "custom-value");
+        properties.put("X-Ignored-Null", JSONObject.NULL);
+        JSONObject format = newDashWidevineFormat(MANIFEST_URL_DASH_WIDEVINE, licenseUrl, properties);
+        queuePlayResponse(httpHandler, "test-play-token", "test-request-id", format);
+        queueAkamaiTimeResponse(httpHandler);
+
+        RecordingPrepareCallback callback = new RecordingPrepareCallback();
+        newAdapter().prepare(ASSET_ID, callback);
+
+        callback.assertPreparedOnce();
+        callback.assertNoError();
+        assertNotNull(callback.drmSession);
+        Map<String, String> headers = callback.drmSession.getLicenseRequestHeaders();
+        assertEquals("Bearer property-token", headers.get("Authorization"));
+        assertEquals("test-request-id", headers.get("X-Request-Id"));
+        assertEquals("custom-value", headers.get("X-Custom-Header"));
+        assertEquals(3, headers.size());
+    }
+
+    @Test
+    public void prepareOmitsEmptyPlayTokenAndRequestIdFromDrmHeaders() throws JSONException {
+        MockHttpHandler httpHandler = resetContext();
+        String licenseUrl = "https://license.example.com/widevine";
+        JSONObject format = newDashWidevineFormat(MANIFEST_URL_DASH_WIDEVINE, licenseUrl, null);
+        queuePlayResponse(httpHandler, "   ", "", format);
+        queueAkamaiTimeResponse(httpHandler);
+
+        RecordingPrepareCallback callback = new RecordingPrepareCallback();
+        newAdapter().prepare(ASSET_ID, callback);
+
+        callback.assertPreparedOnce();
+        callback.assertNoError();
+        assertNotNull(callback.drmSession);
+        assertEquals(licenseUrl, callback.drmSession.getLicenseUrl());
+        assertTrue(callback.drmSession.getLicenseRequestHeaders().isEmpty());
+    }
+
     private static MockHttpHandler resetContext() {
         MockHttpHandler httpHandler = new MockHttpHandler();
         resetContext(httpHandler, new MockNetworkMonitor());
@@ -263,11 +329,25 @@ public class EnigmaExternalPlayerAdapterTest {
     }
 
     private static void queuePlayResponse(MockHttpHandler httpHandler, JSONObject... formats) throws JSONException {
+        queuePlayResponse(httpHandler, null, null, formats);
+    }
+
+    private static void queuePlayResponse(
+            MockHttpHandler httpHandler,
+            String playToken,
+            String requestId,
+            JSONObject... formats) throws JSONException {
         JSONArray formatArray = new JSONArray();
         for (JSONObject format : formats) {
             formatArray.put(format);
         }
         JSONObject playResponse = new JSONObject();
+        if (playToken != null) {
+            playResponse.put("playToken", playToken);
+        }
+        if (requestId != null) {
+            playResponse.put("requestId", requestId);
+        }
         playResponse.put("formats", formatArray);
         httpHandler.queueResponseOk(PLAY_URL_PATTERN, playResponse.toString());
     }
@@ -282,11 +362,25 @@ public class EnigmaExternalPlayerAdapterTest {
     }
 
     private static JSONObject newDashWidevineFormat(String manifestUrl) throws JSONException {
+        return newDashWidevineFormat(manifestUrl, null, null);
+    }
+
+    private static JSONObject newDashWidevineFormat(
+            String manifestUrl,
+            String licenseUrl,
+            JSONObject properties) throws JSONException {
         JSONObject format = new JSONObject();
         format.put("format", "DASH");
         format.put("mediaLocator", manifestUrl);
+        JSONObject widevine = new JSONObject();
+        if (licenseUrl != null) {
+            widevine.put("licenseServerUrl", licenseUrl);
+        }
+        if (properties != null) {
+            widevine.put("properties", properties);
+        }
         JSONObject drm = new JSONObject();
-        drm.put("com.widevine.alpha", new JSONObject());
+        drm.put("com.widevine.alpha", widevine);
         format.put("drm", drm);
         return format;
     }
@@ -325,12 +419,14 @@ public class EnigmaExternalPlayerAdapterTest {
         private int preparedCalls = 0;
         private int errorCalls = 0;
         private String manifestUrl;
+        private IEnigmaExternalPlayerDrmSession drmSession;
         private EnigmaError error;
 
         @Override
         public void onPrepared(String manifestUrl, IEnigmaExternalPlayerDrmSession drmSession) {
             preparedCalls++;
             this.manifestUrl = manifestUrl;
+            this.drmSession = drmSession;
         }
 
         @Override

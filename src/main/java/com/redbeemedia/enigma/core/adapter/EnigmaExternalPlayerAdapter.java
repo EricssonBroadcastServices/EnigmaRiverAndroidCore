@@ -23,6 +23,8 @@ import com.redbeemedia.enigma.core.analytics.IPlayerAnalyticsListener;
 import com.redbeemedia.enigma.core.analytics.OfflineAnalyticsHandler;
 import com.redbeemedia.enigma.core.context.AppForegroundListener;
 import com.redbeemedia.enigma.core.context.EnigmaRiverContext;
+import com.redbeemedia.enigma.core.drm.DrmInfoFactory;
+import com.redbeemedia.enigma.core.drm.IDrmInfo;
 import com.redbeemedia.enigma.core.error.EnigmaError;
 import com.redbeemedia.enigma.core.error.InvalidAssetError;
 import com.redbeemedia.enigma.core.error.NoInternetConnectionError;
@@ -242,7 +244,9 @@ import java.util.UUID;
             }
 
             String manifestUrl = selectedFormat.optString("mediaLocator", "");
-            IEnigmaExternalPlayerDrmSession drmSession = parseGenericDrmSession(selectedFormat);
+            String playToken = optNonEmptyString(jsonObject, "playToken");
+            String requestId = optNonEmptyString(jsonObject, "requestId");
+            IEnigmaExternalPlayerDrmSession drmSession = parseGenericDrmSession(selectedFormat, playToken, requestId);
 
             String playbackSessionId = jsonObject.optString("playSessionId", UUID.randomUUID().toString());
             String cdnProvider = extractCdnProvider(jsonObject);
@@ -472,7 +476,10 @@ import java.util.UUID;
         return selectedFormat;
     }
 
-    private IEnigmaExternalPlayerDrmSession parseGenericDrmSession(JSONObject formatObject) {
+    private IEnigmaExternalPlayerDrmSession parseGenericDrmSession(
+            JSONObject formatObject,
+            String playToken,
+            String requestId) {
         if (formatObject == null) return null;
 
         JSONObject drmObject = formatObject.optJSONObject("drm");
@@ -481,21 +488,35 @@ import java.util.UUID;
         JSONObject widevineObject = drmObject.optJSONObject(WIDEVINE.getKey());
         if (widevineObject == null) return null;
 
-        String licenseUrl = widevineObject.optString("licenseServerUrl");
-        if (licenseUrl.isEmpty()) return null;
+        String licenseUrl = optNonEmptyString(widevineObject, "licenseServerUrl");
+        if (licenseUrl == null) return null;
 
         Map<String, String> headers = new HashMap<>();
+        IDrmInfo drmInfo = DrmInfoFactory.createWidevineDrmInfo(licenseUrl, playToken, requestId);
+        for (Map.Entry<String, String> entry : drmInfo.getDrmKeyRequestProperties()) {
+            headers.put(entry.getKey(), entry.getValue());
+        }
 
         JSONObject propertiesJson = widevineObject.optJSONObject("properties");
         if (propertiesJson != null) {
             Iterator<String> keys = propertiesJson.keys();
             while (keys.hasNext()) {
                 String key = keys.next();
-                headers.put(key, propertiesJson.optString(key));
+                if (!propertiesJson.isNull(key)) {
+                    headers.put(key, propertiesJson.optString(key));
+                }
             }
         }
 
         return new GenericExternalDrmSession(licenseUrl, headers);
+    }
+
+    private static String optNonEmptyString(JSONObject json, String key) {
+        if (json == null || json.isNull(key)) {
+            return null;
+        }
+        String value = json.optString(key, null);
+        return (value == null || value.trim().isEmpty()) ? null : value;
     }
 
     private static IMediaFormatSupportSpec buildFormatSupportSpec(final Set<EnigmaMediaFormat> supportedFormats) {
